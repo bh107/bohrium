@@ -336,6 +336,14 @@ void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
     assert(validation());
 }
 
+uint64_t LoopB::localThreading() const {
+    if (_sweeps.size() == 0 and not isSystemOnly()) {
+        assert (size >= 0);
+        return static_cast<uint64_t>(size);
+    }
+    return 0;
+}
+
 string LoopB::pprint(const char *newline) const {
     stringstream ss;
     spaces(ss, rank * 4);
@@ -467,14 +475,16 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
     constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
     ret.second = 1;
     for (const LoopB *b: block_list) {
-        if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
+        const uint64_t thds = b->localThreading();
+        if (thds > 0) {
             ret.first.push_back(b);
-            ret.second *= b->size;
+            ret.second *= thds;
         }
-        // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
+        // Multiple blocks or mixing instructions and blocks makes all the following blocks non-threadable
         if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
             break;
         }
+        // Too much threading can be a bad thing e.g. OpenCL only supports three dimensions
         if (ret.first.size() == MAX_NUM_OF_THREADED_BLOCKS) {
             break;
         }

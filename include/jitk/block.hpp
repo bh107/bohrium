@@ -135,6 +135,9 @@ public:
     // NB: Force reshape the instruction to match the instructions accesses 'base' last.
     void insert_system_after(InstrPtr instr, const bh_base *base);
 
+    // Returns the amount of threading in this block (excl. nested blocks)
+    uint64_t localThreading() const;
+
     // Pretty print this block
     std::string pprint(const char *newline="\n") const;
 
