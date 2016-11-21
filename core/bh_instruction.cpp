@@ -111,7 +111,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     if (not reshapable()) {
         throw runtime_error("Reshape: instruction not reshapable!");
     }
-    const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int64_t>());
+    const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), int64_t{1}, std::multiplies<int64_t>());
     int nop = bh_noperands(opcode);
     for(int o=0; o<nop; ++o) {
         bh_view &view = operand[o];

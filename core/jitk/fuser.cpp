@@ -47,7 +47,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
             const vector<int64_t> dominating_shape = instr.dominating_shape();
             assert(dominating_shape.size() > 0);
 
-            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), 1, \
+            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
                                                       std::multiplies<int64_t>());
             const vector<int64_t> shape = {totalsize};
             instr.reshape(shape);
