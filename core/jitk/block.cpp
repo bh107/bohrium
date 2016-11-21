@@ -486,35 +486,28 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
 // Unnamed namespace for all some merge help functions
 namespace {
 
-bool data_parallel_compatible(const bh_view &a, const bh_view &b, const int rank) {
+// Check if 'writer' and 'reader' supports data-parallelism when merged
+bool data_parallel_compatible(const bh_view &writer, const bh_view &reader, const int rank) {
 
     // Disjoint views or constants are obviously compatible
-    if (bh_is_constant(&a) or bh_is_constant(&b) or bh_view_disjoint(&a, &b)) {
+    if (bh_is_constant(&writer) or bh_is_constant(&reader) or bh_view_disjoint(&writer, &reader)) {
         return true;
     }
 
     // This is possible if 'a' or 'b' is the output of a reduction
-    if (a.ndim <= rank or b.ndim <= rank) {
+    if (writer.ndim <= rank or reader.ndim <= rank) {
         return false;
-    }
-
-    // A output array that uses broadcast is never data parallel compatible!
-    for (int64_t i=0; i<a.ndim; ++i) {
-        if (a.stride[rank] == 0) {
-            assert(1==2); // Is this even possible?
-            return false;
-        }
     }
 
     // The views must have the same offset
-    if (a.start != b.start) {
+    if (writer.start != reader.start) {
         return false;
     }
 
-    if (a.stride[rank] == 0 or b.stride[rank] == 0) {
-        return true;
-    }
-    return a.stride[rank] == b.stride[rank];
+    // For now, they should use the same stride.
+    // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
+    //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
+    return writer.stride[rank] == reader.stride[rank];
 }
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
@@ -548,8 +541,10 @@ bool data_parallel_compatible(const LoopB &b1, const LoopB &b2) {
     assert(b1.rank == b2.rank);
     for (const InstrPtr i1 : b1.getAllInstr()) {
         for (const InstrPtr i2 : b2.getAllInstr()) {
-            if (not data_parallel_compatible(i1, i2, b1.rank)) {
-                return false;
+            if (i1.get() != i2.get()) {
+                if (not data_parallel_compatible(i1, i2, b1.rank)) {
+                    return false;
+                }
             }
         }
     }
