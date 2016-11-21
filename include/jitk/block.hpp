@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 #include <iostream>
+#include <memory>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
 
