@@ -170,7 +170,7 @@ void fuser_greedy(vector<Block> &block_list, uint64_t min_threading) {
 
     graph::DAG dag = graph::from_block_list(block_list);
     graph::greedy(dag, min_threading);
-    vector<Block> ret = graph::topological<FifoQueue>(dag, min_threading);
+    vector<Block> ret = graph::fill_block_list(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {

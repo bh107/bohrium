@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/breadth_first_search.hpp>
 #include <boost/graph/graphviz.hpp>
+#include <boost/graph/topological_sort.hpp>
 #include <boost/foreach.hpp>
 #include <fstream>
 #include <numeric>
@@ -106,6 +107,16 @@ DAG from_block_list(const vector<Block> &block_list) {
         }
     }
     return graph;
+}
+
+vector<Block> fill_block_list(const DAG &dag) {
+    vector<Block> ret;
+    vector<Vertex> topological_order;
+    boost::topological_sort(dag, back_inserter(topological_order));
+    BOOST_REVERSE_FOREACH(const Vertex &v, topological_order) {
+        ret.push_back(dag[v]);
+    }
+    return ret;
 }
 
 uint64_t weight(const Block &b1, const Block &b2) {

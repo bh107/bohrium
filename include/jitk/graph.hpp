@@ -72,6 +72,9 @@ void pprint(const DAG &dag, const char *filename, uint64_t min_threading=0);
 // Create a dag based on the 'block_list'
 DAG from_block_list(const std::vector <Block> &block_list);
 
+// Create a block list based on the 'dag'
+std::vector<Block> fill_block_list(const DAG &dag);
+
 // Merges the vertices in 'dag' topologically using 'Queue' as the Vertex queue.
 // 'Queue' is a collection of 'Vertex' that is constructed with the DAG and supports push(), pop(), and empty()
 // 'min_threading' is the minimum amount of threading acceptable in merged blocks
