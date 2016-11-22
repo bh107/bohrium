@@ -62,7 +62,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
     return block_list;
 }
 
-void fuser_serial(vector<Block> &block_list) {
+void fuser_serial(vector<Block> &block_list, uint64_t min_threading) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         ret.push_back(*it);
@@ -73,7 +73,7 @@ void fuser_serial(vector<Block> &block_list) {
         }
         // Let's search for fusible blocks
         for (; it != block_list.end(); ++it) {
-            const pair<Block, bool> res = merge_if_possible(cur, *it);
+            const pair<Block, bool> res = merge_if_possible(cur, *it, min_threading);
             if (res.second) {
                 cur = res.first;
             } else {
@@ -81,7 +81,7 @@ void fuser_serial(vector<Block> &block_list) {
             }
         }
         // Let's fuse at the next rank level
-        fuser_serial(cur.getLoop()._block_list);
+        fuser_serial(cur.getLoop()._block_list, 0);
     }
     block_list = ret;
 }
@@ -107,7 +107,7 @@ public:
 };
 } // Anon namespace
 
-void fuser_breadth_first(vector<Block> &block_list) {
+void fuser_breadth_first(vector<Block> &block_list, uint64_t min_threading) {
 
     graph::DAG dag = graph::from_block_list(block_list);
     vector<Block> ret = graph::topological<FifoQueue>(dag);
@@ -115,13 +115,13 @@ void fuser_breadth_first(vector<Block> &block_list) {
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_breadth_first(b.getLoop()._block_list);
+            fuser_breadth_first(b.getLoop()._block_list, 0);
         }
     }
     block_list = ret;
 }
 
-void fuser_reshapable_first(vector<Block> &block_list) {
+void fuser_reshapable_first(vector<Block> &block_list, uint64_t min_threading) {
 
     // Let's define a queue that priorities fusion of reshapable blocks
     class ReshapableQueue {
@@ -155,27 +155,28 @@ void fuser_reshapable_first(vector<Block> &block_list) {
     };
 
     graph::DAG dag = graph::from_block_list(block_list);
-    vector<Block> ret = graph::topological<ReshapableQueue>(dag);
+    vector<Block> ret = graph::topological<ReshapableQueue>(dag, min_threading);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_reshapable_first(b.getLoop()._block_list);
+            fuser_reshapable_first(b.getLoop()._block_list, 0);
         }
     }
     block_list = ret;
 }
 
-void fuser_greedy(vector<Block> &block_list) {
+void fuser_greedy(vector<Block> &block_list, uint64_t min_threading) {
 
     graph::DAG dag = graph::from_block_list(block_list);
-    graph::greedy(dag);
-    vector<Block> ret = graph::topological<FifoQueue>(dag);
+    graph::greedy(dag, min_threading);
+    vector<Block> ret = graph::topological<FifoQueue>(dag, min_threading);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_greedy(b.getLoop()._block_list);
+            // Notice that the 'min_threading' argument is set to zero for all sub-blocks
+            fuser_greedy(b.getLoop()._block_list, 0);
         }
     }
     block_list = ret;

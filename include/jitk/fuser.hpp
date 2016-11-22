@@ -35,16 +35,20 @@ namespace jitk {
 std::vector<Block> fuser_singleton(const std::vector<bh_instruction *> &instr_list);
 
 // Fuses 'block_list' in a serial naive manner
-void fuser_serial(std::vector<Block> &block_list);
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_serial(std::vector<Block> &block_list, uint64_t min_threading=0);
 
 // Fuses 'block_list' in a topological breadth first manner
-void fuser_breadth_first(std::vector<Block> &block_list);
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_breadth_first(std::vector<Block> &block_list, uint64_t min_threading=0);
 
 // Fuses 'block_list' in a topological manner prioritizing fusion of reshapable blocks
-void fuser_reshapable_first(std::vector<Block> &block_list);
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_reshapable_first(std::vector<Block> &block_list, uint64_t min_threading=0);
 
 // Fuses 'block_list' greedily
-void fuser_greedy(std::vector<Block> &block_list);
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_greedy(std::vector<Block> &block_list, uint64_t min_threading=0);
 
 } // jit
 } // bohrium

@@ -439,10 +439,12 @@ void Impl::execute(bh_ir *bhir) {
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(instr_list);
     if (config.defaultGet<bool>("serial_fusion", false)) {
-        fuser_serial(block_list);
+        fuser_serial(block_list, 1);
     } else {
-    //  fuser_reshapable_first(block_list);
-        fuser_greedy(block_list);
+    //    fuser_reshapable_first(block_list, 1);
+        // Notice that the 'min_threading' argument is set to 1 in order to avoid blocks with no parallelism
+        // TODO: Instead of always using 1, we could try once with no min threading before setting it to 1.
+        fuser_greedy(block_list, 1);
     }
 
     // Pretty printing the block

@@ -281,9 +281,11 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int
 std::pair<std::vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block);
 
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
+// 'min_threading' is the minimum amount of threading acceptable in the merged block (ignored if
+// neither 'a' or 'b' have the requested amount)
 // NB: 'a' or 'b' might be reshaped in order to make the merge legal
 // Returns the new block and a flag indicating whether the merge was performed
-std::pair<Block, bool> merge_if_possible(const Block &a, const Block &b);
+std::pair<Block, bool> merge_if_possible(const Block &a, const Block &b, uint64_t min_threading=0);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const LoopB& b);

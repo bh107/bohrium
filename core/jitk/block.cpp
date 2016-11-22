@@ -575,7 +575,7 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
 
 // Reshape and merges the two loop blocks 'l1' and 'l2' (in that order).
 // Returns a new block and a flag indicating whether the merge were possible
-std::pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
+pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     // Check for perfect match, which is directly mergeable
     if (l1.size == l2.size) {
         if (data_parallel_compatible(l1, l2)) {
@@ -603,7 +603,7 @@ std::pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     return make_pair(Block(), false); // No match found
 }
 
-std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
+pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2, uint64_t min_threading) {
     if (b1.isInstr() or b2.isInstr()) {
         return make_pair(Block(), false);
     }
@@ -625,7 +625,26 @@ std::pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2) {
         return make_pair(Block(), false);
     }
 
-    return reshape_and_merge(l1, l2);
+    // Minimum threading is disable
+    if (min_threading == 0) {
+        return reshape_and_merge(l1, l2);
+    }
+
+    // Let's check that the returned Block has the minimum threading amount
+    // However there is a exception: if both 'l1' and 'l2' does not have the minimum threading amount
+    // the returned block does not have to have either.
+    pair<Block, bool> ret = reshape_and_merge(l1, l2);
+    if (not ret.second) {
+        return ret;
+    }
+    const uint64_t l1_thds = l1.localThreading();
+    const uint64_t l2_thds = l2.localThreading();
+    const uint64_t ret_thds = ret.first.getLoop().localThreading();
+    if (ret_thds >= min_threading or (l1_thds < min_threading and l2_thds < min_threading)) {
+        return ret;
+    } else {
+        return make_pair(Block(), false);
+    }
 }
 
 ostream &operator<<(ostream &out, const LoopB &b) {
