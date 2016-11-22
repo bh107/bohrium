@@ -57,6 +57,7 @@ class Impl : public ComponentImplWithChild {
     chrono::duration<double> time_fusion{0};
     chrono::duration<double> time_exec{0};
     chrono::duration<double> time_build{0};
+    chrono::duration<double> time_offload{0};
 
     // The OpenCL context and device used throughout the execution
     cl::Context context;
@@ -124,9 +125,10 @@ Impl::~Impl() {
         cout << "\tWork below par-threshold(1000): " \
              << threading_below_threshold / (double)totalwork * 100 << "%" << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
-        cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
-        cout << "\t  Build:  " << time_build.count() << "s" << endl;
-        cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
+        cout << "\t  Fusion:  " << time_fusion.count() << "s" << endl;
+        cout << "\t  Build:   " << time_build.count() << "s" << endl;
+        cout << "\t  Exec:    " << time_exec.count() << "s" << endl;
+        cout << "\t  Offload: " << time_offload.count() << "s" << endl;
     }
 }
 
@@ -509,6 +511,8 @@ void Impl::execute(bh_ir *bhir) {
             if (verbose)
                 cout << "Offloading to CPU" << endl;
 
+            auto toffload = chrono::steady_clock::now();
+
             // Let's copy all non-temporary to the host
             for (bh_base *base: kernel.getNonTemps()) {
                 if (buffers.find(base) != buffers.end()) {
@@ -536,6 +540,7 @@ void Impl::execute(bh_ir *bhir) {
             }
             bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
             child.execute(&tmp_bhir);
+            time_offload += chrono::steady_clock::now() - toffload;
             continue;
         }
 
