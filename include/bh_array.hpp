@@ -120,6 +120,9 @@ struct bh_view
     // NB: 0 <= 'dim' <= ndim
     void insert_dim(bh_index dim, bh_index size, bh_index stride);
 
+    // Transposes by swapping the two axises 'axis1' and 'axis2'
+    void transpose(int64_t axis1, int64_t axis2);
+
     bool operator<(const bh_view& other) const
     {
         if (base < other.base) return true;

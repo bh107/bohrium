@@ -110,6 +110,15 @@ void bh_view::insert_dim(bh_index dim, bh_index size, bh_index stride) {
     ++ndim;
 }
 
+void bh_view::transpose(int64_t axis1, int64_t axis2) {
+    assert(0 <= axis1 and axis1 < ndim);
+    assert(0 <= axis2 and axis2 < ndim);
+    assert(not bh_is_constant(this));
+
+    std::swap(shape[axis1], shape[axis2]);
+    std::swap(stride[axis1], stride[axis2]);
+}
+
 vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
 {
     //stride&shape&index for each dimension (in that order)
