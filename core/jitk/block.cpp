@@ -475,6 +475,9 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
     constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
     ret.second = 1;
     for (const LoopB *b: block_list) {
+        if (b->_sweeps.size() > 0) {
+            break;
+        }
         const uint64_t thds = b->localThreading();
         if (thds > 0) {
             ret.first.push_back(b);
