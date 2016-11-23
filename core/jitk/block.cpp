@@ -107,7 +107,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
             block._frees.insert(instr->operand[0].base);
         }
     }
-    if (sweep_axis(*instr) == rank) {
+    if (instr->sweep_axis() == rank) {
         block._sweeps.insert(instr);
     }
 }

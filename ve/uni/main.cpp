@@ -224,7 +224,7 @@ bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
     assert(bh_noperands(instr->opcode) == 3);
-    return sweep_axis(*instr) == instr->operand[1].ndim-1;
+    return instr->sweep_axis() == instr->operand[1].ndim-1;
 }
 
 void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, stringstream &out) {

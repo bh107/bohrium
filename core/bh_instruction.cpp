@@ -107,6 +107,15 @@ vector<int64_t> bh_instruction::dominating_shape() const {
     return shape;
 }
 
+int bh_instruction::sweep_axis() const {
+    if (bh_opcode_is_sweep(opcode)) {
+        assert(bh_noperands(opcode) == 3);
+        assert(bh_is_constant(&operand[2]));
+        return static_cast<int>(constant.get_int64());
+    }
+    return BH_MAXDIM;
+}
+
 void bh_instruction::reshape(const vector<int64_t> &shape) {
     if (not reshapable()) {
         throw runtime_error("Reshape: instruction not reshapable!");

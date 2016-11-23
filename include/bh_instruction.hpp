@@ -56,6 +56,9 @@ struct bh_instruction
     // if equal, the combined maximum is returned
     std::vector<int64_t> dominating_shape() const;
 
+    // Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
+    int sweep_axis() const;
+
     // Reshape the views of the instruction to 'shape'
     void reshape(const std::vector<int64_t> &shape);
 

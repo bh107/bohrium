@@ -491,15 +491,6 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
     out << "]";
 }
 
-int sweep_axis(const bh_instruction &instr) {
-    if (bh_opcode_is_sweep(instr.opcode)) {
-        assert(bh_noperands(instr.opcode) == 3);
-        assert(bh_is_constant(&instr.operand[2]));
-        return static_cast<int>(instr.constant.get_int64());
-    }
-    return BH_MAXDIM;
-}
-
 void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out, bool opencl) {
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(base_ids, instr, out);
@@ -575,7 +566,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         {
             stringstream ss;
             ss << "a" << base_ids[instr.operand[0].base];
-            write_array_subscription(instr.operand[0], ss, BH_MAXDIM, make_pair(sweep_axis(instr), -1));
+            write_array_subscription(instr.operand[0], ss, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
             operands.push_back(ss.str());
         }
         // Write the current element access
@@ -604,7 +595,7 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
                     // reducing to a non-scalar
-                    write_array_subscription(view, ss, sweep_axis(instr));
+                    write_array_subscription(view, ss, instr.sweep_axis());
                 } else {
                     write_array_subscription(view, ss);
                 }
