@@ -150,6 +150,37 @@ void bh_instruction::reshape_force(const vector<int64_t> &shape) {
     }
 }
 
+void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
+    assert(0 <= axis1 and axis1 < max_ndim());
+    assert(0 <= axis2 and axis2 < max_ndim());
+    assert(axis1 != axis2);
+    int nop = bh_noperands(opcode);
+    if (nop > 0) {
+        // The input we can simply transpose
+        for(int o=1; o<nop; ++o) {
+            bh_view &view = operand[o];
+            if (not bh_is_constant(&view)) {
+                view.transpose(axis1, axis2);
+            }
+        }
+        // In the output, we have to handle sweep operations
+        {
+            bh_view &view = operand[0];
+            const int sa = sweep_axis();
+            if (sa == axis1) {
+                constant.set_double(axis2);
+            } else if (sa == axis2) {
+                constant.set_double(axis1);
+            } else {
+                const int64_t t1 = sa<axis1?axis1-1:axis1;
+                const int64_t t2 = sa<axis2?axis2-1:axis2;
+                assert(t1 != t2);
+                view.transpose(t1, t2);
+            }
+        }
+    }
+}
+
 bh_type bh_instruction::operand_type(int operand_index) const {
     assert(bh_noperands(opcode) > operand_index);
     const bh_view &view = operand[operand_index];

@@ -65,12 +65,14 @@ struct bh_instruction
     // Reshape the views of the instruction to 'shape' (no checks!)
     void reshape_force(const std::vector<int64_t> &shape);
 
+    // Transposes by swapping the two axises 'axis1' and 'axis2'
+    void transpose(int64_t axis1, int64_t axis2);
+
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
 
     // Equality
-    bool operator==(const bh_instruction& other) const
-    {
+    bool operator==(const bh_instruction& other) const {
         if (opcode != other.opcode) {
             return false;
         }
@@ -90,8 +92,7 @@ struct bh_instruction
     }
 
     // Inequality
-    bool operator!=(const bh_instruction& other) const
-    {
+    bool operator!=(const bh_instruction& other) const {
         return !(*this == other);
     }
 
