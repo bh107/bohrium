@@ -519,11 +519,11 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         }
         {   // Let's find the flatten index of the output view
             stringstream ss;
-            uint64_t stride = 1;
-            for(int64_t i=instr.operand[0].ndim-1; i >= 0 ; --i) {
-                ss << "+i" << i << "*" << stride;
-                stride *= instr.operand[0].shape[i];
+            ss << "(";
+            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+                ss << "+i" << i << "*" << instr.operand[0].stride[i];
             }
+            ss << ")";
             operands.push_back(ss.str());
         }
         write_operation(instr, operands, out, opencl);
@@ -549,13 +549,10 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
                << ", " << instr.constant.value.r123.key << ", ";
 
             // Let's find the flatten index of the output view
-            uint64_t stride = 1;
-            for(int64_t i=instr.operand[0].ndim-1; i >= 0 ; --i) {
-                ss << "+i" << i << "*" << stride;
-                stride *= instr.operand[0].shape[i];
+            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+                ss << "+i" << i << "*" << instr.operand[0].stride[i];
             }
             ss << ")";
-
             operands.push_back(ss.str());
         }
         write_operation(instr, operands, out, opencl);
