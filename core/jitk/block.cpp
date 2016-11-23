@@ -492,7 +492,6 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
     return ret;
 }
 
-
 // Unnamed namespace for all some merge help functions
 namespace {
 
@@ -645,6 +644,84 @@ pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2, uint64_t m
     } else {
         return make_pair(Block(), false);
     }
+}
+
+vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2) {
+    vector<InstrPtr> ret;
+    for (const InstrPtr &instr: instr_list) {
+        bh_instruction tmp(*instr);
+        tmp.transpose(axis1, axis2);
+        ret.push_back(std::make_shared<bh_instruction>(tmp));
+    }
+    return ret;
+}
+
+vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
+    vector<Block> ret;
+    for (const Block &b: parent._block_list) {
+        LoopB loop;
+        loop.rank = parent.rank;
+        if (b.isInstr() or &b.getLoop() != child) {
+            loop.size = parent.size;
+            loop._block_list.push_back(b);
+        } else {
+            loop.size = child->size;
+            const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
+            loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
+        }
+        {// We need to update news, frees, and sweeps
+            for (const InstrPtr instr: loop.getLocalInstr()) {
+                if (instr->constructor) {
+                    if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
+                        loop._news.insert(instr->operand[0].base);
+                }
+                if (instr->opcode == BH_FREE) {
+                    loop._frees.insert(instr->operand[0].base);
+                }
+            }
+            for (const InstrPtr instr: loop.getAllInstr()) {
+                if (instr->sweep_axis() == loop.rank) {
+                    loop._sweeps.insert(instr);
+                }
+            }
+        }
+        ret.push_back(Block(std::move(loop)));
+    }
+    return ret;
+}
+
+const LoopB *find_swappable_sub_block(const LoopB &parent) {
+    for (const Block &b: parent._block_list) {
+        if (b.isInstr() or b.getLoop()._sweeps.size() > 0) {
+            continue;
+        }
+        for (const InstrPtr instr: b.getLoop().getLocalInstr()) {
+            if (bh_opcode_is_reduction(instr->opcode)) {
+                return &b.getLoop();
+            }
+        }
+    }
+    return NULL;
+}
+
+vector<Block> push_reductions_inwards(const vector<Block> &block_list) {
+    vector<Block> block_list2(block_list);
+    for(Block &b: block_list2) {
+        if (not b.isInstr()) {
+            b.getLoop()._block_list = push_reductions_inwards(b.getLoop()._block_list);
+        }
+    }
+    vector<Block> ret;
+    for(const Block &b: block_list2) {
+        const LoopB *swappable;
+        if (not b.isInstr() and (swappable = find_swappable_sub_block(b.getLoop())) != NULL)  {
+            const vector<Block>tmp = swap_blocks(b.getLoop(), swappable);
+            ret.insert(ret.end(), tmp.begin(), tmp.end());
+        } else {
+            ret.push_back(b);
+        }
+    }
+    return ret;
 }
 
 ostream &operator<<(ostream &out, const LoopB &b) {
