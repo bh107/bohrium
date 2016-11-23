@@ -155,11 +155,11 @@ void LoopB::getAllSubBlocks(std::vector<const LoopB *> &out) const {
     }
 }
 
-vector<const Block *> LoopB::getLocalSubBlocks() const {
-    vector<const Block *> ret;
+vector<const LoopB *> LoopB::getLocalSubBlocks() const {
+    vector<const LoopB *> ret;
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
-            ret.push_back(&b);
+            ret.push_back(&b.getLoop());
         }
     }
     return ret;

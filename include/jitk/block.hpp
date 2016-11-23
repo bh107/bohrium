@@ -82,7 +82,7 @@ public:
     void getAllSubBlocks(std::vector<const LoopB *> &out) const;
 
     // Return all sub-blocks (excl. nested blocks)
-    std::vector<const Block*> getLocalSubBlocks() const;
+    std::vector<const LoopB*> getLocalSubBlocks() const;
 
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<InstrPtr> &out) const;
