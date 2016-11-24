@@ -38,9 +38,34 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
     vector<Block> block_list;
     for (auto it=instr_list.begin(); it != instr_list.end(); ++it) {
         bh_instruction instr(**it);
-        int nop = bh_noperands(instr.opcode);
+        const int nop = bh_noperands(instr.opcode);
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
+
+        // Let's start by removed redundant 1-sized dimensions
+        {
+            const vector<int64_t> dominating_shape = instr.dominating_shape();
+            vector<uint64_t> dim2keep;
+            for (uint64_t i=0; i<dominating_shape.size(); ++i) {
+                if (dominating_shape[i] > 1) {
+                    dim2keep.push_back(i);
+                }
+            }
+            if (dim2keep.size() > 0 and dim2keep.size() < dominating_shape.size()) {
+                for (int i = 0; i < nop; ++i) {
+                    bh_view &org = instr.operand[i];
+                    if (not bh_is_constant(&org)) {
+                        bh_view view(org);
+                        for (uint64_t dim: dim2keep) {
+                            view.shape[dim] = org.shape[dim];
+                            view.stride[dim] = org.stride[dim];
+                        }
+                        view.ndim = dim2keep.size();
+                        org = view;
+                    }
+                }
+            }
+        }
 
         // Let's try to simplify the shape of the instruction
         if (instr.reshapable()) {
