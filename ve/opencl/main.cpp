@@ -446,9 +446,8 @@ void Impl::execute(bh_ir *bhir) {
     //    fuser_reshapable_first(block_list, 1);
         // Notice that the 'min_threading' argument is set to 1 in order to avoid blocks with no parallelism
         // TODO: Instead of always using 1, we could try once with no min threading before setting it to 1.
-        fuser_greedy(block_list, 1);
+        fuser_greedy(block_list, 0);
         block_list = push_reductions_inwards(block_list);
-        fuser_greedy(block_list);
     }
 
     // Pretty printing the block
