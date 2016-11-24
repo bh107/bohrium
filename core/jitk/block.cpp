@@ -698,13 +698,17 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
 }
 
 const LoopB *find_swappable_sub_block(const LoopB &parent) {
-    for (const Block &b: parent._block_list) {
-        if (b.isInstr() or b.getLoop()._sweeps.size() > 0) {
-            continue;
-        }
-        for (const InstrPtr instr: b.getLoop().getLocalInstr()) {
-            if (bh_opcode_is_reduction(instr->opcode)) {
-                return &b.getLoop();
+    // For each sweep, we look for a sub-block that contains that sweep instructions.
+    for (const InstrPtr sweep: parent._sweeps) {
+        for (const Block &b: parent._block_list) {
+            if (not b.isInstr()) {
+                for (const Block &instr_block: b.getLoop()._block_list) {
+                    if (instr_block.isInstr()) {
+                        if (*instr_block.getInstr() == *sweep) {
+                            return &b.getLoop();
+                        }
+                    }
+                }
             }
         }
     }
