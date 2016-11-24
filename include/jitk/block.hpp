@@ -73,7 +73,8 @@ public:
     // Default Constructor
     LoopB() { static int id_count = 0; _id = id_count++; }
 
-    void replaceInstr(InstrPtr subject, const bh_instruction &replacement);
+    // Search and replace 'subject' with 'replacement' and returns the number of hits
+    int replaceInstr(InstrPtr subject, const bh_instruction &replacement);
 
     // Is this block innermost? (not counting instruction blocks)
     bool isInnermost() const;
@@ -297,7 +298,7 @@ std::vector<Block> swap_blocks(const LoopB &parent, const LoopB *child);
 // Find a loop block within 'parent' that is swappable
 const LoopB *find_swappable_sub_block(const LoopB &parent);
 
-// Tranpose blocks such that reductions gets as innermost as possible
+// Transpose blocks such that reductions gets as innermost as possible
 std::vector<Block> push_reductions_inwards(const std::vector<Block> &block_list);
 
 //Implements pprint of block

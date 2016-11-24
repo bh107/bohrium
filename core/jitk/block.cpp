@@ -116,16 +116,20 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
 
 // *** LoopB Methods *** //
 
-void LoopB::replaceInstr(InstrPtr subject, const bh_instruction &replacement) {
+
+int LoopB::replaceInstr(InstrPtr subject, const bh_instruction &replacement) {
+    int ret = 0;
     for (Block &b: _block_list) {
         if (b.isInstr()) {
             if (*b.getInstr() == *subject) {
                 b.setInstr(replacement);
+                ++ret;
             }
         } else {
-            b.getLoop().replaceInstr(subject, replacement);
+            ret += b.getLoop().replaceInstr(subject, replacement);
         }
     }
+    return ret;
 }
 
 bool LoopB::isInnermost() const {
