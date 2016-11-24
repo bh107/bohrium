@@ -163,20 +163,27 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
                 view.transpose(axis1, axis2);
             }
         }
-        // In the output, we have to handle sweep operations
-        {
-            bh_view &view = operand[0];
-            const int sa = sweep_axis();
-            if (sa == axis1) {
-                constant.set_double(axis2);
-            } else if (sa == axis2) {
-                constant.set_double(axis1);
-            } else {
+        // In the output, we have to handle sweep operations specially
+        bh_view &view = operand[0];
+        // First, we might have to swap the sweep axis
+        const int sa = sweep_axis();
+        if (sa == axis1) {
+            constant.set_double(axis2);
+        } else if (sa == axis2) {
+            constant.set_double(axis1);
+        }
+        // Swapping a reduction means we might have to correct 'axis1' or 'axis2'
+        if (bh_opcode_is_reduction(opcode)) {
+            // But if we are reducing one of the swapped axises, the output shouldn't be transposed at all
+            if (sa != axis1 and sa != axis2) {
                 const int64_t t1 = sa<axis1?axis1-1:axis1;
                 const int64_t t2 = sa<axis2?axis2-1:axis2;
                 assert(t1 != t2);
                 view.transpose(t1, t2);
             }
+        } else {
+            // Otherwise, we just do the transpose
+            view.transpose(axis1, axis2);
         }
     }
 }
