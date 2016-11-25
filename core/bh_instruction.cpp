@@ -150,6 +150,34 @@ void bh_instruction::reshape_force(const vector<int64_t> &shape) {
     }
 }
 
+void bh_instruction::remove_axis(int64_t axis) {
+    assert(0 <= axis and axis < max_ndim());
+    int nop = bh_noperands(opcode);
+    if (nop > 0) {
+        // In the input we can simply remove the axis
+        for(int o=1; o<nop; ++o) {
+            if (not bh_is_constant(&operand[o])) {
+                operand[o].remove_axis(axis);
+            }
+        }
+        // We might have to correct the sweep axis
+        const int sa = sweep_axis();
+        if (sa == axis) {
+            throw runtime_error("remove_axis(): cannot remove an axis that is sweeped");
+        } else if (sa > axis and sa < BH_MAXDIM) {
+            constant.set_double(sa-1);
+        }
+        // In the output, we might have to correct the axis
+        bh_view &view = operand[0];
+        if (bh_opcode_is_reduction(opcode)) {
+            view.remove_axis(sa < axis ? axis - 1 : axis);
+        } else {
+            // Otherwise, we just do the transpose
+            view.remove_axis(axis);
+        }
+    }
+}
+
 void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
     assert(0 <= axis1 and axis1 < max_ndim());
     assert(0 <= axis2 and axis2 < max_ndim());

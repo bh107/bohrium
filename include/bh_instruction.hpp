@@ -65,6 +65,11 @@ struct bh_instruction
     // Reshape the views of the instruction to 'shape' (no checks!)
     void reshape_force(const std::vector<int64_t> &shape);
 
+    // Remove 'axis' from all views in this instruction.
+    // Notice that 'axis' is based on the 'dominating shape' thus remove_axis() will correct
+    // the axis value when handling reductions automatically
+    void remove_axis(int64_t axis);
+
     // Transposes by swapping the two axises 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
