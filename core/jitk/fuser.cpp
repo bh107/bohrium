@@ -42,27 +42,15 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
-        // Let's start by removed redundant 1-sized dimensions
+        // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
         {
             const vector<int64_t> dominating_shape = instr.dominating_shape();
-            vector<uint64_t> dim2keep;
-            for (uint64_t i=0; i<dominating_shape.size(); ++i) {
-                if (dominating_shape[i] > 1) {
-                    dim2keep.push_back(i);
-                }
-            }
-            if (dim2keep.size() > 0 and dim2keep.size() < dominating_shape.size()) {
-                for (int i = 0; i < nop; ++i) {
-                    bh_view &org = instr.operand[i];
-                    if (not bh_is_constant(&org)) {
-                        bh_view view(org);
-                        for (uint64_t dim: dim2keep) {
-                            view.shape[dim] = org.shape[dim];
-                            view.stride[dim] = org.stride[dim];
-                        }
-                        view.ndim = dim2keep.size();
-                        org = view;
-                    }
+            const int sa = instr.sweep_axis();
+            size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
+            for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
+                if (sa != i and dominating_shape[i] == 1) {
+                    instr.remove_axis(i);
+                    --ndim_left;
                 }
             }
         }
