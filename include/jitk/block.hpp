@@ -288,19 +288,6 @@ std::pair<std::vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB
 // Returns the new block and a flag indicating whether the merge was performed
 std::pair<Block, bool> merge_if_possible(const Block &a, const Block &b, uint64_t min_threading=0);
 
-// Swap the two axises, 'axis1' and 'axis2', in all instructions in 'instr_list'
-std::vector<InstrPtr> swap_axis(const std::vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2);
-
-// Swap the 'parent' block with its 'child' block.
-// NB: 'child' must point to a block in 'parent._block_list'
-std::vector<Block> swap_blocks(const LoopB &parent, const LoopB *child);
-
-// Find a loop block within 'parent' that it make sense to swappable
-const LoopB *find_swappable_sub_block(const LoopB &parent);
-
-// Transpose blocks such that reductions gets as innermost as possible
-std::vector<Block> push_reductions_inwards(const std::vector<Block> &block_list);
-
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const LoopB& b);
 

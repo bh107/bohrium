@@ -33,6 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/type.hpp>
 #include <jitk/fuser.hpp>
 #include <jitk/graph.hpp>
+#include <jitk/transformer.hpp>
 
 #include "opencl_type.hpp"
 #include "cl.hpp"
