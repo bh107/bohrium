@@ -107,6 +107,97 @@ vector<Block> push_reductions_inwards(const vector<Block> &block_list) {
     return ret;
 }
 
+vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
+    vector<Block> ret;
+
+    for (const Block &block: block_list) {
+        // For now, we cannot make an instruction or a sweeped block threadable
+        if (block.isInstr() or block.getLoop()._sweeps.size() > 0) {
+            ret.push_back(block);
+            continue;
+        }
+        const LoopB &loop = block.getLoop();
+        uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
+        for (const InstrPtr instr: loop.getAllInstr()) {
+            if (bh_noperands(instr->opcode) > 0) {
+                const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
+                if (nelem > max_nelem)
+                    max_nelem = nelem;
+            }
+        }
+        if (loop._block_list.size() > 1 // We need minimum two blocks in order to split!
+            and max_nelem > min_threading // Is it even possible to achieve our goal?
+            and find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
+
+            for (auto it = loop._block_list.begin(); it != loop._block_list.end(); ++it) {
+                // First we will place all sub-blocks that cannot be threaded in a shared block
+                {
+                    LoopB newloop;
+                    newloop.rank = loop.rank;
+                    newloop.size = loop.size;
+                    while (it != loop._block_list.end() and (it->isInstr() or it->getLoop()._sweeps.size() > 0)) {
+                        assert(it->rank() == newloop.rank+1);
+                        newloop._block_list.push_back(*it);
+                        ++it;
+                    }
+                    {// We need to update news, frees, and sweeps
+                        for (const InstrPtr instr: newloop.getLocalInstr()) {
+                            if (instr->constructor) {
+                                if (not bh_opcode_is_accumulate(
+                                        instr->opcode))// TODO: Support array contraction of accumulated output
+                                    newloop._news.insert(instr->operand[0].base);
+                            }
+                            if (instr->opcode == BH_FREE) {
+                                newloop._frees.insert(instr->operand[0].base);
+                            }
+                        }
+                        for (const InstrPtr instr: loop.getAllInstr()) {
+                            if (instr->sweep_axis() == loop.rank) {
+                                newloop._sweeps.insert(instr);
+                            }
+                        }
+                    }
+                    if (not newloop._block_list.empty()) {
+                        ret.push_back(Block(std::move(newloop)));
+                    }
+                }
+                // Then we place the highly threaded sub-block in its own block
+                if (it != loop._block_list.end()) {
+                    assert(not it->isInstr());
+                    assert(it->getLoop()._sweeps.size() == 0);
+                    LoopB newloop;
+                    newloop.rank = loop.rank;
+                    newloop.size = loop.size;
+                    newloop._block_list.push_back(*it);
+                    {// We need to update news, frees, and sweeps
+                        for (const InstrPtr instr: newloop.getLocalInstr()) {
+                            if (instr->constructor) {
+                                if (not bh_opcode_is_accumulate(
+                                        instr->opcode))// TODO: Support array contraction of accumulated output
+                                    newloop._news.insert(instr->operand[0].base);
+                            }
+                            if (instr->opcode == BH_FREE) {
+                                newloop._frees.insert(instr->operand[0].base);
+                            }
+                        }
+                        for (const InstrPtr instr: loop.getAllInstr()) {
+                            if (instr->sweep_axis() == loop.rank) {
+                                newloop._sweeps.insert(instr);
+                            }
+                        }
+                    }
+                    ret.push_back(Block(std::move(newloop)));
+                } else {
+                    break;
+                }
+            }
+        } else {
+            ret.push_back(block);
+        }
+    }
+    return ret;
+}
+
 } // jitk
 } // bohrium
 

@@ -44,6 +44,10 @@ const LoopB *find_swappable_sub_block(const LoopB &parent);
 // Transpose blocks such that reductions gets as innermost as possible
 std::vector<Block> push_reductions_inwards(const std::vector<Block> &block_list);
 
+// Splits the 'block_list' in order to achieve a minimum amount of threading (if possible)
+std::vector<Block> split_for_threading(const std::vector<Block> &block_list, uint64_t min_threading,
+                                       uint64_t cur_threading=0);
+
 } // jitk
 } // bohrium
 

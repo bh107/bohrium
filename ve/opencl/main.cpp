@@ -449,6 +449,7 @@ void Impl::execute(bh_ir *bhir) {
         // TODO: Instead of always using 1, we could try once with no min threading before setting it to 1.
         fuser_greedy(block_list, 0);
         block_list = push_reductions_inwards(block_list);
+        block_list = split_for_threading(block_list, 1000);
     }
 
     // Pretty printing the block
