@@ -206,7 +206,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             sweep_instr.operand[0] = instr->operand[0];
             // But the output needs an extra dimension when we are reducing to a non-scalar
             if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                sweep_instr.operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
+                sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
             }
             peeled_block.replaceInstr(instr, sweep_instr);
         }

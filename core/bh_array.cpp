@@ -90,7 +90,7 @@ string bh_base::str() const
     return ss.str();
 }
 
-void bh_view::insert_dim(bh_index dim, bh_index size, bh_index stride) {
+void bh_view::insert_axis(bh_index dim, bh_index size, bh_index stride) {
     assert(dim <= ndim);
     if (dim == ndim) { // Appending
         this->shape[dim] = size;
@@ -108,6 +108,16 @@ void bh_view::insert_dim(bh_index dim, bh_index size, bh_index stride) {
         }
     }
     ++ndim;
+}
+
+void bh_view::remove_axis(bh_index dim) {
+    assert(1 < ndim);
+    assert(dim < ndim);
+    for (bh_index i=dim; i < ndim-1; ++i) {
+        shape[i] = shape[i+1];
+        stride[i] = stride[i+1];
+    }
+    --ndim;
 }
 
 void bh_view::transpose(int64_t axis1, int64_t axis2) {

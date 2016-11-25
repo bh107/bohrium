@@ -118,7 +118,10 @@ struct bh_view
 
     // Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
     // NB: 0 <= 'dim' <= ndim
-    void insert_dim(bh_index dim, bh_index size, bh_index stride);
+    void insert_axis(bh_index dim, bh_index size, bh_index stride);
+
+    // Remove the axis 'dim'
+    void remove_axis(bh_index dim);
 
     // Transposes by swapping the two axises 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
