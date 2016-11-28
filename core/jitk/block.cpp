@@ -97,19 +97,8 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
     } else { // No more dimensions -- let's write the instruction block
         assert(max_ndim == rank + 1);
         block._block_list.emplace_back(*instr, rank + 1);
-
-        // Since 'instr' execute at this 'rank' level, we can calculate news, frees, and temps.
-        if (instr->constructor) {
-            if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
-                block._news.insert(instr->operand[0].base);
-        }
-        if (instr->opcode == BH_FREE) {
-            block._frees.insert(instr->operand[0].base);
-        }
     }
-    if (instr->sweep_axis() == rank) {
-        block._sweeps.insert(instr);
-    }
+    block.metadata_update();
 }
 
 } // Anonymous name space
@@ -393,6 +382,27 @@ string LoopB::pprint(const char *newline) const {
     return ss.str();
 }
 
+void LoopB::metadata_update() {
+    _news.clear();
+    _frees.clear();
+    _sweeps.clear();
+    for (const InstrPtr instr: getLocalInstr()) {
+        if (instr->constructor) {
+            if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
+                _news.insert(instr->operand[0].base);
+        }
+        if (instr->opcode == BH_FREE) {
+            _frees.insert(instr->operand[0].base);
+        }
+    }
+    for (const InstrPtr instr: getAllInstr()) {
+        if (instr->sweep_axis() == rank) {
+            _sweeps.insert(instr);
+        }
+    }
+    _reshapable = is_reshapeable(getAllInstr());
+}
+
 
 // *** Block Methods *** //
 
@@ -458,12 +468,11 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
 
     // Let's build the nested block from the 'rank' level to the instruction block
     LoopB ret;
+    ret.rank = rank;
+    ret.size = size_of_rank_dim;
     for (InstrPtr instr: instr_list) {
         add_instr_to_block(ret, instr, rank, size_of_rank_dim);
     }
-    ret.rank = rank;
-    ret.size = size_of_rank_dim;
-    ret._reshapable = is_reshapeable(ret.getAllInstr());
     assert(ret.validation());
     return Block(std::move(ret));
 }

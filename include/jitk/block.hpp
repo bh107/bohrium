@@ -142,6 +142,9 @@ public:
     // Pretty print this block
     std::string pprint(const char *newline="\n") const;
 
+    // Updates the metadata such as the sets of sweeps, news, frees etc.
+    void metadata_update();
+
     // Equality test based on the unique ID
     bool operator==(const LoopB &loop_block) const {
         return this->_id == loop_block._id;

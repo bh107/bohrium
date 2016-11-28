@@ -48,22 +48,7 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
             const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
             loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
         }
-        {// We need to update news, frees, and sweeps
-            for (const InstrPtr instr: loop.getLocalInstr()) {
-                if (instr->constructor) {
-                    if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
-                        loop._news.insert(instr->operand[0].base);
-                }
-                if (instr->opcode == BH_FREE) {
-                    loop._frees.insert(instr->operand[0].base);
-                }
-            }
-            for (const InstrPtr instr: loop.getAllInstr()) {
-                if (instr->sweep_axis() == loop.rank) {
-                    loop._sweeps.insert(instr);
-                }
-            }
-        }
+        loop.metadata_update();
         ret.push_back(Block(std::move(loop)));
     }
     return ret;
@@ -140,23 +125,7 @@ vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_
                         newloop._block_list.push_back(*it);
                         ++it;
                     }
-                    {// We need to update news, frees, and sweeps
-                        for (const InstrPtr instr: newloop.getLocalInstr()) {
-                            if (instr->constructor) {
-                                if (not bh_opcode_is_accumulate(
-                                        instr->opcode))// TODO: Support array contraction of accumulated output
-                                    newloop._news.insert(instr->operand[0].base);
-                            }
-                            if (instr->opcode == BH_FREE) {
-                                newloop._frees.insert(instr->operand[0].base);
-                            }
-                        }
-                        for (const InstrPtr instr: loop.getAllInstr()) {
-                            if (instr->sweep_axis() == loop.rank) {
-                                newloop._sweeps.insert(instr);
-                            }
-                        }
-                    }
+                    newloop.metadata_update();
                     if (not newloop._block_list.empty()) {
                         ret.push_back(Block(std::move(newloop)));
                     }
@@ -169,23 +138,7 @@ vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_
                     newloop.rank = loop.rank;
                     newloop.size = loop.size;
                     newloop._block_list.push_back(*it);
-                    {// We need to update news, frees, and sweeps
-                        for (const InstrPtr instr: newloop.getLocalInstr()) {
-                            if (instr->constructor) {
-                                if (not bh_opcode_is_accumulate(
-                                        instr->opcode))// TODO: Support array contraction of accumulated output
-                                    newloop._news.insert(instr->operand[0].base);
-                            }
-                            if (instr->opcode == BH_FREE) {
-                                newloop._frees.insert(instr->operand[0].base);
-                            }
-                        }
-                        for (const InstrPtr instr: loop.getAllInstr()) {
-                            if (instr->sweep_axis() == loop.rank) {
-                                newloop._sweeps.insert(instr);
-                            }
-                        }
-                    }
+                    newloop.metadata_update();
                     ret.push_back(Block(std::move(newloop)));
                 } else {
                     break;
