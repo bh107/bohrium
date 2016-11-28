@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-// Swap the two axises, 'axis1' and 'axis2', in all instructions in 'instr_list'
+// Swap the two axes, 'axis1' and 'axis2', in all instructions in 'instr_list'
 std::vector<InstrPtr> swap_axis(const std::vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2);
 
 // Swap the 'parent' block with its 'child' block.

@@ -70,7 +70,7 @@ struct bh_instruction
     // the axis value when handling reductions automatically
     void remove_axis(int64_t axis);
 
-    // Transposes by swapping the two axises 'axis1' and 'axis2'
+    // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
     // Returns the type of the operand at given index (support constants)

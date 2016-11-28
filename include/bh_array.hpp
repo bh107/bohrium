@@ -123,7 +123,7 @@ struct bh_view
     // Remove the axis 'dim'
     void remove_axis(bh_index dim);
 
-    // Transposes by swapping the two axises 'axis1' and 'axis2'
+    // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
     bool operator<(const bh_view& other) const

@@ -202,7 +202,7 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
         }
         // Swapping a reduction means we might have to correct 'axis1' or 'axis2'
         if (bh_opcode_is_reduction(opcode)) {
-            // But if we are reducing one of the swapped axises, the output shouldn't be transposed at all
+            // But if we are reducing one of the swapped axes, the output shouldn't be transposed at all
             if (sa != axis1 and sa != axis2) {
                 const int64_t t1 = sa<axis1?axis1-1:axis1;
                 const int64_t t2 = sa<axis2?axis2-1:axis2;
