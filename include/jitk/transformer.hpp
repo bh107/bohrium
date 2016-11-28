@@ -48,6 +48,9 @@ std::vector<Block> push_reductions_inwards(const std::vector<Block> &block_list)
 std::vector<Block> split_for_threading(const std::vector<Block> &block_list, uint64_t min_threading,
                                        uint64_t cur_threading=0);
 
+// Collapses redundant axes within the 'block_list'
+std::vector<Block> collapse_redundant_axes(const std::vector<Block> &block_list);
+
 } // jitk
 } // bohrium
 

@@ -31,6 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/instruction.hpp>
 #include <jitk/type.hpp>
 #include <jitk/graph.hpp>
+#include <jitk/transformer.hpp>
 
 #include "store.hpp"
 
@@ -487,6 +488,7 @@ void Impl::execute(bh_ir *bhir) {
     } else {
     //  fuser_reshapable_first(block_list);
         fuser_greedy(block_list);
+        block_list = collapse_redundant_axes(block_list);
     }
     remove_empty_blocks(block_list);
 

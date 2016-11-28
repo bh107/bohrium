@@ -450,6 +450,7 @@ void Impl::execute(bh_ir *bhir) {
         fuser_greedy(block_list, 0);
         block_list = push_reductions_inwards(block_list);
         block_list = split_for_threading(block_list, 1000);
+        block_list = collapse_redundant_axes(block_list);
     }
 
     // Pretty printing the block
