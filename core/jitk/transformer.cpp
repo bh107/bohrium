@@ -125,8 +125,8 @@ vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_
                         newloop._block_list.push_back(*it);
                         ++it;
                     }
-                    newloop.metadata_update();
                     if (not newloop._block_list.empty()) {
+                        newloop.metadata_update();
                         ret.push_back(Block(std::move(newloop)));
                     }
                 }
