@@ -85,7 +85,7 @@ void spaces(stringstream &out, int num) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
-        cout << "[UNI-VE] Profiling: " << endl;
+        cout << "[VE-OPENMP] Profiling: " << endl;
         cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
                                           << "/" << _store.num_lookups << endl;
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
