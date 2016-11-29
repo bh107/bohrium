@@ -82,6 +82,25 @@ public:
         queue.finish();
     }
 
+    // Copy 'bases' to the device (ignoring bases that is already on the device)
+    template <typename T>
+    void copyToDevice(T &bases, cl::CommandQueue &queue) {
+        for(bh_base *base: bases) {
+            if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+                cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+                buffers[base].reset(b);
+
+                // If the host data is non-null we should copy it to the device
+                if (base->data != NULL) {
+                    if (verbose) {
+                        std::cout << "Copy to device: " << *base << std::endl;
+                    }
+                    queue.enqueueWriteBuffer(*b, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                }
+            }
+        }
+    }
+
 };
 
 

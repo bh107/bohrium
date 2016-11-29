@@ -477,21 +477,7 @@ void Impl::execute(bh_ir *bhir) {
         if (kernel_is_computing) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
-            for(bh_base *base: kernel.getNonTemps()) {
-                if (engine.buffers.find(base) == engine.buffers.end()) { // We shouldn't overwrite existing buffers
-                    cl::Buffer *b = new cl::Buffer(engine.context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                    engine.buffers[base].reset(b);
-
-                    // If the host data is non-null we should copy it to the device
-                    if (base->data != NULL) {
-                        if (verbose) {
-                            cout << "Copy to device: " << *base << endl;
-                        }
-                        queue.enqueueWriteBuffer(*b, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
-                    }
-                }
-            }
-            queue.finish();
+            engine.copyToDevice(kernel.getNonTemps(), queue);
 
             if (config.defaultGet<bool>("prof", false)) {
                 // Let's check the current memory usage on the device
