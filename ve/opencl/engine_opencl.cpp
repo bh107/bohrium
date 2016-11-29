@@ -30,7 +30,7 @@ using namespace std;
 
 namespace bohrium {
 
-//static boost::hash<string> hasher;
+static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config) :
                                 compile_flg(config.defaultGet<string>("compiler_flg", "")),
@@ -98,18 +98,29 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
 
 void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel,
                            const vector<const jitk::LoopB*> &threaded_blocks) {
+    size_t hash = hasher(source);
+    ++num_lookups;
+    cl::Program program;
 
-    cl::Program program(context, source);
-    try {
-        program.build({default_device}, compile_flg.c_str());
-        if (verbose) {
-            cout << "************ Build Log ************" << endl \
+    // Do we have the program already?
+    if (_programs.find(hash) != _programs.end()) {
+        program = _programs.at(hash);
+    } else {
+        // Or do we have to compile it
+        ++num_lookup_misses;
+        program = cl::Program(context, source);
+        try {
+            program.build({default_device}, compile_flg.c_str());
+            if (verbose) {
+                cout << "************ Build Log ************" << endl \
                  << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) \
                  << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
+            }
+        } catch (cl::Error e) {
+            cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
+            throw;
         }
-    } catch (cl::Error e) {
-        cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
-        throw;
+        _programs[hash] = program;
     }
 
     // Let's execute the OpenCL kernel

@@ -60,9 +60,9 @@ class Impl : public ComponentImplWithChild {
     chrono::duration<double> time_exec{0};
     chrono::duration<double> time_build{0};
     chrono::duration<double> time_offload{0};
-
+    // The OpenCL engine
     EngineOpenCL engine;
-
+    // Write an OpenCL kernel
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
                       stringstream &ss);
 

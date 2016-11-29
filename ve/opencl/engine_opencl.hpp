@@ -32,13 +32,13 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 
 class EngineOpenCL {
-public:
+private:
+    // Map of all compiled OpenCL programs
+    std::map<uint64_t, cl::Program> _programs;
     // The OpenCL context, device, adn queue used throughout the execution
     cl::Context context;
     cl::Device default_device;
     cl::CommandQueue queue;
-    // A map of allocated buffers on the device
-    std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers;
     // OpenCL work group sizes
     cl_ulong work_group_size_1dx = 128;
     cl_ulong work_group_size_2dx = 32;
@@ -52,6 +52,9 @@ public:
     const bool verbose;
     // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
+public:
+    // A map of allocated buffers on the device
+    std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers; //TODO; privatize
 public:
     EngineOpenCL(const ConfigParser &config);
 
