@@ -58,9 +58,29 @@ public:
     int64_t num_lookups = 0;
     int64_t num_lookup_misses = 0;
 
+    // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
                  cl::CommandQueue &queue);
+
+    // Copy 'bases' to the host (ignoring bases that isn't on the device)
+    template <typename T>
+    void copyToHost(T &bases, cl::CommandQueue &queue) {
+        // Let's copy sync'ed arrays back to the host
+        for(bh_base *base: bases) {
+            if (buffers.find(base) != buffers.end()) {
+                bh_data_malloc(base);
+                if (verbose) {
+                    std::cout << "Copy to host: " << *base << std::endl;
+                }
+                queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                // When syncing we assume that the host writes to the data and invalidate the device data thus
+                // we have to remove its data buffer
+                buffers.erase(base);
+            }
+        }
+        queue.finish();
+    }
 
 };
 

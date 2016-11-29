@@ -455,22 +455,10 @@ void Impl::execute(bh_ir *bhir) {
             auto toffload = chrono::steady_clock::now();
 
             // Let's copy all non-temporary to the host
-            for (bh_base *base: kernel.getNonTemps()) {
-                if (engine.buffers.find(base) != engine.buffers.end()) {
-                    bh_data_malloc(base);
-                    if (verbose) {
-                        cout << "Copy to host: " << *base << endl;
-                    }
-                    queue.enqueueReadBuffer(*engine.buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
-                }
-            }
-            queue.finish();
+            engine.copyToHost(kernel.getNonTemps(), queue);
 
             // Let's free device buffers
             for (bh_base *base: kernel.getFrees()) {
-                engine.buffers.erase(base);
-            }
-            for (bh_base *base: kernel.getNonTemps()) {
                 engine.buffers.erase(base);
             }
 
@@ -530,19 +518,7 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         // Let's copy sync'ed arrays back to the host
-        for(bh_base *base: kernel.getSyncs()) {
-            if (engine.buffers.find(base) != engine.buffers.end()) {
-                bh_data_malloc(base);
-                if (verbose) {
-                    cout << "Copy to host: " << *base << endl;
-                }
-                queue.enqueueReadBuffer(*engine.buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
-                // When syncing we assume that the host writes to the data and invalidate the device data thus
-                // we have to remove its data buffer
-                engine.buffers.erase(base);
-            }
-        }
-        queue.finish();
+        engine.copyToHost(kernel.getSyncs(), queue);
 
         // Let's free device buffers
         const auto &kernel_frees = kernel.getFrees();
