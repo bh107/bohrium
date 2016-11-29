@@ -37,7 +37,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "engine_opencl.hpp"
 #include "opencl_type.hpp"
-#include "cl.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -101,6 +100,8 @@ Impl::~Impl() {
         cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
         cout << "\tWork below par-threshold(1000): " \
              << threading_below_threshold / (double)totalwork * 100 << "%" << endl;
+        cout << "\tKernel store hits:   " << engine.num_lookups - engine.num_lookup_misses \
+                                          << "/" << engine.num_lookups << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion:  " << time_fusion.count() << "s" << endl;
         cout << "\t  Build:   " << time_build.count() << "s" << endl;
