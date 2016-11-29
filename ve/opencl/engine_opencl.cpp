@@ -54,6 +54,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config) :
 
     vector<cl::Device> dev_list = {default_device};
     context = cl::Context(dev_list);
+    queue = cl::CommandQueue(context, default_device);
 }
 
 
@@ -96,7 +97,7 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
 }
 
 void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel,
-                           const vector<const jitk::LoopB*> &threaded_blocks, cl::CommandQueue &queue) {
+                           const vector<const jitk::LoopB*> &threaded_blocks) {
 
     cl::Program program(context, source);
     try {

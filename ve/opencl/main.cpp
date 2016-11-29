@@ -333,8 +333,6 @@ void Impl::execute(bh_ir *bhir) {
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
 
-    cl::CommandQueue queue(engine.context, engine.default_device);
-
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
     {
@@ -343,19 +341,7 @@ void Impl::execute(bh_ir *bhir) {
         instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
 
         // Let's copy sync'ed arrays back to the host
-        for(bh_base *base: syncs) {
-            if (engine.buffers.find(base) != engine.buffers.end()) {
-                bh_data_malloc(base);
-                if (verbose) {
-                    cout << "Copy to host: " << *base << endl;
-                }
-                queue.enqueueReadBuffer(*engine.buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
-                // When syncing we assume that the host writes to the data and invalidate the device data thus
-                // we have to remove its data buffer
-                engine.buffers.erase(base);
-            }
-        }
-        queue.finish();
+        engine.copyToHost(syncs);
 
         // Let's free device buffers
         for(bh_base *base: frees) {
@@ -455,7 +441,7 @@ void Impl::execute(bh_ir *bhir) {
             auto toffload = chrono::steady_clock::now();
 
             // Let's copy all non-temporary to the host
-            engine.copyToHost(kernel.getNonTemps(), queue);
+            engine.copyToHost(kernel.getNonTemps());
 
             // Let's free device buffers
             for (bh_base *base: kernel.getFrees()) {
@@ -477,7 +463,7 @@ void Impl::execute(bh_ir *bhir) {
         if (kernel_is_computing) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
-            engine.copyToDevice(kernel.getNonTemps(), queue);
+            engine.copyToDevice(kernel.getNonTemps());
 
             if (config.defaultGet<bool>("prof", false)) {
                 // Let's check the current memory usage on the device
@@ -499,12 +485,12 @@ void Impl::execute(bh_ir *bhir) {
 
             auto tkernel_exec = chrono::steady_clock::now();
             // Let's execute the OpenCL kernel
-            engine.execute(ss.str(), kernel, threaded_blocks, queue);
+            engine.execute(ss.str(), kernel, threaded_blocks);
             time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
 
         // Let's copy sync'ed arrays back to the host
-        engine.copyToHost(kernel.getSyncs(), queue);
+        engine.copyToHost(kernel.getSyncs());
 
         // Let's free device buffers
         const auto &kernel_frees = kernel.getFrees();

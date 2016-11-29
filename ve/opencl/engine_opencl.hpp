@@ -33,9 +33,10 @@ namespace bohrium {
 
 class EngineOpenCL {
 public:
-    // The OpenCL context and device used throughout the execution
+    // The OpenCL context, device, adn queue used throughout the execution
     cl::Context context;
     cl::Device default_device;
+    cl::CommandQueue queue;
     // A map of allocated buffers on the device
     std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers;
     // OpenCL work group sizes
@@ -60,12 +61,11 @@ public:
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
-                 const std::vector<const jitk::LoopB*> &threaded_blocks,
-                 cl::CommandQueue &queue);
+                 const std::vector<const jitk::LoopB*> &threaded_blocks);
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>
-    void copyToHost(T &bases, cl::CommandQueue &queue) {
+    void copyToHost(T &bases) {
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: bases) {
             if (buffers.find(base) != buffers.end()) {
@@ -84,7 +84,7 @@ public:
 
     // Copy 'bases' to the device (ignoring bases that is already on the device)
     template <typename T>
-    void copyToDevice(T &bases, cl::CommandQueue &queue) {
+    void copyToDevice(T &bases) {
         for(bh_base *base: bases) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
                 cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
