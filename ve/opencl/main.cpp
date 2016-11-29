@@ -35,6 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/graph.hpp>
 #include <jitk/transformer.hpp>
 
+#include "engine_opencl.hpp"
 #include "opencl_type.hpp"
 #include "cl.hpp"
 
@@ -60,38 +61,13 @@ class Impl : public ComponentImplWithChild {
     chrono::duration<double> time_build{0};
     chrono::duration<double> time_offload{0};
 
-    // The OpenCL context and device used throughout the execution
-    cl::Context context;
-    cl::Device default_device;
-    // A map of allocated buffers on the device
-    map<bh_base*, unique_ptr<cl::Buffer> > buffers;
-    
+    EngineOpenCL engine;
+
     void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
                       stringstream &ss);
 
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level) {
-
-        vector<cl::Platform> platforms;
-        cl::Platform::get(&platforms);
-        if(platforms.size() == 0) {
-            throw runtime_error("No OpenCL platforms found");
-        }
-        cl::Platform default_platform=platforms[0];
-        cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
-
-        //get default device of the default platform
-        vector<cl::Device> devices;
-        default_platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-        if(devices.size()==0){
-            throw runtime_error("No OpenCL device found");
-        }
-        default_device = devices[0];
-        cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << endl;
-
-        vector<cl::Device> dev_list = {default_device};
-        context = cl::Context(dev_list);
-    }
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), engine(config) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -352,51 +328,12 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
     }
 }
 
-// Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
-pair<cl::NDRange, cl::NDRange> NDRanges(const vector<const LoopB*> &threaded_blocks, const ConfigParser &config) {
-    const auto &b = threaded_blocks;
-    switch (b.size()) {
-        case 1:
-        {
-            const cl_ulong lsize = config.defaultGet<cl_ulong>("work_group_size_1dx", 128);
-            const cl_ulong rem = b[0]->size % lsize;
-            const cl_ulong gsize = b[0]->size + (rem==0?0:(lsize-rem));
-            return make_pair(cl::NDRange(gsize), cl::NDRange(lsize));
-        }
-        case 2:
-        {
-            const cl_ulong lsize_x = config.defaultGet<cl_ulong>("work_group_size_2dx", 32);
-            const cl_ulong lsize_y = config.defaultGet<cl_ulong>("work_group_size_2dy", 4);
-            const cl_ulong rem_x = b[0]->size % lsize_x;
-            const cl_ulong rem_y = b[1]->size % lsize_y;
-            const cl_ulong gsize_x = b[0]->size + (rem_x==0?0:(lsize_x-rem_x));
-            const cl_ulong gsize_y = b[1]->size + (rem_y==0?0:(lsize_y-rem_y));
-            return make_pair(cl::NDRange(gsize_x, gsize_y), cl::NDRange(lsize_x, lsize_y));
-        }
-        case 3:
-        {
-            const cl_ulong lsize_x = config.defaultGet<cl_ulong>("work_group_size_3dx", 32);
-            const cl_ulong lsize_y = config.defaultGet<cl_ulong>("work_group_size_3dy", 2);
-            const cl_ulong lsize_z = config.defaultGet<cl_ulong>("work_group_size_3dz", 2);
-            const cl_ulong rem_x = b[0]->size % lsize_x;
-            const cl_ulong rem_y = b[1]->size % lsize_y;
-            const cl_ulong rem_z = b[2]->size % lsize_z;
-            const cl_ulong gsize_x = b[0]->size + (rem_x==0?0:(lsize_x-rem_x));
-            const cl_ulong gsize_y = b[1]->size + (rem_y==0?0:(lsize_y-rem_y));
-            const cl_ulong gsize_z = b[2]->size + (rem_z==0?0:(lsize_z-rem_z));
-            return make_pair(cl::NDRange(gsize_x, gsize_y, gsize_z), cl::NDRange(lsize_x, lsize_y, lsize_z));
-        }
-        default:
-            throw runtime_error("NDRanges: maximum of three dimensions!");
-    }
-}
-
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
 
-    cl::CommandQueue queue(context, default_device);
+    cl::CommandQueue queue(engine.context, engine.default_device);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
@@ -407,22 +344,22 @@ void Impl::execute(bh_ir *bhir) {
 
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: syncs) {
-            if (buffers.find(base) != buffers.end()) {
+            if (engine.buffers.find(base) != engine.buffers.end()) {
                 bh_data_malloc(base);
                 if (verbose) {
                     cout << "Copy to host: " << *base << endl;
                 }
-                queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                queue.enqueueReadBuffer(*engine.buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
-                buffers.erase(base);
+                engine.buffers.erase(base);
             }
         }
         queue.finish();
 
         // Let's free device buffers
         for(bh_base *base: frees) {
-            buffers.erase(base);
+            engine.buffers.erase(base);
         }
     }
 
@@ -437,7 +374,7 @@ void Impl::execute(bh_ir *bhir) {
     auto tfusion = chrono::steady_clock::now();
 
     // Set the constructor flag
-    set_constructor_flag(instr_list, buffers);
+    set_constructor_flag(instr_list, engine.buffers);
 
     // Let's fuse the 'instr_list' into blocks
     vector<Block> block_list = fuser_singleton(instr_list);
@@ -519,22 +456,22 @@ void Impl::execute(bh_ir *bhir) {
 
             // Let's copy all non-temporary to the host
             for (bh_base *base: kernel.getNonTemps()) {
-                if (buffers.find(base) != buffers.end()) {
+                if (engine.buffers.find(base) != engine.buffers.end()) {
                     bh_data_malloc(base);
                     if (verbose) {
                         cout << "Copy to host: " << *base << endl;
                     }
-                    queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
+                    queue.enqueueReadBuffer(*engine.buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
                 }
             }
             queue.finish();
 
             // Let's free device buffers
             for (bh_base *base: kernel.getFrees()) {
-                buffers.erase(base);
+                engine.buffers.erase(base);
             }
             for (bh_base *base: kernel.getNonTemps()) {
-                buffers.erase(base);
+                engine.buffers.erase(base);
             }
 
             // Let's send the kernel instructions to our child
@@ -551,36 +488,11 @@ void Impl::execute(bh_ir *bhir) {
         // Let's execute the kernel
         if (kernel_is_computing) {
 
-            // Code generation
-            stringstream ss;
-            write_kernel(kernel, base_ids, threaded_blocks, ss);
-
-            if (verbose) {
-                cout << endl << "************ GPU Kernel ************" << endl << ss.str()
-                             << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
-            }
-
-            auto tkernel_build = chrono::steady_clock::now();
-            cl::Program program(context, ss.str());
-            const string compile_inc = config.defaultGet<string>("compiler_flg", "");
-            try {
-                program.build({default_device}, compile_inc.c_str());
-                if (verbose) {
-                    cout << "************ Build Log ************" << endl \
-                         << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) \
-                         << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
-                }
-            } catch (cl::Error e) {
-                cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
-                throw;
-            }
-            time_build += chrono::steady_clock::now() - tkernel_build;
-
             // We need a memory buffer on the device for each non-temporary array in the kernel
             for(bh_base *base: kernel.getNonTemps()) {
-                if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                    cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                    buffers[base].reset(b);
+                if (engine.buffers.find(base) == engine.buffers.end()) { // We shouldn't overwrite existing buffers
+                    cl::Buffer *b = new cl::Buffer(engine.context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+                    engine.buffers[base].reset(b);
 
                     // If the host data is non-null we should copy it to the device
                     if (base->data != NULL) {
@@ -596,38 +508,38 @@ void Impl::execute(bh_ir *bhir) {
             if (config.defaultGet<bool>("prof", false)) {
                 // Let's check the current memory usage on the device
                 uint64_t sum = 0;
-                for (const auto &b: buffers) {
+                for (const auto &b: engine.buffers) {
                     sum += bh_base_size(b.first);
                 }
                 max_memory_usage = sum > max_memory_usage?sum:max_memory_usage;
             }
 
+            // Code generation
+            stringstream ss;
+            write_kernel(kernel, base_ids, threaded_blocks, ss);
+
+            if (verbose) {
+                cout << endl << "************ GPU Kernel ************" << endl << ss.str()
+                     << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
+            }
+
             auto tkernel_exec = chrono::steady_clock::now();
             // Let's execute the OpenCL kernel
-            cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
-            {
-                cl_uint i = 0;
-                for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
-                    opencl_kernel.setArg(i++, *buffers.at(base));
-                }
-            }
-            const auto ranges = NDRanges(threaded_blocks, config);
-            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
-            queue.finish();
+            engine.execute(ss.str(), kernel, threaded_blocks, queue);
             time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
 
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: kernel.getSyncs()) {
-            if (buffers.find(base) != buffers.end()) {
+            if (engine.buffers.find(base) != engine.buffers.end()) {
                 bh_data_malloc(base);
                 if (verbose) {
                     cout << "Copy to host: " << *base << endl;
                 }
-                queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                queue.enqueueReadBuffer(*engine.buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
-                buffers.erase(base);
+                engine.buffers.erase(base);
             }
         }
         queue.finish();
@@ -635,7 +547,7 @@ void Impl::execute(bh_ir *bhir) {
         // Let's free device buffers
         const auto &kernel_frees = kernel.getFrees();
         for(bh_base *base: kernel.getFrees()) {
-            buffers.erase(base);
+            engine.buffers.erase(base);
         }
 
         // Finally, let's cleanup
