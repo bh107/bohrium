@@ -45,7 +45,6 @@ public:
 };
 
 
-
 } // jit
 } // bohrium
 

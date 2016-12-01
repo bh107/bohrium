@@ -31,44 +31,46 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-static boost::hash<string> hasher;
-static const size_t SEP_INSTR = SIZE_MAX;
-static const size_t SEP_OP    = SIZE_MAX-1;
-static const size_t SEP_BLOCK = SIZE_MAX-2;
-static const size_t SEP_SHAPE = SIZE_MAX-3;
+namespace {
 
-void hash_view(const bh_view &view, seqset<bh_view> &views, std::stringstream& ss) {
+constexpr boost::hash<string> hasher;
+constexpr size_t SEP_INSTR = SIZE_MAX;
+constexpr size_t SEP_OP = SIZE_MAX - 1;
+constexpr size_t SEP_BLOCK = SIZE_MAX - 2;
+constexpr size_t SEP_SHAPE = SIZE_MAX - 3;
+
+/* The Instruction hash consists of the following fields:
+ * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
+ */
+void hash_view(const bh_view &view, seqset<bh_view> &views, std::stringstream &ss) {
     if (not bh_is_constant(&view)) {
         size_t view_id = views.insert(view).first;
-        ss << " v" << view_id;
-        ss << " s" << view.start;
-        ss << " nd" << view.ndim << "(";
-        for (int j=0; j<view.ndim; ++j) {
+        ss << view_id;
+        ss << view.start;
+        ss << view.ndim;
+        for (int j = 0; j < view.ndim; ++j) {
             ss << view.shape[j];
             ss << view.stride[j];
             ss << SEP_SHAPE;
         }
-        ss << ")";
+        ss << SEP_OP;
     }
 }
 
 /* The Instruction hash consists of the following fields:
- * <opcode> (<operand-id> <ndim> <shape> <SEP_OP>)[1] <sweep-dim>[2] <SEP_INSTR>
- * <opcode> (<operand-id><SEP_OP>)[1] <sweep-dim>[2] <SEP_INSTR>
- * 1: for each operand
- * 2: if the operation is a sweep operation or BH_MAXDIM
+ * <opcode[<hash_view>...]<sweep_axis()><SEP_INSTR>
  */
-void hash_instr(const bh_instruction& instr, seqset<bh_view> &views, std::stringstream& ss) {
+void hash_instr(const bh_instruction &instr, seqset<bh_view> &views, std::stringstream &ss) {
     ss << instr.opcode; // <opcode>
     const int nop = bh_noperands(instr.opcode);
-    for(int i=0; i<nop; ++i) {
+    for (int i = 0; i < nop; ++i) {
         hash_view(instr.operand[i], views, ss);
-        ss << " SEP_OP ";
     }
     ss << instr.sweep_axis();
-    ss << " SEP_INSTR ";
+    ss << SEP_INSTR;
 }
 
+// Hash of an instruction list
 size_t hash_instr_list(const vector<bh_instruction *> &instr_list) {
     stringstream ss;
     seqset<bh_view> views;
@@ -78,30 +80,15 @@ size_t hash_instr_list(const vector<bh_instruction *> &instr_list) {
     return hasher(ss.str());
 }
 
-/*
-void hash_block(const Block &block, seqset<bh_view> &views, std::stringstream& ss) {
-    if (block.isInstr()) {
-        hash_instr(*block.getInstr(), views, ss);
-    } else {
-        map<const bh_instruction, size_t> instr_map;
-        for (const InstrPtr instr: block.getAllInstr())
-        for (const Block &b: block.getLoop()._block_list) {
-            hash_block(b, views, ss);
-        }
-        ss << SEP_BLOCK;
-    }
-}
-*/
-
-static void updateWithOrigin(bh_view &view, const bh_view &origin) {
+void updateWithOrigin(bh_view &view, const bh_view &origin) {
     view.base = origin.base;
 }
 
-static void updateWithOrigin(bh_instruction &instr, const bh_instruction *origin) {
+void updateWithOrigin(bh_instruction &instr, const bh_instruction *origin) {
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
     int nop = bh_noperands(instr.opcode);
-    for(int i=0; i<nop; ++i) {
+    for (int i = 0; i < nop; ++i) {
         if (bh_is_constant(&instr.operand[i]) and not bh_opcode_is_sweep(instr.opcode)) {
             // NB: sweeped axis values shouldn't be updated
             instr.constant = origin->constant;
@@ -111,7 +98,7 @@ static void updateWithOrigin(bh_instruction &instr, const bh_instruction *origin
     }
 }
 
-static void updateWithOrigin(Block &block, const map<int64_t, const bh_instruction *> &origin_id_to_instr) {
+void updateWithOrigin(Block &block, const map<int64_t, const bh_instruction *> &origin_id_to_instr) {
     if (block.isInstr()) {
         assert(block.getInstr()->origin_id >= 0);
         bh_instruction instr(*block.getInstr());
@@ -126,6 +113,8 @@ static void updateWithOrigin(Block &block, const map<int64_t, const bh_instructi
     }
 }
 
+} // Anon namespace
+
 pair<vector<Block>, bool> FuseCache::get(const vector<bh_instruction *> &instr_list) {
     const size_t lookup_hash = hash_instr_list(instr_list);
     ++num_lookups;
@@ -138,32 +127,10 @@ pair<vector<Block>, bool> FuseCache::get(const vector<bh_instruction *> &instr_l
             assert(origin_id_to_instr.find(instr->origin_id) == origin_id_to_instr.end());
             origin_id_to_instr.insert(make_pair(instr->origin_id, instr));
         }
-/*
-        cout << "Instr request:" << endl;
-        for(bh_instruction *instr: instr_list) {
-                cout << "origin: " << instr->origin_id << " " << *instr << endl;
-        }
-
-        cout << "Instr in cache:" << endl;
-        for(Block &block: ret) {
-            for (InstrPtr instr: block.getAllInstr()) {
-                cout << "origin: " << instr->origin_id << " " << *instr << endl;
-            }
-        }
-*/
         // Let's update the cached blocks in 'ret' with the base data from origin
         for(Block &block: ret) {
             updateWithOrigin(block, origin_id_to_instr);
         }
-/*
-        cout << "Instr Returned:" << endl;
-        for(Block &block: ret) {
-            for (InstrPtr instr: block.getAllInstr()) {
-                cout << "origin: " << instr->origin_id << " " << *instr << endl;
-            }
-        }
-        cout << endl << endl;
-*/
         return make_pair(ret, true);
     } else { // Cache miss!
         ++num_lookup_misses;
