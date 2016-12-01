@@ -32,6 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/type.hpp>
 #include <jitk/graph.hpp>
 #include <jitk/transformer.hpp>
+#include <jitk/fuser_cache.hpp>
 
 #include "store.hpp"
 
@@ -43,6 +44,8 @@ using namespace std;
 namespace {
 class Impl : public ComponentImpl {
   private:
+    // Fuse cache
+    FuseCache fcache;
     // Compiled kernels store
     Store _store;
     // Known extension methods
@@ -85,10 +88,15 @@ void spaces(stringstream &out, int num) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
+        const int64_t store_hits = _store.num_lookups - _store.num_lookup_misses;
+        const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
         cout << "[VE-OPENMP] Profiling: " << endl;
-        cout << "\tKernel store hits:   " << _store.num_lookups - _store.num_lookup_misses \
-                                          << "/" << _store.num_lookups << endl;
-        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
+        cout << "\tKernel Store Hits:   " << store_hits << "/" << _store.num_lookups \
+                                          << " (" << 100.0*store_hits/_store.num_lookups << "%)" << endl;
+        cout << "\tFuse Cache hits:     " << fcache_hits << "/" << fcache.num_lookups \
+                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)" << endl;
+        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
+                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)" << endl;
         cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
@@ -481,16 +489,32 @@ void Impl::execute(bh_ir *bhir) {
     // Set the constructor flag
     set_constructor_flag(bhir->instr_list);
 
-    // Let's fuse the 'instr_list' into blocks
-    vector<Block> block_list = fuser_singleton(instr_list);
-    if (config.defaultGet<bool>("serial_fusion", false)) {
-        fuser_serial(block_list);
-    } else {
-    //  fuser_reshapable_first(block_list);
-        fuser_greedy(block_list);
-        block_list = collapse_redundant_axes(block_list);
+    // The cache system
+    vector<Block> block_list;
+    {
+        // Assign origin ids to all instructions starting at zero.
+        int64_t count = 0;
+        for (bh_instruction *instr: instr_list) {
+            instr->origin_id = count++;
+        }
+
+        bool hit;
+        tie(block_list, hit) = fcache.get(instr_list);
+        if (hit) {
+
+        } else {
+            // Let's fuse the 'instr_list' into blocks
+            block_list = fuser_singleton(instr_list);
+            if (config.defaultGet<bool>("serial_fusion", false)) {
+                fuser_serial(block_list, 1);
+            } else {
+                fuser_greedy(block_list);
+                block_list = collapse_redundant_axes(block_list);
+            }
+            remove_empty_blocks(block_list);
+            fcache.insert(instr_list, block_list);
+        }
     }
-    remove_empty_blocks(block_list);
 
     // Pretty printing the block
     if (config.defaultGet<bool>("dump_graph", false)) {
