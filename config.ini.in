@@ -8,8 +8,8 @@
 default    = bcexp_cpu, bccon, topological, node, cpu
 cpu_greedy = bcexp_cpu, bccon, greedy, node, cpu
 gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
-uni        = bcexp_uni, bccon_uni, node, uni
-opencl     = bcexp_uni, bccon_uni, node, opencl, uni
+openmp     = bcexp_openmp, bccon_openmp, node, openmp
+opencl     = bcexp_openmp, bccon_openmp, node, opencl, openmp
 
 #
 # Managers
@@ -85,7 +85,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUF
 #
 # Filters - Bytecode transformers
 #
-[bccon_uni]
+[bccon_openmp]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 collect = true
 stupidmath = true
@@ -93,7 +93,7 @@ muladd = true
 reduction = false
 find_repeats = false
 
-[bcexp_uni]
+[bcexp_openmp]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
 matmul = true
 powk = true
@@ -156,26 +156,26 @@ verbose = false
 #
 # Engines
 #
-[uni]
-impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_uni${CMAKE_SHARED_LIBRARY_SUFFIX}
+[openmp]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_openmp${CMAKE_SHARED_LIBRARY_SUFFIX}
 object_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/object
 source_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/source
 dump_src = true
 verbose = false
 prof = false #Profiling statistics
-compiler_cmd = "${VE_UNI_COMPILER_CMD}"
-compiler_inc = "${VE_UNI_COMPILER_INC}"
-compiler_lib = "${VE_UNI_COMPILER_LIB}"
-compiler_flg = "${VE_UNI_COMPILER_FLG}"
-compiler_openmp = ${_VE_UNI_COMPILER_OPENMP}
-compiler_openmp_simd = ${_VE_UNI_COMPILER_OPENMP_SIMD}
+compiler_cmd = "${VE_OPENMP_COMPILER_CMD}"
+compiler_inc = "${VE_OPENMP_COMPILER_INC}"
+compiler_lib = "${VE_OPENMP_COMPILER_LIB}"
+compiler_flg = "${VE_OPENMP_COMPILER_FLG}"
+compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
+compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 
 [opencl]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
 verbose = false
 prof = false #Profiling statistics
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
-compiler_flg = "${VE_UNI_COMPILER_INC}"
+compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 serial_fusion = false # Topological fusion is default
 
 

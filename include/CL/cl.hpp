@@ -311,6 +311,7 @@ public:
 #define __ERR_STR(x) NULL
 #endif // __CL_ENABLE_EXCEPTIONS
 
+#include <stdio.h>
 
 namespace detail
 {
@@ -320,6 +321,7 @@ static inline cl_int errHandler (
     const char * errStr = NULL)
 {
     if (err != CL_SUCCESS) {
+        printf("Error code: %d\n", err);
         throw Error(err, errStr);
     }
     return err;

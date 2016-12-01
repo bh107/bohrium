@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(VE_UNI true CACHE BOOL "VE-UNI: Build the Universial code generator.")
-if(NOT VE_UNI)
+set(VE_OPENMP true CACHE BOOL "VE-OPENMP: Build the Openmpversial code generator.")
+if(NOT VE_OPENMP)
     return()
 endif()
 
@@ -10,11 +10,11 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 
 file(GLOB SRC *.cpp)
 
-add_library(bh_ve_uni SHARED ${SRC})
+add_library(bh_ve_openmp SHARED ${SRC})
 
-target_link_libraries(bh_ve_uni bh)
+target_link_libraries(bh_ve_openmp bh)
 
-install(TARGETS bh_ve_uni DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+install(TARGETS bh_ve_openmp DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
 
 
 #
@@ -64,49 +64,49 @@ if(APPLE)
     #
     # Fallback on APPLE, this will run but without optimizations and parallelization.
     #
-    set(VE_UNI_COMPILER_INC "")
-    set(VE_UNI_COMPILER_FLG "-x c -dynamiclib -arch i386 -arch x86_64")
-    set(VE_UNI_COMPILER_LIB "-lm -L${VE_UNI_COMPILER_INC}/lib -lbh")
-    set(VE_UNI_COMPILER_EXT "")
+    set(VE_OPENMP_COMPILER_INC "")
+    set(VE_OPENMP_COMPILER_FLG "-x c -dynamiclib -arch i386 -arch x86_64")
+    set(VE_OPENMP_COMPILER_LIB "-lm -L${VE_OPENMP_COMPILER_INC}/lib -lbh")
+    set(VE_OPENMP_COMPILER_EXT "")
 else()
     #
     # Mandatory flags
-    set(VE_UNI_COMPILER_FLG "-x c -fPIC -shared ${C99_FLAG}")
+    set(VE_OPENMP_COMPILER_FLG "-x c -fPIC -shared ${C99_FLAG}")
     #
     # Optimizations
     if (FLAG_03_FOUND)                                                      # Optimization Level
-        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -O3")
+        set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -O3")
     endif()
     if (FLAG_MARCH_NATIVE_FOUND)                                            # Machine specific code
-        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -march=native")
+        set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -march=native")
     endif()
     if (FLAG_WERROR_FOUND)                                                  # Optimization Level
-        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} -Werror")
+        set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -Werror")
     endif()
     #
     # Parallelization
     #
     if(OPENMP_FOUND)
-        set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG} ${OpenMP_C_FLAGS}") # OpenMP
+        set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} ${OpenMP_C_FLAGS}") # OpenMP
     endif()
 endif()
 
-set(VE_UNI_COMPILER_CMD "${CMAKE_C_COMPILER}"       CACHE STRING                "VE_UNI: JIT-Compiler")
-set(VE_UNI_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/share/bohrium/include")
-set(VE_UNI_COMPILER_INC "${VE_UNI_COMPILER_INC}"                  CACHE STRING  "VE_UNI: JIT-Compiler includes")
-set(VE_UNI_COMPILER_LIB "-lm -L${CMAKE_INSTALL_PREFIX}/lib -lbh"  CACHE STRING  "VE_UNI: JIT-Compiler libraries")
-set(VE_UNI_COMPILER_FLG "${VE_UNI_COMPILER_FLG}"                  CACHE STRING  "VE_UNI: JIT-Compiler flags")
-set(VE_UNI_COMPILER_OPENMP       ${OPENMP_FOUND}                  CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP")
-set(VE_UNI_COMPILER_OPENMP_SIMD  ${OPENMP_SIMD_FOUND}             CACHE BOOL    "VE_UNI: JIT-Compiler use OpenMP-SIMD")
+set(VE_OPENMP_COMPILER_CMD "${CMAKE_C_COMPILER}"       CACHE STRING                "VE_OPENMP: JIT-Compiler")
+set(VE_OPENMP_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/share/bohrium/include")
+set(VE_OPENMP_COMPILER_INC "${VE_OPENMP_COMPILER_INC}"                  CACHE STRING  "VE_OPENMP: JIT-Compiler includes")
+set(VE_OPENMP_COMPILER_LIB "-lm -L${CMAKE_INSTALL_PREFIX}/lib -lbh"  CACHE STRING  "VE_OPENMP: JIT-Compiler libraries")
+set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG}"                  CACHE STRING  "VE_OPENMP: JIT-Compiler flags")
+set(VE_OPENMP_COMPILER_OPENMP       ${OPENMP_FOUND}                  CACHE BOOL    "VE_OPENMP: JIT-Compiler use OpenMP")
+set(VE_OPENMP_COMPILER_OPENMP_SIMD  ${OPENMP_SIMD_FOUND}             CACHE BOOL    "VE_OPENMP: JIT-Compiler use OpenMP-SIMD")
 
 # We need to cleanup the variables for the config file
-if(VE_UNI_COMPILER_OPENMP)
-    set(_VE_UNI_COMPILER_OPENMP "true" CACHE INTERNAL "config version")
+if(VE_OPENMP_COMPILER_OPENMP)
+    set(_VE_OPENMP_COMPILER_OPENMP "true" CACHE INTERNAL "config version")
 else()
-    set(_VE_UNI_COMPILER_OPENMP "false" CACHE INTERNAL "config version")
+    set(_VE_OPENMP_COMPILER_OPENMP "false" CACHE INTERNAL "config version")
 endif()
-if(VE_UNI_COMPILER_OPENMP_SIMD)
-    set(_VE_UNI_COMPILER_OPENMP_SIMD "true" CACHE INTERNAL "config version")
+if(VE_OPENMP_COMPILER_OPENMP_SIMD)
+    set(_VE_OPENMP_COMPILER_OPENMP_SIMD "true" CACHE INTERNAL "config version")
 else()
-    set(_VE_UNI_COMPILER_OPENMP_SIMD "false" CACHE INTERNAL "config version")
+    set(_VE_OPENMP_COMPILER_OPENMP_SIMD "false" CACHE INTERNAL "config version")
 endif()

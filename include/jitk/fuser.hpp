@@ -27,22 +27,28 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/block.hpp>
 #include <bh_instruction.hpp>
 
-
 namespace bohrium {
 namespace jitk {
 
 // Creates a block list based on the 'instr_list' where each instruction gets its own nested block
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
 // NB: this function might reshape the instructions in 'instr_list'
-std::vector<Block> fuser_singleton(std::vector<bh_instruction> &instr_list, const std::set<bh_instruction*> &news);
+std::vector<Block> fuser_singleton(const std::vector<bh_instruction *> &instr_list);
 
 // Fuses 'block_list' in a serial naive manner
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-std::vector<Block> fuser_serial(const std::vector<Block> &block_list, const std::set<bh_instruction*> &news);
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_serial(std::vector<Block> &block_list, uint64_t min_threading=0);
 
-// Fuses 'block_list' in a topological breath first manner
-// 'news' is the set of instructions in 'instr_list' that initiates new base arrays
-std::vector<Block> fuser_topological(const std::vector<Block> &block_list, const std::set<bh_instruction*> &news);
+// Fuses 'block_list' in a topological breadth first manner
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_breadth_first(std::vector<Block> &block_list, uint64_t min_threading=0);
+
+// Fuses 'block_list' in a topological manner prioritizing fusion of reshapable blocks
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_reshapable_first(std::vector<Block> &block_list, uint64_t min_threading=0);
+
+// Fuses 'block_list' greedily
+// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
+void fuser_greedy(std::vector<Block> &block_list, uint64_t min_threading=0);
 
 } // jit
 } // bohrium

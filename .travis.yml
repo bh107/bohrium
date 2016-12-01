@@ -18,12 +18,12 @@ env:
 
   matrix:
 
-      # UNI stack
-      - BH_STACK=uni BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      # OPENMP stack
+      - BH_STACK=openmp BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
-      - BH_STACK=uni BH_UNI_SERIAL_FUSION=true BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      - BH_STACK=openmp BH_OPENMP_SERIAL_FUSION=true BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
-      - BH_STACK=opencl BH_UNI_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      - BH_STACK=opencl BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
       # Default stack
       - BH_STACK=default BH_CPU_JIT_LEVEL=3 RUN="python /bohrium/test/python/numpytest.py"

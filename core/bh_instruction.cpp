@@ -30,8 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-set<bh_base*> bh_instruction::get_bases() {
-    set<bh_base*> ret;
+set<const bh_base *> bh_instruction::get_bases() const {
+    set<const bh_base*> ret;
     int nop = bh_noperands(opcode);
     for(int o=0; o<nop; ++o) {
         const bh_view &view = operand[o];
@@ -107,11 +107,20 @@ vector<int64_t> bh_instruction::dominating_shape() const {
     return shape;
 }
 
+int bh_instruction::sweep_axis() const {
+    if (bh_opcode_is_sweep(opcode)) {
+        assert(bh_noperands(opcode) == 3);
+        assert(bh_is_constant(&operand[2]));
+        return static_cast<int>(constant.get_int64());
+    }
+    return BH_MAXDIM;
+}
+
 void bh_instruction::reshape(const vector<int64_t> &shape) {
     if (not reshapable()) {
         throw runtime_error("Reshape: instruction not reshapable!");
     }
-    const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int64_t>());
+    const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), int64_t{1}, std::multiplies<int64_t>());
     int nop = bh_noperands(opcode);
     for(int o=0; o<nop; ++o) {
         bh_view &view = operand[o];
@@ -138,6 +147,72 @@ void bh_instruction::reshape_force(const vector<int64_t> &shape) {
         view.ndim = shape.size();
         copy(shape.begin(), shape.end(), view.shape);
         bh_set_contiguous_stride(&view);
+    }
+}
+
+void bh_instruction::remove_axis(int64_t axis) {
+    assert(0 <= axis and axis < max_ndim());
+    int nop = bh_noperands(opcode);
+    if (nop > 0) {
+        // In the input we can simply remove the axis
+        for(int o=1; o<nop; ++o) {
+            if (not bh_is_constant(&operand[o])) {
+                operand[o].remove_axis(axis);
+            }
+        }
+        // We might have to correct the sweep axis
+        const int sa = sweep_axis();
+        if (sa == axis) {
+            throw runtime_error("remove_axis(): cannot remove an axis that is sweeped");
+        } else if (sa > axis and sa < BH_MAXDIM) {
+            constant.set_double(sa-1);
+        }
+        // In the output, we might have to correct the axis
+        bh_view &view = operand[0];
+        if (bh_opcode_is_reduction(opcode)) {
+            view.remove_axis(sa < axis ? axis - 1 : axis);
+        } else {
+            // Otherwise, we just do the transpose
+            view.remove_axis(axis);
+        }
+    }
+}
+
+void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
+    assert(0 <= axis1 and axis1 < max_ndim());
+    assert(0 <= axis2 and axis2 < max_ndim());
+    assert(axis1 != axis2);
+    int nop = bh_noperands(opcode);
+    if (nop > 0) {
+        // The input we can simply transpose
+        for(int o=1; o<nop; ++o) {
+            bh_view &view = operand[o];
+            if (not bh_is_constant(&view)) {
+                view.transpose(axis1, axis2);
+            }
+        }
+        // In the output, we have to handle sweep operations specially
+        bh_view &view = operand[0];
+        // First, we might have to swap the sweep axis
+        const int sa = sweep_axis();
+        if (sa == axis1) {
+            constant.set_double(axis2);
+        } else if (sa == axis2) {
+            constant.set_double(axis1);
+        }
+        // Swapping a reduction means we might have to correct 'axis1' or 'axis2'
+        if (bh_opcode_is_reduction(opcode)) {
+            // But if we are reducing one of the swapped axes, the output shouldn't be transposed at all
+            if (sa != axis1 and sa != axis2) {
+                const int64_t t1 = sa<axis1?axis1-1:axis1;
+                const int64_t t2 = sa<axis2?axis2-1:axis2;
+                assert(t1 != t2);
+                view.transpose(t1, t2);
+            }
+        } else {
+            // Otherwise, we just do the transpose
+            view.transpose(axis1, axis2);
+        }
     }
 }
 

@@ -18,130 +18,64 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/graphviz.hpp>
-#include <boost/foreach.hpp>
 #include <fstream>
 #include <numeric>
+#include <queue>
+#include <cassert>
 
 #include <jitk/fuser.hpp>
+#include <jitk/graph.hpp>
 
 using namespace std;
 
 namespace bohrium {
 namespace jitk {
 
-// Unnamed namespace for all fuser help functions
-namespace {
 
-// Check if 'a' and 'b' supports data-parallelism when merged
-bool data_parallel_compatible(const bh_instruction *a, const bh_instruction *b)
-{
-    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
-        return true;
-
-    const int a_nop = bh_noperands(a->opcode);
-    for(int i=0; i<a_nop; ++i)
-    {
-        if(not bh_view_disjoint(&b->operand[0], &a->operand[i])
-           && not bh_view_aligned(&b->operand[0], &a->operand[i]))
-            return false;
-    }
-    const int b_nop = bh_noperands(b->opcode);
-    for(int i=0; i<b_nop; ++i)
-    {
-        if(not bh_view_disjoint(&a->operand[0], &b->operand[i])
-           && not bh_view_aligned(&a->operand[0], &b->operand[i]))
-            return false;
-    }
-    return true;
-}
-
-// Check if 'b1' and 'b2' supports data-parallelism when merged
-bool data_parallel_compatible(const Block &b1, const Block &b2) {
-    for (const bh_instruction *i1 : b1.getAllInstr()) {
-        for (const bh_instruction *i2 : b2.getAllInstr()) {
-            if (not data_parallel_compatible(i1, i2))
-                return false;
-        }
-    }
-    return true;
-}
-
-// Check if 'block' accesses the output of a sweep in 'sweeps'
-bool sweeps_accessed_by_block(const set<bh_instruction*> &sweeps, const Block &block) {
-    for (bh_instruction *instr: sweeps) {
-        assert(bh_noperands(instr->opcode) > 0);
-        auto bases = block.getAllBases();
-        if (bases.find(instr->operand[0].base) != bases.end())
-            return true;
-    }
-    return false;
-}
-} // Unnamed namespace
-
-
-vector<Block> fuser_singleton(vector<bh_instruction> &instr_list, const set<bh_instruction*> &news) {
+vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
 
     // Creates the _block_list based on the instr_list
     vector<Block> block_list;
-    for (auto instr=instr_list.begin(); instr != instr_list.end(); ++instr) {
-        int nop = bh_noperands(instr->opcode);
+    for (auto it=instr_list.begin(); it != instr_list.end(); ++it) {
+        bh_instruction instr(**it);
+        const int nop = bh_noperands(instr.opcode);
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
+        // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
+        {
+            const vector<int64_t> dominating_shape = instr.dominating_shape();
+            const int sa = instr.sweep_axis();
+            size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
+            for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
+                if (sa != i and dominating_shape[i] == 1) {
+                    instr.remove_axis(i);
+                    --ndim_left;
+                }
+            }
+        }
+
         // Let's try to simplify the shape of the instruction
-        if (instr->reshapable()) {
-            const vector<int64_t> dominating_shape = instr->dominating_shape();
+        if (instr.reshapable()) {
+            const vector<int64_t> dominating_shape = instr.dominating_shape();
             assert(dominating_shape.size() > 0);
 
-            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), 1, \
+            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
                                                       std::multiplies<int64_t>());
             const vector<int64_t> shape = {totalsize};
-            instr->reshape(shape);
+            instr.reshape(shape);
         }
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr->dominating_shape();
+        const vector<int64_t> dominating_shape = instr.dominating_shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
-        vector<bh_instruction*> single_instr = {&instr[0]};
-        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim, news));
+        vector<InstrPtr> single_instr = {std::make_shared<bh_instruction>(instr)};
+        block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
     }
     return block_list;
 }
 
-// Merges the two blocks 'a' and 'a' (in that order)
-pair<Block, bool> block_merge(const Block &a, const Block &b, const set<bh_instruction*> &news) {
-    assert(a.validation());
-    assert(b.validation());
-
-    // First we check for data incompatibility
-    if (a.isInstr() or b.isInstr() or not data_parallel_compatible(a, b) or sweeps_accessed_by_block(a._sweeps, b)) {
-        return make_pair(Block(), false);
-    }
-    // Check for perfect match, which is directly mergeable
-    if (a.size == b.size) {
-        return make_pair(merge(a, b), true);
-    }
-    // Check fusibility of reshapable blocks
-    if (b._reshapable && b.size % a.size == 0) {
-        vector<bh_instruction *> cur_instr = a.getAllInstr();
-        vector<bh_instruction *> it_instr = b.getAllInstr();
-        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, b.rank, a.size, news), true);
-    }
-    if (a._reshapable && a.size % b.size == 0) {
-        vector<bh_instruction *> cur_instr = a.getAllInstr();
-        vector<bh_instruction *> it_instr = b.getAllInstr();
-        cur_instr.insert(cur_instr.end(), it_instr.begin(), it_instr.end());
-        return make_pair(create_nested_block(cur_instr, a.rank, b.size, news), true);
-    }
-    return make_pair(Block(), false);
-}
-
-vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruction*> &news) {
+void fuser_serial(vector<Block> &block_list, uint64_t min_threading) {
     vector<Block> ret;
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         ret.push_back(*it);
@@ -152,7 +86,7 @@ vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruc
         }
         // Let's search for fusible blocks
         for (; it != block_list.end(); ++it) {
-            const pair<Block, bool> res = block_merge(cur, *it, news);
+            const pair<Block, bool> res = merge_if_possible(cur, *it, min_threading);
             if (res.second) {
                 cur = res.first;
             } else {
@@ -160,204 +94,105 @@ vector<Block> fuser_serial(const vector<Block> &block_list, const set<bh_instruc
             }
         }
         // Let's fuse at the next rank level
-        cur._block_list = fuser_serial(cur._block_list, news);
+        fuser_serial(cur.getLoop()._block_list, 0);
     }
-    return ret;
+    block_list = ret;
 }
 
-namespace dag {
-
-//The type declaration of the boost graphs, vertices and edges.
-typedef boost::adjacency_list<boost::setS, boost::vecS, boost::bidirectionalS, const Block*> DAG;
-typedef typename boost::graph_traits<DAG>::edge_descriptor Edge;
-typedef uint64_t Vertex;
-
-/* Determines whether there exist a path from 'a' to 'b'
- *
- * Complexity: O(E + V)
- *
- * @a               The first vertex
- * @b               The second vertex
- * @dag             The DAG
- * @only_long_path  Only accept path of length greater than one
- * @return          True if there is a path
- */
-bool path_exist(Vertex a, Vertex b, const DAG &dag, bool only_long_path) {
-    using namespace boost;
-
-    struct path_visitor:default_bfs_visitor {
-        const Vertex dst;
-        path_visitor(Vertex b):dst(b){};
-
-        void examine_edge(Edge e, const DAG &g) const {
-            if(target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    struct long_visitor:default_bfs_visitor {
-        const Vertex src, dst;
-        long_visitor(Vertex a, Vertex b):src(a),dst(b){};
-
-        void examine_edge(Edge e, const DAG &g) const
-        {
-            if(source(e,g) != src and target(e,g) == dst)
-                throw runtime_error("");
-        }
-    };
-    try {
-        if(only_long_path)
-            breadth_first_search(dag, a, visitor(long_visitor(a,b)));
-        else
-            breadth_first_search(dag, a, visitor(path_visitor(b)));
+namespace {
+// A FIFO queue, which makes graph::topological() do a breadth first search
+class FifoQueue {
+    queue<graph::Vertex> _queue;
+public:
+    FifoQueue(const graph::DAG &dag) {}
+    void push(graph::Vertex v) {
+        _queue.push(v);
     }
-    catch (const runtime_error &e) {
-        return true;
+    graph::Vertex pop() {
+        assert(not _queue.empty());
+        graph::Vertex ret = _queue.front();
+        _queue.pop();
+        return ret;
     }
-    return false;
-}
-
-// Create a DAG based on the 'block_list'
-DAG from_block_list(const vector<Block> &block_list) {
-    DAG graph;
-    map<bh_base*, set<Vertex> > base2vertices;
-    for (const Block &block: block_list) {
-        assert(block.validation());
-        Vertex vertex = boost::add_vertex(&block, graph);
-
-        // Find all vertices that must connect to 'vertex'
-        // using and updating 'base2vertices'
-        set<Vertex> connecting_vertices;
-        for (bh_base *base: block.getAllBases()) {
-            set<Vertex> &vs = base2vertices[base];
-            connecting_vertices.insert(vs.begin(), vs.end());
-            vs.insert(vertex);
-        }
-
-        // Finally, let's add edges to 'vertex'
-        BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices) {
-            if (vertex != v and block.depend_on(*graph[v])) {
-                boost::add_edge(v, vertex, graph);
-            }
-        }
+    bool empty() {
+        return _queue.empty();
     }
-    return graph;
-}
+};
+} // Anon namespace
 
-// Pretty print the DAG. A "-<id>.dot" is append the filename.
-void pprint(const DAG &dag, const string &filename) {
+void fuser_breadth_first(vector<Block> &block_list, uint64_t min_threading) {
 
-    //We define a graph and a kernel writer for graphviz
-    struct graph_writer {
-        const DAG &graph;
-        graph_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out) const {
-            out << "graph [bgcolor=white, fontname=\"Courier New\"]" << endl;
-            out << "node [shape=box color=black, fontname=\"Courier New\"]" << endl;
-        }
-    };
-    struct kernel_writer {
-        const DAG &graph;
-        kernel_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out, const Vertex& v) const {
-            out << "[label=\"Kernel " << v;
-
-            out << ", Instructions: \\l";
-            for (const bh_instruction *instr: graph[v]->getAllInstr()) {
-                out << *instr << "\\l";
-            }
-            out << "\"]";
-        }
-    };
-    struct edge_writer {
-        const DAG &graph;
-        edge_writer(const DAG &g) : graph(g) {};
-        void operator()(std::ostream& out, const Edge& e) const {
-
-        }
-    };
-
-    static int count=0;
-    stringstream ss;
-    ss << filename << "-" << count++ << ".dot";
-    ofstream file;
-    cout << ss.str() << endl;
-    file.open(ss.str());
-    boost::write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag), graph_writer(dag));
-    file.close();
-}
-
-vector<Block> topological(DAG &dag, const set<bh_instruction*> &news) {
-    vector<Block> ret;
-    vector<Vertex> roots; // Set of root vertices
-    // Initiate 'roots'
-    BOOST_FOREACH (Vertex v, boost::vertices(dag)) {
-        if (boost::in_degree(v, dag) == 0) {
-            roots.push_back(v);
-        }
-    }
-
-    while (not roots.empty()) { // Each iteration creates a new block
-        const Vertex vertex = roots.back();
-        roots.erase(roots.end()-1);
-        ret.emplace_back(*dag[vertex]);
-        Block &block = ret.back();
-
-        // Add adjacent vertices and remove the block from 'dag'
-        BOOST_FOREACH (const Vertex v, boost::adjacent_vertices(vertex, dag)) {
-            if (boost::in_degree(v, dag) <= 1) {
-                roots.push_back(v);
-            }
-        }
-        boost::clear_vertex(vertex, dag);
-
-        // Instruction blocks should never be merged
-        if (block.isInstr()) {
-            continue;
-        }
-
-        // Roots not fusible with 'block'
-        vector<Vertex> nonfusible_roots;
-        // Search for fusible blocks within the root blocks
-        while (not roots.empty()) {
-            const Vertex v = roots.back();
-            roots.erase(roots.end()-1);
-            const Block &b = *dag[v];
-
-            const pair<Block, bool> res = block_merge(block, b, news);
-            if (res.second) {
-                block = res.first;
-                assert(block.validation());
-
-                // Add adjacent vertices and remove the block 'b' from 'dag'
-                BOOST_FOREACH (const Vertex adj, boost::adjacent_vertices(v, dag)) {
-                    if (boost::in_degree(adj, dag) <= 1) {
-                        roots.push_back(adj);
-                    }
-                }
-                boost::clear_vertex(v, dag);
-            } else {
-                nonfusible_roots.push_back(v);
-            }
-        }
-        roots = nonfusible_roots;
-    }
-    return ret;
-}
-
-} // dag
-
-vector<Block> fuser_topological(const vector<Block> &block_list, const set<bh_instruction*> &news) {
-
-    dag::DAG dag = dag::from_block_list(block_list);
-    vector<Block> ret = dag::topological(dag, news);
+    graph::DAG dag = graph::from_block_list(block_list);
+    vector<Block> ret = graph::topological<FifoQueue>(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            b._block_list = fuser_topological(b._block_list, news);
+            fuser_breadth_first(b.getLoop()._block_list, 0);
         }
     }
-    return ret;
+    block_list = ret;
+}
+
+void fuser_reshapable_first(vector<Block> &block_list, uint64_t min_threading) {
+
+    // Let's define a queue that priorities fusion of reshapable blocks
+    class ReshapableQueue {
+        std::reference_wrapper<const graph::DAG> _dag; // Using a wrapper to get a default move constructor
+        set<graph::Vertex> _queue;
+    public:
+        // Regular Constructor
+        ReshapableQueue(const graph::DAG &dag) : _dag(dag) {}
+
+        // Push(), pop(), and empty()
+        void push(graph::Vertex v) {
+            _queue.insert(v);
+        }
+        graph::Vertex pop() {
+            assert(not _queue.empty());
+            graph::Vertex ret = boost::graph_traits<graph::DAG>::null_vertex();
+            for (graph::Vertex v: _queue) {
+                if (_dag.get()[v].isReshapable()) {
+                    ret = v;
+                }
+            }
+            if (ret == boost::graph_traits<graph::DAG>::null_vertex()) {
+                ret = *_queue.begin();
+            }
+            _queue.erase(ret);
+            return ret;
+        }
+        bool empty() {
+            return _queue.empty();
+        }
+    };
+
+    graph::DAG dag = graph::from_block_list(block_list);
+    vector<Block> ret = graph::topological<ReshapableQueue>(dag, min_threading);
+
+    // Let's fuse at the next rank level
+    for (Block &b: ret) {
+        if (not b.isInstr()) {
+            fuser_reshapable_first(b.getLoop()._block_list, 0);
+        }
+    }
+    block_list = ret;
+}
+
+void fuser_greedy(vector<Block> &block_list, uint64_t min_threading) {
+
+    graph::DAG dag = graph::from_block_list(block_list);
+    graph::greedy(dag, min_threading);
+    vector<Block> ret = graph::fill_block_list(dag);
+
+    // Let's fuse at the next rank level
+    for (Block &b: ret) {
+        if (not b.isInstr()) {
+            // Notice that the 'min_threading' argument is set to zero for all sub-blocks
+            fuser_greedy(b.getLoop()._block_list, 0);
+        }
+    }
+    block_list = ret;
 }
 
 } // jitk

@@ -76,6 +76,8 @@ static bool fuse_no_xsweep(const bh_instruction *a, const bh_instruction *b)
 
 static bool fuse_no_xsweep_scalar_seperate(const bh_instruction *a, const bh_instruction *b)
 {
+    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
 #define __scalar(i) (bh_is_scalar(&(i)->operand[0]) || \
                      (bh_opcode_is_accumulate((i)->opcode) && (i)->operand[0].ndim == 1))
     return (fuse_no_xsweep(a,b) &&

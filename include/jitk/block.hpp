@@ -24,80 +24,80 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 #include <iostream>
+#include <memory>
+#include <boost/variant/variant.hpp>
+#include <boost/variant/get.hpp>
+
 
 #include <bh_instruction.hpp>
 
 namespace bohrium {
 namespace jitk {
 
-class Block {
+/* Design Overview
+
+   A block can represent two things in Bohrium:
+    * A for-loop, i.e. a traversal of arrays over an axis/dimension (class LoopB)
+    * A single instruction such as BH_ADD or BH_MULTIPLY (class InstrB)
+
+*/
+
+// Forward declaration
+class Block;
+
+// We use a shared pointer of an const instruction. The idea is to never change an instruction inplace
+// instead, create a whole new instruction.
+typedef std::shared_ptr<const bh_instruction> InstrPtr;
+
+// Representation of a for-loop, which contains a list of nested loops (_block_list)
+class LoopB {
 public:
-    std::vector <Block> _block_list;
-    bh_instruction *_instr = NULL;
+    // The rank of this loop block
     int rank;
+    // List of sub-blocks
+    std::vector <Block> _block_list;
+    // Size of the loop
     int64_t size;
-    std::set<bh_instruction*> _sweeps;
+    // Sweep instructions within this loop
+    std::set<InstrPtr> _sweeps;
+    // New arrays within this loop
     std::set<bh_base *> _news;
+    // Freed arrays within this loop
     std::set<bh_base *> _frees;
+    // Is this loop and all its sub-blocks reshapable
     bool _reshapable = false;
 
     // Unique id of this block
     int _id;
 
-    // Default constructor
-    Block() { static int id_count = 0; _id = id_count++; }
+    // Default Constructor
+    LoopB() { static int id_count = 0; _id = id_count++; }
 
-    // Block Instruction Constructor
-    // Note, the rank is only to make pretty printing easier
-    Block(bh_instruction *instr, int rank) : Block() {
-        _instr = instr;
-        this->rank = rank;
-    }
-
-    // Returns true if this block is an instruction block, which has a
-    // empty block list and a non-NULL instruction pointer
-    bool isInstr() const {
-        assert(_block_list.size() > 0 or _instr != NULL);
-        return _block_list.size() == 0;
-    }
-
-    // Find the 'instr' in this block or in its children
-    // Returns NULL if not found
-    Block* findInstrBlock(const bh_instruction *instr);
+    // Search and replace 'subject' with 'replacement' and returns the number of hits
+    int replaceInstr(InstrPtr subject, const bh_instruction &replacement);
 
     // Is this block innermost? (not counting instruction blocks)
-    bool isInnermost() const {
-        for (const Block &b: _block_list) {
-            if (not b.isInstr()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Pretty print this block
-    std::string pprint() const;
+    bool isInnermost() const;
 
     // Return all sub-blocks (incl. nested blocks)
-    void getAllSubBlocks(std::vector<const Block *> &out) const;
-    std::vector<const Block*> getAllSubBlocks() const;
+    void getAllSubBlocks(std::vector<const LoopB *> &out) const;
 
     // Return all sub-blocks (excl. nested blocks)
-    std::vector<const Block*> getLocalSubBlocks() const;
+    std::vector<const LoopB*> getLocalSubBlocks() const;
 
     // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<bh_instruction*> &out) const;
-    std::vector<bh_instruction*> getAllInstr() const;
+    void getAllInstr(std::vector<InstrPtr> &out) const;
+    std::vector<InstrPtr> getAllInstr() const;
 
     // Return instructions in the block (excl. nested blocks)
-    void getLocalInstr(std::vector<bh_instruction*> &out) const;
-    std::vector<bh_instruction*> getLocalInstr() const;
+    void getLocalInstr(std::vector<InstrPtr> &out) const;
+    std::vector<InstrPtr> getLocalInstr() const;
 
     // Return all bases accessed by this block
-    std::set<bh_base*> getAllBases() const {
-        std::set<bh_base*> ret;
-        for (bh_instruction *instr: getAllInstr()) {
-            std::set<bh_base*> t = instr->get_bases();
+    std::set<const bh_base*> getAllBases() const {
+        std::set<const bh_base*> ret;
+        for (InstrPtr instr: getAllInstr()) {
+            std::set<const bh_base*> t = instr->get_bases();
             ret.insert(t.begin(), t.end());
         }
         return ret;
@@ -121,11 +121,122 @@ public:
     std::set<bh_base*> getAllTemps() const;
 
     // Returns true when all instructions within the block is system or if the block is empty()
+    bool isSystemOnly() const;
+
+    // Validation check of this block
+    bool validation() const;
+
+    // Finds the block and instruction that accesses 'base' last. If 'base' is NULL, any data access
+    // is accepted thus the last instruction is returned.
+    // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
+    std::pair<LoopB*, int64_t> findLastAccessBy(const bh_base *base);
+
+    // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
+    // If no instruction accesses 'base' we insert it after the last instruction.
+    // NB: Force reshape the instruction to match the instructions accesses 'base' last.
+    void insert_system_after(InstrPtr instr, const bh_base *base);
+
+    // Returns the amount of threading in this block (excl. nested blocks)
+    uint64_t localThreading() const;
+
+    // Pretty print this block
+    std::string pprint(const char *newline="\n") const;
+
+    // Updates the metadata such as the sets of sweeps, news, frees etc.
+    void metadata_update();
+
+    // Equality test based on the unique ID
+    bool operator==(const LoopB &loop_block) const {
+        return this->_id == loop_block._id;
+    }
+};
+
+// Representation of a single instruction
+class InstrB {
+public:
+    InstrPtr instr;
+    int rank;
+};
+
+// A block can represent a for-loop (LoopB) or an instruction (InstrB)
+class Block {
+private:
+    // This is the variant that contains either a LoopB or a InstrB.
+    // Note, boost::blank is only used to catch programming errors
+    boost::variant<boost::blank, LoopB, InstrB> _var;
+
+public:
+
+    // Default Constructor
+    Block() {}
+
+    // Loop Block Constructor
+    explicit Block(const LoopB &loop_block) {
+        assert(_var.which() == 0);
+        _var = loop_block;
+    }
+    explicit Block(LoopB &&loop_block) {
+        assert(_var.which() == 0);
+        _var = loop_block;
+    }
+
+    // Instruction Block Constructor
+    // Note, the rank is only to make pretty printing easier
+    Block(const bh_instruction &instr, int rank) {
+        assert(_var.which() == 0);
+        InstrB _instr{std::make_shared<bh_instruction>(instr), rank};
+        _var = std::move(_instr);
+    }
+
+    // Returns true if this block is an instruction block
+    bool isInstr() const {
+        return _var.which() == 2; // Notice, the third type in '_var' is 'InstrB'
+    }
+
+    // Retrieve the Loop Block
+    LoopB &getLoop() {return boost::get<LoopB>(_var);}
+    const LoopB &getLoop() const {return boost::get<LoopB>(_var);}
+
+    // Retrieve the instruction within the instruction block
+    const InstrPtr getInstr() const {return boost::get<InstrB>(_var).instr;}
+    InstrPtr getInstr() {return boost::get<InstrB>(_var).instr;}
+    void setInstr(const bh_instruction &instr) {
+        assert(_var.which() == 0 or _var.which() == 2);
+        boost::get<InstrB>(_var).instr.reset(new bh_instruction(instr));
+    }
+
+    // Return the rank of this block
+    int rank() const {
+        if (isInstr()) {
+            return boost::get<InstrB>(_var).rank;
+        } else {
+            return getLoop().rank;
+        }
+    }
+
+    // Validation check of this block
+    bool validation() const;
+
+    // Return all instructions in the block (incl. nested blocks)
+    void getAllInstr(std::vector<InstrPtr> &out) const;
+    std::vector<InstrPtr> getAllInstr() const;
+
+    // Return all bases accessed by this block
+    std::set<const bh_base*> getAllBases() const {
+        std::set<const bh_base*> ret;
+        for (InstrPtr instr: getAllInstr()) {
+            std::set<const bh_base*> t = instr->get_bases();
+            ret.insert(t.begin(), t.end());
+        }
+        return ret;
+    }
+
+    // Returns true when all instructions within this block is system or if the block is empty()
     bool isSystemOnly() const {
         if (isInstr()) {
-            return bh_opcode_is_system(_instr->opcode);
+            return bh_opcode_is_system(getInstr()->opcode);
         }
-        for (const Block &b: _block_list) {
+        for (const Block &b: getLoop()._block_list) {
             if (not b.isSystemOnly()) {
                 return false;
             }
@@ -133,45 +244,58 @@ public:
         return true;
     }
 
-    // Validation check of this block
-    bool validation() const;
-
-    // Equality test based on the unique ID
-    bool operator==(const Block &block) const {
-        return this->_id == block._id;
+    // Returns true when all instructions within this block is reshapable
+    bool isReshapable() const {
+        if (isInstr()) {
+            return getInstr()->reshapable();
+        } else {
+            return getLoop()._reshapable;
+        }
     }
 
     // Determines whether this block must be executed after 'other'
     bool depend_on(const Block &other) const {
-        const std::vector<bh_instruction*> this_instr_list = getAllInstr();
-        const std::vector<bh_instruction*> other_instr_list = other.getAllInstr();
-        for (const bh_instruction *this_instr: this_instr_list) {
-            for (const bh_instruction *other_instr: other_instr_list) {
-                if (this_instr != other_instr and
-                    bh_instr_dependency(this_instr, other_instr)) {
+        const std::vector<InstrPtr> this_instr_list = getAllInstr();
+        const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
+        for (const InstrPtr this_instr: this_instr_list) {
+            for (const InstrPtr other_instr: other_instr_list) {
+                if (*this_instr != *other_instr and
+                    bh_instr_dependency(this_instr.get(), other_instr.get())) {
                     return true;
                 }
             }
         }
         return false;
     }
+
+    // Pretty print this block
+    std::string pprint(const char *newline="\n") const;
 };
 
-// Merge the two blocks, 'a' and 'b', in that order. When 'based_on_block_b' is
-// true, the meta-data such at size, rank etc. is taken from 'b' rather than 'a'
-Block merge(const Block &a, const Block &b, bool based_on_block_b=false);
+// Merge the two loop blocks, 'a' and 'b', in that order.
+LoopB merge(const LoopB &a, const LoopB &b);
 
 // Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
 // The dimensions from zero to 'rank-1' are ignored.
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
-// 'news' is the set of instructions that creates new arrays
-// 'temps' is the set of arrays that a temporary in the blocks "above" this block
-Block create_nested_block(std::vector<bh_instruction*> &instr_list, int rank, int64_t size_of_rank_dim,
-                          const std::set<bh_instruction*> &news, const std::set<bh_base*> &temps = std::set<bh_base*>());
+Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim);
+
+// Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
+// and the total amount of parallelism (in number of possible parallel threads)
+std::pair<std::vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block);
+
+// Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
+// 'min_threading' is the minimum amount of threading acceptable in the merged block (ignored if
+// neither 'a' or 'b' have the requested amount)
+// NB: 'a' or 'b' might be reshaped in order to make the merge legal
+// Returns the new block and a flag indicating whether the merge was performed
+std::pair<Block, bool> merge_if_possible(const Block &a, const Block &b, uint64_t min_threading=0);
+
+//Implements pprint of block
+std::ostream& operator<<(std::ostream& out, const LoopB& b);
 
 //Implements pprint of block
 std::ostream& operator<<(std::ostream& out, const Block& b);
-
 
 //Implements pprint of a vector of blocks
 std::ostream& operator<<(std::ostream& out, const std::vector<Block>& b);

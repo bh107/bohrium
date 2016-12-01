@@ -18,23 +18,33 @@ namespace boost {namespace serialization {class access;}}
 //Memory layout of the Bohrium instruction
 struct bh_instruction
 {
-    //Opcode: Identifies the operation
+    // Opcode: Identifies the operation
     bh_opcode  opcode;
-    //Id of each operand
+    // Id of each operand
     bh_view  operand[BH_MAX_NO_OPERANDS];
-    //Constant included in the instruction (Used if one of the operands == NULL)
+    // Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
+    // Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
+    // For now, this flag is only used by the code generators.
+    bool constructor;
+    // An identifier to track the original source of instruction transformations thus transformations such as
+    // copy, transpose, and reshape does not change the 'origin_id'.
+    // For now, this flag is only used by the code generators.
+    int64_t origin_id = -1; // -1 indicates: unset
 
+    // Default and copy constructor
     bh_instruction(){}
     bh_instruction(const bh_instruction& instr)
     {
         opcode = instr.opcode;
         constant = instr.constant;
+        constructor = instr.constructor;
+        origin_id = instr.origin_id;
         std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
     }
 
     // Return a set of all bases used by the instruction
-    std::set<bh_base*> get_bases();
+    std::set<const bh_base *> get_bases() const;
 
     // Check if all views in this instruction is contiguous
     bool is_contiguous() const;
@@ -52,31 +62,48 @@ struct bh_instruction
     // if equal, the combined maximum is returned
     std::vector<int64_t> dominating_shape() const;
 
+    // Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
+    int sweep_axis() const;
+
     // Reshape the views of the instruction to 'shape'
     void reshape(const std::vector<int64_t> &shape);
 
     // Reshape the views of the instruction to 'shape' (no checks!)
     void reshape_force(const std::vector<int64_t> &shape);
 
+    // Remove 'axis' from all views in this instruction.
+    // Notice that 'axis' is based on the 'dominating shape' thus remove_axis() will correct
+    // the axis value when handling reductions automatically
+    void remove_axis(int64_t axis);
+
+    // Transposes by swapping the two axes 'axis1' and 'axis2'
+    void transpose(int64_t axis1, int64_t axis2);
+
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
 
     // Equality
-    bool operator==(const bh_instruction& other) const
-    {
-        if (opcode != other.opcode) return false;
-        if (constant != other.constant) return false;
-
-        for (bh_intp i = 0; i < BH_MAX_NO_OPERANDS; ++i) {
-            if (operand[i] != other.operand[i]) return false;
+    bool operator==(const bh_instruction& other) const {
+        if (opcode != other.opcode) {
+            return false;
         }
-
+        const bh_intp nop = bh_noperands(opcode);
+        for (bh_intp i = 0; i < nop; ++i) {
+            if (bh_is_constant(&operand[i]) xor bh_is_constant(&other.operand[i])) {
+                return false;
+            } else if (bh_is_constant(&operand[i])) { // Both are constant
+                if (constant != other.constant)
+                    return false;
+            } else {
+                if (operand[i] != other.operand[i])
+                    return false;
+            }
+        }
         return true;
     }
 
     // Inequality
-    bool operator!=(const bh_instruction& other) const
-    {
+    bool operator!=(const bh_instruction& other) const {
         return !(*this == other);
     }
 

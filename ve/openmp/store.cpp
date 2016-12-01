@@ -102,7 +102,7 @@ KernelFunction Store::getFunction(const string &source) {
     void *lib_handle = dlopen(objfile.string().c_str(), RTLD_NOW);
     if (lib_handle == NULL) {
         cerr << "Cannot load library: " << dlerror() << endl;
-        throw runtime_error("VE-UNI: Cannot load library");
+        throw runtime_error("VE-OPENMP: Cannot load library");
     }
     _lib_handles.push_back(lib_handle);
 
@@ -114,7 +114,7 @@ KernelFunction Store::getFunction(const string &source) {
     const char* dlsym_error = dlerror();
     if (dlsym_error) {
         cerr << "Cannot load function launcher(): " << dlsym_error << endl;
-        throw runtime_error("VE-UNI: Cannot load function launcher()");
+        throw runtime_error("VE-OPENMP: Cannot load function launcher()");
     }
 
     return _functions.at(hash);

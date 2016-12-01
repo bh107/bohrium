@@ -118,7 +118,13 @@ struct bh_view
 
     // Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
     // NB: 0 <= 'dim' <= ndim
-    void insert_dim(bh_index dim, bh_index size, bh_index stride);
+    void insert_axis(bh_index dim, bh_index size, bh_index stride);
+
+    // Remove the axis 'dim'
+    void remove_axis(bh_index dim);
+
+    // Transposes by swapping the two axes 'axis1' and 'axis2'
+    void transpose(int64_t axis1, int64_t axis2);
 
     bool operator<(const bh_view& other) const
     {
@@ -143,6 +149,7 @@ struct bh_view
 
     bool operator==(const bh_view& other) const
     {
+        if (base == NULL or this->base == NULL) return false;
         if (base != other.base) return false;
         if (ndim != other.ndim) return false;
         if (start != other.start) return false;

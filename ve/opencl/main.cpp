@@ -22,18 +22,22 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <numeric>
 #include <set>
 #include <map>
+#include <chrono>
 
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
+#include <bh_util.hpp>
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/type.hpp>
 #include <jitk/fuser.hpp>
+#include <jitk/graph.hpp>
+#include <jitk/transformer.hpp>
+#include <jitk/fuser_cache.hpp>
 
-#include "store.hpp"
+#include "engine_opencl.hpp"
 #include "opencl_type.hpp"
-#include "cl.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -43,44 +47,29 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
   private:
+    // Fuse cache
+    FuseCache fcache;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     // Some statistics
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
-
-    // The OpenCL context and device used throughout the execution
-    cl::Context context;
-    cl::Device default_device;
-    // A map of allocated buffers on the device
-    map<bh_base*, unique_ptr<cl::Buffer> > buffers;
-    
-    void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss);
-    set<bh_instruction*> find_initiating_instr(vector<bh_instruction> &instr_list) ;
+    uint64_t max_memory_usage=0;
+    uint64_t totalwork=0;
+    uint64_t threading_below_threshold=0;
+    chrono::duration<double> time_total_execution{0};
+    chrono::duration<double> time_fusion{0};
+    chrono::duration<double> time_exec{0};
+    chrono::duration<double> time_build{0};
+    chrono::duration<double> time_offload{0};
+    // The OpenCL engine
+    EngineOpenCL engine;
+    // Write an OpenCL kernel
+    void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
+                      stringstream &ss);
 
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level) {
-
-        vector<cl::Platform> platforms;
-        cl::Platform::get(&platforms);
-        if(platforms.size() == 0) {
-            throw runtime_error("No OpenCL platforms found");
-        }
-        cl::Platform default_platform=platforms[0];
-        cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
-
-        //get default device of the default platform
-        vector<cl::Device> devices;
-        default_platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-        if(devices.size()==0){
-            throw runtime_error("No OpenCL device found");
-        }
-        default_device = devices[0];
-        cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << endl;
-
-        vector<cl::Device> dev_list = {default_device};
-        context = cl::Context(dev_list);
-    }
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), engine(config) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -108,198 +97,38 @@ void spaces(stringstream &out, int num) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
+        const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
         cout << "[OPENCL] Profiling: " << endl;
-        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays << endl;
-    }
-}
-
-// Return the OpenMP reduction symbol
-const char* openmp_reduce_symbol(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-            return "+";
-        case BH_MULTIPLY_REDUCE:
-            return "*";
-        case BH_BITWISE_AND_REDUCE:
-            return "&";
-        case BH_BITWISE_OR_REDUCE:
-            return "|";
-        case BH_BITWISE_XOR_REDUCE:
-            return "^";
-        case BH_MAXIMUM_REDUCE:
-            return "max";
-        case BH_MINIMUM_REDUCE:
-            return "min";
-        default:
-            return NULL;
-    }
-}
-
-// Print the maximum value of 'dtype'
-void dtype_max(bh_type dtype, stringstream &out)
-{
-    if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_max_integer(dtype);
-        if (not bh_type_is_signed_integer(dtype)) {
-            out << "u";
-        }
-    } else {
-        out.precision(std::numeric_limits<double>::max_digits10);
-        out << bh_type_limit_max_float(dtype);
-    }
-}
-
-// Print the minimum value of 'dtype'
-void dtype_min(bh_type dtype, stringstream &out)
-{
-    if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_min_integer(dtype);
-    } else {
-        out.precision(std::numeric_limits<double>::max_digits10);
-        out << bh_type_limit_min_float(dtype);
-    }
-}
-
-// Return the OpenMP reduction identity/neutral value
-void openmp_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            out << "0";
-            break;
-        case BH_MULTIPLY_REDUCE:
-            out << "1";
-            break;
-        case BH_BITWISE_AND_REDUCE:
-            out << "~0";
-            break;
-        case BH_MAXIMUM_REDUCE:
-            dtype_min(dtype, out);
-            break;
-        case BH_MINIMUM_REDUCE:
-            dtype_max(dtype, out);
-            break;
-        default:
-            cout << "openmp_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
-            throw runtime_error("openmp_reduce_identity: unsupported operation");
-    }
-}
-
-
-// Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
-bool openmp_reduce_compatible(bh_opcode opcode) {
-    return openmp_reduce_symbol(opcode) != NULL;
-}
-
-// Is the 'block' compatible with OpenMP
-bool openmp_compatible(const Block &block) {
-    // For now, all sweeps must be reductions
-    for (const bh_instruction *instr: block._sweeps) {
-        if (not bh_opcode_is_reduction(instr->opcode)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Is the 'block' compatible with OpenMP SIMD
-bool simd_compatible(const Block &block, const BaseDB &base_ids) {
-
-    // Check for non-compatible reductions
-    for (const bh_instruction *instr: block._sweeps) {
-        if (not openmp_reduce_compatible(instr->opcode))
-            return false;
-    }
-
-    // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (bh_base* b: block.getAllBases()) {
-        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
-            return false;
-    }
-    return true;
-}
-
-// Does 'opcode' support the OpenMP Atomic guard?
-bool openmp_atomic_compatible(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_MULTIPLY_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            return true;
-        default:
-            return false;
-    }
-}
-
-// Writing the OpenMP header, which include "parallel for" and "simd"
-void write_openmp_header(const Block &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
-    if (not config.defaultGet<bool>("compiler_openmp", false)) {
-        return;
-    }
-    bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
-
-    // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
-    vector<const bh_instruction*> openmp_reductions;
-
-    stringstream ss;
-    // "OpenMP for" goes to the outermost loop
-    if (block.rank == 0 and openmp_compatible(block)) {
-        ss << " parallel for";
-        // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
-        for (const bh_instruction *instr: block._sweeps) {
-            assert(bh_noperands(instr->opcode) == 3);
-            bh_base *base = instr->operand[0].base;
-            if (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(base) or base_ids.isTmp(base))) {
-                openmp_reductions.push_back(instr);
-            } else if (openmp_atomic_compatible(instr->opcode)) {
-                base_ids.insertOpenmpAtomic(instr->operand[0].base);
-            } else {
-                base_ids.insertOpenmpCritical(instr->operand[0].base);
-            }
-        }
-    }
-
-    // "OpenMP SIMD" goes to the innermost loop (which might also be the outermost loop)
-    if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
-        ss << " simd";
-        if (block.rank > 0) { //NB: avoid multiple reduction declarations
-            for (const bh_instruction *instr: block._sweeps) {
-                openmp_reductions.push_back(instr);
-            }
-        }
-    }
-
-    //Let's write the OpenMP reductions
-    for (const bh_instruction* instr: openmp_reductions) {
-        assert(bh_noperands(instr->opcode) == 3);
-        bh_base *base = instr->operand[0].base;
-        ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
-        ss << (base_ids.isScalarReplaced(base)?"s":"t");
-        ss << base_ids[base] << ")";
-    }
-    const string ss_str = ss.str();
-    if(not ss_str.empty()) {
-        out << "#pragma omp" << ss_str << endl;
-        spaces(out, 4 + block.rank*4);
+        cout << "\tFuse Cache Hits:     " << fcache_hits << "/" << fcache.num_lookups \
+                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)" << endl;
+        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
+                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)" << endl;
+        cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
+        cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
+        cout << "\tWork below par-threshold(1000): " \
+             << threading_below_threshold / (double)totalwork * 100 << "%" << endl;
+        cout << "\tKernel store hits:   " << engine.num_lookups - engine.num_lookup_misses \
+                                          << "/" << engine.num_lookups << endl;
+        cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
+        cout << "\t  Fusion:  " << time_fusion.count() << "s" << endl;
+        cout << "\t  Build:   " << time_build.count() << "s" << endl;
+        cout << "\t  Exec:    " << time_exec.count() << "s" << endl;
+        cout << "\t  Offload: " << time_offload.count() << "s" << endl;
     }
 }
 
 // Does 'instr' reduce over the innermost axis?
 // Notice, that such a reduction computes each output element completely before moving
 // to the next element.
-bool sweeping_innermost_axis(const bh_instruction *instr) {
+bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
     assert(bh_noperands(instr->opcode) == 3);
-    return sweep_axis(*instr) == instr->operand[1].ndim-1;
+    return instr->sweep_axis() == instr->operand[1].ndim-1;
 }
 
-void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &config,
-                 const vector<const Block*> &threaded_blocks, stringstream &out) {
-    assert(not block.isInstr());
+void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config,
+                      const vector<const LoopB *> &threaded_blocks, stringstream &out) {
     spaces(out, 4 + block.rank*4);
 
     if (block.isSystemOnly()) {
@@ -307,12 +136,9 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         return;
     }
 
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
-
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<bh_view> scalar_replacements;
-    for (const bh_instruction *instr: block._sweeps) {
+    for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
@@ -324,55 +150,50 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         }
     }
 
-    // We might not have to loop "peel" if only OpenMP supported reductions are used
+    // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
-    if (config.defaultGet<bool>("compiler_openmp", false)) {
-        for (const bh_instruction *instr: block._sweeps) {
+    {
+        for (const InstrPtr instr: block._sweeps) {
             bh_base *b = instr->operand[0].base;
-            if (not (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
+            if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
                 need_to_peel = true;
                 break;
             }
         }
-    } else {
-        need_to_peel = true;
     }
 
     // When not peeling, we need a neutral initial reduction value
     if (not need_to_peel) {
-        for (const bh_instruction *instr: block._sweeps) {
+        for (const InstrPtr instr: block._sweeps) {
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
                 out << "t";
             else
                 out << "s";
             out << base_ids[base] << " = ";
-            openmp_reduce_identity(instr->opcode, base->type, out);
-            out << ";" << endl;
+            write_reduce_identity(instr->opcode, base->type, out);
+            out << "; // Neutral initial reduction value" << endl;
             spaces(out, 4 + block.rank * 4);
         }
     }
 
+    // All local temporary arrays needs an variable declaration
+    const set<bh_base*> local_tmps = block.getLocalTemps();
+
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
-        Block peeled_block(block);
-        vector<bh_instruction> sweep_instr_list(block._sweeps.size());
-        {
-            size_t i = 0;
-            for (const bh_instruction *instr: block._sweeps) {
-                Block *sweep_instr_block = peeled_block.findInstrBlock(instr);
-                assert(sweep_instr_block != NULL);
-                bh_instruction *sweep_instr = &sweep_instr_list[i++];
-                sweep_instr->opcode = BH_IDENTITY;
-                sweep_instr->operand[1] = instr->operand[1]; // The input is the same as in the sweep
-                sweep_instr->operand[0] = instr->operand[0];
-                // But the output needs an extra dimension when we are reducing to a non-scalar
-                if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                    sweep_instr->operand[0].insert_dim(instr->constant.get_int64(), 1, 0);
-                }
-                sweep_instr_block->_instr = sweep_instr;
+        LoopB peeled_block(block);
+        for (const InstrPtr instr: block._sweeps) {
+            bh_instruction sweep_instr;
+            sweep_instr.opcode = BH_IDENTITY;
+            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
+            sweep_instr.operand[0] = instr->operand[0];
+            // But the output needs an extra dimension when we are reducing to a non-scalar
+            if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
+                sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
             }
+            peeled_block.replaceInstr(instr, sweep_instr);
         }
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
@@ -389,12 +210,12 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         out << endl;
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
-                if (b._instr != NULL) {
-                    spaces(out, 4 + b.rank*4);
-                    write_instr(base_ids, *b._instr, out, true);
+                if (b.getInstr() != NULL) {
+                    spaces(out, 4 + b.rank()*4);
+                    write_instr(base_ids, *b.getInstr(), out, true);
                 }
             } else {
-                write_block(base_ids, b, config, threaded_blocks, out);
+                write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -402,23 +223,12 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
         spaces(out, 4 + block.rank*4);
     }
 
-    // Let's write the OpenMP loop header
-    {
-        int64_t for_loop_size = block.size;
-        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, its size is one less
-            --for_loop_size;
-        // No need to parallel one-sized loops
-        if (for_loop_size > 1) {
-            write_openmp_header(block, base_ids, config, out);
-        }
-    }
-
     // Write the for-loop header
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
     // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
     if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
-                     [&block](const Block* b){return *b == block;}) == threaded_blocks.end()) {
+                     [&block](const LoopB* b){return *b == block;}) == threaded_blocks.end()) {
         out << "for(" << write_opencl_type(BH_UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
             out << "=1; ";
@@ -441,21 +251,12 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     // Write the for-loop body
     for (const Block &b: block._block_list) {
         if (b.isInstr()) { // Finally, let's write the instruction
-            if (b._instr != NULL) {
-                if (bh_noperands(b._instr->opcode) > 0 and not bh_opcode_is_system(b._instr->opcode)) {
-                    if (base_ids.isOpenmpAtomic(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank*4);
-                        out << "#pragma omp atomic" << endl;
-                    } else if (base_ids.isOpenmpCritical(b._instr->operand[0].base)) {
-                        spaces(out, 4 + b.rank*4);
-                        out << "#pragma omp critical" << endl;
-                    }
-                }
-                spaces(out, 4 + b.rank*4);
-                write_instr(base_ids, *b._instr, out, true);
+            if (b.getInstr() != NULL) {
+                spaces(out, 4 + b.rank()*4);
+                write_instr(base_ids, *b.getInstr(), out, true);
             }
         } else {
-            write_block(base_ids, b, config, threaded_blocks, out);
+            write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, out);
         }
     }
     spaces(out, 4 + block.rank*4);
@@ -472,7 +273,8 @@ void write_block(BaseDB &base_ids, const Block &block, const ConfigParser &confi
     }
 }
 
-void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const Block*> &threaded_blocks, stringstream &ss) {
+void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
+                        stringstream &ss) {
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
@@ -499,89 +301,129 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: " << endl;
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
-            const Block *b = threaded_blocks[i];
+            const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
-            ss << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << ");" << endl;
+            ss << "const " << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << "); " \
+               << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow" << endl;
         }
         ss << endl;
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_block(base_ids, kernel.block, config, threaded_blocks, ss);
+    write_loop_block(base_ids, kernel.block, config, threaded_blocks, ss);
     ss << "}" << endl << endl;
 
 }
 
-// Returns the instructions that initiate base arrays in 'instr_list'
-set<bh_instruction*> Impl::find_initiating_instr(vector<bh_instruction> &instr_list) {
+// Sets the constructor flag of each instruction in 'instr_list'
+void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base*, unique_ptr<cl::Buffer> > &buffers) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    set<bh_instruction*> ret;
-    for(bh_instruction &instr: instr_list) {
-        int nop = bh_noperands(instr.opcode);
+    for(bh_instruction *instr: instr_list) {
+        instr->constructor = false;
+        int nop = bh_noperands(instr->opcode);
         for (bh_intp o = 0; o < nop; ++o) {
-            const bh_view &v = instr.operand[o];
+            const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and initiated.find(v.base) == initiated.end() and buffers.find(v.base) == buffers.end()) {
+                if (v.base->data == NULL and not (util::exist(initiated, v.base) or util::exist(buffers, v.base))) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
-                        ret.insert(&instr); // Add the instruction that initiate 'v.base'
+                        instr->constructor = true;
                     }
                 }
             }
         }
     }
-    return ret;
-}
-
-// Returns a OpenCL range based on the 'threaded_blocks'
-cl::NDRange NDRange(const vector<const Block*> &threaded_blocks) {
-    auto &b = threaded_blocks;
-    switch (b.size()) {
-        case 1:
-            return cl::NDRange((cl_ulong) b[0]->size);
-        case 2:
-            return cl::NDRange((cl_ulong) b[0]->size, (cl_ulong) b[1]->size);
-        case 3:
-            return cl::NDRange((cl_ulong) b[0]->size, (cl_ulong) b[1]->size, (cl_ulong) b[2]->size);
-        default:
-            throw runtime_error("NDRange: maximum of three dimensions!");
-    }
 }
 
 void Impl::execute(bh_ir *bhir) {
+    auto texecution = chrono::steady_clock::now();
+
     const bool verbose = config.defaultGet<bool>("verbose", false);
 
-    cl::CommandQueue queue(context, default_device);
+    // Let's start by cleanup the instructions from the 'bhir'
+    vector<bh_instruction*> instr_list;
+    {
+        set<bh_base*> syncs;
+        set<bh_base*> frees;
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
 
-    // Get the set of initiating instructions
-    const set<bh_instruction*> news = find_initiating_instr(bhir->instr_list);
+        // Let's copy sync'ed arrays back to the host
+        engine.copyToHost(syncs);
 
-    // Let's fuse the 'instr_list' into blocks
-    vector<Block> block_list = fuser_singleton(bhir->instr_list, news);
-    if (config.defaultGet<bool>("serial_fusion", false)) {
-        block_list = fuser_serial(block_list, news);
-    } else {
-        block_list = fuser_topological(block_list, news);
+        // Let's free device buffers
+        for(bh_base *base: frees) {
+            engine.buffers.erase(base);
+        }
     }
 
+    // Some statistics
+    if (config.defaultGet<bool>("prof", false)) {
+        for (const bh_instruction *instr: instr_list) {
+            if (not bh_opcode_is_system(instr->opcode)) {
+                totalwork += bh_nelements(instr->operand[0]);
+            }
+        }
+    }
+    auto tfusion = chrono::steady_clock::now();
+
+    // Set the constructor flag
+    set_constructor_flag(instr_list, engine.buffers);
+
+    // The cache system
+    vector<Block> block_list;
+    {
+        // Assign origin ids to all instructions starting at zero.
+        int64_t count = 0;
+        for (bh_instruction *instr: instr_list) {
+            instr->origin_id = count++;
+        }
+
+        bool hit;
+        tie(block_list, hit) = fcache.get(instr_list);
+        if (hit) {
+;
+        } else {
+            // Let's fuse the 'instr_list' into blocks
+            block_list = fuser_singleton(instr_list);
+            if (config.defaultGet<bool>("serial_fusion", false)) {
+                fuser_serial(block_list, 1);
+            } else {
+                fuser_greedy(block_list, 0);
+                block_list = push_reductions_inwards(block_list);
+                block_list = split_for_threading(block_list, 1000);
+                block_list = collapse_redundant_axes(block_list);
+            }
+            fcache.insert(instr_list, block_list);
+        }
+    }
+
+    // Pretty printing the block
+    if (config.defaultGet<bool>("dump_graph", false)) {
+        graph::DAG dag = graph::from_block_list(block_list);
+        graph::pprint(dag, "dag");
+    }
+
+    time_fusion += chrono::steady_clock::now() - tfusion;
+
     for(const Block &block: block_list) {
+        assert(not block.isInstr());
 
         //Let's create a kernel
-        Kernel kernel(block);
+        Kernel kernel(block.getLoop());
 
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not kernel.block.isSystemOnly();
 
         // For profiling statistic
-        num_base_arrays += kernel.getNonTemps().size();
+        num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         num_temp_arrays += kernel.getAllTemps().size();
 
         // Assign IDs to all base arrays
         BaseDB base_ids;
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
-        for (const bh_instruction *instr: kernel.getAllInstr()) {
+        for (const InstrPtr instr: kernel.getAllInstr()) {
             const int nop = bh_noperands(instr->opcode);
             for(int i=0; i<nop; ++i) {
                 const bh_view &v = instr->operand[i];
@@ -601,59 +443,58 @@ void Impl::execute(bh_ir *bhir) {
             cout << kernel.block;
         }
 
-
-        // Find threaded blocks
-        constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
-        vector<const Block*> threaded_blocks;
-        for (const Block *b: kernel.getAllBlocks()) {
-            if (b->_sweeps.size() == 0 and not b->isSystemOnly()) {
-                threaded_blocks.push_back(b);
-            }
-            // Multiple blocks or mixing instructions and blocks at the same level is not thread compatible
-            if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
-                break;
-            }
-            if (threaded_blocks.size() == MAX_NUM_OF_THREADED_BLOCKS) {
-                break;
+        // Find the parallel blocks
+        vector<const LoopB*> threaded_blocks;
+        uint64_t total_threading;
+        tie(threaded_blocks, total_threading) = find_threaded_blocks(kernel.block);
+        if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
+            for (const InstrPtr instr: kernel.getAllInstr()) {
+                if (not bh_opcode_is_system(instr->opcode)) {
+                    threading_below_threshold += bh_nelements(instr->operand[0]);
+                }
             }
         }
 
+        // We might have to offload the execution to the CPU
         if (threaded_blocks.size() == 0 and kernel_is_computing) {
             if (verbose)
                 cout << "Offloading to CPU" << endl;
 
+            auto toffload = chrono::steady_clock::now();
+
             // Let's copy all non-temporary to the host
-            for (bh_base *base: kernel.getNonTemps()) {
-                if (buffers.find(base) != buffers.end()) {
-                    bh_data_malloc(base);
-                    if (verbose) {
-                        cout << "Copy to host: " << *base << endl;
-                    }
-                    queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
-                }
-            }
-            queue.finish();
+            engine.copyToHost(kernel.getNonTemps());
 
             // Let's free device buffers
             for (bh_base *base: kernel.getFrees()) {
-                buffers.erase(base);
-            }
-            for (bh_base *base: kernel.getNonTemps()) {
-                buffers.erase(base);
+                engine.buffers.erase(base);
             }
 
             // Let's send the kernel instructions to our child
-            vector<bh_instruction> instr_list;
-            for (const bh_instruction* instr: kernel.block.getAllInstr()) {
-                instr_list.push_back(*instr);
+            vector<bh_instruction> child_instr_list;
+            for (const InstrPtr instr: kernel.block.getAllInstr()) {
+                child_instr_list.push_back(*instr);
             }
-            bh_ir tmp_bhir(instr_list.size(), &instr_list[0]);
+            bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
             child.execute(&tmp_bhir);
+            time_offload += chrono::steady_clock::now() - toffload;
             continue;
         }
 
         // Let's execute the kernel
         if (kernel_is_computing) {
+
+            // We need a memory buffer on the device for each non-temporary array in the kernel
+            engine.copyToDevice(kernel.getNonTemps());
+
+            if (config.defaultGet<bool>("prof", false)) {
+                // Let's check the current memory usage on the device
+                uint64_t sum = 0;
+                for (const auto &b: engine.buffers) {
+                    sum += bh_base_size(b.first);
+                }
+                max_memory_usage = sum > max_memory_usage?sum:max_memory_usage;
+            }
 
             // Code generation
             stringstream ss;
@@ -661,72 +502,22 @@ void Impl::execute(bh_ir *bhir) {
 
             if (verbose) {
                 cout << endl << "************ GPU Kernel ************" << endl << ss.str()
-                             << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
+                     << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 
-            cl::Program program(context, ss.str());
-
-            const string compile_inc = config.defaultGet<string>("compiler_flg", "");
-            try {
-                program.build({default_device}, compile_inc.c_str());
-                if (verbose) {
-                    cout << "************ Build Log ************" << endl \
-                         << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) \
-                         << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
-                }
-            } catch (cl::Error e) {
-                cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
-                throw;
-            }
-
-            // We need a memory buffer on the device for each non-temporary array in the kernel
-            for(bh_base *base: kernel.getNonTemps()) {
-                if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                    cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                    buffers[base].reset(b);
-
-                    // If the host data is non-null we should copy it to the device
-                    if (base->data != NULL) {
-                        if (verbose) {
-                            cout << "Copy to device: " << *base << endl;
-                        }
-                        queue.enqueueWriteBuffer(*b, CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
-                    }
-                }
-            }
-            queue.finish();
-
+            auto tkernel_exec = chrono::steady_clock::now();
             // Let's execute the OpenCL kernel
-            cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
-            {
-                cl_uint i = 0;
-                for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
-                    opencl_kernel.setArg(i++, *buffers.at(base));
-                }
-            }
-            queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, NDRange(threaded_blocks), cl::NullRange);
-            queue.finish();
+            engine.execute(ss.str(), kernel, threaded_blocks);
+            time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
 
         // Let's copy sync'ed arrays back to the host
-        for(bh_base *base: kernel.getSyncs()) {
-            if (buffers.find(base) != buffers.end()) {
-                bh_data_malloc(base);
-                if (verbose) {
-                    cout << "Copy to host: " << *base << endl;
-                }
-                queue.enqueueReadBuffer(*buffers.at(base), CL_TRUE, 0, (cl_ulong) bh_base_size(base), base->data);
-                // When syncing we assume that the host writes to the data and invalidate the device data thus
-                // we have to remove its data buffer
-                buffers.erase(base);
-            }
-        }
-        queue.finish();
+        engine.copyToHost(kernel.getSyncs());
 
         // Let's free device buffers
         const auto &kernel_frees = kernel.getFrees();
         for(bh_base *base: kernel.getFrees()) {
-            buffers.erase(base);
+            engine.buffers.erase(base);
         }
 
         // Finally, let's cleanup
@@ -734,5 +525,6 @@ void Impl::execute(bh_ir *bhir) {
             bh_data_free(base);
         }
     }
+    time_total_execution += chrono::steady_clock::now() - texecution;
 }
 

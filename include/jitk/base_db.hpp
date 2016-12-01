@@ -96,24 +96,24 @@ class BaseDB {
     }
 
     // Check if 'base' has been scalar replaced
-    bool isScalarReplaced(bh_base* base) const {
-        return _scalar_replacements.find(base) != _scalar_replacements.end();
+    bool isScalarReplaced(const bh_base* base) const {
+        return _scalar_replacements.find(const_cast<bh_base*>(base)) != _scalar_replacements.end();
     }
 
     // Insert and check if 'base' should be guarded by OpenMP atomic
     void insertOpenmpAtomic(bh_base* base) {
         _omp_atomic.insert(base);
     }
-    bool isOpenmpAtomic(bh_base* base) const {
-        return _omp_atomic.find(base) != _omp_atomic.end();
+    bool isOpenmpAtomic(const bh_base* base) const {
+        return _omp_atomic.find(const_cast<bh_base*>(base)) != _omp_atomic.end();
     }
 
     // Insert and check if 'base' should be guarded by OpenMP critical
     void insertOpenmpCritical(bh_base* base) {
         _omp_critical.insert(base);
     }
-    bool isOpenmpCritical(bh_base* base) const {
-        return _omp_critical.find(base) != _omp_critical.end();
+    bool isOpenmpCritical(const bh_base* base) const {
+        return _omp_critical.find(const_cast<bh_base*>(base)) != _omp_critical.end();
     }
 };
 
