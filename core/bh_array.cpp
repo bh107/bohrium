@@ -195,11 +195,11 @@ ostream& operator<<(ostream& out, const bh_view& v)
     return out;
 }
 
-inline int gcd(int a, int b)
+inline int64_t gcd(int64_t a, int64_t b)
 {
     if (b==0)
         return a;
-    int c = a % b;
+    int64_t c = a % b;
     while(c != 0)
     {
         a = b;
@@ -675,9 +675,9 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
     if(a->ndim != b->ndim) // we dont handle views of differenr dimensions yet
         return false;
 
-    int astart = a->start;
-    int bstart = b->start;
-    int stride = 1;
+    int64_t astart = a->start;
+    int64_t bstart = b->start;
+    int64_t stride = 1;
     for (int i = 0; i < a->ndim; ++i)
     {
         //Negative strides is always an overlap
@@ -687,16 +687,14 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
         stride = gcd(a->stride[i], b->stride[i]);
         if (stride == 0) // stride is 0 in both views: dimension is virtual
             continue;
-        int as = astart / stride;
-        int bs = bstart / stride;
-        int ae = as + a->shape[i] * (a->stride[i]/stride);
-        int be = bs + b->shape[i] * (b->stride[i]/stride);
+        int64_t as = astart / stride;
+        int64_t bs = bstart / stride;
+        int64_t ae = as + a->shape[i] * (a->stride[i]/stride);
+        int64_t be = bs + b->shape[i] * (b->stride[i]/stride);
         if (ae < bs || be < as)
             return true;
         astart %= stride;
         bstart %= stride;
     }
-    if (stride > 1 && a->start % stride != b->start % stride)
-        return true;
-    return false;
+    return stride > 1 && a->start % stride != b->start % stride;
 }
