@@ -11,7 +11,7 @@ Features
 --------
 |           | Architecture Support                             ||| Frontends         |||
 |-----------|-----------------|----------------|---------------|-------|-----|----|----|
-|           | Single-Core CPU | Multi-Core CPU | Many-Core GPU | NumPy | C++ | F# | C# |
+|           | Single-Core CPU | Multi-Core CPU | Many-Core GPU | NumPy | C++ | C# | F# |
 | Linux     | X               | X              | X             | X     | x   | X  | X  |
 | MacOSX    | X               |                |               | X     | x   | X  | X  |
 | Windows   |                 |                |               |       |     |    |    |
