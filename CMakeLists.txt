@@ -103,37 +103,22 @@ set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming L
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
 message(STATUS "Python found: ${PYTHON_EXECUTABLE}")
 
-find_package(Boost REQUIRED COMPONENTS serialization filesystem system thread regex)      # Everything
+find_package(Boost REQUIRED COMPONENTS serialization filesystem regex)              # Everything
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
-
-find_package(Cheetah REQUIRED COMPONENTS bohrium)                                   # Used for autogen
-set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
-set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required to build Bohrium")
 
 #
 # Bohrium components
 #
 add_subdirectory(core)
-add_subdirectory(ve/cpu)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
 add_subdirectory(vem/visualizer)
 add_subdirectory(filter/pprint)
-add_subdirectory(filter/fuseprinter)
-add_subdirectory(filter/pricer)
-add_subdirectory(filter/dimclean)
 add_subdirectory(filter/bccon)
 add_subdirectory(filter/bcexp)
 add_subdirectory(filter/noneremover)
-add_subdirectory(fuser/singleton)
-add_subdirectory(fuser/topological)
-add_subdirectory(fuser/gentle)
-add_subdirectory(fuser/greedy)
-add_subdirectory(fuser/optimal)
-# #add_subdirectory(vem/cluster)
-add_subdirectory(ve/gpu)
 add_subdirectory(ve/openmp)
 add_subdirectory(ve/opencl)
 add_subdirectory(extmethods/fftw)
