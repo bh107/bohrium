@@ -368,7 +368,9 @@ void Impl::execute(bh_ir *bhir) {
     auto tfusion = chrono::steady_clock::now();
 
     // Set the constructor flag
-    set_constructor_flag(instr_list, engine.buffers);
+    if (config.defaultGet<bool>("array_contraction", true)) {
+        set_constructor_flag(instr_list, engine.buffers);
+    }
 
     // The cache system
     vector<Block> block_list;

@@ -487,7 +487,9 @@ void Impl::execute(bh_ir *bhir) {
     vector<bh_instruction*> instr_list = remove_non_computed_system_instr(bhir->instr_list);
 
     // Set the constructor flag
-    set_constructor_flag(bhir->instr_list);
+    if (config.defaultGet<bool>("array_contraction", true)) {
+        set_constructor_flag(bhir->instr_list);
+    }
 
     // The cache system
     vector<Block> block_list;
