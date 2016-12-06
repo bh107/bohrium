@@ -13,18 +13,26 @@ before_install:
   - docker build -t bohrium_release -f package/docker/bohrium.dockerfile .
 
 env:
+  global:
+      - BH_GPU_VERBOSE=true
+
   matrix:
 
-      # Python v2
-      - BH_STACK=openmp BH_OPENMP_PROF=true PYTHON_EXEC=python2.7
-      - BH_STACK=opencl BH_OPENCL_PROF=true PYTHON_EXEC=python2.7
+      # OPENMP stack
+      - BH_STACK=openmp BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
-      # Python v3
-      - BH_STACK=openmp BH_OPENMP_PROF=true PYTHON_EXEC=python3.5
-      - BH_STACK=opencl BH_OPENCL_PROF=true PYTHON_EXEC=python3.5
+      - BH_STACK=openmp BH_OPENMP_SERIAL_FUSION=true BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+
+      - BH_STACK=opencl BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+
+      # CPU stack
+      - BH_STACK=cpu BH_CPU_JIT_LEVEL=3 RUN="python /bohrium/test/python/numpytest.py"
+
+      # GPU stack
+      - BH_STACK=gpu BH_BCEXP_GPU_REDUCE1D=100 RUN="python /bohrium/test/python/numpytest.py"
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
 
 script:
-    - docker run -t -e BH_STACK -e BH_OPENMP_PROF -e BH_OPENCL_PROF -e PYTHON_EXEC bohrium_release
+    - docker run -t -e BH_STACK -e BH_CPU_JIT_LEVEL -e BH_BCEXP_GPU_REDUCE1D -e BH_GPU_VERBOSE -e RUN bohrium_release
