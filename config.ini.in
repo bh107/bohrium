@@ -9,6 +9,9 @@ default    = bcexp, bccon, node, openmp
 openmp     = bcexp, bccon, node, openmp
 opencl     = bcexp, bccon, node, opencl, openmp
 
+cpu        = bcexp_cpu, bccon, greedy, node, cpu
+gpu        = bcexp_gpu, dimclean, greedy, node, gpu, cpu
+
 #
 # Managers
 #
@@ -27,6 +30,9 @@ address = localhost
 port = 4200
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
+
+[cluster]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_cluster${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 
 #
@@ -58,6 +64,10 @@ reduce1d = 32000
 timing = false
 verbose = false
 
+[dimclean]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_dimclean${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = false
+
 [noneremover]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_noneremover${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
@@ -87,6 +97,122 @@ prof = false #Profiling statistics
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 serial_fusion = false # Topological fusion is default
+
+
+### Legacy
+
+
+
+[cpu]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_cpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX},${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}
+timing = ${VE_CPU_TIMING}
+bind = ${VE_CPU_BIND}
+vcache_size = ${VE_CPU_VCACHE_SIZE}
+preload = ${VE_CPU_PRELOAD}
+jit_level = ${VE_CPU_JIT_LEVEL}
+jit_dumpsrc = ${VE_CPU_JIT_DUMPSRC}
+jit_offload = ${VE_CPU_JIT_OFFLOAD}
+compiler_cmd="${VE_CPU_COMPILER_CMD}"
+compiler_inc="${VE_CPU_COMPILER_INC}"
+compiler_lib="${VE_CPU_COMPILER_LIB}"
+compiler_flg="${VE_CPU_COMPILER_FLG}"
+compiler_ext="${VE_CPU_COMPILER_EXT}"
+object_path="${VE_CPU_OBJECT_PATH}"
+template_path="${VE_CPU_TEMPLATE_PATH}"
+kernel_path="${VE_CPU_KERNEL_PATH}"
+##
+## Extra flags for JIT-compilation, add manually for experimentation.
+##
+## Interlagos
+## -mprefer-avx128 -fprefetch-loop-arrays --param prefetch-latency=300 -fno-tree-pre -ftree-vectorize -funroll-all-loops
+##
+## Xeon Phi / Intel MIC
+## -offload-attribute-target=mic
+##
+
+[gpu]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_gpu${CMAKE_SHARED_LIBRARY_SUFFIX}
+include = ${CMAKE_INSTALL_PREFIX}/share/bohrium/include
+# Aditional options (string) given to the opencl compiler. See documentation for clBuildProgram
+#compiler_options = "-cl-opt-disable"
+work_goup_size_1dx = 128
+work_goup_size_2dx = 32
+work_goup_size_2dy = 4
+work_goup_size_3dx = 32
+work_goup_size_3dy = 2
+work_goup_size_3dz = 2
+# kernel = {[both],fixed,dynamic}
+kernel = both
+# compile = {[async],sync}
+compile = sync
+verbose = false
+timing = false
+print_source = false
+force_cpu = false
+
+[bcexp_gpu]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+gc_threshold = 400
+matmul = 1
+sign = 1
+powk = 1
+reduce1d = 32000
+repeat = 0
+timing = false
+verbose = false
+
+[bcexp_cpu]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+gc_threshold = 400
+matmul = 1
+sign = 0
+powk = 1
+reduce1d = 0
+repeat = 0
+timing = false
+verbose = false
+
+#
+# Fusers
+#
+
+[singleton]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_singleton${CMAKE_SHARED_LIBRARY_SUFFIX}
+fuse_cache = true
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
+
+[topological]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_topological${CMAKE_SHARED_LIBRARY_SUFFIX}
+fuse_cache = true
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
+
+[gentle]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_gentle${CMAKE_SHARED_LIBRARY_SUFFIX}
+fuse_cache = true
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
+
+[greedy]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_greedy${CMAKE_SHARED_LIBRARY_SUFFIX}
+fuse_cache = true
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
+
+[optimal]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_fuser_optimal${CMAKE_SHARED_LIBRARY_SUFFIX}
+fuse_cache = true
+cache_path=${CMAKE_INSTALL_PREFIX}/var/bohrium/fuse_cache
+timing = false
+
+[fuseprinter]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_fuseprinter${CMAKE_SHARED_LIBRARY_SUFFIX}
+
+[pricer]
+impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pricer${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 
 

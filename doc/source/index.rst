@@ -10,20 +10,21 @@ Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes a
 Features
 --------
 
-+-----------+-----------------+-----------------+---------------+-------+-----+------+
-|           | Architecture Support                              | Frontends          |
-+-----------+-----------------+-----------------+---------------+-------+-----+------+
-|           | Single-Core CPU | Multi-Core CPU  | Many-Core GPU | NumPy | C++ | .NET |
-+===========+=================+=================+===============+=======+=====+======+
-| Linux     | X               | X               |  X            | X     | X   |  X   |
-+-----------+-----------------+-----------------+---------------+-------+-----+------+
-| MacOSX    | X               | X               |               | X     |     |  X   |
-+-----------+-----------------+-----------------+---------------+-------+-----+------+
-| Windows   |                 |                 |               |       |     |      |
-+-----------+-----------------+-----------------+---------------+-------+-----+------+
++-----------+-----+-----+-------------+-------+-----+------+
+|           | Architecture Support    | Frontends          |
++-----------+-----+-----+-------------+-------+-----+------+
+|           | CPU | GPU | CPU Cluster | NumPy | C++ | .NET |
++===========+=====+=====+=============+=======+=====+======+
+| Linux     | X   | X   | ( X )       | X     | X   |  X   |
++-----------+-----+-----+-------------+-------+-----+------+
+| MacOSX    | X   | X   |             | X     |     |  X   |
++-----------+-----+-----+-------------+-------+-----+------+
+| Windows   |     |     |             |       |     |      |
++-----------+-----+-----+-------------+-------+-----+------+
 
 Please note:
     * Bohrium is a 64bit project exclusively.
+    * The Cluster implementation is very experimental thus has no Ubuntu package etc.
     * We are working on a Windows version that uses the .NET frontend and CPU backend.
 
 Get Started!

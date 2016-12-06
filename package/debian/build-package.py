@@ -16,15 +16,15 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
+Build-Depends: python-numpy, debhelper, cmake, swig, python-cheetah, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
 Package: bohrium
 Architecture: amd64
-Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev
+Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-system-dev, libboost-filesystem-dev, libboost-thread-dev, libboost-regex-dev, libhwloc-dev
 Recommends:
-Suggests: bohrium-numcil, bohrium-opencl, bohrium-visualizer, ipython,
+Suggests: bohrium-numcil, bohrium-gpu, bohrium-visualizer, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
 
 Package: bohrium-numcil
@@ -34,7 +34,7 @@ Recommends: mono-devel
 Suggests:
 Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
 
-Package: bohrium-opencl
+Package: bohrium-gpu
 Architecture: amd64
 Depends: bohrium, opencl-dev, libopencl1, libgl-dev
 Recommends:
@@ -55,7 +55,7 @@ RULES ="""\
 
 build:
 	mkdir b
-	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
+	cd b; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DVEM_CLUSTER=OFF ..
 	$(MAKE) VERBOSE=1 -C b preinstall
 	touch build
 
@@ -78,12 +78,12 @@ binary-numcil: build
 	dpkg-gencontrol -pbohrium-numcil -Pdebian/numcil -Tdebian/bohrium-numcil.substvars
 	dpkg --build debian/numcil ..
 
-binary-opencl: build
-	cd b; cmake -DCOMPONENT=bohrium-opencl -DCMAKE_INSTALL_PREFIX=../debian/opencl/usr -P cmake_install.cmake
-	mkdir -p debian/opencl/DEBIAN
-	dpkg-gensymbols -q -pbohrium-opencl -Pdebian/opencl
-	dpkg-gencontrol -pbohrium-opencl -Pdebian/opencl -Tdebian/bohrium-opencl.substvars
-	dpkg --build debian/opencl ..
+binary-gpu: build
+	cd b; cmake -DCOMPONENT=bohrium-gpu -DCMAKE_INSTALL_PREFIX=../debian/gpu/usr -P cmake_install.cmake
+	mkdir -p debian/gpu/DEBIAN
+	dpkg-gensymbols -q -pbohrium-gpu -Pdebian/gpu
+	dpkg-gencontrol -pbohrium-gpu -Pdebian/gpu -Tdebian/bohrium-gpu.substvars
+	dpkg --build debian/gpu ..
 
 binary-visualizer: build
 	cd b; cmake -DCOMPONENT=bohrium-visualizer -DCMAKE_INSTALL_PREFIX=../debian/visualizer/usr -P cmake_install.cmake
@@ -96,7 +96,7 @@ binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-numcil binary-opencl binary-visualizer
+binary-arch: binary-core binary-numcil binary-gpu binary-visualizer
 
 clean:
 	rm -f build
