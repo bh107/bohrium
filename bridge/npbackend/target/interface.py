@@ -125,7 +125,7 @@ def extmethod(name, out, in1, in2):
     """
     raise NotImplementedError()
 
-def range(size, dtype):
+def arange(size, dtype):
     """
     Create a new array containing the values [0:size[.
 
