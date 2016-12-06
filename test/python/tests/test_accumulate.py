@@ -11,7 +11,8 @@ class test_accumulate_views:
             for i in range(len(shape)):
                 yield (cmd, -i)
 
-    def test_accumulate(self, (cmd, axis)):
+    def test_accumulate(self, arg):
+        (cmd, axis) = arg
         cmd += "res = M.add.accumulate(a, axis=%d)" % axis
         return cmd
 
@@ -20,7 +21,8 @@ class test_accumulate_primitives:
         for op in ["add", "multiply"]:
             yield (op, "np.float64")
 
-    def test_vector(self, (op, dtype)):
+    def test_vector(self, arg):
+        (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.accumulate(a)" % op
         return cmd

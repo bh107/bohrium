@@ -7,7 +7,8 @@ class test_bh_opcodes:
                 for type_sig in op['type_sig']:
                     yield (op, type_sig)
 
-    def test_ufunc(self, (op, type_sig)):
+    def test_ufunc(self, arg):
+        (op, type_sig) = arg
         cmd = "R = bh.random.RandomState(42); "
         for i, dtype in enumerate(type_sig[1:]):
             cmd += "a%d = R.random(10, dtype=np.%s, bohrium=<BH>); " % (i, dtype)
