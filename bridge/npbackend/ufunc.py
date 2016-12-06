@@ -331,7 +331,7 @@ class Ufunc(object):
             axis = list(axis)#We reduce multiple dimensions
         if len(axis) != len(set(axis)):
             raise ValueError("duplicate value in 'axis'")
-        axis = sorted(axis, reverse=True)
+        axis = sorted(axis,reverse=True)
 
         #When reducing booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
