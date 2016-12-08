@@ -33,7 +33,7 @@ namespace jitk {
 
 namespace {
 
-constexpr boost::hash<string> hasher;
+boost::hash<string> hasher;
 constexpr size_t SEP_INSTR = SIZE_MAX;
 constexpr size_t SEP_OP = SIZE_MAX - 1;
 constexpr size_t SEP_BLOCK = SIZE_MAX - 2;
