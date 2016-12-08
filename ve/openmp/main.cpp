@@ -59,6 +59,7 @@ class Impl : public ComponentImpl {
     chrono::duration<double> time_total_execution{0};
     chrono::duration<double> time_fusion{0};
     chrono::duration<double> time_exec{0};
+    chrono::duration<double> time_build{0};
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
     ~Impl();
@@ -100,6 +101,7 @@ Impl::~Impl() {
         cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
         cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
+        cout << "\t  Build:  " << time_build.count() << "s" << endl;
         cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
     }
 }
@@ -568,8 +570,10 @@ void Impl::execute(bh_ir *bhir) {
         write_kernel(kernel, base_ids, config, ss);
 
         // Compile the kernel
+        auto tbuild = chrono::steady_clock::now();
         KernelFunction func = _store.getFunction(ss.str());
         assert(func != NULL);
+        time_build += chrono::steady_clock::now() - tbuild;
 
         // Create a 'data_list' of data pointers
         vector<void*> data_list;
