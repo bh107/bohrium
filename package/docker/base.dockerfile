@@ -21,13 +21,17 @@ RUN apt-get install -qq mono-mcs mono-xbuild libmono-system-numerics4.0-cil libm
 RUN apt-get install -qq fftw3-dev
 RUN apt-get install -qq libhwloc-dev
 RUN apt-get install -qq libgl1-mesa-dev
+RUN apt-get install -qq python3 python3-numpy python3-dev cython3
 
 # Install AMD SDK for OpenCL
 RUN mkdir -p /opt/amd_src
 WORKDIR /opt/amd_src
 ENV OPENCL_HOME /opt/AMDAPPSDK-2.9-1
 ENV OPENCL_LIBPATH /opt/AMDAPPSDK-2.9-1/lib/x86_64
-RUN wget -nv http://jenkins.choderalab.org/userContent/AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2; exit 0;
+
+# RUN wget -nv http://jenkins.choderalab.org/userContent/AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2; exit 0;
+COPY AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2 .
+
 RUN tar xjf AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2
 RUN ./AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh -- -s -a yes
 ENV OpenCL_LIBPATH "/opt/AMDAPPSDK-2.9-1/lib/x86_64/"
@@ -70,8 +74,8 @@ RUN rm ../Cheetah-$CTV.tar.gz
 RUN mkdir -p /opt/numpy
 WORKDIR /opt/numpy
 ENV NV 1.10.4
-RUN wget -q http://optimate.dl.sourceforge.net/project/numpy/NumPy/$NV/numpy-$NV.tar.gz
-RUN tar -xzf numpy-$NV.tar.gz
+RUN wget -q https://github.com/numpy/numpy/archive/v$NV.tar.gz
+RUN tar -xzf v$NV.tar.gz
 WORKDIR numpy-$NV
 RUN dython setup.py install
-RUN rm ../numpy-$NV.tar.gz
+RUN rm ../v$NV.tar.gz
