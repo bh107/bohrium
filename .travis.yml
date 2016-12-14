@@ -16,12 +16,14 @@ env:
   matrix:
 
       # OPENMP stack
-      - BH_STACK=openmp BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      #     - BH_STACK=openmp BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
-      - BH_STACK=openmp BH_OPENMP_SERIAL_FUSION=true BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+        #     - BH_STACK=openmp BH_OPENMP_SERIAL_FUSION=true BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
       # OPENCL stack
-      - BH_STACK=opencl BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      #      - BH_STACK=opencl BH_OPENMP_PROF=true RUN="python /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+
+      - BH_STACK=openmp BH_OPENMP_PROF=true RUN="python3 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && python3 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
