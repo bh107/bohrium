@@ -519,7 +519,11 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
 
 @fix_returned_biclass
 def simply_range(size, dtype=numpy.uint64):
-    if not isinstance(size, (int, long)):
+    try:
+        integers = (int, long)
+    except:
+        integers = (int,)
+    if not isinstance(size, integers):
         raise ValueError("size must be an integer")
     if size < 1:
         raise ValueError("size must be greater than 0")
