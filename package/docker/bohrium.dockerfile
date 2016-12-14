@@ -28,9 +28,7 @@ COPY . ../
 RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DEXT_VISUALIZER=OFF
 RUN make
 RUN make install
-ENV PYTHONPATH "/usr/lib/python2.7/site-packages:$PYTHONPATH"
 
 # Test Suite
 WORKDIR /bohrium
-#ENTRYPOINT /usr/bin/bh-info && echo "python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS" && python /bohrium/test/python/numpytest.py $NUMPYTEST_ARGS && python /bohrium/test/python/run.py --file /bohrium/test/python/tests/test_array_create.py
-ENTRYPOINT /usr/bin/bh-info && echo "$RUN" && eval $RUN
+ENTRYPOINT export PYTHONPATH="/usr/lib/$PYTHON_EXEC/site-packages:$PYTHONPATH" && export && /usr/bin/bh-info && $PYTHON_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && $PYTHON_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py
