@@ -34,3 +34,32 @@ else()
     endif()
 endif()
 
+# If the default python version is version 2 we will try a version 3 build as well
+if(${PYTHON_VERSION_MAJOR} EQUAL "2")
+    find_program(PYTHON3 python3)
+    if(PYTHON3)
+        message(STATUS ${PYTHON3})
+    endif()
+
+    find_program(CYTHON3 cython3)
+    if(CYTHON3)
+        message(STATUS ${CYTHON3})
+    endif()
+
+    execute_process(COMMAND "${PYTHON3}" "-c" "import numpy as n;"
+                    RESULT_VARIABLE NUMPY3)
+    if(${NUMPY3} EQUAL "0" AND PYTHON3 AND CYTHON3)
+        message(STATUS "Found Python3, Cython3, and NumPy3")
+
+        # Generate distutils package and install it
+        add_custom_target(
+                bhpy3 ALL
+                COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --prefix=${CMAKE_CURRENT_BINARY_DIR}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                DEPENDS bhc
+        )
+        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} DESTINATION . COMPONENT bohrium)
+
+    endif()
+endif()
+
