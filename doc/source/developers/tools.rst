@@ -47,12 +47,12 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
 
   # Build and install NumPy
   export VERSION=1.11.0
-  wget http://optimate.dl.sourceforge.net/project/numpy/NumPy/$VERSION/numpy-$VERSION.tar.gz
-  tar -xzf numpy-$VERSION.tar.gz
+  wget  https://github.com/numpy/numpy/archive/v$VERSION.tar.gz
+  tar -xzf v$VERSION.tar.gz
   cd numpy-$VERSION
   dython setup.py install
   cd ..
-  rm numpy-$VERSION.tar.gz
+  rm v$VERSION.tar.gz
 
 Build Bohrium with custom Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
