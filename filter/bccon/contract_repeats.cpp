@@ -68,10 +68,10 @@ static string bh_instr_list_to_string(const vector<bh_instruction> &instr_list, 
 }
 
 // Count occurrences of str2 in str1
-static int count_occur(string str1, string str2)
+static uint count_occur(string str1, string str2)
 {
-    int occur = 0;
-    int start = 0;
+    uint occur = 0;
+    uint start = 0;
 
     while ((start = str1.find(str2, start)) < str1.length()) {
         ++occur;
@@ -91,8 +91,8 @@ void Contracter::contract_repeats(bh_ir &bhir)
 
     try {
         if (boost::regex_search(bh_string_instr_list.begin(), bh_string_instr_list.end(), matches, re)) {
-            int size  = matches.str(1).size(); // How many instructions
-            int occur = count_occur(matches.str(0), matches.str(1)); // How many repeats
+            uint size  = matches.str(1).size(); // How many instructions
+            uint occur = count_occur(matches.str(0), matches.str(1)); // How many repeats
 
             verbose_print("[Repeat] Found repeating sequence of length " + std::to_string(occur) + ". It repeats " + std::to_string(size) + " times.");
 
