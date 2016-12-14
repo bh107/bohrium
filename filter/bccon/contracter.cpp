@@ -57,6 +57,6 @@ void verbose_print(std::string str)
     if (__verbose) {
         std::cout << "[Contracter] " << str << std::endl;
     }
-};
+}
 
 }}}
