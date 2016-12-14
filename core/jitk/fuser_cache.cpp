@@ -36,7 +36,7 @@ namespace {
 boost::hash<string> hasher;
 constexpr size_t SEP_INSTR = SIZE_MAX;
 constexpr size_t SEP_OP = SIZE_MAX - 1;
-constexpr size_t SEP_BLOCK = SIZE_MAX - 2;
+// constexpr size_t SEP_BLOCK = SIZE_MAX - 2;
 constexpr size_t SEP_SHAPE = SIZE_MAX - 3;
 
 /* The Instruction hash consists of the following fields:
