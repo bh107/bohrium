@@ -114,7 +114,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 t = empty_like(ary, dtype=dtype)
                 t[...] = ary
                 ary = t
-            for i in xrange(ary.ndim, ndmin):
+            for i in range(ary.ndim, ndmin):
                 ary = numpy.expand_dims(ary, i)
             return ary
         else:

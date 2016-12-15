@@ -52,7 +52,7 @@ def _bhc_exec(func, *args):
     """execute the 'func' with the bhc objects in 'args'"""
 
     args = list(args)
-    for i in xrange(len(args)):
+    for i in range(len(args)):
         if isinstance(args[i], View):
             if not hasattr(args[i], 'bhc_obj'):
                 return#Ignore zero-sized views

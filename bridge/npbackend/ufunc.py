@@ -176,7 +176,7 @@ class Ufunc(object):
                 return out
 
         #Copy broadcasted array back to 'args' excluding scalars
-        for i in xrange(len(args)):
+        for i in range(len(args)):
             if not np.isscalar(args[i]):
                 args[i] = bargs[i]
 
@@ -197,7 +197,7 @@ class Ufunc(object):
         (out_dtype, in_dtype) = _util.type_sig(self.info['name'], args)
 
         #Convert dtype of all inputs
-        for i in xrange(len(args)):
+        for i in range(len(args)):
             if not np.isscalar(args[i]) and not dtype_equal(args[i], in_dtype):
                 tmp = array_create.empty_like(args[i], dtype=in_dtype)
                 tmp[...] = args[i]
@@ -340,7 +340,7 @@ class Ufunc(object):
         #Check for out of bounds and convert negative axis values
         if len(axis) > ary.ndim:
             raise ValueError("number of 'axes' to reduce is out of bounds")
-        for i in xrange(len(axis)):
+        for i in range(len(axis)):
             if axis[i] < 0:
                 axis[i] = ary.ndim+axis[i]
             if axis[i] >= ary.ndim:
