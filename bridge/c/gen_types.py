@@ -21,14 +21,14 @@ def main(args):
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
     head += "//Forward declaration of array types:\n"
-    for key, val in type_map.iteritems():
+    for key, val in type_map.items():
         head += "struct bhc_ndarray_%s;\n"%val['name']
     head += "\n//Pointer shorthands:\n"
-    for key, val in type_map.iteritems():
+    for key, val in type_map.items():
         head += "typedef struct bhc_ndarray_%s* %s;\n"%(val['name'], val['bhc_ary'])
 
     impl += "//Array types:\n"
-    for key, val in type_map.iteritems():
+    for key, val in type_map.items():
         impl += "struct bhc_ndarray_%s {multi_array<%s> me;};\n"%(val['name'], val['bhc'])
 
     #Let's add header and footer

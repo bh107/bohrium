@@ -34,7 +34,7 @@ def main(args):
 
     doc = "\n//Create new flat array\n"
     impl += doc; head += doc
-    for key, t in type_map.iteritems():
+    for key, t in type_map.items():
         decl = "%s bhc_new_A%s(uint64_t size)"%(t['bhc_ary'], t['name'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
@@ -49,7 +49,7 @@ def main(args):
 
     doc = "\n//Destroy array\n"
     impl += doc; head += doc
-    for key, t in type_map.iteritems():
+    for key, t in type_map.items():
         decl = "void bhc_destroy_A%s(%s ary)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
@@ -61,7 +61,7 @@ def main(args):
 
     doc = "\n//Create view\n"
     impl += doc; head += doc
-    for key, t in type_map.iteritems():
+    for key, t in type_map.items():
         decl = "%s bhc_view_A%s("%(t['bhc_ary'], t['name'])
         decl += "const %s src, uint64_t rank, int64_t start, "%t['bhc_ary']
         decl += "const int64_t *shape, const int64_t *stride)"
@@ -80,7 +80,7 @@ def main(args):
     doc += "//  if 'force_alloc', force memory allocation before returning the data pointer\n"
     doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
     impl += doc; head += doc
-    for key, t in type_map.iteritems():
+    for key, t in type_map.items():
         decl = "%s* bhc_data_get_A%s(const %s ary, bh_bool force_alloc, bh_bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
@@ -101,7 +101,7 @@ def main(args):
 
     doc = "\n//Set data pointer\n"
     impl += doc; head += doc
-    for key, t in type_map.iteritems():
+    for key, t in type_map.items():
         decl = "void bhc_data_set_A%(name)s(const %(bhc_ary)s ary, %(bhc)s *data)"%t
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
@@ -114,7 +114,7 @@ def main(args):
 
     doc = "\n//Extension Method, returns 0 when the extension exist\n"
     impl += doc; head += doc
-    for key, t in type_map.iteritems():
+    for key, t in type_map.items():
         decl = "int bhc_extmethod"
         decl += "_A%(name)s_A%(name)s_A%(name)s"%t
         decl += "(const char *name, %(bhc_ary)s out, const %(bhc_ary)s in1, const %(bhc_ary)s in2)"%t
