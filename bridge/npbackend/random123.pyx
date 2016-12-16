@@ -263,10 +263,7 @@ cdef class RandomState:
         if size is None:
             return numpy.dtype(dtype).type(r_uint) / max_value
         else:
-            r = np.empty_like(r_uint, dtype=dtype)
-            r[...] = r_uint
-            r /= max_value
-            return r
+            return np.array(r_uint, dtype=dtype, bohrium=bohrium) / max_value
 
     def tomaxint(self, size=None, bohrium=True):
         """
