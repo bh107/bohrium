@@ -11,10 +11,11 @@ import bohrium
 def get_execfile():
     """execfile() does not exist in Python 3"""
     try:
+        return execfile
+    except NameError:
         import runpy
         return runpy.run_path
-    except ImportError:
-        return execfile
+
 
 # numpy becomes bohrium
 sys.modules['numpy_force'] = numpy
