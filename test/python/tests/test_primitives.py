@@ -19,3 +19,19 @@ class test_bh_opcodes:
         cmd_bh = cmd.replace("<BH>", "True")
         return cmd_np, cmd_bh
 
+
+class test_extra_binary_ops:
+    def init(self):
+        for op in ["true_divide", "floor_divide"]:
+            for dtype in ["float64", "int64", "uint64"]:
+                yield (op, dtype)
+
+    def test_ufunc(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); "
+        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=<BH>); "%dtype
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=<BH>); "%dtype
+        cmd += "res = M.%s(a0, a1)"%op
+        cmd_np = cmd.replace("<BH>", "False")
+        cmd_bh = cmd.replace("<BH>", "True")
+        return cmd_np, cmd_bh

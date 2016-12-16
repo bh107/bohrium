@@ -45,6 +45,7 @@ def run(args):
                 mth_obj = getattr(cls_inst, mth_name)
                 name = "%s/%s/%s" % (filename, cls_name[5:], mth_name[5:])
                 print("Testing %s%s%s" % (OKGREEN, name, ENDC), end="")
+                sys.stdout.flush()
                 start_time = time.time()
                 for ret in getattr(cls_inst, "init")():
                     # Let's retrieve the NumPy and Bohrium commands
