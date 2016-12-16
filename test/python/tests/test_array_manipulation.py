@@ -27,7 +27,8 @@ class test_diagonal:
             for offset in range(-min(shape)+1, min(shape)):
                 yield (cmd, offset)
 
-    def test_diagonal(self, (cmd, offset)):
+    def test_diagonal(self, cmd_and_offset):
+        (cmd, offset) = cmd_and_offset
         cmd += "res = M.diagonal(a, offset=%d)" % offset
         return cmd
 
@@ -43,7 +44,8 @@ class test_diagonal_axis:
                             continue
                         yield (cmd, offset, axis1, axis2)
 
-    def test_diagonal(self, (cmd, offset, axis1, axis2)):
+    def test_diagonal(self, args):
+        (cmd, offset, axis1, axis2) = args
         cmd += "res = M.diagonal(a, offset=%d, axis1=%d, axis2=%d)" % (offset, axis1, axis2)
         return cmd
 
