@@ -49,7 +49,7 @@ def check_biclass(ary):
     except AttributeError:
         return False
 
-    import _bh
+    from . import _bh #We import locally in order to avoid import cycle
     return not isinstance(ary, _bh.ndarray)
 
 def fix_biclass(ary):
@@ -87,7 +87,7 @@ def new(shape, dtype, bhc_ary=None):
     Use a new Bohrium-C array when 'bhc_ary' is None.
     """
 
-    import _bh #We import locally in order to avoid import cycle
+    from . import _bh #We import locally in order to avoid import cycle
     ret = _bh.ndarray(shape, dtype=dtype)
     if bhc_ary is None:
         new_bhc_base(ret)
