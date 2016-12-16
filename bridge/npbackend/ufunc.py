@@ -151,7 +151,7 @@ class Ufunc(object):
             pass
 
         #We do not support NumPy's exotic arguments
-        for k, val in kwargs.iteritems():
+        for k, val in kwargs.items():
             if val is not None:
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
