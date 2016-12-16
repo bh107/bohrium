@@ -210,14 +210,14 @@ def get_bhc(ary):
         if base.bhc_ary is None:
             base._data_np2bhc()
 
-        offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
+        offset = (ary.ctypes.data - base.ctypes.data) // base.itemsize
         if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
             raise TypeError("The view offset must be element aligned")
         if not 0 <= offset < base.size:
             raise TypeError("The view offset is greater than the total number of elements in the base!")
         strides = []
         for stride in ary.strides:
-            strides.append(stride / base.itemsize)
+            strides.append(stride // base.itemsize)
             if stride % base.itemsize != 0:
                 raise TypeError("The strides must be element aligned")
 
