@@ -153,9 +153,7 @@ class Ufunc(object):
         #We do not support NumPy's exotic arguments
         for k, val in kwargs.iteritems():
             if val is not None:
-                raise ValueError(
-                    "Bohrium ufuncs doesn't support the '%s' argument" % str(k)
-                )
+                raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
         #Broadcast the args
         bargs = broadcast_arrays(*args)
@@ -497,10 +495,29 @@ class Sign(Ufunc):
             out[...] = (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
             return out
 
+class TrueDivide(Ufunc):
+    def __call__(self, a1, a2, out=None):
+        allfloats = [np.float32, np.float64, np.complex64, np.complex128]
+        if a1.dtype in allfloats or a2.dtype in allfloats:
+            ret = a1 / a2  # Floating points automatically use true division
+        else:
+            if a1.dtype.itemsize > 4 or a2.dtype.itemsize > 4:
+                dtype = np.float64
+            else:
+                dtype = np.float32
+            ret = array_create.array(a1, dtype=dtype) / array_create.array(a2, dtype=dtype)
+        target.runtime_flush()
+        if out is None:
+            return ret
+        else:
+            out[...] = ret
+            return out
+
 # Expose via UFUNCS
 UFUNCS = [
     Negative({'name':'negative'}),
-    Sign({'name':'sign'})
+    Sign({'name':'sign'}),
+    TrueDivide({'name':'true_divide'}),
 ]
 
 for op in _info.op.itervalues():
