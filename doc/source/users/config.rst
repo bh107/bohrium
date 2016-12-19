@@ -16,7 +16,7 @@ The default configuration file looks similar to the config below::
   #
   # Stack configurations, which are a comma separated lists of components.
   # NB: 'stacks' is a reserved section name and 'default'
-  #     is used when 'BH_STACKS' is unset.
+  #     is used when 'BH_STACK' is unset.
   #     The bridge is never part of the list
   #
   [stacks]
