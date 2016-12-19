@@ -524,6 +524,21 @@ class TrueDivide(Ufunc):
             return out
 UFUNCS["true_divide"] = TrueDivide({'name': 'true_divide'})
 
+class FloorDivide(Ufunc):
+    @fix_returned_biclass
+    def __call__(self, a1, a2, out=None):
+        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
+        if a1.dtype in all_floats or a2.dtype in all_floats:
+            ret = UFUNCS["floor"](a1 / a2)
+        else:
+            ret = UFUNCS["divide"](a1, a2)  # Integers automatically use floor division in Python v2
+        if out is None:
+            return ret
+        else:
+            out[...] = ret
+            return out
+UFUNCS["floor_divide"] = FloorDivide({'name': 'floor_divide'})
+
 # Expose via their name.
 for name, ufunc in UFUNCS.items():
     exec("%s = ufunc" % name)

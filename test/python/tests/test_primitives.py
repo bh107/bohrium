@@ -22,7 +22,7 @@ class test_bh_opcodes:
 
 class test_extra_binary_ops:
     def init(self):
-        for op in ["true_divide"]:
+        for op in ["true_divide", "floor_divide"]:
             for dtype in ["float64", "int64", "uint64"]:
                 yield (op, dtype)
 
