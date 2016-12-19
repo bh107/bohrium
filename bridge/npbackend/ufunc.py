@@ -153,9 +153,7 @@ class Ufunc(object):
         #We do not support NumPy's exotic arguments
         for k, val in kwargs.iteritems():
             if val is not None:
-                raise ValueError(
-                    "Bohrium ufuncs doesn't support the '%s' argument" % str(k)
-                )
+                raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
         #Broadcast the args
         bargs = broadcast_arrays(*args)
@@ -333,7 +331,7 @@ class Ufunc(object):
             axis = list(axis)#We reduce multiple dimensions
         if len(axis) != len(set(axis)):
             raise ValueError("duplicate value in 'axis'")
-        axis = sorted(axis,reverse=True)
+        axis = sorted(axis, reverse=True)
 
         #When reducing booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
@@ -476,39 +474,74 @@ class Ufunc(object):
 # Expose all ufuncs at the module-level.
 #
 # After the following is executed, all ufuncs will be available as
-# object instances of the Ufunc class via the  list of all ufuncs (UFUNCS)
+# object instances of the Ufunc class via the dict of all ufuncs (UFUNCS)
 # and via their individual names such as "negative", "identity", "add" etc.
+
+# Expose via UFUNCS
+UFUNCS = {}
+for op in _info.op.itervalues():
+    f = Ufunc(op)
+    UFUNCS[f.info['name']] = f
 
 # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
 #       such as "negative" which can be done like below.
 class Negative(Ufunc):
+    @fix_returned_biclass
     def __call__(self, ary, out=None):
         if out is None:
             return -1 * ary
         else:
             out[...] = -1 * ary
             return out
+UFUNCS["negative"] = Negative({'name': 'negative'})
 
 class Sign(Ufunc):
+    @fix_returned_biclass
     def __call__(self, ary, out=None):
         if out is None:
             return (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
         else:
             out[...] = (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
             return out
+UFUNCS["sign"] = Sign({'name':'sign'})
 
-# Expose via UFUNCS
-UFUNCS = [
-    Negative({'name':'negative'}),
-    Sign({'name':'sign'})
-]
+class TrueDivide(Ufunc):
+    @fix_returned_biclass
+    def __call__(self, a1, a2, out=None):
+        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
+        if a1.dtype in all_floats or a2.dtype in all_floats:
+            ret = a1 / a2  # Floating points automatically use true division
+        else:
+            if a1.dtype.itemsize > 4 or a2.dtype.itemsize > 4:
+                dtype = np.float64
+            else:
+                dtype = np.float32
+            ret = array_create.array(a1, dtype=dtype) / array_create.array(a2, dtype=dtype)
+        if out is None:
+            return ret
+        else:
+            out[...] = ret
+            return out
+UFUNCS["true_divide"] = TrueDivide({'name': 'true_divide'})
 
-for op in _info.op.itervalues():
-    UFUNCS.append(Ufunc(op))
+class FloorDivide(Ufunc):
+    @fix_returned_biclass
+    def __call__(self, a1, a2, out=None):
+        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
+        if a1.dtype in all_floats or a2.dtype in all_floats:
+            ret = UFUNCS["floor"](a1 / a2)
+        else:
+            ret = UFUNCS["divide"](a1, a2)  # Integers automatically use floor division in Python v2
+        if out is None:
+            return ret
+        else:
+            out[...] = ret
+            return out
+UFUNCS["floor_divide"] = FloorDivide({'name': 'floor_divide'})
 
 # Expose via their name.
-for ufunc in UFUNCS:
-    exec("%s = ufunc" % ufunc.info['name'])
+for name, ufunc in UFUNCS.items():
+    exec("%s = ufunc" % name)
 
 # We do not want to expose a function named "ufunc"
 del ufunc
