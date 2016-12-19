@@ -25,8 +25,8 @@ asarray = array
 asanyarray = array
 
 # Expose all ufuncs
-for f in UFUNCS:
-    exec("%s = f" % f.info['name'])
+for name, ufunc in UFUNCS.items():
+    exec("%s = ufunc" % name)
 
 # Aliases
 aliases = [

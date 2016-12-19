@@ -66,7 +66,7 @@ def run(args):
                     exec(cmd_np, env)
                     res_np = env['res']
                     env = {"np": numpy, "bh": bohrium}
-                    exec (cmd_bh, env)
+                    exec(cmd_bh, env)
                     res_bh = env['res'].copy2numpy()
                     try:
                         similar = numpy.allclose(res_np, res_bh, equal_nan=True)
