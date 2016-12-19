@@ -6,6 +6,7 @@ NumPy ufunc encapsulation
 
 """
 from __future__ import print_function
+import sys
 from . import _util
 from . import array_create
 import numpy_force as np
@@ -331,7 +332,7 @@ class Ufunc(object):
             axis = list(axis)#We reduce multiple dimensions
         if len(axis) != len(set(axis)):
             raise ValueError("duplicate value in 'axis'")
-        axis = sorted(axis,reverse=True)
+        axis = sorted(axis, reverse=True)
 
         #When reducing booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
@@ -479,9 +480,13 @@ class Ufunc(object):
 
 # Expose via UFUNCS
 UFUNCS = {}
-for op in _info.op.itervalues():
+for op in _info.op.values():
     f = Ufunc(op)
     UFUNCS[f.info['name']] = f
+
+# 'bh_divide' refers to how Bohrium divide, which is like division in C/C++
+# We needs this reference because Python v3 uses "true" division
+UFUNCS["bh_divide"] = UFUNCS["divide"]
 
 # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
 #       such as "negative" which can be done like below.
@@ -510,7 +515,7 @@ class TrueDivide(Ufunc):
     def __call__(self, a1, a2, out=None):
         all_floats = [np.float32, np.float64, np.complex64, np.complex128]
         if a1.dtype in all_floats or a2.dtype in all_floats:
-            ret = a1 / a2  # Floating points automatically use true division
+            ret = UFUNCS["bh_divide"](a1, a2)  # Floating points automatically use bohrium division
         else:
             if a1.dtype.itemsize > 4 or a2.dtype.itemsize > 4:
                 dtype = np.float64
@@ -531,13 +536,17 @@ class FloorDivide(Ufunc):
         if a1.dtype in all_floats or a2.dtype in all_floats:
             ret = UFUNCS["floor"](a1 / a2)
         else:
-            ret = UFUNCS["divide"](a1, a2)  # Integers automatically use floor division in Python v2
+            ret = UFUNCS["bh_divide"](a1, a2)  # Integers automatically use bohrium division
         if out is None:
             return ret
         else:
             out[...] = ret
             return out
 UFUNCS["floor_divide"] = FloorDivide({'name': 'floor_divide'})
+
+# Python v3 uses "true" division
+if sys.version_info.major >= 3:
+    UFUNCS["divide"] = UFUNCS["true_divide"]
 
 # Expose via their name.
 for name, ufunc in UFUNCS.items():
