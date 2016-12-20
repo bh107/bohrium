@@ -29,7 +29,7 @@ Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++
 
 Package: bohrium3
 Architecture: amd64
-Depends: bohrium, python (>= 3.4), python-numpy (>= 1.8)
+Depends: bohrium, python3 (>= 3.4), python3-numpy (>= 1.8)
 Recommends:
 Suggests: bohrium-numcil, bohrium-opencl, bohrium-visualizer, ipython,
 Description:  The Python v3 frontend for the Bohrium Runtime System
