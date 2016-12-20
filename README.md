@@ -9,11 +9,11 @@ Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes a
 
 Features
 --------
-|           | Architecture Support                             ||| Frontends         |||
-|-----------|-----------------|----------------|---------------|-------|-----|----|----|
-|           | Single-Core CPU | Multi-Core CPU | Many-Core GPU | NumPy | C++ | C# | F# |
-| Linux     | X               | X              | X             | X     | x   | X  | X  |
-| MacOSX    | X               |                |               | X     | x   | X  | X  |
-| Windows   |                 |                |               |       |     |    |    |
+|           | Architecture Support            | Frontends                                     |
+|-----------|-----------------|---------------|---------------|---------------|-----|----|----|
+|           |  Multi-Core CPU | Many-Core GPU | Python2/NumPy | Python3/NumPy | C++ | C# | F# |
+| Linux     |  X              | X             | X             | X             | x   | X  | X  |
+| MacOSX    |                 |               | X             |               | x   | X  | X  |
+| Windows   |                 |               |               |               |     |    |    |
 
 The documentation is available at www.bh107.org
