@@ -14,6 +14,10 @@ And then install the package::
 
   sudo apt-get update
   sudo apt-get install bohrium
+  
+And if you want Python v3 support::
+
+  sudo apt-get install bohrium3
 
 Now the basic installation should work. Try running the NumPy test suite::
 
