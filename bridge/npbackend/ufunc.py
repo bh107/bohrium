@@ -513,8 +513,7 @@ UFUNCS["sign"] = Sign({'name':'sign'})
 class TrueDivide(Ufunc):
     @fix_returned_biclass
     def __call__(self, a1, a2, out=None):
-        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
-        if a1.dtype in all_floats or a2.dtype in all_floats:
+        if _util.dtype_is_float(a1) or _util.dtype_is_float(a2):
             ret = UFUNCS["bh_divide"](a1, a2)  # Floating points automatically use bohrium division
         else:
             if a1.dtype.itemsize > 4 or a2.dtype.itemsize > 4:
@@ -532,8 +531,7 @@ UFUNCS["true_divide"] = TrueDivide({'name': 'true_divide'})
 class FloorDivide(Ufunc):
     @fix_returned_biclass
     def __call__(self, a1, a2, out=None):
-        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
-        if a1.dtype in all_floats or a2.dtype in all_floats:
+        if _util.dtype_is_float(a1) or _util.dtype_is_float(a2):
             ret = UFUNCS["floor"](a1 / a2)
         else:
             ret = UFUNCS["bh_divide"](a1, a2)  # Integers automatically use bohrium division

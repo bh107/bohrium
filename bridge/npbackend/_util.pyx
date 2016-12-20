@@ -34,7 +34,7 @@ def dtype_of(obj):
     """Returns the dtype of 'obj'."""
 
     if isinstance(obj, np.dtype):
-        tmp = obj
+        return obj
     elif isinstance(obj, basestring):
         tmp = obj
     elif isinstance(obj, type):
@@ -62,6 +62,11 @@ def dtype_in(dtype, dtypes):
         if dtype_equal(dtype, datatype):
             return True
     return False
+
+def dtype_is_float(dtype):
+    """Returns True when 'dtype' is a float or complex."""
+
+    return dtype_in(dtype, [np.float32, np.float64, np.complex64, np.complex128])
 
 def dtype_name(obj):
     """Returns the Bohrium name of the data type of the object 'obj'."""

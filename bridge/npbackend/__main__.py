@@ -8,7 +8,6 @@ import os
 import numpy
 import bohrium
 
-
 def execfile_wrapper(path):
     """execfile() does not exist in Python 3"""
     try:
