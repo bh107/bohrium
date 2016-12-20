@@ -9,7 +9,7 @@ Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes a
 
 Features
 --------
-|           | Architecture Support            | Frontends                                     |
+|           | Architecture Support            ||| Frontends                                 |||
 |-----------|-----------------|---------------|---------------|---------------|-----|----|----|
 |           |  Multi-Core CPU | Many-Core GPU | Python2/NumPy | Python3/NumPy | C++ | C# | F# |
 | Linux     |  X              | X             | X             | X             | x   | X  | X  |
