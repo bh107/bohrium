@@ -196,7 +196,7 @@ array_inplace_power(PyObject *m1, PyObject *m2, PyObject *modulo)
 static PyObject *
 array_inplace_true_divide(PyObject *m1, PyObject *m2)
 {
-    return NULL;
+    return PyObject_CallMethod(bohrium, "true_divide", "OOO", m1, m2, m1);
 }
 
 static PyObject *
