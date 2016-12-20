@@ -68,11 +68,9 @@ verbose = false
 #
 [openmp]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_openmp${CMAKE_SHARED_LIBRARY_SUFFIX}
-object_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/object
-source_dir = ${CMAKE_INSTALL_PREFIX}/var/bohrium/source
-dump_src = true
 verbose = false
-prof = false #Profiling statistics
+prof = false # Profiling statistics
+graph = false # Write a Graphviz graph for each kernel
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD}"
 compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 compiler_lib = "${VE_OPENMP_COMPILER_LIB}"
@@ -84,9 +82,9 @@ compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
 verbose = false
 prof = false #Profiling statistics
+graph = false # Write a Graphviz graph for each kernel
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
-serial_fusion = false # Topological fusion is default
 
 
 

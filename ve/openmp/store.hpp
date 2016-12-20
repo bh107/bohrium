@@ -39,6 +39,9 @@ class Store {
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
 
+    // Path to a temporary directory for the source and object files
+    const boost::filesystem::path tmp_dir;
+
     // Path to the directory of the source files
     const boost::filesystem::path source_dir;
 
@@ -49,7 +52,7 @@ class Store {
     const Compiler compiler;
 
     // Whether we should write the kernel sources (.c files)
-    const bool dump_src;
+    const bool verbose;
 
     // Component config
     const ConfigParser &config;

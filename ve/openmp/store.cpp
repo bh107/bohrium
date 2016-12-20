@@ -36,14 +36,16 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
-Store::Store(const ConfigParser &config) : source_dir(fs::absolute(config.get<string>("source_dir"))),
-                                           object_dir(fs::absolute(config.get<string>("object_dir"))),
+Store::Store(const ConfigParser &config) : tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
+                                           source_dir(tmp_dir / "src"),
+                                           object_dir(tmp_dir / "obj"),
                                            compiler(config.defaultGet<string>("compiler_cmd", "/usr/bin/cc"),
                                                     config.defaultGet<string>("compiler_inc", ""),
                                                     config.defaultGet<string>("compiler_lib", "-lm"),
                                                     config.defaultGet<string>("compiler_flg", ""),
                                                     config.defaultGet<string>("compiler_ext", "")),
-                                           dump_src(config.defaultGet<bool>("dump_src", false)), config(config)
+                                           verbose(config.defaultGet<bool>("verbose", false)),
+                                           config(config)
 {
     // Let's make sure that the directories exist
     fs::create_directories(source_dir);
@@ -81,7 +83,7 @@ KernelFunction Store::getFunction(const string &source) {
 
     // Write the source file and compile it (reading from disk)
     // NB: this is a nice debug option, but will hurt performance
-    if (dump_src) {
+    if (verbose) {
         fs::path srcfile = source_dir;
         {
             srcfile /= hash_filename(hash, ".c");
@@ -90,8 +92,7 @@ KernelFunction Store::getFunction(const string &source) {
             ofs.flush();
             ofs.close();
         }
-        if (config.defaultGet<bool>("verbose", false))
-            cout << "Write file " << srcfile << endl;
+        cout << "Write source " << srcfile << endl;
         compiler.compile(objfile.string(), srcfile.string());
     } else {
         // Pipe the source directly into the compiler thus no source file is written

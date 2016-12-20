@@ -521,7 +521,7 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     // Pretty printing the block
-    if (config.defaultGet<bool>("dump_graph", false)) {
+    if (config.defaultGet<bool>("graph", false)) {
         graph::DAG dag = graph::from_block_list(block_list);
         graph::pprint(dag, "dag");
     }
