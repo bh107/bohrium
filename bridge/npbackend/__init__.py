@@ -59,5 +59,6 @@ from . import random123 as random
 __all__ = [x for x in dir() if not x.startswith("_")]
 
 #Finally, let's bohriumify the exposed API
-import bohriumify
-bohriumify.modules()
+if sys.version_info[0] < 3:
+    from . import bohriumify
+    bohriumify.modules() # Python3 crash at this point

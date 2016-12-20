@@ -52,7 +52,7 @@ def _bhc_exec(func, *args):
     """execute the 'func' with the bhc objects in 'args'"""
 
     args = list(args)
-    for i in xrange(len(args)):
+    for i in range(len(args)):
         if isinstance(args[i], View):
             if not hasattr(args[i], 'bhc_obj'):
                 return#Ignore zero-sized views
@@ -79,7 +79,8 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     ary = ary.bhc_obj
     exec("bhc.bhc_sync_A%s(ary)" % dtype)
     exec("bhc.bhc_flush()")
-    exec("data = bhc.bhc_data_get_A%s(ary, allocate, nullify)" % dtype)
+    bhc_data_get = eval("bhc.bhc_data_get_A%s" % dtype)
+    data = bhc_data_get(ary, allocate, nullify)
     if data is None:
         if not allocate:
             return 0
@@ -198,7 +199,7 @@ def extmethod(name, out, in1, in2):
         raise NotImplementedError("The current runtime system does not support "
                                   "the extension method '%s'" % name)
 
-def range(size, dtype):
+def arange(size, dtype):
     """
     Create a new array containing the values [0:size[
 

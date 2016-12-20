@@ -42,7 +42,7 @@ def main(args):
         for type_sig in op['types']:
             for layout in op['layout']:
 
-                for i in xrange(len(layout)):#We need to replace 1D symbols with A
+                for i in range(len(layout)):#We need to replace 1D symbols with A
                     if layout[i].endswith("D"):
                         layout[i] = "A"
 

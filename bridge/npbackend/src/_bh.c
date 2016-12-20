@@ -636,12 +636,12 @@ static PyMethodDef BhArrayMethods[] = {
     {"copy",               BhArray_copy,        METH_NOARGS,   "Copy the array in C-style memory layout"},
     {"copy2numpy",         BhArray_copy2numpy,  METH_NOARGS,   "Copy the array in C-style memory layout to a regular NumPy array"},
     {"resize",             BhArray_resize,      METH_VARARGS,  "Change shape and size of array in-place"},
-    {"reshape",            BhArray_reshape,     METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
-    {"flatten",            BhArray_flatten,     METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"ravel",              BhArray_flatten,     METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"sum",                BhArray_sum,         METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
-    {"prod",               BhArray_prod,        METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
-    {"astype",             BhArray_astype,      METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
+    {"reshape",            BhArray_reshape,     METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
+    {"flatten",            BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"ravel",              BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"sum",                BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
+    {"prod",               BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"astype",             BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -976,7 +976,7 @@ static struct PyModuleDef moduledef = {
 
 #if defined(NPY_PY3K)
 #define RETVAL m
-PyMODINIT_FUNC PyInit_bh(void)
+PyMODINIT_FUNC PyInit__bh(void)
 #else
 #define RETVAL
 PyMODINIT_FUNC init_bh(void)

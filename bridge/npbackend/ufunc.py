@@ -6,6 +6,7 @@ NumPy ufunc encapsulation
 
 """
 from __future__ import print_function
+import sys
 from . import _util
 from . import array_create
 import numpy_force as np
@@ -151,7 +152,7 @@ class Ufunc(object):
             pass
 
         #We do not support NumPy's exotic arguments
-        for k, val in kwargs.iteritems():
+        for k, val in kwargs.items():
             if val is not None:
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
@@ -176,7 +177,7 @@ class Ufunc(object):
                 return out
 
         #Copy broadcasted array back to 'args' excluding scalars
-        for i in xrange(len(args)):
+        for i in range(len(args)):
             if not np.isscalar(args[i]):
                 args[i] = bargs[i]
 
@@ -197,7 +198,7 @@ class Ufunc(object):
         (out_dtype, in_dtype) = _util.type_sig(self.info['name'], args)
 
         #Convert dtype of all inputs
-        for i in xrange(len(args)):
+        for i in range(len(args)):
             if not np.isscalar(args[i]) and not dtype_equal(args[i], in_dtype):
                 tmp = array_create.empty_like(args[i], dtype=in_dtype)
                 tmp[...] = args[i]
@@ -340,7 +341,7 @@ class Ufunc(object):
         #Check for out of bounds and convert negative axis values
         if len(axis) > ary.ndim:
             raise ValueError("number of 'axes' to reduce is out of bounds")
-        for i in xrange(len(axis)):
+        for i in range(len(axis)):
             if axis[i] < 0:
                 axis[i] = ary.ndim+axis[i]
             if axis[i] >= ary.ndim:
@@ -479,9 +480,13 @@ class Ufunc(object):
 
 # Expose via UFUNCS
 UFUNCS = {}
-for op in _info.op.itervalues():
+for op in _info.op.values():
     f = Ufunc(op)
     UFUNCS[f.info['name']] = f
+
+# 'bh_divide' refers to how Bohrium divide, which is like division in C/C++
+# We needs this reference because Python v3 uses "true" division
+UFUNCS["bh_divide"] = UFUNCS["divide"]
 
 # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
 #       such as "negative" which can be done like below.
@@ -508,9 +513,8 @@ UFUNCS["sign"] = Sign({'name':'sign'})
 class TrueDivide(Ufunc):
     @fix_returned_biclass
     def __call__(self, a1, a2, out=None):
-        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
-        if a1.dtype in all_floats or a2.dtype in all_floats:
-            ret = a1 / a2  # Floating points automatically use true division
+        if _util.dtype_is_float(a1) or _util.dtype_is_float(a2):
+            ret = UFUNCS["bh_divide"](a1, a2)  # Floating points automatically use bohrium division
         else:
             if a1.dtype.itemsize > 4 or a2.dtype.itemsize > 4:
                 dtype = np.float64
@@ -527,17 +531,20 @@ UFUNCS["true_divide"] = TrueDivide({'name': 'true_divide'})
 class FloorDivide(Ufunc):
     @fix_returned_biclass
     def __call__(self, a1, a2, out=None):
-        all_floats = [np.float32, np.float64, np.complex64, np.complex128]
-        if a1.dtype in all_floats or a2.dtype in all_floats:
+        if _util.dtype_is_float(a1) or _util.dtype_is_float(a2):
             ret = UFUNCS["floor"](a1 / a2)
         else:
-            ret = UFUNCS["divide"](a1, a2)  # Integers automatically use floor division in Python v2
+            ret = UFUNCS["bh_divide"](a1, a2)  # Integers automatically use bohrium division
         if out is None:
             return ret
         else:
             out[...] = ret
             return out
 UFUNCS["floor_divide"] = FloorDivide({'name': 'floor_divide'})
+
+# Python v3 uses "true" division
+if sys.version_info.major >= 3:
+    UFUNCS["divide"] = UFUNCS["true_divide"]
 
 # Expose via their name.
 for name, ufunc in UFUNCS.items():

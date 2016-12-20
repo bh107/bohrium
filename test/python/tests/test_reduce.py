@@ -11,7 +11,8 @@ class test_reduce_views:
             for i in range(len(shape)):
                 yield (cmd, -i)
 
-    def test_reduce(self, (cmd, axis)):
+    def test_reduce(self, arg):
+        (cmd, axis) = arg
         cmd += "res = M.add.reduce(a, axis=%d)" % axis
         return cmd
 
@@ -24,11 +25,13 @@ class test_reduce_sum:
             for op in ["sum", "prod"]:
                 yield (cmd, op)
 
-    def test_func(self, (cmd, op)):
+    def test_func(self, arg):
+        (cmd, op) = arg
         cmd += "res = M.%s(a)" % op
         return cmd
 
-    def test_method(self, (cmd, op)):
+    def test_method(self, arg):
+        (cmd, op) = arg
         cmd += "res = a.%s()" % op
         return cmd
 
@@ -49,7 +52,8 @@ class test_reduce_primitives:
         for op in ["add", "logical_or", "logical_and", "logical_xor"]:
             yield (op, "np.bool")
 
-    def test_vector(self, (op, dtype)):
+    def test_vector(self, arg):
+        (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.reduce(a)" % op
         return cmd

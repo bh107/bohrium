@@ -2,6 +2,7 @@ from __future__ import print_function
 import numpy as np
 import random
 import operator
+import functools
 
 
 class TYPES:
@@ -17,13 +18,13 @@ class TYPES:
 
 
 def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
-    for ndim in xrange(min_ndim,max_ndim+1):
+    for ndim in range(min_ndim,max_ndim+1):
         shape = [1]*ndim
         if iters:
             yield shape #Min shape
             yield [max_dim]*(ndim) #Max shape
-            for _ in xrange(iters):
-                for d in xrange(len(shape)):
+            for _ in range(iters):
+                for d in range(len(shape)):
                     shape[d] = np.random.randint(1,max_dim)
                 yield shape
         else:
@@ -82,7 +83,7 @@ def random_subscription(shape):
     for dim in shape:
         start = random.randint(0, dim-1)
         if dim > 3:
-            step = random.randint(1, dim/3)
+            step = random.randint(1, dim//3)
         else:
             step = 1
         if start+1 < dim-1:
@@ -98,7 +99,7 @@ def random_subscription(shape):
 def gen_random_arrays(random_state_name, max_ndim, max_dim=20, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
     for cmd, shape in gen_arrays(random_state_name, max_ndim, max_dim, min_ndim, samples_in_each_ndim, dtype, bh_arg):
         yield ("%s" % cmd, shape)
-        if reduce(operator.mul, shape) > 1:
+        if functools.reduce(operator.mul, shape) > 1:
             sub_tried = set()
             for _ in range(samples_in_each_ndim):
                 sub, vshape = random_subscription(shape)

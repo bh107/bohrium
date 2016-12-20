@@ -114,7 +114,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 t = empty_like(ary, dtype=dtype)
                 t[...] = ary
                 ary = t
-            for i in xrange(ary.ndim, ndmin):
+            for i in range(ary.ndim, ndmin):
                 ary = numpy.expand_dims(ary, i)
             return ary
         else:
@@ -512,14 +512,18 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         stop = numpy.dtype(dtype).type(stop)
         step = numpy.dtype(dtype).type(step)
 
-    result = range(size, dtype=dtype)
+    result = simply_range(size, dtype=dtype)
     if  step != 1: result *= step
     if start != 0: result += start
     return result
 
 @fix_returned_biclass
-def range(size, dtype=numpy.uint64):
-    if not isinstance(size, (int, long)):
+def simply_range(size, dtype=numpy.uint64):
+    try:
+        integers = (int, long)
+    except:
+        integers = (int,)
+    if not isinstance(size, integers):
         raise ValueError("size must be an integer")
     if size < 1:
         raise ValueError("size must be greater than 0")
@@ -535,7 +539,7 @@ def range(size, dtype=numpy.uint64):
         A = empty((size,), dtype=numpy.uint32, bohrium=True)
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
-    ret = target.range(size, A.dtype)
+    ret = target.arange(size, A.dtype)
     A = bhary.new((size,), A.dtype, ret)
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)
@@ -626,7 +630,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
     else:
         step = (stop-start)/float(num)
 
-    y = range(num, dtype=dtype)
+    y = arange(num, dtype=dtype)
     if  step != 1: y *= step
     if start != 0: y += start
 

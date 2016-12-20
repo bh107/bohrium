@@ -124,7 +124,7 @@ def extmethod(name, out, in1, in2):
         raise NotImplementedError("The current runtime system does not support "
                                   "the extension method '%s'" % name)
 
-def range(size, dtype):
+def arange(size, dtype):
     """create a new array containing the values [0:size["""
     return np.arange((size,), dtype=dtype)
 

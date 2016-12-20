@@ -7,7 +7,6 @@ from . import array_create
 import numpy_force as numpy
 from . import bhary
 from .bhary import fix_returned_biclass
-import itertools
 
 @fix_returned_biclass
 def flatten(ary):
@@ -383,7 +382,7 @@ def broadcast_arrays(*args):
     """
     ret = []
     bargs = numpy.broadcast_arrays(*args)
-    for a, b in itertools.izip(args, bargs):
+    for a, b in zip(args, bargs):
         if numpy.isscalar(a):
             ret.append(b)
         elif bhary.identical_views(a, b):

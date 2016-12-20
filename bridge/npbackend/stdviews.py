@@ -8,7 +8,7 @@ import itertools
 
 def cartesian(x, size):
     dist = []
-    for i in xrange(size):
+    for i in range(size):
         start = i
         stop = -size+1+i
         if stop==0: stop = None
@@ -51,7 +51,7 @@ def grid(x, size): #2d for now - should be made nd
 
     data = D2P9(x)
     result = []
-    for i in xrange(9):
+    for i in range(9):
         if i%2!=0:
             result.append(data[i])
 
@@ -63,7 +63,7 @@ def diagonals(x, size):
 
     data = D2P9(x)
     result = []
-    for i in xrange(9):
+    for i in range(9):
         if i%2==0:
             result.append(data[i])
     result.pop(2)

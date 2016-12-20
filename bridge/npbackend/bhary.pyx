@@ -49,7 +49,7 @@ def check_biclass(ary):
     except AttributeError:
         return False
 
-    import _bh
+    from . import _bh #We import locally in order to avoid import cycle
     return not isinstance(ary, _bh.ndarray)
 
 def fix_biclass(ary):
@@ -87,7 +87,7 @@ def new(shape, dtype, bhc_ary=None):
     Use a new Bohrium-C array when 'bhc_ary' is None.
     """
 
-    import _bh #We import locally in order to avoid import cycle
+    from . import _bh #We import locally in order to avoid import cycle
     ret = _bh.ndarray(shape, dtype=dtype)
     if bhc_ary is None:
         new_bhc_base(ret)
@@ -210,14 +210,14 @@ def get_bhc(ary):
         if base.bhc_ary is None:
             base._data_np2bhc()
 
-        offset = (ary.ctypes.data - base.ctypes.data) / base.itemsize
+        offset = (ary.ctypes.data - base.ctypes.data) // base.itemsize
         if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
             raise TypeError("The view offset must be element aligned")
         if not 0 <= offset < base.size:
             raise TypeError("The view offset is greater than the total number of elements in the base!")
         strides = []
         for stride in ary.strides:
-            strides.append(stride / base.itemsize)
+            strides.append(stride // base.itemsize)
             if stride % base.itemsize != 0:
                 raise TypeError("The strides must be element aligned")
 

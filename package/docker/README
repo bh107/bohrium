@@ -2,7 +2,13 @@ In order to update the docker image that travis builds at each run, simply modif
 NB: no need to upload a new image to docker hub!
 
 When modifying the base image, you have to upload a new docker image to docker hub.
-In the root dir of Bohrium run:
 
-sudo docker build -t bohrium/ubuntu:16.04 -f package/docker/bohrium.dockerfile .
-sudo docker push
+In the root dir of Bohrium first download:
+AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2
+from
+http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/i
+
+and then run:
+
+sudo docker build -t bohrium/ubuntu:16.04 -f package/docker/base.dockerfile .
+sudo docker push bohrium/ubuntu:16.04

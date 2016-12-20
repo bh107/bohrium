@@ -22,7 +22,7 @@ def gauss(a):
     """
     Performe Gausian elimination on matrix a without pivoting
     """
-    for c in xrange(1,a.shape[0]):
+    for c in range(1,a.shape[0]):
         a[c:,c-1:] = a[c:,c-1:] - (a[c:,c-1]/a[c-1,c-1:c])[:,None] * a[c-1,c-1:]
         np.flush(a)
     a /= np.diagonal(a)[:,None]
@@ -36,7 +36,7 @@ def lu(a):
     u = a.copy()
     l = np.zeros_like(a)
     np.diagonal(l)[:] = 1.0
-    for c in xrange(1,u.shape[0]):
+    for c in range(1,u.shape[0]):
         l[c:,c-1] = (u[c:,c-1]/u[c-1,c-1:c])
         u[c:,c-1:] = u[c:,c-1:] - l[c:,c-1][:,None] * u[c-1,c-1:]
         np.flush(u)
@@ -79,7 +79,7 @@ def solve(a, b):
     w = gauss(np.hstack((a,b[:,np.newaxis])))
     lc = w.shape[1]-1
     x = w[:,lc].copy()
-    for c in xrange(lc-1,0,-1):
+    for c in range(lc-1,0,-1):
         x[:c] -= w[:c,c] * x[c:c+1]
         np.flush(x)
     return x

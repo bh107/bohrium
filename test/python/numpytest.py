@@ -172,7 +172,8 @@ def shell_cmd(cmd, cwd=None, verbose=False, env=None):
     if verbose: print(cmd)
 
     try:
-        pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd=cwd, env=env)
+        pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
+                                cwd=cwd, env=env, universal_newlines=True)
         (out, err) = pipe.communicate()
         if verbose: print(out, err)
     except KeyboardInterrupt:
@@ -194,7 +195,8 @@ class BenchHelper:
             p = subprocess.Popen(
                 ['bp-info', '--benchmarks'],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
+                universal_newlines=True
             )
             out, err = p.communicate()
             rc = p.returncode
@@ -237,6 +239,7 @@ class BenchHelper:
             ['bp-info', '--benchmarks'],
             stdout  = subprocess.PIPE,
             stderr  = subprocess.PIPE,
+            universal_newlines=True
         ).communicate()
 
         sys_exec = [sys.executable] if target.lower() == "none" else [sys.executable, "-m", "bohrium"]

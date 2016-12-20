@@ -422,9 +422,9 @@ class test_jacobi_module(numpytest):
             yield (a,cmd)
 
     def test_jacobi_module(self,a):
-        cmd = "res = la.jacobi(a[0],a[1]);"
-        exec(cmd)
-        return (res,cmd)
+        jacobi = eval("la.jacobi")
+        res = jacobi(a[0],a[1])
+        return (res,"res = la.jacobi(a[0],a[1]);")
 
 class test_idl_init(BenchHelper, numpytest):
 
