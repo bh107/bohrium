@@ -34,6 +34,11 @@ else()
     endif()
 endif()
 
+set(NO_PYTHON3 false CACHE BOOL "Never try to do a Python3 build alongside a Python2 build.")
+if(NO_PYTHON3)
+    return()
+endif()
+
 # If the default python version is version 2 we will try a version 3 build as well
 if(${PYTHON_VERSION_MAJOR} EQUAL "2")
     find_program(PYTHON3 python3)
