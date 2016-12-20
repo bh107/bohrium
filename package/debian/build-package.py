@@ -16,16 +16,23 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, debhelper, cmake, swig, python-dev, fftw3-dev, cython, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
+Build-Depends: python-numpy, python-dev, cython, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
 Package: bohrium
 Architecture: amd64
-Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.6), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev
+Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.8), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev
 Recommends:
 Suggests: bohrium-numcil, bohrium-opencl, bohrium-visualizer, ipython,
 Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
+
+Package: bohrium3
+Architecture: amd64
+Depends: bohrium, python (>= 3.4), python-numpy (>= 1.8)
+Recommends:
+Suggests: bohrium-numcil, bohrium-opencl, bohrium-visualizer, ipython,
+Description:  The Python v3 frontend for the Bohrium Runtime System
 
 Package: bohrium-numcil
 Architecture: amd64
@@ -69,6 +76,14 @@ binary-core: build
 	dpkg-gencontrol -pbohrium -Pdebian/core
 	dpkg --build debian/core ..
 
+binary-core3: build
+	cd b; cmake -DCOMPONENT=bohrium3 -DCMAKE_INSTALL_PREFIX=../debian/core3/usr -P cmake_install.cmake
+	cd debian/core3/usr/lib/python3*/; mv ./site-packages/ ./dist-packages/
+	mkdir -p debian/core3/DEBIAN
+	dpkg-gensymbols -q -pbohrium3 -Pdebian/core3
+	dpkg-gencontrol -pbohrium3 -Pdebian/core3
+	dpkg --build debian/core3 ..
+
 binary-numcil: build
 	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
 	mkdir -p debian/numcil/DEBIAN
@@ -96,7 +111,7 @@ binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-numcil binary-opencl binary-visualizer
+binary-arch: binary-core binary-core3 binary-numcil binary-opencl binary-visualizer
 
 clean:
 	rm -f build
@@ -113,6 +128,8 @@ set -e
 rm -fR /usr/var/bohrium/fuse_cache/*
 rm -fR /usr/var/bohrium/kernels/*
 rm -fR /usr/var/bohrium/objects/*
+rm -fR /usr/var/bohrium/source/*
+rm -fR /usr/var/bohrium/object/*
 exit 0
 """
 
