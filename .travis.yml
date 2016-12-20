@@ -15,14 +15,13 @@ before_install:
 env:
   matrix:
 
-      # OPENMP stack
+      # Python v2
       - BH_STACK=openmp BH_OPENMP_PROF=true PYTHON_EXEC=python2.7
-
-      # OPENCL stack
       - BH_STACK=opencl BH_OPENCL_PROF=true PYTHON_EXEC=python2.7
 
       # Python v3
       - BH_STACK=openmp BH_OPENMP_PROF=true PYTHON_EXEC=python3.5
+      - BH_STACK=opencl BH_OPENCL_PROF=true PYTHON_EXEC=python3.5
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
