@@ -63,8 +63,10 @@ if(${PYTHON_VERSION_MAJOR} EQUAL "2")
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 DEPENDS bhc
         )
-        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} DESTINATION . COMPONENT bohrium)
-
+        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}
+                DESTINATION .
+                COMPONENT bohrium3
+                PATTERN "python2.*" EXCLUDE) # we don't want python2 installed again
     endif()
 endif()
 
