@@ -8,13 +8,14 @@ import os
 import numpy
 import bohrium
 
-def get_execfile():
+
+def execfile_wrapper(path):
     """execfile() does not exist in Python 3"""
     try:
-        return execfile
+        execfile(path)
     except NameError:
         import runpy
-        return runpy.run_path
+        return runpy.run_path(path, run_name="__main__")
 
 
 # numpy becomes bohrium
@@ -30,7 +31,7 @@ else:
 
 # Let's run the script
 if len(sys.argv) > 0:
-    get_execfile()(sys.argv[0])
+    execfile_wrapper(sys.argv[0])
 else:
     print ('ERR: the "-m bohrium" does not support interactive mode')
 
