@@ -16,7 +16,7 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-numpy, python-dev, cython, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
+Build-Depends: python-dev, python-numpy, cython, python3-dev, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
