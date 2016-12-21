@@ -112,6 +112,10 @@ And some additional packages::
 
   sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev  zlib1g-dev
 
+And for python v3 support::
+  
+  sudo apt-get python3-dev python3-numpy python3-dev cython3
+
 Packages for visualization::
 
   sudo apt-get install freeglut3 freeglut3-dev libxmu-dev libxi-dev
@@ -129,7 +133,7 @@ Build and install::
 
 .. note:: The default install directory is ~/.local
 
-.. note:: To compile to a custom Python (with valgrind debug support for example), set ``-DPYTHON_EXECUTABLE=<custom python binary> -DPY_SCRIPT=python``.
+.. note:: To compile to a custom Python (with valgrind debug support for example), set ``-DPYTHON_EXECUTABLE=<custom python binary>``.
 
 Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local/lib`` your need to set ``PYTHONPATH`` as well.
 
