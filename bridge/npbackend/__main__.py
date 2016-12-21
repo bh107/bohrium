@@ -10,12 +10,14 @@ import bohrium
 
 def execfile_wrapper(path):
     """execfile() does not exist in Python 3"""
+
+    # We need this ugly code in order to avoid wrapping the script execution in a try/except construct
     try:
-        execfile(path)
+        execfile
     except NameError:
         import runpy
-        return runpy.run_path(path, run_name="__main__")
-
+        return runpy.run_path(path, init_globals={}, run_name="__main__")
+    return execfile(path, {"__name__": "__main__", "__file__": path})
 
 # numpy becomes bohrium
 sys.modules['numpy_force'] = numpy
