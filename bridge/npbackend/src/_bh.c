@@ -299,6 +299,7 @@ static PyObject* _simply_new_array(PyTypeObject *type, PyArray_Descr *descr,
 static PyObject *
 BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
+    PyObject *ret;
     //If this is a "simple" new array, we can use our own memory allocation
     {
         static char *kwlist[] = {"shape", "dtype", NULL};//We only support simple arrays
@@ -316,12 +317,18 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
             {
                 if(descr == NULL)//Get default dtype
                     descr = PyArray_DescrFromType(NPY_DEFAULT_TYPE);
-                return _simply_new_array(type, descr, nelem * descr->elsize, shape);
+                ret = _simply_new_array(type, descr, nelem * descr->elsize, shape);
+                if(shape.len > 0)
+                {
+                    assert(shape.ptr != NULL);
+                    free(shape.ptr);
+                }
+                return ret;
             }
         }
     }
     //If it is not a simple new array, we let NumPy create it
-    PyObject *ret = PyArray_Type.tp_new(type, args, kwds);
+    ret = PyArray_Type.tp_new(type, args, kwds);
     if(ret == NULL)
         return NULL;
     //And then protect the memory afterwards
