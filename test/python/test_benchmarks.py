@@ -108,39 +108,6 @@ class test_gauss_20x20(BenchHelper, numpytest):
     def test_gauss_20x20(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-class test_jacobi(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.001
-        self.size = 20
-
-        # Benchmark parameters
-        self.script     = "jacobi"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "1000*10"
-        self.inputfn    = None
-
-    def test_jacobi(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_jacobi_fixed(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size = 1000
-
-        # Benchmark parameters
-        self.script     = "jacobi_fixed"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "1000*10"
-        self.inputfn    = None
-
-    def test_jacobi_fixed(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-
 class test_heat_equation(BenchHelper, numpytest):
 
     def __init__(self):
@@ -157,21 +124,6 @@ class test_heat_equation(BenchHelper, numpytest):
     def test_heat_equation(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-class test_heat_equation_fixed(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.001
-        self.size = 20
-
-        # Benchmark parameters
-        self.script     = "heat_equation_fixed"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "1000*1000*10"
-        self.inputfn    = None
-
-    def test_heat_equation_fixed(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
 
 """
 Cannot test: k_nearest_neighbor.py
@@ -264,12 +216,6 @@ class test_mxmul(BenchHelper, numpytest):
 
     def test_mxmul(self, pseudo_arrays):
         return self.run(pseudo_arrays)
-
-"""
-Cannot test: nbody.py
-
-Cannot run this since it breaks due to a futureWarning.
-"""
 
 class test_nbody(BenchHelper, numpytest):
 
@@ -404,6 +350,38 @@ class test_wireworld(BenchHelper, numpytest):
     def test_wireworld(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
+class test_mfe(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.0001
+        self.size = 16
+
+        # Benchmark parameters
+        self.script     = "magnetic_field_extrapolation"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "16*16*5"
+        self.inputfn    = "idl_input-float64_512*512.npz"
+
+    def test_mfe(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
+class test_xraysim(BenchHelper, numpytest):
+
+    def __init__(self):
+        numpytest.__init__(self)
+        self.config['maxerror'] = 0.00001
+        self.size = 32
+
+        # Benchmark parameters
+        self.script     = "xraysim"
+        self.dtypes     = [bh.float32, bh.float64]
+        self.sizetxt    = "32*10*2"
+        self.inputfn    = None
+
+    def test_xraysim(self, pseudo_arrays):
+        return self.run(pseudo_arrays)
+
 #
 #   Testing via import of modules
 #
@@ -426,50 +404,3 @@ class test_jacobi_module(numpytest):
         res = jacobi(a[0],a[1])
         return (res,"res = la.jacobi(a[0],a[1]);")
 
-class test_idl_init(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size = 16
-
-        # Benchmark parameters
-        self.script     = "idl_init"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "16*16"
-        self.inputfn    = "idl_input-float64_512*512.npz"
-
-    def test_idl_init(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_idl_init_1loop(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.0001
-        self.size = 16
-
-        # Benchmark parameters
-        self.script     = "idl_init_1loop"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "16*16"
-        self.inputfn    = "idl_input-float64_512*512.npz"
-
-    def test_idl_init_1loop(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_xraysim(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
-        self.size = 32
-
-        # Benchmark parameters
-        self.script     = "xraysim"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "32*10*2"
-        self.inputfn    = None
-
-    def test_xraysim(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
