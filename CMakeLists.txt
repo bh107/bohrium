@@ -95,6 +95,20 @@ else()
     endif()
 endif()
 
+# Warning as error
+set(USE_WERROR OFF CACHE BOOL "Use the -Werror flag if supported")
+if (USE_WERROR)
+    check_c_compiler_flag(-Werror HAS_C_WERROR)
+    if (HAS_C_WERROR)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+    endif()
+
+    check_cxx_compiler_flag(-Werror HAS_CXX_WERROR)
+    if (HAS_CXX_WERROR)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+    endif()
+endif()
+
 #
 # External dependencies
 
