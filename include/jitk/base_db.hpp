@@ -37,12 +37,13 @@ namespace jitk {
  */
 class BaseDB {
   private:
-    std::map<bh_base*, size_t> _map;
+    std::map<bh_base*, size_t> _map; // Mapping a base to its ID
     std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
     std::set<bh_base*> _tmps; // Set of temporary arrays
     std::set<bh_base*> _scalar_replacements; // Set of scalar replaced arrays
     std::set<bh_base*> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
     std::set<bh_base*> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
+    std::set<bh_base*> _local_declared; // Set of arrays that have been locally declared (e.g. a temporary variable)
   public:
     BaseDB() {};
 
@@ -124,6 +125,15 @@ class BaseDB {
         return util::exist(_omp_critical, base);
     }
 
+    // Insert and check if 'base' has been locally declared (e.g. a temporary variable)
+    bool isLocallyDeclared(const bh_base* base) const {
+        return util::exist(_local_declared, base);
+    }
+    void insertLocallyDeclared(bh_base* base) {
+        assert(not isLocallyDeclared(base));
+        _local_declared.insert(base);
+    }
+
     // Get the name (symbol) of the 'base'
     template <typename T>
     void getName(const bh_base* base, T &out) const {
@@ -144,10 +154,11 @@ class BaseDB {
 
     // Write the variable declaration of 'base' using 'type_str' as the type string
     template <typename T>
-    void writeDeclaration(const bh_base* base, const std::string &type_str, T &out) {
+    void writeDeclaration(bh_base* base, const std::string &type_str, T &out) {
         out << type_str << " ";
         getName(base, out);
         out << ";";
+        insertLocallyDeclared(base);
     }
 };
 

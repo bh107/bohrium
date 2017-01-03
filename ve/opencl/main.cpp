@@ -183,6 +183,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
+        BaseDB base_ids_tmp(base_ids);
         LoopB peeled_block(block);
         for (const InstrPtr instr: block._sweeps) {
             bh_instruction sweep_instr;
@@ -202,9 +203,9 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         out << write_opencl_type(BH_UINT64) << " " << itername << " = 0;" << endl;
         // Write temporary array declarations
         for (bh_base* base: local_tmps) {
-            assert(base_ids.isTmp(base));
+            assert(base_ids_tmp.isTmp(base));
             spaces(out, 8 + block.rank * 4);
-            base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
+            base_ids_tmp.writeDeclaration(base, write_opencl_type(base->type), out);
             out << "\n";
         }
         out << endl;
@@ -212,10 +213,10 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             if (b.isInstr()) {
                 if (b.getInstr() != NULL) {
                     spaces(out, 4 + b.rank()*4);
-                    write_instr(base_ids, *b.getInstr(), out, true);
+                    write_instr(base_ids_tmp, *b.getInstr(), out, true);
                 }
             } else {
-                write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, out);
+                write_loop_block(base_ids_tmp, b.getLoop(), config, threaded_blocks, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -277,13 +278,13 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
                         stringstream &ss) {
 
     // Write the need includes
-    ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable" << endl;
-    ss << "#include <kernel_dependencies/complex_operations.h>" << endl;
-    ss << "#include <kernel_dependencies/integer_operations.h>" << endl;
+    ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable\n";
+    ss << "#include <kernel_dependencies/complex_operations.h>\n";
+    ss << "#include <kernel_dependencies/integer_operations.h>\n";
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_opencl.h>" << endl;
+        ss << "#include <kernel_dependencies/random123_opencl.h>\n";
     }
-    ss << endl;
+    ss << "\n";
 
     // Write the header of the execute function
     ss << "__kernel void execute(";

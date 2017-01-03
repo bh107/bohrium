@@ -224,7 +224,7 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
     }
     const string ss_str = ss.str();
     if(not ss_str.empty()) {
-        out << "#pragma omp" << ss_str << endl;
+        out << "#pragma omp" << ss_str << "\n";
         spaces(out, 4 + block.rank*4);
     }
 }
@@ -280,7 +280,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             base_ids.getName(base, out);
             out << " = ";
             write_reduce_identity(instr->opcode, base->type, out);
-            out << ";" << endl;
+            out << ";\n";
             spaces(out, 4 + block.rank * 4);
         }
     }
@@ -288,6 +288,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
+        BaseDB base_ids_tmp(base_ids);
         LoopB peeled_block(block);
         for (const InstrPtr instr: block._sweeps) {
             bh_instruction sweep_instr;
@@ -307,18 +308,18 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         out << "uint64_t " << itername << " = 0;\n";
         // Write temporary array declarations
         for (bh_base* base: local_tmps) {
-            assert(base_ids.isTmp(base));
+            assert(base_ids_tmp.isTmp(base));
             spaces(out, 8 + block.rank * 4);
-            base_ids.writeDeclaration(base, write_type(base->type), out);
+            base_ids_tmp.writeDeclaration(base, write_type(base->type), out);
             out << "\n";
         }
         out << "\n";
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
                 spaces(out, 4 + b.rank()*4);
-                write_instr(base_ids, *b.getInstr(), out);
+                write_instr(base_ids_tmp, *b.getInstr(), out);
             } else {
-                write_loop_block(base_ids, b.getLoop(), config, out);
+                write_loop_block(base_ids_tmp, b.getLoop(), config, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -411,16 +412,16 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     }
 
     // Write the need includes
-    ss << "#include <stdint.h>" << endl;
-    ss << "#include <stdlib.h>" << endl;
-    ss << "#include <stdbool.h>" << endl;
-    ss << "#include <complex.h>" << endl;
-    ss << "#include <tgmath.h>" << endl;
-    ss << "#include <math.h>" << endl;
+    ss << "#include <stdint.h>\n";
+    ss << "#include <stdlib.h>\n";
+    ss << "#include <stdbool.h>\n";
+    ss << "#include <complex.h>\n";
+    ss << "#include <tgmath.h>\n";
+    ss << "#include <math.h>\n";
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_openmp.h>" << endl;
+        ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
-    ss << endl;
+    ss << "\n";
 
     // Write the header of the execute function
     ss << "void execute(";
@@ -431,12 +432,12 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
             ss << ", ";
         }
     }
-    ss << ") {" << endl;
+    ss << ") {\n";
 
     // Write the block that makes up the body of 'execute()'
     write_loop_block(base_ids, kernel.block, config, ss);
     
-    ss << "}" << endl << endl;
+    ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
