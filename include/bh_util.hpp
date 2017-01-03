@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <vector>
+#include <type_traits>
 
 #ifndef __BH_UTIL_H
 #define __BH_UTIL_H
@@ -33,9 +34,24 @@ std::vector<T> vector_cat(const std::vector<T> &a, const std::vector<T> &b) {
     return ret;
 }
 
+// Use 'remove_all_const<T>' to remove 'const' from 'T' recursively (see http://stackoverflow.com/a/13479740)
+template<typename T>
+struct remove_all_const : std::remove_const<T> {
+};
+template<typename T>
+struct remove_all_const<T *> {
+    typedef typename remove_all_const<T>::type *type;
+};
+template<typename T>
+struct remove_all_const<T *const> {
+    typedef typename remove_all_const<T>::type *type;
+};
+
+// Checks if 'element' is in 'container'
+// This function ignores 'const', which makes it possible to compare 'bh_base*' with 'const bh_base*' for example.
 template <typename container_type, typename element_type>
-bool exist(const container_type &container, const element_type &element) {
-    return container.find(element) != container.end();
+bool exist(container_type &container, element_type &element) {
+    return container.find(const_cast<typename remove_all_const<element_type>::type>(element)) != container.end();
 }
 
 } // util
