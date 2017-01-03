@@ -23,6 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include <bh_array.hpp>
 #include <bh_util.hpp>
@@ -101,6 +103,11 @@ class BaseDB {
         return util::exist(_scalar_replacements, base);
     }
 
+    // Check if 'base' is a regular array (not temporary, scalar-replaced etc.)
+    bool isArray(const bh_base *base) const {
+        return not (isTmp(base) or isScalarReplaced(base));
+    }
+
     // Insert and check if 'base' should be guarded by OpenMP atomic
     void insertOpenmpAtomic(bh_base* base) {
         _omp_atomic.insert(base);
@@ -117,6 +124,23 @@ class BaseDB {
         return util::exist(_omp_critical, base);
     }
 
+    // Get the name (symbol) of the 'base'
+    template <typename T>
+    void getName(const bh_base* base, T &out) const {
+        if (isTmp(base)) {
+            out << "t";
+        } else if (isScalarReplaced(base)) {
+            out << "s";
+        } else {
+            out << "a";
+        }
+        out << (*this)[base];
+    }
+    std::string getName(const bh_base* base) const {
+        std::stringstream ss;
+        getName(base, ss);
+        return ss.str();
+    }
 };
 
 
