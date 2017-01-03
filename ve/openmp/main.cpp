@@ -252,10 +252,12 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
                 continue; // No need to replace temporary arrays
-            out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
-            spaces(out, 4 + block.rank * 4);
             scalar_replacements.push_back(instr->operand[0]);
             base_ids.insertScalarReplacement(base);
+            // Let's write the declaration of the scalar variable
+            base_ids.writeDeclaration(base, write_type(base->type), out);
+            out << "\n";
+            spaces(out, 4 + block.rank * 4);
         }
     }
 
@@ -300,17 +302,17 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         }
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "{ // Peeled loop, 1. sweep iteration " << endl;
+        out << "{ // Peeled loop, 1. sweep iteration\n";
         spaces(out, 8 + block.rank*4);
-        out << "uint64_t " << itername << " = 0;" << endl;
+        out << "uint64_t " << itername << " = 0;\n";
         // Write temporary array declarations
-        for (bh_base* base: base_ids.getBases()) {
-            if (local_tmps.find(base) != local_tmps.end()) {
-                spaces(out, 8 + block.rank * 4);
-                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-            }
+        for (bh_base* base: local_tmps) {
+            assert(base_ids.isTmp(base));
+            spaces(out, 8 + block.rank * 4);
+            base_ids.writeDeclaration(base, write_type(base->type), out);
+            out << "\n";
         }
-        out << endl;
+        out << "\n";
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
                 spaces(out, 4 + b.rank()*4);
@@ -343,14 +345,14 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         out << "=1; ";
     else
         out << "=0; ";
-    out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
+    out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 
     // Write temporary array declarations
-    for (bh_base* base: base_ids.getBases()) {
-        if (local_tmps.find(base) != local_tmps.end()) {
-            spaces(out, 8 + block.rank * 4);
-            out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-        }
+    for (bh_base* base: local_tmps) {
+        assert(base_ids.isTmp(base));
+        spaces(out, 8 + block.rank * 4);
+        base_ids.writeDeclaration(base, write_type(base->type), out);
+        out << "\n";
     }
 
     // Write the for-loop body
@@ -360,10 +362,10 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
                 if (base_ids.isOpenmpAtomic(instr->operand[0].base)) {
                     spaces(out, 4 + b.rank()*4);
-                    out << "#pragma omp atomic" << endl;
+                    out << "#pragma omp atomic\n";
                 } else if (base_ids.isOpenmpCritical(instr->operand[0].base)) {
                     spaces(out, 4 + b.rank()*4);
-                    out << "#pragma omp critical" << endl;
+                    out << "#pragma omp critical\n";
                 }
             }
             spaces(out, 4 + b.rank()*4);

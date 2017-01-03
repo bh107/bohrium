@@ -144,10 +144,12 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             bh_base *base = instr->operand[0].base;
             if (base_ids.isTmp(base))
                 continue; // No need to replace temporary arrays
-            out << write_opencl_type(base->type) << " s" << base_ids[base] << ";" << endl;
-            spaces(out, 4 + block.rank * 4);
             scalar_replacements.push_back(instr->operand[0]);
             base_ids.insertScalarReplacement(base);
+            // Let's write the declaration of the scalar variable
+            base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
+            out << "\n";
+            spaces(out, 4 + block.rank * 4);
         }
     }
 
@@ -199,11 +201,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         spaces(out, 8 + block.rank*4);
         out << write_opencl_type(BH_UINT64) << " " << itername << " = 0;" << endl;
         // Write temporary array declarations
-        for (bh_base* base: base_ids.getBases()) {
-            if (local_tmps.find(base) != local_tmps.end()) {
-                spaces(out, 8 + block.rank * 4);
-                out << write_opencl_type(base->type) << " t" << base_ids[base] << ";" << endl;
-            }
+        for (bh_base* base: local_tmps) {
+            assert(base_ids.isTmp(base));
+            spaces(out, 8 + block.rank * 4);
+            base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
+            out << "\n";
         }
         out << endl;
         for (const Block &b: peeled_block._block_list) {
@@ -239,11 +241,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     }
 
     // Write temporary array declarations
-    for (bh_base* base: base_ids.getBases()) {
-        if (local_tmps.find(base) != local_tmps.end()) {
-            spaces(out, 8 + block.rank * 4);
-            out << write_opencl_type(base->type) << " t" << base_ids[base] << ";" << endl;
-        }
+    for (bh_base* base: local_tmps) {
+        assert(base_ids.isTmp(base));
+        spaces(out, 8 + block.rank * 4);
+        base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
+        out << "\n";
     }
 
     // Write the for-loop body

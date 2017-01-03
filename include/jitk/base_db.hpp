@@ -141,6 +141,14 @@ class BaseDB {
         getName(base, ss);
         return ss.str();
     }
+
+    // Write the variable declaration of 'base' using 'type_str' as the type string
+    template <typename T>
+    void writeDeclaration(const bh_base* base, const std::string &type_str, T &out) {
+        out << type_str << " ";
+        getName(base, out);
+        out << ";";
+    }
 };
 
 
