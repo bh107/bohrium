@@ -306,7 +306,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CPOW(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
- << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+                    << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
             } else if (opencl and bh_type_is_integer(t0)) {
                 out << "IPOW(" << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
             } else {
@@ -342,7 +342,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
- << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+                    << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
             } else {
                 out << operands[0] << " = " << operands[1] << " / " << operands[2] << ";" << endl;
             }
@@ -375,7 +375,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CLOG(" << operands[0] << ", " << operands[1] << "); " \
- << operands[0] << " /= log(10.0f);" << endl;
+                    << operands[0] << " /= log(10.0f);" << endl;
             } else if (bh_type_is_complex(t0)) {
                 out << operands[0] << " = clog(" << operands[1] << ") / log(10.0f);" << endl;
             } else {
@@ -498,17 +498,17 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     }
     if (instr.opcode == BH_RANGE) {
         vector<string> operands;
-        if (base_ids.isTmp(instr.operand[0].base)) {
+        // Write output operand
+        {
             stringstream ss;
-            ss << "t" << base_ids[instr.operand[0].base];
-            operands.push_back(ss.str());
-        } else {
-            stringstream ss;
-            ss << "a" << base_ids[instr.operand[0].base];
-            write_array_subscription(instr.operand[0], ss);
+            base_ids.getName(instr.operand[0].base, ss);
+            if (base_ids.isArray(instr.operand[0].base)) {
+                write_array_subscription(instr.operand[0], ss);
+            }
             operands.push_back(ss.str());
         }
-        {   // Let's find the flatten index of the output view
+        // Let's find the flatten index of the output view
+        {
             stringstream ss;
             ss << "(";
             for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
@@ -523,14 +523,12 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     if (instr.opcode == BH_RANDOM) {
         vector<string> operands;
         // Write output operand
-        if (base_ids.isTmp(instr.operand[0].base)) {
+        {
             stringstream ss;
-            ss << "t" << base_ids[instr.operand[0].base];
-            operands.push_back(ss.str());
-        } else {
-            stringstream ss;
-            ss << "a" << base_ids[instr.operand[0].base];
-            write_array_subscription(instr.operand[0], ss);
+            base_ids.getName(instr.operand[0].base, ss);
+            if (base_ids.isArray(instr.operand[0].base)) {
+                write_array_subscription(instr.operand[0], ss);
+            }
             operands.push_back(ss.str());
         }
         // Write the random generation
@@ -552,28 +550,28 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
     if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> operands;
         // Write output operand
-        if (base_ids.isTmp(instr.operand[0].base)) {
+        {
             stringstream ss;
-            ss << "t" << base_ids[instr.operand[0].base];
-            operands.push_back(ss.str());
-        } else {
-            stringstream ss;
-            ss << "a" << base_ids[instr.operand[0].base];
-            write_array_subscription(instr.operand[0], ss);
+            base_ids.getName(instr.operand[0].base, ss);
+            if (base_ids.isArray(instr.operand[0].base)) {
+                write_array_subscription(instr.operand[0], ss);
+            }
             operands.push_back(ss.str());
         }
         // Write the previous element access, NB: this works because of loop peeling
         {
             stringstream ss;
-            ss << "a" << base_ids[instr.operand[0].base];
+            base_ids.getName(instr.operand[0].base, ss);
             write_array_subscription(instr.operand[0], ss, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
             operands.push_back(ss.str());
         }
         // Write the current element access
         {
             stringstream ss;
-            ss << "a" << base_ids[instr.operand[1].base];
-            write_array_subscription(instr.operand[1], ss);
+            base_ids.getName(instr.operand[1].base, ss);
+            if (base_ids.isArray(instr.operand[1].base)) {
+                write_array_subscription(instr.operand[1], ss);
+            }
             operands.push_back(ss.str());
         }
         write_operation(instr, operands, out, opencl);
@@ -586,12 +584,8 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         if (bh_is_constant(&view)) {
             instr.constant.pprint(ss, opencl);
         } else {
-            if (base_ids.isTmp(view.base)) {
-                ss << "t" << base_ids[view.base];
-            } else if (base_ids.isScalarReplaced(view.base)) {
-                ss << "s" << base_ids[view.base];
-            } else {
-                ss << "a" << base_ids[view.base];
+            base_ids.getName(view.base, ss);
+            if (base_ids.isArray(view.base)) {
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
                     // reducing to a non-scalar

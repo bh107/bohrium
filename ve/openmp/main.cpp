@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <bh_util.hpp>
+#include <bh_opcode.h>
 #include <jitk/fuser.hpp>
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
@@ -274,11 +275,8 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     if (not need_to_peel) {
         for (const InstrPtr instr: block._sweeps) {
             bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base))
-                out << "t";
-            else
-                out << "s";
-            out << base_ids[base] << " = ";
+            base_ids.getName(base, out);
+            out << " = ";
             write_reduce_identity(instr->opcode, base->type, out);
             out << ";" << endl;
             spaces(out, 4 + block.rank * 4);
