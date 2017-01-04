@@ -102,8 +102,16 @@ void write_loop_block(BaseDB &base_ids,
         }
     }
 
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
+    // Get local temporary arrays as a vector sorted by the ID
+    vector<bh_base*> local_tmps;
+    {
+        const set<bh_base *> t = block.getLocalTemps();
+        for (bh_base *base: base_ids.getBases()) {
+            if (util::exist(t, base)) {
+                local_tmps.push_back(base);
+            }
+        }
+    }
 
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
