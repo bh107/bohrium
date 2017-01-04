@@ -36,6 +36,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 
 #include "store.hpp"
+#include "c99_type.hpp"
+#include "openmp_util.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -96,110 +98,6 @@ Impl::~Impl() {
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
         cout << "\t  Build:  " << time_build.count() << "s" << endl;
         cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
-    }
-}
-
-const char *write_c99_type(bh_type type) {
-    switch (type) {
-        case BH_BOOL:
-            return "bool";
-        case BH_INT8:
-            return "int8_t";
-        case BH_INT16:
-            return "int16_t";
-        case BH_INT32:
-            return "int32_t";
-        case BH_INT64:
-            return "int64_t";
-        case BH_UINT8:
-            return "uint8_t";
-        case BH_UINT16:
-            return "uint16_t";
-        case BH_UINT32:
-            return "uint32_t";
-        case BH_UINT64:
-            return "uint64_t";
-        case BH_FLOAT32:
-            return "float";
-        case BH_FLOAT64:
-            return "double";
-        case BH_COMPLEX64:
-            return "float complex";
-        case BH_COMPLEX128:
-            return "double complex";
-        case BH_R123:
-            return "bh_r123";
-        default:
-            throw std::runtime_error("Unknown bh_type");
-    }
-}
-
-// Return the OpenMP reduction symbol
-const char* openmp_reduce_symbol(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-            return "+";
-        case BH_MULTIPLY_REDUCE:
-            return "*";
-        case BH_BITWISE_AND_REDUCE:
-            return "&";
-        case BH_BITWISE_OR_REDUCE:
-            return "|";
-        case BH_BITWISE_XOR_REDUCE:
-            return "^";
-        case BH_MAXIMUM_REDUCE:
-            return "max";
-        case BH_MINIMUM_REDUCE:
-            return "min";
-        default:
-            return NULL;
-    }
-}
-
-// Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
-bool openmp_reduce_compatible(bh_opcode opcode) {
-    return openmp_reduce_symbol(opcode) != NULL;
-}
-
-// Is the 'block' compatible with OpenMP
-bool openmp_compatible(const LoopB &block) {
-    // For now, all sweeps must be reductions
-    for (const InstrPtr instr: block._sweeps) {
-        if (not bh_opcode_is_reduction(instr->opcode)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Is the 'block' compatible with OpenMP SIMD
-bool simd_compatible(const LoopB &block, const BaseDB &base_ids) {
-
-    // Check for non-compatible reductions
-    for (const InstrPtr instr: block._sweeps) {
-        if (not openmp_reduce_compatible(instr->opcode))
-            return false;
-    }
-
-    // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (const bh_base* b: block.getAllBases()) {
-        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
-            return false;
-    }
-    return true;
-}
-
-// Does 'opcode' support the OpenMP Atomic guard?
-bool openmp_atomic_compatible(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_MULTIPLY_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            return true;
-        default:
-            return false;
     }
 }
 
