@@ -142,8 +142,8 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base))
-                continue; // No need to replace temporary arrays
+            if (base_ids.isTmp(base) or base_ids.isLocallyDeclared(base))
+                continue;
             scalar_replacements.push_back(instr->operand[0]);
             base_ids.insertScalarReplacement(base);
             // Let's write the declaration of the scalar variable
@@ -169,6 +169,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     if (not need_to_peel) {
         for (const InstrPtr instr: block._sweeps) {
             bh_base *base = instr->operand[0].base;
+            if (not base_ids.isArray(base) and not base_ids.isLocallyDeclared(base)) {
+                base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
+                out << "\n";
+                spaces(out, 4 + block.rank * 4);
+            }
             base_ids.getName(base, out);
             out << " = ";
             write_reduce_identity(instr->opcode, base->type, out);
@@ -204,9 +209,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         // Write temporary array declarations
         for (bh_base* base: local_tmps) {
             assert(base_ids_tmp.isTmp(base));
-            spaces(out, 8 + block.rank * 4);
-            base_ids_tmp.writeDeclaration(base, write_opencl_type(base->type), out);
-            out << "\n";
+            if (not base_ids_tmp.isLocallyDeclared(base)) {
+                spaces(out, 8 + block.rank * 4);
+                base_ids_tmp.writeDeclaration(base, write_opencl_type(base->type), out);
+                out << "\n";
+            }
         }
         out << endl;
         for (const Block &b: peeled_block._block_list) {

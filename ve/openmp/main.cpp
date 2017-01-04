@@ -242,16 +242,13 @@ bool sweeping_innermost_axis(InstrPtr instr) {
 void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, stringstream &out) {
     spaces(out, 4 + block.rank*4);
 
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
-
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<bh_view> scalar_replacements;
     for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base))
-                continue; // No need to replace temporary arrays
+            if (base_ids.isTmp(base) or base_ids.isLocallyDeclared(base))
+                continue;
             scalar_replacements.push_back(instr->operand[0]);
             base_ids.insertScalarReplacement(base);
             // Let's write the declaration of the scalar variable
@@ -277,6 +274,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     if (not need_to_peel) {
         for (const InstrPtr instr: block._sweeps) {
             bh_base *base = instr->operand[0].base;
+            if (not base_ids.isArray(base) and not base_ids.isLocallyDeclared(base)) {
+                base_ids.writeDeclaration(base, write_type(base->type), out);
+                out << "\n";
+                spaces(out, 4 + block.rank * 4);
+            }
             base_ids.getName(base, out);
             out << " = ";
             write_reduce_identity(instr->opcode, base->type, out);
@@ -284,6 +286,9 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             spaces(out, 4 + block.rank * 4);
         }
     }
+
+    // All local temporary arrays needs an variable declaration
+    const set<bh_base*> local_tmps = block.getLocalTemps();
 
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
@@ -309,15 +314,19 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
         // Write temporary array declarations
         for (bh_base* base: local_tmps) {
             assert(base_ids_tmp.isTmp(base));
-            spaces(out, 8 + block.rank * 4);
-            base_ids_tmp.writeDeclaration(base, write_type(base->type), out);
-            out << "\n";
+            if (not base_ids_tmp.isLocallyDeclared(base)) {
+                spaces(out, 8 + block.rank * 4);
+                base_ids_tmp.writeDeclaration(base, write_type(base->type), out);
+                out << "\n";
+            }
         }
         out << "\n";
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
-                spaces(out, 4 + b.rank()*4);
-                write_instr(base_ids_tmp, *b.getInstr(), out);
+                if (b.getInstr() != NULL) {
+                    spaces(out, 4 + b.rank()*4);
+                    write_instr(base_ids_tmp, *b.getInstr(), out, false);
+                }
             } else {
                 write_loop_block(base_ids_tmp, b.getLoop(), config, out);
             }
@@ -351,9 +360,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     // Write temporary array declarations
     for (bh_base* base: local_tmps) {
         assert(base_ids.isTmp(base));
-        spaces(out, 8 + block.rank * 4);
-        base_ids.writeDeclaration(base, write_type(base->type), out);
-        out << "\n";
+        if (not base_ids.isLocallyDeclared(base)) {
+            spaces(out, 8 + block.rank * 4);
+            base_ids.writeDeclaration(base, write_type(base->type), out);
+            out << "\n";
+        }
     }
 
     // Write the for-loop body
@@ -444,6 +455,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     {
         ss << "void launcher(void* data_list[]) {" << endl;
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+            spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
             ss << write_type(b->type) << " *a" << base_ids[b];
             ss << " = data_list[" << i << "];" << endl;
