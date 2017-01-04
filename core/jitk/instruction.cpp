@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_instruction.hpp>
 #include <jitk/block.hpp>
-#include <jitk/type.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/base_db.hpp>
 

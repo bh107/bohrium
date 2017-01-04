@@ -30,10 +30,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
-#include <jitk/type.hpp>
 #include <jitk/graph.hpp>
 #include <jitk/transformer.hpp>
 #include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_util.hpp>
 
 #include "store.hpp"
 
@@ -80,14 +80,6 @@ extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-namespace {
-void spaces(stringstream &out, int num) {
-    for (int i = 0; i < num; ++i) {
-        out << " ";
-    }
-}
-}
-
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         const int64_t store_hits = _store.num_lookups - _store.num_lookup_misses;
@@ -104,6 +96,41 @@ Impl::~Impl() {
         cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
         cout << "\t  Build:  " << time_build.count() << "s" << endl;
         cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
+    }
+}
+
+const char *write_c99_type(bh_type type) {
+    switch (type) {
+        case BH_BOOL:
+            return "bool";
+        case BH_INT8:
+            return "int8_t";
+        case BH_INT16:
+            return "int16_t";
+        case BH_INT32:
+            return "int32_t";
+        case BH_INT64:
+            return "int64_t";
+        case BH_UINT8:
+            return "uint8_t";
+        case BH_UINT16:
+            return "uint16_t";
+        case BH_UINT32:
+            return "uint32_t";
+        case BH_UINT64:
+            return "uint64_t";
+        case BH_FLOAT32:
+            return "float";
+        case BH_FLOAT64:
+            return "double";
+        case BH_COMPLEX64:
+            return "float complex";
+        case BH_COMPLEX128:
+            return "double complex";
+        case BH_R123:
+            return "bh_r123";
+        default:
+            throw std::runtime_error("Unknown bh_type");
     }
 }
 
@@ -229,117 +256,14 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
     }
 }
 
-// Does 'instr' reduce over the innermost axis?
-// Notice, that such a reduction computes each output element completely before moving
-// to the next element.
-bool sweeping_innermost_axis(InstrPtr instr) {
-    if (not bh_opcode_is_sweep(instr->opcode))
-        return false;
-    assert(bh_noperands(instr->opcode) == 3);
-    return instr->sweep_axis() == instr->operand[1].ndim-1;
-}
-
-void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, stringstream &out) {
-    spaces(out, 4 + block.rank*4);
-
-    // Let's scalar replace reduction outputs that reduces over the innermost axis
-    vector<bh_view> scalar_replacements;
-    for (const InstrPtr instr: block._sweeps) {
-        if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
-            bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base) or base_ids.isLocallyDeclared(base))
-                continue;
-            scalar_replacements.push_back(instr->operand[0]);
-            base_ids.insertScalarReplacement(base);
-            // Let's write the declaration of the scalar variable
-            base_ids.writeDeclaration(base, write_type(base->type), out);
-            out << "\n";
-            spaces(out, 4 + block.rank * 4);
-        }
-    }
-
-    // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
-    bool need_to_peel = false;
-    {
-        for (const InstrPtr instr: block._sweeps) {
-            bh_base *b = instr->operand[0].base;
-            if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
-                need_to_peel = true;
-                break;
-            }
-        }
-    }
-
-    // When not peeling, we need a neutral initial reduction value
-    if (not need_to_peel) {
-        for (const InstrPtr instr: block._sweeps) {
-            bh_base *base = instr->operand[0].base;
-            if (not base_ids.isArray(base) and not base_ids.isLocallyDeclared(base)) {
-                base_ids.writeDeclaration(base, write_type(base->type), out);
-                out << "\n";
-                spaces(out, 4 + block.rank * 4);
-            }
-            base_ids.getName(base, out);
-            out << " = ";
-            write_reduce_identity(instr->opcode, base->type, out);
-            out << ";\n";
-            spaces(out, 4 + block.rank * 4);
-        }
-    }
-
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
-
-    // If this block is sweeped, we will "peel" the for-loop such that the
-    // sweep instruction is replaced with BH_IDENTITY in the first iteration
-    if (block._sweeps.size() > 0 and need_to_peel) {
-        BaseDB base_ids_tmp(base_ids);
-        LoopB peeled_block(block);
-        for (const InstrPtr instr: block._sweeps) {
-            bh_instruction sweep_instr;
-            sweep_instr.opcode = BH_IDENTITY;
-            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
-            sweep_instr.operand[0] = instr->operand[0];
-            // But the output needs an extra dimension when we are reducing to a non-scalar
-            if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
-            }
-            peeled_block.replaceInstr(instr, sweep_instr);
-        }
-        string itername;
-        {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "{ // Peeled loop, 1. sweep iteration\n";
-        spaces(out, 8 + block.rank*4);
-        out << "uint64_t " << itername << " = 0;\n";
-        // Write temporary array declarations
-        for (bh_base* base: local_tmps) {
-            assert(base_ids_tmp.isTmp(base));
-            if (not base_ids_tmp.isLocallyDeclared(base)) {
-                spaces(out, 8 + block.rank * 4);
-                base_ids_tmp.writeDeclaration(base, write_type(base->type), out);
-                out << "\n";
-            }
-        }
-        out << "\n";
-        for (const Block &b: peeled_block._block_list) {
-            if (b.isInstr()) {
-                if (b.getInstr() != NULL) {
-                    spaces(out, 4 + b.rank()*4);
-                    write_instr(base_ids_tmp, *b.getInstr(), out, false);
-                }
-            } else {
-                write_loop_block(base_ids_tmp, b.getLoop(), config, out);
-            }
-        }
-        spaces(out, 4 + block.rank*4);
-        out << "}" << endl;
-        spaces(out, 4 + block.rank*4);
-    }
+// Writes the OpenMP specific for-loop header
+void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
+                      const vector<const LoopB *> &threaded_blocks, stringstream &out) {
 
     // Let's write the OpenMP loop header
     {
         int64_t for_loop_size = block.size;
-        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, its size is one less
+        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, its size is one less
             --for_loop_size;
         // No need to parallel one-sized loops
         if (for_loop_size > 1) {
@@ -351,53 +275,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
     out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
+    if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
         out << "=1; ";
     else
         out << "=0; ";
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
-
-    // Write temporary array declarations
-    for (bh_base* base: local_tmps) {
-        assert(base_ids.isTmp(base));
-        if (not base_ids.isLocallyDeclared(base)) {
-            spaces(out, 8 + block.rank * 4);
-            base_ids.writeDeclaration(base, write_type(base->type), out);
-            out << "\n";
-        }
-    }
-
-    // Write the for-loop body
-    for (const Block &b: block._block_list) {
-        if (b.isInstr()) { // Finally, let's write the instruction
-            const InstrPtr instr = b.getInstr();
-            if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
-                if (base_ids.isOpenmpAtomic(instr->operand[0].base)) {
-                    spaces(out, 4 + b.rank()*4);
-                    out << "#pragma omp atomic\n";
-                } else if (base_ids.isOpenmpCritical(instr->operand[0].base)) {
-                    spaces(out, 4 + b.rank()*4);
-                    out << "#pragma omp critical\n";
-                }
-            }
-            spaces(out, 4 + b.rank()*4);
-            write_instr(base_ids, *instr, out);
-        } else {
-            write_loop_block(base_ids, b.getLoop(), config, out);
-        }
-    }
-    spaces(out, 4 + block.rank*4);
-    out << "}" << endl;
-
-    // Let's copy the scalar replacement back to the original array
-    for (const bh_view &view: scalar_replacements) {
-        spaces(out, 4 + block.rank*4);
-        const size_t id = base_ids[view.base];
-        out << "a" << id;
-        write_array_subscription(view, out);
-        out << " = s" << id << ";" << endl;
-        base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
-    }
 }
 
 // Remove empty blocks inplace
@@ -438,7 +320,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << "void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << write_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
+        ss << write_c99_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
@@ -446,8 +328,8 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << ") {\n";
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(base_ids, kernel.block, config, ss);
-    
+    write_loop_block(base_ids, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
+
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
@@ -457,7 +339,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
-            ss << write_type(b->type) << " *a" << base_ids[b];
+            ss << write_c99_type(b->type) << " *a" << base_ids[b];
             ss << " = data_list[" << i << "];" << endl;
         }
         spaces(ss, 4);

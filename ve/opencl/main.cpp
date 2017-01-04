@@ -31,11 +31,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
-#include <jitk/type.hpp>
 #include <jitk/fuser.hpp>
 #include <jitk/graph.hpp>
 #include <jitk/transformer.hpp>
 #include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_util.hpp>
 
 #include "engine_opencl.hpp"
 #include "opencl_type.hpp"
@@ -88,14 +88,6 @@ extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-namespace {
-void spaces(stringstream &out, int num) {
-    for (int i = 0; i < num; ++i) {
-        out << " ";
-    }
-}
-}
-
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
@@ -128,109 +120,9 @@ bool sweeping_innermost_axis(InstrPtr instr) {
     return instr->sweep_axis() == instr->operand[1].ndim-1;
 }
 
-void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config,
+// Writes the OpenCL specific for-loop header
+void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
                       const vector<const LoopB *> &threaded_blocks, stringstream &out) {
-    spaces(out, 4 + block.rank*4);
-
-    if (block.isSystemOnly()) {
-        out << "// Removed loop with only system instructions" << endl;
-        return;
-    }
-
-    // Let's scalar replace reduction outputs that reduces over the innermost axis
-    vector<bh_view> scalar_replacements;
-    for (const InstrPtr instr: block._sweeps) {
-        if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
-            bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base) or base_ids.isLocallyDeclared(base))
-                continue;
-            scalar_replacements.push_back(instr->operand[0]);
-            base_ids.insertScalarReplacement(base);
-            // Let's write the declaration of the scalar variable
-            base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
-            out << "\n";
-            spaces(out, 4 + block.rank * 4);
-        }
-    }
-
-    // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
-    bool need_to_peel = false;
-    {
-        for (const InstrPtr instr: block._sweeps) {
-            bh_base *b = instr->operand[0].base;
-            if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
-                need_to_peel = true;
-                break;
-            }
-        }
-    }
-
-    // When not peeling, we need a neutral initial reduction value
-    if (not need_to_peel) {
-        for (const InstrPtr instr: block._sweeps) {
-            bh_base *base = instr->operand[0].base;
-            if (not base_ids.isArray(base) and not base_ids.isLocallyDeclared(base)) {
-                base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
-                out << "\n";
-                spaces(out, 4 + block.rank * 4);
-            }
-            base_ids.getName(base, out);
-            out << " = ";
-            write_reduce_identity(instr->opcode, base->type, out);
-            out << "; // Neutral initial reduction value" << endl;
-            spaces(out, 4 + block.rank * 4);
-        }
-    }
-
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
-
-    // If this block is sweeped, we will "peel" the for-loop such that the
-    // sweep instruction is replaced with BH_IDENTITY in the first iteration
-    if (block._sweeps.size() > 0 and need_to_peel) {
-        BaseDB base_ids_tmp(base_ids);
-        LoopB peeled_block(block);
-        for (const InstrPtr instr: block._sweeps) {
-            bh_instruction sweep_instr;
-            sweep_instr.opcode = BH_IDENTITY;
-            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
-            sweep_instr.operand[0] = instr->operand[0];
-            // But the output needs an extra dimension when we are reducing to a non-scalar
-            if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
-            }
-            peeled_block.replaceInstr(instr, sweep_instr);
-        }
-        string itername;
-        {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "{ // Peeled loop, 1. sweep iteration " << endl;
-        spaces(out, 8 + block.rank*4);
-        out << write_opencl_type(BH_UINT64) << " " << itername << " = 0;" << endl;
-        // Write temporary array declarations
-        for (bh_base* base: local_tmps) {
-            assert(base_ids_tmp.isTmp(base));
-            if (not base_ids_tmp.isLocallyDeclared(base)) {
-                spaces(out, 8 + block.rank * 4);
-                base_ids_tmp.writeDeclaration(base, write_opencl_type(base->type), out);
-                out << "\n";
-            }
-        }
-        out << endl;
-        for (const Block &b: peeled_block._block_list) {
-            if (b.isInstr()) {
-                if (b.getInstr() != NULL) {
-                    spaces(out, 4 + b.rank()*4);
-                    write_instr(base_ids_tmp, *b.getInstr(), out, true);
-                }
-            } else {
-                write_loop_block(base_ids_tmp, b.getLoop(), config, threaded_blocks, out);
-            }
-        }
-        spaces(out, 4 + block.rank*4);
-        out << "}" << endl;
-        spaces(out, 4 + block.rank*4);
-    }
-
     // Write the for-loop header
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
@@ -238,7 +130,7 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
                      [&block](const LoopB* b){return *b == block;}) == threaded_blocks.end()) {
         out << "for(" << write_opencl_type(BH_UINT64) << " " << itername;
-        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
+        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << "=1; ";
         else
             out << "=0; ";
@@ -246,38 +138,6 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     } else {
         assert(block._sweeps.size() == 0);
         out << "{ // Threaded block (ID " << itername << ")" << endl;
-    }
-
-    // Write temporary array declarations
-    for (bh_base* base: local_tmps) {
-        assert(base_ids.isTmp(base));
-        spaces(out, 8 + block.rank * 4);
-        base_ids.writeDeclaration(base, write_opencl_type(base->type), out);
-        out << "\n";
-    }
-
-    // Write the for-loop body
-    for (const Block &b: block._block_list) {
-        if (b.isInstr()) { // Finally, let's write the instruction
-            if (b.getInstr() != NULL) {
-                spaces(out, 4 + b.rank()*4);
-                write_instr(base_ids, *b.getInstr(), out, true);
-            }
-        } else {
-            write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, out);
-        }
-    }
-    spaces(out, 4 + block.rank*4);
-    out << "}" << endl;
-
-    // Let's copy the scalar replacement back to the original array
-    for (const bh_view &view: scalar_replacements) {
-        spaces(out, 4 + block.rank*4);
-        const size_t id = base_ids[view.base];
-        out << "a" << id;
-        write_array_subscription(view, out);
-        out << " = s" << id << ";" << endl;
-        base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
     }
 }
 
@@ -302,7 +162,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
             ss << ", ";
         }
     }
-    ss << ") {" << endl;
+    ss << ") {\n";
 
     // Write the IDs of the threaded blocks
     if (threaded_blocks.size() > 0) {
@@ -318,9 +178,9 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(base_ids, kernel.block, config, threaded_blocks, ss);
-    ss << "}" << endl << endl;
+    write_loop_block(base_ids, kernel.block, config, threaded_blocks, true, write_opencl_type, loop_head_writer, ss);
 
+    ss << "}\n\n";
 }
 
 // Sets the constructor flag of each instruction in 'instr_list'
