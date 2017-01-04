@@ -86,17 +86,17 @@ Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         const int64_t store_hits = _store.num_lookups - _store.num_lookup_misses;
         const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
-        cout << "[VE-OPENMP] Profiling: " << endl;
+        cout << "[VE-OPENMP] Profiling: \n";
         cout << "\tKernel Store Hits:   " << store_hits << "/" << _store.num_lookups \
-                                          << " (" << 100.0*store_hits/_store.num_lookups << "%)" << endl;
+                                          << " (" << 100.0*store_hits/_store.num_lookups << "%)\n";
         cout << "\tFuse Cache hits:     " << fcache_hits << "/" << fcache.num_lookups \
-                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)" << endl;
+                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)\n";
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
-                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)" << endl;
-        cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
-        cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
-        cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
-        cout << "\t  Build:  " << time_build.count() << "s" << endl;
+                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)\n";
+        cout << "\tTotal Work: " << (double) totalwork << " operations\n";
+        cout << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
+        cout << "\t  Fusion: " << time_fusion.count() << "s\n";
+        cout << "\t  Build:  " << time_build.count() << "s\n";
         cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
     }
 }
@@ -233,12 +233,12 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
-        ss << "void launcher(void* data_list[]) {" << endl;
+        ss << "void launcher(void* data_list[]) {\n";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
             ss << write_c99_type(b->type) << " *a" << base_ids[b];
-            ss << " = data_list[" << i << "];" << endl;
+            ss << " = data_list[" << i << "];\n";
         }
         spaces(ss, 4);
         ss << "execute(";
@@ -249,8 +249,8 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
                 ss << ", ";
             }
         }
-        ss << ");" << endl;
-        ss << "}" << endl;
+        ss << ");\n";
+        ss << "}\n";
     }
 }
 

@@ -91,21 +91,21 @@ extern "C" void destroy(ComponentImpl* self) {
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
-        cout << "[OPENCL] Profiling: " << endl;
+        cout << "[OPENCL] Profiling: \n";
         cout << "\tFuse Cache Hits:     " << fcache_hits << "/" << fcache.num_lookups \
-                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)" << endl;
+                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)\n";
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
-                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)" << endl;
-        cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB" << endl;
-        cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
+                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)\n";
+        cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB\n";
+        cout << "\tTotal Work: " << (double) totalwork << " operations\n";
         cout << "\tWork below par-threshold(1000): " \
-             << threading_below_threshold / (double)totalwork * 100 << "%" << endl;
+             << threading_below_threshold / (double)totalwork * 100 << "%\n";
         cout << "\tKernel store hits:   " << engine.num_lookups - engine.num_lookup_misses \
-                                          << "/" << engine.num_lookups << endl;
-        cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
-        cout << "\t  Fusion:  " << time_fusion.count() << "s" << endl;
-        cout << "\t  Build:   " << time_build.count() << "s" << endl;
-        cout << "\t  Exec:    " << time_exec.count() << "s" << endl;
+                                          << "/" << engine.num_lookups << "\n";
+        cout << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
+        cout << "\t  Fusion:  " << time_fusion.count() << "s\n";
+        cout << "\t  Build:   " << time_build.count() << "s\n";
+        cout << "\t  Exec:    " << time_exec.count() << "s\n";
         cout << "\t  Offload: " << time_offload.count() << "s" << endl;
     }
 }
@@ -134,10 +134,10 @@ void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             out << "=1; ";
         else
             out << "=0; ";
-        out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
+        out << itername << " < " << block.size << "; ++" << itername << ") {\n";
     } else {
         assert(block._sweeps.size() == 0);
-        out << "{ // Threaded block (ID " << itername << ")" << endl;
+        out << "{ // Threaded block (ID " << itername << ")\n";
     }
 }
 
@@ -167,14 +167,14 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     // Write the IDs of the threaded blocks
     if (threaded_blocks.size() > 0) {
         spaces(ss, 4);
-        ss << "// The IDs of the threaded blocks: " << endl;
+        ss << "// The IDs of the threaded blocks: \n";
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
             ss << "const " << write_opencl_type(BH_UINT64) << " i" << b->rank << " = get_global_id(" << i << "); " \
-               << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow" << endl;
+               << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow\n";
         }
-        ss << endl;
+        ss << "\n";
     }
 
     // Write the block that makes up the body of 'execute()'
@@ -306,9 +306,9 @@ void Impl::execute(bh_ir *bhir) {
 
         // Debug print
         if (verbose) {
-            cout << "Kernel's non-temps: " << endl;
+            cout << "Kernel's non-temps: \n";
             for (bh_base *base: kernel.getNonTemps()) {
-                cout << "\t" << *base << endl;
+                cout << "\t" << *base << "\n";
             }
             cout << kernel.block;
         }
@@ -328,7 +328,7 @@ void Impl::execute(bh_ir *bhir) {
         // We might have to offload the execution to the CPU
         if (threaded_blocks.size() == 0 and kernel_is_computing) {
             if (verbose)
-                cout << "Offloading to CPU" << endl;
+                cout << "Offloading to CPU\n";
 
             auto toffload = chrono::steady_clock::now();
 
@@ -371,7 +371,7 @@ void Impl::execute(bh_ir *bhir) {
             write_kernel(kernel, base_ids, threaded_blocks, ss);
 
             if (verbose) {
-                cout << endl << "************ GPU Kernel ************" << endl << ss.str()
+                cout << "\n************ GPU Kernel ************\n" << ss.str()
                      << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 

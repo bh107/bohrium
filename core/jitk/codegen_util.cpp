@@ -147,7 +147,7 @@ void write_loop_block(BaseDB &base_ids,
             }
         }
         spaces(out, 4 + block.rank*4);
-        out << "}" << endl;
+        out << "}\n";
         spaces(out, 4 + block.rank*4);
     }
 
@@ -198,7 +198,7 @@ void write_loop_block(BaseDB &base_ids,
         }
     }
     spaces(out, 4 + block.rank*4);
-    out << "}" << endl;
+    out << "}\n";
 
     // Let's copy the scalar replacement back to the original array
     for (const bh_view &view: scalar_replacements) {
@@ -206,7 +206,7 @@ void write_loop_block(BaseDB &base_ids,
         const size_t id = base_ids[view.base];
         out << "a" << id;
         write_array_subscription(view, out);
-        out << " = s" << id << ";" << endl;
+        out << " = s" << id << ";\n";
         base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
     }
 }
