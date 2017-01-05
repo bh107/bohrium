@@ -25,8 +25,8 @@ asarray = array
 asanyarray = array
 
 # Expose all ufuncs
-for name, ufunc in UFUNCS.items():
-    exec("%s = ufunc" % name)
+for name, f in UFUNCS.items():
+    exec("%s = f" % name)
 
 # Aliases
 aliases = [
@@ -58,7 +58,14 @@ from . import random123 as random
 # Some modules (e.g. scipy) accesses '__all__' directly
 __all__ = [x for x in dir() if not x.startswith("_")]
 
-#Finally, let's bohriumify the exposed API
+# Let's bohriumify the exposed API
 if sys.version_info[0] < 3:
     from . import bohriumify
     bohriumify.modules() # Python3 crash at this point
+
+# Finally, let's make sure we don't expose work-variables to the importer
+del name
+del f
+del t
+del aliases
+del type_aliases

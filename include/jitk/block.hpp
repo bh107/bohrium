@@ -97,7 +97,7 @@ public:
     std::set<const bh_base*> getAllBases() const {
         std::set<const bh_base*> ret;
         for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base*> t = instr->get_bases();
+            std::set<const bh_base*> t = instr->get_bases_const();
             ret.insert(t.begin(), t.end());
         }
         return ret;
@@ -225,7 +225,7 @@ public:
     std::set<const bh_base*> getAllBases() const {
         std::set<const bh_base*> ret;
         for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base*> t = instr->get_bases();
+            std::set<const bh_base*> t = instr->get_bases_const();
             ret.insert(t.begin(), t.end());
         }
         return ret;
