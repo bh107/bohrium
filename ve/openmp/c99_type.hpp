@@ -18,14 +18,15 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdexcept>
+#ifndef __OPENMP_DTYPE_HPP
+#define __OPENMP_DTYPE_HPP
 
-#include <jitk/type.hpp>
+#include <cassert>
 
-namespace bohrium {
-namespace jitk {
+#include <bh_type.h>
 
-const char *write_type(bh_type type) {
+// Return C99 types, which are used inside the C99 kernels
+const char *write_c99_type(bh_type type) {
     switch (type) {
         case BH_BOOL:
             return "bool";
@@ -60,6 +61,4 @@ const char *write_type(bh_type type) {
     }
 }
 
-} // jitk
-} // bohrium
-
+#endif

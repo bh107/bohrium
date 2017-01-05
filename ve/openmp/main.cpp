@@ -25,16 +25,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <bh_util.hpp>
+#include <bh_opcode.h>
 #include <jitk/fuser.hpp>
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
-#include <jitk/type.hpp>
 #include <jitk/graph.hpp>
 #include <jitk/transformer.hpp>
 #include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_util.hpp>
 
 #include "store.hpp"
+#include "c99_type.hpp"
+#include "openmp_util.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -79,99 +82,22 @@ extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
 
-namespace {
-void spaces(stringstream &out, int num) {
-    for (int i = 0; i < num; ++i) {
-        out << " ";
-    }
-}
-}
-
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
         const int64_t store_hits = _store.num_lookups - _store.num_lookup_misses;
         const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
-        cout << "[VE-OPENMP] Profiling: " << endl;
+        cout << "[VE-OPENMP] Profiling: \n";
         cout << "\tKernel Store Hits:   " << store_hits << "/" << _store.num_lookups \
-                                          << " (" << 100.0*store_hits/_store.num_lookups << "%)" << endl;
+                                          << " (" << 100.0*store_hits/_store.num_lookups << "%)\n";
         cout << "\tFuse Cache hits:     " << fcache_hits << "/" << fcache.num_lookups \
-                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)" << endl;
+                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)\n";
         cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
-                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)" << endl;
-        cout << "\tTotal Work: " << (double) totalwork << " operations" << endl;
-        cout << "\tTotal Execution:  " << time_total_execution.count() << "s" << endl;
-        cout << "\t  Fusion: " << time_fusion.count() << "s" << endl;
-        cout << "\t  Build:  " << time_build.count() << "s" << endl;
+                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)\n";
+        cout << "\tTotal Work: " << (double) totalwork << " operations\n";
+        cout << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
+        cout << "\t  Fusion: " << time_fusion.count() << "s\n";
+        cout << "\t  Build:  " << time_build.count() << "s\n";
         cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
-    }
-}
-
-// Return the OpenMP reduction symbol
-const char* openmp_reduce_symbol(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-            return "+";
-        case BH_MULTIPLY_REDUCE:
-            return "*";
-        case BH_BITWISE_AND_REDUCE:
-            return "&";
-        case BH_BITWISE_OR_REDUCE:
-            return "|";
-        case BH_BITWISE_XOR_REDUCE:
-            return "^";
-        case BH_MAXIMUM_REDUCE:
-            return "max";
-        case BH_MINIMUM_REDUCE:
-            return "min";
-        default:
-            return NULL;
-    }
-}
-
-// Is 'opcode' compatible with OpenMP reductions such as reduction(+:var)
-bool openmp_reduce_compatible(bh_opcode opcode) {
-    return openmp_reduce_symbol(opcode) != NULL;
-}
-
-// Is the 'block' compatible with OpenMP
-bool openmp_compatible(const LoopB &block) {
-    // For now, all sweeps must be reductions
-    for (const InstrPtr instr: block._sweeps) {
-        if (not bh_opcode_is_reduction(instr->opcode)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Is the 'block' compatible with OpenMP SIMD
-bool simd_compatible(const LoopB &block, const BaseDB &base_ids) {
-
-    // Check for non-compatible reductions
-    for (const InstrPtr instr: block._sweeps) {
-        if (not openmp_reduce_compatible(instr->opcode))
-            return false;
-    }
-
-    // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (const bh_base* b: block.getAllBases()) {
-        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
-            return false;
-    }
-    return true;
-}
-
-// Does 'opcode' support the OpenMP Atomic guard?
-bool openmp_atomic_compatible(bh_opcode opcode) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_MULTIPLY_REDUCE:
-        case BH_BITWISE_AND_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-            return true;
-        default:
-            return false;
     }
 }
 
@@ -223,113 +149,19 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
     }
     const string ss_str = ss.str();
     if(not ss_str.empty()) {
-        out << "#pragma omp" << ss_str << endl;
+        out << "#pragma omp" << ss_str << "\n";
         spaces(out, 4 + block.rank*4);
     }
 }
 
-// Does 'instr' reduce over the innermost axis?
-// Notice, that such a reduction computes each output element completely before moving
-// to the next element.
-bool sweeping_innermost_axis(InstrPtr instr) {
-    if (not bh_opcode_is_sweep(instr->opcode))
-        return false;
-    assert(bh_noperands(instr->opcode) == 3);
-    return instr->sweep_axis() == instr->operand[1].ndim-1;
-}
-
-void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, stringstream &out) {
-    spaces(out, 4 + block.rank*4);
-
-    // All local temporary arrays needs an variable declaration
-    const set<bh_base*> local_tmps = block.getLocalTemps();
-
-    // Let's scalar replace reduction outputs that reduces over the innermost axis
-    vector<bh_view> scalar_replacements;
-    for (const InstrPtr instr: block._sweeps) {
-        if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
-            bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base))
-                continue; // No need to replace temporary arrays
-            out << write_type(base->type) << " s" << base_ids[base] << ";" << endl;
-            spaces(out, 4 + block.rank * 4);
-            scalar_replacements.push_back(instr->operand[0]);
-            base_ids.insertScalarReplacement(base);
-        }
-    }
-
-    // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
-    bool need_to_peel = false;
-    {
-        for (const InstrPtr instr: block._sweeps) {
-            bh_base *b = instr->operand[0].base;
-            if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
-                need_to_peel = true;
-                break;
-            }
-        }
-    }
-
-    // When not peeling, we need a neutral initial reduction value
-    if (not need_to_peel) {
-        for (const InstrPtr instr: block._sweeps) {
-            bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base))
-                out << "t";
-            else
-                out << "s";
-            out << base_ids[base] << " = ";
-            write_reduce_identity(instr->opcode, base->type, out);
-            out << ";" << endl;
-            spaces(out, 4 + block.rank * 4);
-        }
-    }
-
-    // If this block is sweeped, we will "peel" the for-loop such that the
-    // sweep instruction is replaced with BH_IDENTITY in the first iteration
-    if (block._sweeps.size() > 0 and need_to_peel) {
-        LoopB peeled_block(block);
-        for (const InstrPtr instr: block._sweeps) {
-            bh_instruction sweep_instr;
-            sweep_instr.opcode = BH_IDENTITY;
-            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
-            sweep_instr.operand[0] = instr->operand[0];
-            // But the output needs an extra dimension when we are reducing to a non-scalar
-            if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
-            }
-            peeled_block.replaceInstr(instr, sweep_instr);
-        }
-        string itername;
-        {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "{ // Peeled loop, 1. sweep iteration " << endl;
-        spaces(out, 8 + block.rank*4);
-        out << "uint64_t " << itername << " = 0;" << endl;
-        // Write temporary array declarations
-        for (bh_base* base: base_ids.getBases()) {
-            if (local_tmps.find(base) != local_tmps.end()) {
-                spaces(out, 8 + block.rank * 4);
-                out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-            }
-        }
-        out << endl;
-        for (const Block &b: peeled_block._block_list) {
-            if (b.isInstr()) {
-                spaces(out, 4 + b.rank()*4);
-                write_instr(base_ids, *b.getInstr(), out);
-            } else {
-                write_loop_block(base_ids, b.getLoop(), config, out);
-            }
-        }
-        spaces(out, 4 + block.rank*4);
-        out << "}" << endl;
-        spaces(out, 4 + block.rank*4);
-    }
+// Writes the OpenMP specific for-loop header
+void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
+                      const vector<const LoopB *> &threaded_blocks, stringstream &out) {
 
     // Let's write the OpenMP loop header
     {
         int64_t for_loop_size = block.size;
-        if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, its size is one less
+        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, its size is one less
             --for_loop_size;
         // No need to parallel one-sized loops
         if (for_loop_size > 1) {
@@ -341,66 +173,11 @@ void write_loop_block(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
     out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0 and need_to_peel) // If the for-loop has been peeled, we should start at 1
+    if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
         out << "=1; ";
     else
         out << "=0; ";
-    out << itername << " < " << block.size << "; ++" << itername << ") {" << endl;
-
-    // Write temporary array declarations
-    for (bh_base* base: base_ids.getBases()) {
-        if (local_tmps.find(base) != local_tmps.end()) {
-            spaces(out, 8 + block.rank * 4);
-            out << write_type(base->type) << " t" << base_ids[base] << ";" << endl;
-        }
-    }
-
-    // Write the for-loop body
-    for (const Block &b: block._block_list) {
-        if (b.isInstr()) { // Finally, let's write the instruction
-            const InstrPtr instr = b.getInstr();
-            if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
-                if (base_ids.isOpenmpAtomic(instr->operand[0].base)) {
-                    spaces(out, 4 + b.rank()*4);
-                    out << "#pragma omp atomic" << endl;
-                } else if (base_ids.isOpenmpCritical(instr->operand[0].base)) {
-                    spaces(out, 4 + b.rank()*4);
-                    out << "#pragma omp critical" << endl;
-                }
-            }
-            spaces(out, 4 + b.rank()*4);
-            write_instr(base_ids, *instr, out);
-        } else {
-            write_loop_block(base_ids, b.getLoop(), config, out);
-        }
-    }
-    spaces(out, 4 + block.rank*4);
-    out << "}" << endl;
-
-    // Let's copy the scalar replacement back to the original array
-    for (const bh_view &view: scalar_replacements) {
-        spaces(out, 4 + block.rank*4);
-        const size_t id = base_ids[view.base];
-        out << "a" << id;
-        write_array_subscription(view, out);
-        out << " = s" << id << ";" << endl;
-        base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
-    }
-}
-
-// Remove empty blocks inplace
-void remove_empty_blocks(vector<Block> &block_list) {
-    for (size_t i=0; i < block_list.size(); ) {
-        Block &b = block_list[i];
-        if (b.isInstr()) {
-            ++i;
-        } else if (b.isSystemOnly()) {
-            block_list.erase(block_list.begin()+i);
-        } else {
-            remove_empty_blocks(b.getLoop()._block_list);
-            ++i;
-        }
-    }
+    out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
 void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, stringstream &ss) {
@@ -411,41 +188,42 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     }
 
     // Write the need includes
-    ss << "#include <stdint.h>" << endl;
-    ss << "#include <stdlib.h>" << endl;
-    ss << "#include <stdbool.h>" << endl;
-    ss << "#include <complex.h>" << endl;
-    ss << "#include <tgmath.h>" << endl;
-    ss << "#include <math.h>" << endl;
+    ss << "#include <stdint.h>\n";
+    ss << "#include <stdlib.h>\n";
+    ss << "#include <stdbool.h>\n";
+    ss << "#include <complex.h>\n";
+    ss << "#include <tgmath.h>\n";
+    ss << "#include <math.h>\n";
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_openmp.h>" << endl;
+        ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
-    ss << endl;
+    ss << "\n";
 
     // Write the header of the execute function
     ss << "void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << write_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
+        ss << write_c99_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
     }
-    ss << ") {" << endl;
+    ss << ") {\n";
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(base_ids, kernel.block, config, ss);
-    
-    ss << "}" << endl << endl;
+    write_loop_block(base_ids, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
+
+    ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
-        ss << "void launcher(void* data_list[]) {" << endl;
+        ss << "void launcher(void* data_list[]) {\n";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+            spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
-            ss << write_type(b->type) << " *a" << base_ids[b];
-            ss << " = data_list[" << i << "];" << endl;
+            ss << write_c99_type(b->type) << " *a" << base_ids[b];
+            ss << " = data_list[" << i << "];\n";
         }
         spaces(ss, 4);
         ss << "execute(";
@@ -456,8 +234,8 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
                 ss << ", ";
             }
         }
-        ss << ");" << endl;
-        ss << "}" << endl;
+        ss << ");\n";
+        ss << "}\n";
     }
 }
 
@@ -486,7 +264,17 @@ void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
     // Let's start by extracting a clean list of instructions from the 'bhir'
-    vector<bh_instruction*> instr_list = remove_non_computed_system_instr(bhir->instr_list);
+    vector<bh_instruction*> instr_list;
+    {
+        set<bh_base*> syncs;
+        set<bh_base*> frees;
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
+
+        // Let's free array memory
+        for(bh_base *base: frees) {
+            bh_data_free(base);
+        }
+    }
 
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
@@ -515,7 +303,6 @@ void Impl::execute(bh_ir *bhir) {
                 fuser_greedy(block_list);
                 block_list = collapse_redundant_axes(block_list);
             }
-            remove_empty_blocks(block_list);
             fcache.insert(instr_list, block_list);
         }
     }

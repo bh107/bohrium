@@ -48,8 +48,6 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &o
 // 'syncs' and 'frees' are the sets of arrays that were removed.
 std::vector<bh_instruction*> remove_non_computed_system_instr(std::vector<bh_instruction> &instr_list,
                                                               std::set<bh_base *> &syncs, std::set<bh_base *> &frees);
-// A version without the syncs and frees output sets
-std::vector<bh_instruction*> remove_non_computed_system_instr(std::vector<bh_instruction> &instr_list);
 
 } // jitk
 } // bohrium

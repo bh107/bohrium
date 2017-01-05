@@ -23,8 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include <bh_array.hpp>
+#include <bh_util.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -34,12 +37,13 @@ namespace jitk {
  */
 class BaseDB {
   private:
-    std::map<bh_base*, size_t> _map;
+    std::map<bh_base*, size_t> _map; // Mapping a base to its ID
     std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
     std::set<bh_base*> _tmps; // Set of temporary arrays
     std::set<bh_base*> _scalar_replacements; // Set of scalar replaced arrays
     std::set<bh_base*> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
     std::set<bh_base*> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
+    std::set<bh_base*> _local_declared; // Set of arrays that have been locally declared (e.g. a temporary variable)
   public:
     BaseDB() {};
 
@@ -64,8 +68,8 @@ class BaseDB {
     }
 
     // Get the ID of 'base', throws exception if 'base' doesn't exist
-    size_t operator[] (bh_base* base) const {
-        return _map.at(base);
+    size_t operator[] (const bh_base* base) const {
+        return _map.at(const_cast<bh_base*>(base));
     }
 
     // Add the set of 'temps' as temporary arrays.
@@ -73,20 +77,20 @@ class BaseDB {
     void insertTmp(const std::set<bh_base*> &temps) {
         #ifndef NDEBUG
         for (bh_base* b: temps)
-            assert(_map.find(b) != _map.end());
+            assert(util::exist(_map, b));
         #endif
         _tmps.insert(temps.begin(), temps.end());
     }
 
     // Check if 'base' is temporary
-    bool isTmp(bh_base* base) const {
-        return _tmps.find(base) != _tmps.end();
+    bool isTmp(const bh_base* base) const {
+        return util::exist(_tmps, base);
     }
 
     // Add the 'base' as scalar replaced array
     // NB: 'base' should exist in this database already
     void insertScalarReplacement(bh_base* base) {
-        assert(_map.find(base) != _map.end());
+        assert(util::exist(_map, base));
         _scalar_replacements.insert(base);
     }
 
@@ -97,7 +101,12 @@ class BaseDB {
 
     // Check if 'base' has been scalar replaced
     bool isScalarReplaced(const bh_base* base) const {
-        return _scalar_replacements.find(const_cast<bh_base*>(base)) != _scalar_replacements.end();
+        return util::exist(_scalar_replacements, base);
+    }
+
+    // Check if 'base' is a regular array (not temporary, scalar-replaced etc.)
+    bool isArray(const bh_base *base) const {
+        return not (isTmp(base) or isScalarReplaced(base));
     }
 
     // Insert and check if 'base' should be guarded by OpenMP atomic
@@ -105,7 +114,7 @@ class BaseDB {
         _omp_atomic.insert(base);
     }
     bool isOpenmpAtomic(const bh_base* base) const {
-        return _omp_atomic.find(const_cast<bh_base*>(base)) != _omp_atomic.end();
+        return util::exist(_omp_atomic, base);
     }
 
     // Insert and check if 'base' should be guarded by OpenMP critical
@@ -113,7 +122,43 @@ class BaseDB {
         _omp_critical.insert(base);
     }
     bool isOpenmpCritical(const bh_base* base) const {
-        return _omp_critical.find(const_cast<bh_base*>(base)) != _omp_critical.end();
+        return util::exist(_omp_critical, base);
+    }
+
+    // Insert and check if 'base' has been locally declared (e.g. a temporary variable)
+    bool isLocallyDeclared(const bh_base* base) const {
+        return util::exist(_local_declared, base);
+    }
+    void insertLocallyDeclared(bh_base* base) {
+        assert(not isLocallyDeclared(base));
+        _local_declared.insert(base);
+    }
+
+    // Get the name (symbol) of the 'base'
+    template <typename T>
+    void getName(const bh_base* base, T &out) const {
+        if (isTmp(base)) {
+            out << "t";
+        } else if (isScalarReplaced(base)) {
+            out << "s";
+        } else {
+            out << "a";
+        }
+        out << (*this)[base];
+    }
+    std::string getName(const bh_base* base) const {
+        std::stringstream ss;
+        getName(base, ss);
+        return ss.str();
+    }
+
+    // Write the variable declaration of 'base' using 'type_str' as the type string
+    template <typename T>
+    void writeDeclaration(bh_base* base, const std::string &type_str, T &out) {
+        out << type_str << " ";
+        getName(base, out);
+        out << ";";
+        insertLocallyDeclared(base);
     }
 };
 
