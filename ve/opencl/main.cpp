@@ -207,6 +207,32 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
+    // For now, we handle extension methods by executing them individually
+    {
+        vector<bh_instruction> instr_list;
+        for (bh_instruction &instr: bhir->instr_list) {
+            auto ext = extmethods.find(instr.opcode);
+            if (ext != extmethods.end()) {
+                // Execute the instructions up until now
+                bh_ir b;
+                b.instr_list = instr_list;
+                this->execute(&b);
+                instr_list.clear();
+                // Make sure that the bases the extension method accesses are moved to the host
+                set<bh_base *> ext_bases = instr.get_bases();
+                engine.copyToHost(ext_bases);
+                for(bh_base *base: ext_bases) {
+                    engine.buffers.erase(base);
+                }
+                // Execute the extension method
+                ext->second.execute(&instr, NULL);
+            } else {
+                instr_list.push_back(instr);
+            }
+        }
+        bhir->instr_list = instr_list;
+    }
+
     const bool verbose = config.defaultGet<bool>("verbose", false);
 
     // Let's start by cleanup the instructions from the 'bhir'

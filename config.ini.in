@@ -77,6 +77,8 @@ compiler_lib = "${VE_OPENMP_COMPILER_LIB}"
 compiler_flg = "${VE_OPENMP_COMPILER_FLG}"
 compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
+# List of extension methods
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 [opencl]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -85,7 +87,8 @@ prof = false #Profiling statistics
 graph = false # Write a Graphviz graph for each kernel
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
-
+# List of extension methods
+libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 
 

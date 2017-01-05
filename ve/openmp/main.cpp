@@ -263,6 +263,24 @@ void set_constructor_flag(vector<bh_instruction> &instr_list) {
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
+    // For now, we handle extension methods by executing them individually
+    {
+        vector<bh_instruction> instr_list;
+        for (bh_instruction &instr: bhir->instr_list) {
+            auto ext = extmethods.find(instr.opcode);
+            if (ext != extmethods.end()) {
+                bh_ir b;
+                b.instr_list = instr_list;
+                this->execute(&b); // Execute the instructions up until now
+                instr_list.clear();
+                ext->second.execute(&instr, NULL); // Execute the extension method
+            } else {
+                instr_list.push_back(instr);
+            }
+        }
+        bhir->instr_list = instr_list;
+    }
+
     // Let's start by extracting a clean list of instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
     {
