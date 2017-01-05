@@ -649,7 +649,7 @@ vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> 
         } else if (instr.opcode == BH_FREE and computes.find(instr.operand[0].base) == computes.end()) {
             frees.insert(instr.operand[0].base);
         } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY)) {
-            set<const bh_base*> bases = instr.get_bases();
+            set<const bh_base*> bases = instr.get_bases_const();
             computes.insert(bases.begin(), bases.end());
             ret.push_back(&instr);
         }

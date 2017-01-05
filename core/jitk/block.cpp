@@ -247,7 +247,7 @@ pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
             if (base == NULL) { // Searching for any access
                 return make_pair(this, i);
             } else {
-                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases();
+                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases_const();
                 if (bases.find(base) != bases.end()) {
                     return make_pair(this, i);
                 }
