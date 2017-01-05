@@ -180,21 +180,6 @@ void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-// Remove empty blocks inplace
-void remove_empty_blocks(vector<Block> &block_list) {
-    for (size_t i=0; i < block_list.size(); ) {
-        Block &b = block_list[i];
-        if (b.isInstr()) {
-            ++i;
-        } else if (b.isSystemOnly()) {
-            block_list.erase(block_list.begin()+i);
-        } else {
-            remove_empty_blocks(b.getLoop()._block_list);
-            ++i;
-        }
-    }
-}
-
 void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, stringstream &ss) {
 
     // Make sure all arrays are allocated
@@ -279,7 +264,17 @@ void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
     // Let's start by extracting a clean list of instructions from the 'bhir'
-    vector<bh_instruction*> instr_list = remove_non_computed_system_instr(bhir->instr_list);
+    vector<bh_instruction*> instr_list;
+    {
+        set<bh_base*> syncs;
+        set<bh_base*> frees;
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
+
+        // Let's free array memory
+        for(bh_base *base: frees) {
+            bh_data_free(base);
+        }
+    }
 
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
@@ -308,7 +303,6 @@ void Impl::execute(bh_ir *bhir) {
                 fuser_greedy(block_list);
                 block_list = collapse_redundant_axes(block_list);
             }
-            remove_empty_blocks(block_list);
             fcache.insert(instr_list, block_list);
         }
     }

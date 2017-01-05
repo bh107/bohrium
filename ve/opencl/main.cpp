@@ -219,9 +219,10 @@ void Impl::execute(bh_ir *bhir) {
         // Let's copy sync'ed arrays back to the host
         engine.copyToHost(syncs);
 
-        // Let's free device buffers
+        // Let's free device buffers and array memory
         for(bh_base *base: frees) {
             engine.buffers.erase(base);
+            bh_data_free(base);
         }
     }
 

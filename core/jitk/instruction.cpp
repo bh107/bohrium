@@ -656,11 +656,6 @@ vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> 
     }
     return ret;
 }
-vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> &instr_list) {
-    set<bh_base*> syncs;
-    set<bh_base*> frees;
-    return remove_non_computed_system_instr(instr_list, syncs, frees);
-}
 
 } // jitk
 } // bohrium
