@@ -378,10 +378,8 @@ void Impl::execute(bh_ir *bhir) {
                      << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 
-            auto tkernel_exec = chrono::steady_clock::now();
             // Let's execute the OpenCL kernel
             engine.execute(ss.str(), kernel, threaded_blocks);
-            stat.time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
 
         // Let's copy sync'ed arrays back to the host

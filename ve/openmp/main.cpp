@@ -361,7 +361,7 @@ void Impl::execute(bh_ir *bhir) {
         auto tbuild = chrono::steady_clock::now();
         KernelFunction func = store.getFunction(ss.str());
         assert(func != NULL);
-        stat.time_build += chrono::steady_clock::now() - tbuild;
+        stat.time_compile += chrono::steady_clock::now() - tbuild;
 
         // Create a 'data_list' of data pointers
         vector<void*> data_list;

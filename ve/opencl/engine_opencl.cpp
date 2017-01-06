@@ -103,6 +103,8 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
     ++stat.kernel_cache_lookups;
     cl::Program program;
 
+    auto tcompile = chrono::steady_clock::now();
+
     // Do we have the program already?
     if (_programs.find(hash) != _programs.end()) {
         program = _programs.at(hash);
@@ -123,6 +125,7 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         }
         _programs[hash] = program;
     }
+    stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the OpenCL kernel
     cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
@@ -133,8 +136,10 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         }
     }
     const auto ranges = NDRanges(threaded_blocks);
+    auto texec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
+    stat.time_exec += chrono::steady_clock::now() - texec;
 }
 
 } // bohrium

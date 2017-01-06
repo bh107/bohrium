@@ -55,8 +55,10 @@ class Statistics {
     std::chrono::duration<double> time_total_execution{0};
     std::chrono::duration<double> time_fusion{0};
     std::chrono::duration<double> time_exec{0};
-    std::chrono::duration<double> time_build{0};
+    std::chrono::duration<double> time_compile{0};
     std::chrono::duration<double> time_offload{0};
+    std::chrono::duration<double> time_copy2dev{0};
+    std::chrono::duration<double> time_copy2host{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
     // Pretty print the recorded statistics into 'out' where 'backend_name' is the name of the caller
@@ -74,10 +76,12 @@ class Statistics {
         out << "\tWall clock:  " << wallclock.count() << "s\n";
         out << "\tThroughput:  " << totalwork / (double)wallclock.count() << "ops\n";
         out << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
-        out << "\t  Fusion:  " << time_fusion.count() << "s\n";
-        out << "\t  Build:   " << time_build.count() << "s\n";
-        out << "\t  Exec:    " << time_exec.count() << "s\n";
-        out << "\t  Offload: " << time_offload.count() << "s\n";
+        out << "\t  Fusion:    " << time_fusion.count() << "s\n";
+        out << "\t  Compile:   " << time_compile.count() << "s\n";
+        out << "\t  Exec:      " << time_exec.count() << "s\n";
+        out << "\t  Copy2dev:  " << time_copy2dev.count() << "s\n";
+        out << "\t  Copy2host: " << time_copy2host.count() << "s\n";
+        out << "\t  Offload:   " << time_offload.count() << "s\n";
         out << endl;
     }
 };
