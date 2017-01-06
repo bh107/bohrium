@@ -72,7 +72,7 @@ class Statistics {
         out << "\tTotal Work: " << (double) totalwork << " operations\n";
         out << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%\n";
         out << "\tWall clock:  " << wallclock.count() << "s\n";
-        out << "\tThroughput:  " << totalwork / (double)wallclock.count() << "AOPS\n";
+        out << "\tThroughput:  " << totalwork / (double)wallclock.count() << "ops\n";
         out << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
         out << "\t  Fusion:  " << time_fusion.count() << "s\n";
         out << "\t  Build:   " << time_build.count() << "s\n";
