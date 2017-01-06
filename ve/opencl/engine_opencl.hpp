@@ -24,9 +24,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 #include <bh_config_parser.hpp>
 #include <bh_array.hpp>
+#include <jitk/statistics.hpp>
+
 #include "cl.hpp"
 
 namespace bohrium {
@@ -56,11 +59,10 @@ public:
     // A map of allocated buffers on the device
     std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers; //TODO; privatize
 public:
-    EngineOpenCL(const ConfigParser &config);
+    EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 
     // Some statistics
-    int64_t num_lookups = 0;
-    int64_t num_lookup_misses = 0;
+    jitk::Statistics &stat;
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
@@ -69,6 +71,7 @@ public:
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>
     void copyToHost(T &bases) {
+        auto tcopy = std::chrono::steady_clock::now();
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: bases) {
             if (buffers.find(base) != buffers.end()) {
@@ -83,11 +86,13 @@ public:
             }
         }
         queue.finish();
+        stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
     }
 
     // Copy 'bases' to the device (ignoring bases that is already on the device)
     template <typename T>
     void copyToDevice(T &bases) {
+        auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: bases) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
                 cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
@@ -102,6 +107,8 @@ public:
                 }
             }
         }
+        queue.finish();
+        stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
 
 };

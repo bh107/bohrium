@@ -117,7 +117,7 @@ void updateWithOrigin(Block &block, const map<int64_t, const bh_instruction *> &
 
 pair<vector<Block>, bool> FuseCache::get(const vector<bh_instruction *> &instr_list) {
     const size_t lookup_hash = hash_instr_list(instr_list);
-    ++num_lookups;
+    ++stat.fuser_cache_lookups;
     if (_cache.find(lookup_hash) != _cache.end()) { // Cache hit!
         vector<Block> ret = _cache.at(lookup_hash);
         // Create a map: 'origin_id' => instruction
@@ -133,7 +133,7 @@ pair<vector<Block>, bool> FuseCache::get(const vector<bh_instruction *> &instr_l
         }
         return make_pair(ret, true);
     } else { // Cache miss!
-        ++num_lookup_misses;
+        ++stat.fuser_cache_misses;
         return make_pair(vector<Block>(), false);
     }
 }

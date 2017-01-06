@@ -56,7 +56,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
         }
 
         // Let's try to simplify the shape of the instruction
-        if (instr.reshapable()) {
+        if (instr.max_ndim() >  1 and instr.reshapable()) {
             const vector<int64_t> dominating_shape = instr.dominating_shape();
             assert(dominating_shape.size() > 0);
 

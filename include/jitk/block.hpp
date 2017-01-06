@@ -259,8 +259,7 @@ public:
         const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
         for (const InstrPtr this_instr: this_instr_list) {
             for (const InstrPtr other_instr: other_instr_list) {
-                if (*this_instr != *other_instr and
-                    bh_instr_dependency(this_instr.get(), other_instr.get())) {
+                if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
                     return true;
                 }
             }

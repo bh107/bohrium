@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_extmethod.hpp>
 #include <bh_util.hpp>
 #include <bh_opcode.h>
+#include <jitk/statistics.hpp>
 #include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
@@ -53,16 +54,7 @@ class Impl : public ComponentImplWithChild {
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     // Some statistics
-    uint64_t num_base_arrays=0;
-    uint64_t num_temp_arrays=0;
-    uint64_t max_memory_usage=0;
-    uint64_t totalwork=0;
-    uint64_t threading_below_threshold=0;
-    chrono::duration<double> time_total_execution{0};
-    chrono::duration<double> time_fusion{0};
-    chrono::duration<double> time_exec{0};
-    chrono::duration<double> time_build{0};
-    chrono::duration<double> time_offload{0};
+    Statistics stat;
     // The OpenCL engine
     EngineOpenCL engine;
     // Write an OpenCL kernel
@@ -70,7 +62,7 @@ class Impl : public ComponentImplWithChild {
                       stringstream &ss);
 
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level), engine(config) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -90,23 +82,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
-        const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
-        cout << "[OPENCL] Profiling: \n";
-        cout << "\tFuse Cache Hits:     " << fcache_hits << "/" << fcache.num_lookups \
-                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)\n";
-        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
-                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)\n";
-        cout << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB\n";
-        cout << "\tTotal Work: " << (double) totalwork << " operations\n";
-        cout << "\tWork below par-threshold(1000): " \
-             << threading_below_threshold / (double)totalwork * 100 << "%\n";
-        cout << "\tKernel store hits:   " << engine.num_lookups - engine.num_lookup_misses \
-                                          << "/" << engine.num_lookups << "\n";
-        cout << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
-        cout << "\t  Fusion:  " << time_fusion.count() << "s\n";
-        cout << "\t  Build:   " << time_build.count() << "s\n";
-        cout << "\t  Exec:    " << time_exec.count() << "s\n";
-        cout << "\t  Offload: " << time_offload.count() << "s" << endl;
+        stat.pprint("OpenCL", cout);
     }
 }
 
@@ -256,7 +232,7 @@ void Impl::execute(bh_ir *bhir) {
     if (config.defaultGet<bool>("prof", false)) {
         for (const bh_instruction *instr: instr_list) {
             if (not bh_opcode_is_system(instr->opcode)) {
-                totalwork += bh_nelements(instr->operand[0]);
+                stat.totalwork += bh_nelements(instr->operand[0]);
             }
         }
     }
@@ -301,7 +277,7 @@ void Impl::execute(bh_ir *bhir) {
         graph::pprint(dag, "dag");
     }
 
-    time_fusion += chrono::steady_clock::now() - tfusion;
+    stat.time_fusion += chrono::steady_clock::now() - tfusion;
 
     for(const Block &block: block_list) {
         assert(not block.isInstr());
@@ -313,8 +289,8 @@ void Impl::execute(bh_ir *bhir) {
         const bool kernel_is_computing = not kernel.block.isSystemOnly();
 
         // For profiling statistic
-        num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
-        num_temp_arrays += kernel.getAllTemps().size();
+        stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
+        stat.num_temp_arrays += kernel.getAllTemps().size();
 
         // Assign IDs to all base arrays
         BaseDB base_ids;
@@ -347,7 +323,7 @@ void Impl::execute(bh_ir *bhir) {
         if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
             for (const InstrPtr instr: kernel.getAllInstr()) {
                 if (not bh_opcode_is_system(instr->opcode)) {
-                    threading_below_threshold += bh_nelements(instr->operand[0]);
+                    stat.threading_below_threshold += bh_nelements(instr->operand[0]);
                 }
             }
         }
@@ -374,7 +350,7 @@ void Impl::execute(bh_ir *bhir) {
             }
             bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
             child.execute(&tmp_bhir);
-            time_offload += chrono::steady_clock::now() - toffload;
+            stat.time_offload += chrono::steady_clock::now() - toffload;
             continue;
         }
 
@@ -390,7 +366,7 @@ void Impl::execute(bh_ir *bhir) {
                 for (const auto &b: engine.buffers) {
                     sum += bh_base_size(b.first);
                 }
-                max_memory_usage = sum > max_memory_usage?sum:max_memory_usage;
+                stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
             }
 
             // Code generation
@@ -402,10 +378,8 @@ void Impl::execute(bh_ir *bhir) {
                      << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 
-            auto tkernel_exec = chrono::steady_clock::now();
             // Let's execute the OpenCL kernel
             engine.execute(ss.str(), kernel, threaded_blocks);
-            time_exec += chrono::steady_clock::now() - tkernel_exec;
         }
 
         // Let's copy sync'ed arrays back to the host
@@ -422,6 +396,6 @@ void Impl::execute(bh_ir *bhir) {
             bh_data_free(base);
         }
     }
-    time_total_execution += chrono::steady_clock::now() - texecution;
+    stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
