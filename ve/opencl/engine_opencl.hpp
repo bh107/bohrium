@@ -103,6 +103,7 @@ public:
                 }
             }
         }
+        queue.finish();
     }
 
 };
