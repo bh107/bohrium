@@ -32,9 +32,10 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
-EngineOpenCL::EngineOpenCL(const ConfigParser &config) :
-                                compile_flg(config.defaultGet<string>("compiler_flg", "")),
-                                verbose(config.defaultGet<bool>("verbose", false)) {
+EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
+                                    compile_flg(config.defaultGet<string>("compiler_flg", "")),
+                                    verbose(config.defaultGet<bool>("verbose", false)),
+                                    stat(stat) {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     if(platforms.size() == 0) {
@@ -99,7 +100,7 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
 void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel,
                            const vector<const jitk::LoopB*> &threaded_blocks) {
     size_t hash = hasher(source);
-    ++num_lookups;
+    ++stat.kernel_cache_lookups;
     cl::Program program;
 
     // Do we have the program already?
@@ -107,7 +108,7 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         program = _programs.at(hash);
     } else {
         // Or do we have to compile it
-        ++num_lookup_misses;
+        ++stat.kernel_cache_misses;
         program = cl::Program(context, source);
         try {
             program.build({default_device}, compile_flg.c_str());

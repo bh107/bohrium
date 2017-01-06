@@ -34,6 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/transformer.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_util.hpp>
+#include <jitk/statistics.hpp>
 
 #include "store.hpp"
 #include "c99_type.hpp"
@@ -50,21 +51,16 @@ class Impl : public ComponentImpl {
     // Fuse cache
     FuseCache fcache;
     // Compiled kernels store
-    Store _store;
+    Store store;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
     // Some statistics
-    uint64_t num_base_arrays=0;
-    uint64_t num_temp_arrays=0;
-    uint64_t totalwork=0;
-    chrono::duration<double> time_total_execution{0};
-    chrono::duration<double> time_fusion{0};
-    chrono::duration<double> time_exec{0};
-    chrono::duration<double> time_build{0};
+    Statistics stat;
+
   public:
-    Impl(int stack_level) : ComponentImpl(stack_level), _store(config) {}
+    Impl(int stack_level) : ComponentImpl(stack_level), fcache(stat), store(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -84,20 +80,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
-        const int64_t store_hits = _store.num_lookups - _store.num_lookup_misses;
-        const uint64_t fcache_hits = fcache.num_lookups - fcache.num_lookup_misses;
-        cout << "[VE-OPENMP] Profiling: \n";
-        cout << "\tKernel Store Hits:   " << store_hits << "/" << _store.num_lookups \
-                                          << " (" << 100.0*store_hits/_store.num_lookups << "%)\n";
-        cout << "\tFuse Cache hits:     " << fcache_hits << "/" << fcache.num_lookups \
-                                          << " (" << 100.0*fcache_hits/fcache.num_lookups << "%)\n";
-        cout << "\tArray contractions:  " << num_temp_arrays << "/" << num_base_arrays \
-                                          << " (" << 100.0*num_temp_arrays/num_base_arrays << "%)\n";
-        cout << "\tTotal Work: " << (double) totalwork << " operations\n";
-        cout << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
-        cout << "\t  Fusion: " << time_fusion.count() << "s\n";
-        cout << "\t  Build:  " << time_build.count() << "s\n";
-        cout << "\t  Exec:   " << time_exec.count() << "s" << endl;
+        stat.pprint("OpenMP", cout);
     }
 }
 
@@ -332,11 +315,11 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     // Some statistics
-    time_fusion += chrono::steady_clock::now() - texecution;
+    stat.time_fusion += chrono::steady_clock::now() - texecution;
     if (config.defaultGet<bool>("prof", false)) {
         for (const bh_instruction *instr: instr_list) {
             if (not bh_opcode_is_system(instr->opcode)) {
-                totalwork += bh_nelements(instr->operand[0]);
+                stat.totalwork += bh_nelements(instr->operand[0]);
             }
         }
     }
@@ -348,8 +331,8 @@ void Impl::execute(bh_ir *bhir) {
         Kernel kernel(block.getLoop());
 
         // For profiling statistic
-        num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
-        num_temp_arrays += kernel.getAllTemps().size();
+        stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
+        stat.num_temp_arrays += kernel.getAllTemps().size();
 
         // Assign IDs to all base arrays
         BaseDB base_ids;
@@ -376,9 +359,9 @@ void Impl::execute(bh_ir *bhir) {
 
         // Compile the kernel
         auto tbuild = chrono::steady_clock::now();
-        KernelFunction func = _store.getFunction(ss.str());
+        KernelFunction func = store.getFunction(ss.str());
         assert(func != NULL);
-        time_build += chrono::steady_clock::now() - tbuild;
+        stat.time_build += chrono::steady_clock::now() - tbuild;
 
         // Create a 'data_list' of data pointers
         vector<void*> data_list;
@@ -391,13 +374,13 @@ void Impl::execute(bh_ir *bhir) {
         auto texec = chrono::steady_clock::now();
         // Call the launcher function with the 'data_list', which will execute the kernel
         func(&data_list[0]);
-        time_exec += chrono::steady_clock::now() - texec;
+        stat.time_exec += chrono::steady_clock::now() - texec;
 
         // Finally, let's cleanup
         for(bh_base *base: kernel.getFrees()) {
             bh_data_free(base);
         }
     }
-    time_total_execution += chrono::steady_clock::now() - texecution;
+    stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 

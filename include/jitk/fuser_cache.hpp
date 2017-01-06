@@ -24,8 +24,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <vector>
 
-#include <jitk/block.hpp>
 #include <bh_instruction.hpp>
+#include <jitk/block.hpp>
+#include <jitk/statistics.hpp>
+
 
 namespace bohrium {
 namespace jitk {
@@ -34,9 +36,11 @@ class FuseCache {
 private:
     std::map<size_t, std::vector<Block> > _cache;
 public:
-    // Statistics
-    uint64_t num_lookups=0;
-    uint64_t num_lookup_misses=0;
+    // Some statistics
+    jitk::Statistics &stat;
+
+    // The constructor takes the statistic object
+    FuseCache(jitk::Statistics &stat) : stat(stat) {}
 
     // Check the cache for a block list that matches 'instr_list'
     std::pair<std::vector<Block>, bool> get(const std::vector<bh_instruction *> &instr_list);

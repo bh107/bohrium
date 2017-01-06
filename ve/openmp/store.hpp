@@ -28,6 +28,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/filesystem.hpp>
 
 #include <bh_config_parser.hpp>
+#include <jitk/statistics.hpp>
+
 #include "compiler.hpp"
 
 namespace bohrium {
@@ -58,12 +60,11 @@ class Store {
     const ConfigParser &config;
 
   public:
-    Store(const ConfigParser &config);
+    Store(const ConfigParser &config, jitk::Statistics &stat);
     ~Store();
 
     // Some statistics
-    int64_t num_lookups = 0;
-    int64_t num_lookup_misses = 0;
+    jitk::Statistics &stat;
 
     // Return a kernel function based on the given 'source'
     KernelFunction getFunction(const std::string &source);

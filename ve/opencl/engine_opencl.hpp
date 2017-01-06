@@ -27,6 +27,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_config_parser.hpp>
 #include <bh_array.hpp>
+#include <jitk/statistics.hpp>
+
 #include "cl.hpp"
 
 namespace bohrium {
@@ -56,11 +58,10 @@ public:
     // A map of allocated buffers on the device
     std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers; //TODO; privatize
 public:
-    EngineOpenCL(const ConfigParser &config);
+    EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 
     // Some statistics
-    int64_t num_lookups = 0;
-    int64_t num_lookup_misses = 0;
+    jitk::Statistics &stat;
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,

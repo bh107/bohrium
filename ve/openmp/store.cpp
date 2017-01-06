@@ -36,7 +36,8 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
-Store::Store(const ConfigParser &config) : tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
+Store::Store(const ConfigParser &config, jitk::Statistics &stat) :
+                                           tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
                                            source_dir(tmp_dir / "src"),
                                            object_dir(tmp_dir / "obj"),
                                            compiler(config.defaultGet<string>("compiler_cmd", "/usr/bin/cc"),
@@ -45,7 +46,8 @@ Store::Store(const ConfigParser &config) : tmp_dir(fs::temp_directory_path() / f
                                                     config.defaultGet<string>("compiler_flg", ""),
                                                     config.defaultGet<string>("compiler_ext", "")),
                                            verbose(config.defaultGet<bool>("verbose", false)),
-                                           config(config)
+                                           config(config),
+                                           stat(stat)
 {
     // Let's make sure that the directories exist
     fs::create_directories(source_dir);
@@ -70,13 +72,13 @@ static string hash_filename(size_t hash, string extension=".so") {
 
 KernelFunction Store::getFunction(const string &source) {
     size_t hash = hasher(source);
-    ++num_lookups;
+    ++stat.kernel_cache_lookups;
 
     // Do we have the function compiled and ready already?
     if (_functions.find(hash) != _functions.end()) {
         return _functions.at(hash);
     }
-    ++num_lookup_misses;
+    ++stat.kernel_cache_misses;
 
     // The object file path
     fs::path objfile = object_dir / hash_filename(hash);

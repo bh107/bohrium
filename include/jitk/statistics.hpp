@@ -1,0 +1,89 @@
+/*
+This file is part of Bohrium and copyright (c) 2012 the Bohrium
+team <http://www.bh107.org>.
+
+Bohrium is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+Bohrium is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
+
+If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef __BH_JITK_STATISTICS_H
+#define __BH_JITK_STATISTICS_H
+
+#include <chrono>
+#include <string>
+#include <ostream>
+#include <sstream>
+
+namespace bohrium {
+namespace jitk {
+
+namespace {
+// Pretty print the ratio: 'a/b'
+std::string pprint_ratio(uint64_t a, uint64_t b) {
+    std::stringstream ss;
+    ss << a << "/" << b << " (" << 100.0 * a / b << "%)";
+    return ss.str();
+}
+}
+
+/* BaseDB is a database over base arrays. The main feature is getBases(),
+ * which always returns the bases in the order they where inserted.
+ */
+class Statistics {
+  public:
+    uint64_t num_base_arrays=0;
+    uint64_t num_temp_arrays=0;
+    uint64_t max_memory_usage=0;
+    uint64_t totalwork=0;
+    uint64_t threading_below_threshold=0;
+    uint64_t kernel_cache_lookups=0;
+    uint64_t kernel_cache_misses=0;
+    uint64_t fuser_cache_lookups=0;
+    uint64_t fuser_cache_misses=0;
+    std::chrono::duration<double> time_total_execution{0};
+    std::chrono::duration<double> time_fusion{0};
+    std::chrono::duration<double> time_exec{0};
+    std::chrono::duration<double> time_build{0};
+    std::chrono::duration<double> time_offload{0};
+    std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
+
+    void pprint(std::string backend_name, std::ostream &out) {
+        using namespace std;
+        const chrono::duration<double> wallclock{chrono::steady_clock::now() - time_started};
+
+        out << "[" << backend_name << "] Profiling: \n";
+        out << "\tFuse Cache Hits:     " << pprint_ratio(fuser_cache_lookups - fuser_cache_misses, fuser_cache_lookups) << "\n";
+        out << "\tKernel Cache Hits    " << pprint_ratio(kernel_cache_lookups - kernel_cache_misses, kernel_cache_lookups) << "\n";
+        out << "\tArray contractions:  " << pprint_ratio(num_temp_arrays, num_base_arrays) << "\n";
+        out << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB\n";
+        out << "\tTotal Work: " << (double) totalwork << " operations\n";
+        out << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%\n";
+        out << "\tWall clock:  " << wallclock.count() << "s\n";
+        out << "\tFLOPS:  " << totalwork / (double)wallclock.count() << "s\n";
+        out << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
+        out << "\t  Fusion:  " << time_fusion.count() << "s\n";
+        out << "\t  Build:   " << time_build.count() << "s\n";
+        out << "\t  Exec:    " << time_exec.count() << "s\n";
+        out << "\t  Offload: " << time_offload.count() << "s\n";
+        out << endl;
+    }
+
+};
+
+
+} // jitk
+} // bohrium
+
+#endif
