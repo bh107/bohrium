@@ -59,6 +59,7 @@ class Statistics {
     std::chrono::duration<double> time_offload{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
+    // Pretty print the recorded statistics into 'out' where 'backend_name' is the name of the caller
     void pprint(std::string backend_name, std::ostream &out) {
         using namespace std;
         const chrono::duration<double> wallclock{chrono::steady_clock::now() - time_started};
@@ -71,7 +72,7 @@ class Statistics {
         out << "\tTotal Work: " << (double) totalwork << " operations\n";
         out << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%\n";
         out << "\tWall clock:  " << wallclock.count() << "s\n";
-        out << "\tFLOPS:  " << totalwork / (double)wallclock.count() << "s\n";
+        out << "\tThroughput:  " << totalwork / (double)wallclock.count() << "AOPS\n";
         out << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
         out << "\t  Fusion:  " << time_fusion.count() << "s\n";
         out << "\t  Build:   " << time_build.count() << "s\n";
@@ -79,7 +80,6 @@ class Statistics {
         out << "\t  Offload: " << time_offload.count() << "s\n";
         out << endl;
     }
-
 };
 
 
