@@ -22,6 +22,7 @@ RUN apt-get install -qq fftw3-dev
 RUN apt-get install -qq libhwloc-dev
 RUN apt-get install -qq libgl1-mesa-dev
 RUN apt-get install -qq python3 python3-numpy python3-dev cython3
+RUN apt-get install -qq python2.7-scipy python3-scipy
 
 # Install AMD SDK for OpenCL
 RUN mkdir -p /opt/amd_src

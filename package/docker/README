@@ -6,7 +6,7 @@ When modifying the base image, you have to upload a new docker image to docker h
 In the root dir of Bohrium first download:
 AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2
 from
-http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/i
+http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/
 
 and then run:
 
