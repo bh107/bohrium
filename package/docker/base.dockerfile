@@ -22,6 +22,7 @@ RUN apt-get install -qq fftw3-dev
 RUN apt-get install -qq libhwloc-dev
 RUN apt-get install -qq libgl1-mesa-dev
 RUN apt-get install -qq python3 python3-numpy python3-dev cython3
+RUN apt-get install -qq python2.7-scipy python3-scipy
 
 # Install AMD SDK for OpenCL
 RUN mkdir -p /opt/amd_src
@@ -41,41 +42,3 @@ ENV LD_LIBRARY_PATH "$OpenCL_LIBPATH:$LD_LIBRARY_PATH"
 # Install debug dependencies
 RUN apt-get install -qq zlib1g-dev valgrind gdb vim cgdb
 
-# Build and install source dependencies
-RUN mkdir -p /opt/dython
-WORKDIR /opt/dython
-ENV PV 2.7.11
-RUN wget -q http://www.python.org/ftp/python/$PV/Python-$PV.tgz
-RUN tar -xzf Python-$PV.tgz
-WORKDIR Python-$PV
-RUN ./configure --with-pydebug --without-pymalloc --with-valgrind --prefix /opt/python
-RUN make install
-RUN ln -s /opt/python/bin/python /usr/bin/dython
-RUN rm ../Python-$PV.tgz
-
-RUN mkdir -p /opt/cython
-WORKDIR /opt/cython
-ENV CV 0.24.1
-RUN wget -q https://github.com/cython/cython/archive/$CV.tar.gz
-RUN tar -xzf $CV.tar.gz
-WORKDIR cython-$CV
-RUN dython setup.py install
-RUN rm ../$CV.tar.gz
-
-RUN mkdir -p /opt/cheetah
-WORKDIR /opt/cheetah
-ENV CTV 2.4.4
-RUN wget -q https://pypi.python.org/packages/source/C/Cheetah/Cheetah-$CTV.tar.gz
-RUN tar -xzf Cheetah-$CTV.tar.gz
-WORKDIR Cheetah-$CTV
-RUN dython setup.py install
-RUN rm ../Cheetah-$CTV.tar.gz
-
-RUN mkdir -p /opt/numpy
-WORKDIR /opt/numpy
-ENV NV 1.10.4
-RUN wget -q https://github.com/numpy/numpy/archive/v$NV.tar.gz
-RUN tar -xzf v$NV.tar.gz
-WORKDIR numpy-$NV
-RUN dython setup.py install
-RUN rm ../v$NV.tar.gz

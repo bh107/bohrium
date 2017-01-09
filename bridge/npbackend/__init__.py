@@ -13,7 +13,7 @@ from numpy_force import *
 
 from .array_create import *
 from .array_manipulation import *
-from .ufunc import UFUNCS, gather
+from .ufuncs import UFUNCS, gather
 from .bhary import check, check_biclass, fix_biclass, in_bhmem
 from ._info import numpy_types
 from ._util import flush
@@ -25,23 +25,23 @@ asarray = array
 asanyarray = array
 
 # Expose all ufuncs
-for name, f in UFUNCS.items():
-    exec("%s = f" % name)
+for _name, _f in UFUNCS.items():
+    exec("%s = _f" % _name)
 
 # Aliases
-aliases = [
+_aliases = [
     ('abs', 'absolute')
 ]
 
-for f, t in aliases:
-    exec("%s = %s" % (f, t))
+for _f, _t in _aliases:
+    exec("%s = %s" % (_f, _t))
 
 # Expose all data types
-for t in numpy_types:
-    exec("%s = numpy.%s" % (t.__str__(), t.__str__()))
+for _t in numpy_types:
+    exec("%s = numpy.%s" % (_t.__str__(), _t.__str__()))
 
 # Type aliases
-type_aliases = [
+_type_aliases = [
     ('bool',    'bool'),
     ('int',     'int'),
     ('uint',    'numpy.uint64'),
@@ -49,8 +49,8 @@ type_aliases = [
     ('complex', 'complex')
 ]
 
-for f, t in type_aliases:
-    exec("%s = %s" % (f, t))
+for _f, _t in _type_aliases:
+    exec("%s = %s" % (_f, _t))
 
 # Note that the following modules needs ufuncs and dtypes
 from . import random123 as random
@@ -63,9 +63,3 @@ if sys.version_info[0] < 3:
     from . import bohriumify
     bohriumify.modules() # Python3 crash at this point
 
-# Finally, let's make sure we don't expose work-variables to the importer
-del name
-del f
-del t
-del aliases
-del type_aliases

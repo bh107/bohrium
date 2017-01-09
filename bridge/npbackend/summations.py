@@ -5,7 +5,7 @@ Summations and products
 Common linear algebra functions
 
 """
-from . import ufunc
+from . import ufuncs
 import numpy_force as numpy
 from . import bhary
 
@@ -80,7 +80,7 @@ def sum(a, axis=None, out=None):
     if not bhary.check(a) and not bhary.check(out):
         return numpy.sum(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
     else:
-        return ufunc.add.reduce(a, axis=axis, out=out)
+        return ufuncs.add.reduce(a, axis=axis, out=out)
 
 def prod(a, axis=None, out=None):
     """
@@ -138,7 +138,7 @@ def prod(a, axis=None, out=None):
     if not bhary.check(a) and not bhary.check(out):
         return numpy.prod(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
     else:
-        return ufunc.multiply.reduce(a, axis=axis, out=out)
+        return ufuncs.multiply.reduce(a, axis=axis, out=out)
 
 def max(a, axis=None, out=None):
     """
@@ -217,7 +217,7 @@ def max(a, axis=None, out=None):
     if not bhary.check(a) and not bhary.check(out):
         return numpy.max(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
     else:
-        return ufunc.maximum.reduce(a, axis=axis, out=out)
+        return ufuncs.maximum.reduce(a, axis=axis, out=out)
 
 
 def min(a, axis=None, out=None):
@@ -297,4 +297,4 @@ def min(a, axis=None, out=None):
     if not bhary.check(a) and not bhary.check(out):
         return numpy.min(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
     else:
-        return ufunc.minimum.reduce(a, axis=axis, out=out)
+        return ufuncs.minimum.reduce(a, axis=axis, out=out)

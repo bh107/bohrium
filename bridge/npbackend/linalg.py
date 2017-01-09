@@ -9,11 +9,11 @@ import bohrium as np
 import numpy_force.linalg as la
 import numpy_force as numpy
 
-#We import all of NumPy LinAlg and overwrite with the objects we implement ourself
+# We import all of NumPy LinAlg and overwrite with the objects we implement ourself
 from numpy_force.linalg import *
 
 from . import bhary
-from . import ufunc
+from . import ufuncs
 from . import target
 from . import array_create
 from ._util import dtype_equal
@@ -169,7 +169,7 @@ def matmul(a,b):
     a = array_create.array(a)
     b = array_create.array(b)
     c = np.empty((a.shape[0], b.shape[1]), dtype=a.dtype)
-    target.matmul(ufunc.get_bhc(c), ufunc.get_bhc(a), ufunc.get_bhc(b))
+    target.matmul(ufuncs.get_bhc(c), ufuncs.get_bhc(a), ufuncs.get_bhc(b))
     return c
 
 def dot(a,b, no_matmul=False):
@@ -239,12 +239,12 @@ def dot(a,b, no_matmul=False):
         a = array_create.array(a)
         b = array_create.array(b)
     if b.ndim == 1:
-        return ufunc.add.reduce(a*b,-1)
+        return ufuncs.add.reduce(a * b, -1)
     if a.ndim == 1:
-        return ufunc.add.reduce(a*numpy.transpose(b),-1)
+        return ufuncs.add.reduce(a * numpy.transpose(b), -1)
     if (not no_matmul) and a.ndim == 2 and b.ndim == 2:
         return matmul(a,b)
-    return ufunc.add.reduce(a[:,numpy.newaxis]*numpy.transpose(b),-1)
+    return ufuncs.add.reduce(a[:, numpy.newaxis] * numpy.transpose(b), -1)
 
 def norm(x, ord=None, axis=None):
     """

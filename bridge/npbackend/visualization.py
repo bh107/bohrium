@@ -5,7 +5,7 @@ Visualization
 Common functions for visualization.
 """
 import bohrium as np
-from . import ufunc, bhary, array_create
+from . import ufuncs, bhary, array_create
 
 def plot_surface(ary, mode, colormap, lowerbound, upperbound):
 
@@ -48,5 +48,5 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
         ],
         bohrium=True
     )
-    ufunc.extmethod("visualizer", ary, args, ary)   # Send to extension
+    ufuncs.extmethod("visualizer", ary, args, ary)   # Send to extension
 
