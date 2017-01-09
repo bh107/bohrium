@@ -48,7 +48,7 @@ static PyTypeObject BhArrayType;
 
 #define BhArray_CheckExact(op) (((PyObject*)(op))->ob_type == &BhArrayType)
 PyObject *bhary = NULL; //The bhary Python module
-PyObject *ufunc = NULL; //The ufunc Python module
+PyObject *ufuncs = NULL; //The ufuncs Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
 
@@ -547,7 +547,7 @@ BhArray_copy(PyObject *self, PyObject *args)
     PyObject *ret = PyObject_CallMethod(array_create, "empty_like", "O", self);
     if(ret == NULL)
         return NULL;
-    PyObject *err = PyObject_CallMethod(ufunc, "assign", "OO", self, ret);
+    PyObject *err = PyObject_CallMethod(ufuncs, "assign", "OO", self, ret);
     if(err == NULL)
     {
         Py_DECREF(ret);
@@ -565,7 +565,7 @@ BhArray_copy2numpy(PyObject *self, PyObject *args)
     PyObject *ret = PyArray_NewLikeArray((PyArrayObject*)self, NPY_ANYORDER, NULL, 0);
     if(ret == NULL)
         return NULL;
-    PyObject *err = PyObject_CallMethod(ufunc, "assign", "OO", self, ret);
+    PyObject *err = PyObject_CallMethod(ufuncs, "assign", "OO", self, ret);
     if(err == NULL)
     {
         Py_DECREF(ret);
@@ -681,7 +681,7 @@ BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v)
     PyObject *high = PyInt_FromSsize_t(ihigh);
 #endif
     PyObject *slice = PySlice_New(low, high, NULL);
-    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, slice, v);
+    PyObject *ret = PyObject_CallMethod(ufuncs, "setitem", "OOO", o, slice, v);
     Py_XDECREF(low);
     Py_XDECREF(high);
     Py_XDECREF(slice);
@@ -770,7 +770,7 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
         return PyArray_Type.tp_as_mapping->mp_ass_subscript(o, k, v);
     }
     //It is a regular SetItem call, let's do it in Python
-    PyObject *ret = PyObject_CallMethod(ufunc, "setitem", "OOO", o, k, v);
+    PyObject *ret = PyObject_CallMethod(ufuncs, "setitem", "OOO", o, k, v);
     if(ret == NULL)
         return -1;
     Py_XDECREF(ret);
@@ -1041,8 +1041,8 @@ PyMODINIT_FUNC init_bh(void)
     bhary = PyImport_ImportModule("bohrium.bhary");
     if(bhary == NULL)
         return RETVAL;
-    ufunc = PyImport_ImportModule("bohrium.ufunc");
-    if(ufunc == NULL)
+    ufuncs = PyImport_ImportModule("bohrium.ufuncs");
+    if(ufuncs == NULL)
         return RETVAL;
     bohrium = PyImport_ImportModule("bohrium");
     if(bohrium == NULL)
