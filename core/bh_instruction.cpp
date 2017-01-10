@@ -52,6 +52,17 @@ set<bh_base *> bh_instruction::get_bases() {
     return ret;
 }
 
+vector<const bh_view*> bh_instruction::get_views() const {
+    vector<const bh_view*> ret;
+    int nop = bh_noperands(opcode);
+    for(int o=0; o<nop; ++o) {
+        const bh_view &view = operand[o];
+        if (not bh_is_constant(&view))
+            ret.push_back(&view);
+    }
+    return ret;
+}
+
 bool bh_instruction::is_contiguous() const {
     int nop = bh_noperands(opcode);
     for(int o=0; o<nop; ++o) {
