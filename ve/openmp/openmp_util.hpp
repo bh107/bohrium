@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __OPENMP_OPENMP_UTIL_HPP
 
 #include <bh_opcode.h>
-#include <jitk/block.hpp>
+#include <jitk/kernel.hpp>
 #include <jitk/base_db.hpp>
 
 // Return the OpenMP reduction symbol
@@ -65,7 +65,7 @@ bool openmp_compatible(const bohrium::jitk::LoopB &block) {
 
 // Is the 'block' compatible with OpenMP SIMD
 bool simd_compatible(const bohrium::jitk::LoopB &block,
-                     const bohrium::jitk::BaseDB &base_ids) {
+                     const bohrium::jitk::Scope &scope) {
 
     // Check for non-compatible reductions
     for (const bohrium::jitk::InstrPtr instr: block._sweeps) {
@@ -74,9 +74,11 @@ bool simd_compatible(const bohrium::jitk::LoopB &block,
     }
 
     // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (const bh_base* b: block.getAllBases()) {
-        if (base_ids.isOpenmpAtomic(b) or base_ids.isOpenmpCritical(b))
-            return false;
+    for (bohrium::jitk::InstrPtr instr: block.getAllInstr()) {
+        for(const bh_view *view: instr->get_views()) {
+            if (scope.isOpenmpAtomic(*view) or scope.isOpenmpCritical(*view))
+                return false;
+        }
     }
     return true;
 }
