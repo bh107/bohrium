@@ -52,7 +52,7 @@ void write_loop_block(const SymbolTable &symbols,
                                           const std::vector<const LoopB *> &threaded_blocks,
                                           std::stringstream &out)> head_writer,
                       std::stringstream &out) {
-    out << "// new loop" << endl;
+
     if (block.isSystemOnly()) {
         out << "// Removed loop with only system instructions\n";
         return;
@@ -60,19 +60,44 @@ void write_loop_block(const SymbolTable &symbols,
     spaces(out, 4 + block.rank*4);
 
     // Let's find the local temporary arrays and the arrays to scalar replace
-    const std::set<bh_base *> &local_tmps = block.getLocalTemps();
+    const set<bh_base *> &local_tmps = block.getLocalTemps();
 
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<const bh_view*> scalar_replaced_reduction_outputs;
     for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
-            if (local_tmps.find(instr->operand[0].base) == local_tmps.end() and (parent_scope == NULL or not parent_scope->isTmp(instr->operand[0].base))) {
+            if (local_tmps.find(instr->operand[0].base) == local_tmps.end() and
+                    (parent_scope == NULL or parent_scope->isArray(instr->operand[0]))) {
                 scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
             }
         }
     }
+
+    set<const bh_view *> scalar_replaced_input_only;
+    if(0){
+        const vector<InstrPtr> block_instr_list = block.getAllInstr();
+        set<bh_base *> output_bases;
+        for (const InstrPtr &instr: block_instr_list) {
+            if (bh_noperands(instr->opcode) > 0) {
+                output_bases.insert(instr->operand[0].base);
+            }
+        }
+        for (const InstrPtr &instr: block_instr_list) {
+            const int nop = bh_noperands(instr->opcode);
+            for(int i=1; i < nop; ++i) {
+                const bh_view &input = instr->operand[i];
+                if (output_bases.find(input.base) == output_bases.end()) {
+                    if (local_tmps.find(input.base) == local_tmps.end() and
+                        (parent_scope == NULL or parent_scope->isArray(input))) {
+                        scalar_replaced_input_only.insert(&input);
+                    }
+                }
+            }
+        }
+    }
+
     // And then create the scope
-    Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs);
+    Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, scalar_replaced_input_only);
 
     // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
     // it should be declared before the for-loop
@@ -219,10 +244,11 @@ void write_loop_block(const SymbolTable &symbols,
     for (const bh_view *view: scalar_replaced_reduction_outputs) {
         if (scope.isLocallyScalarReplaced(*view)) {
             spaces(out, 4 + block.rank*4);
-            const size_t id = symbols[*view];
-            out << "a" << id;
+            out << "a" << symbols.baseID(view->base);
             write_array_subscription(*view, out);
-            out << " = s" << id << ";\n";
+            out << " = ";
+            scope.getName(*view, out);
+            out << ";\n";
         }
     }
 }

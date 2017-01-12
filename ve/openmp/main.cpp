@@ -126,8 +126,8 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     for (const InstrPtr instr: openmp_reductions) {
         assert(bh_noperands(instr->opcode) == 3);
         ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
-        ss << (scope.isScalarReplaced(instr->operand[0])?"s":"t");
-        ss << symbols[instr->operand[0]] << ")";
+        scope.getName(instr->operand[0], ss);
+        ss << ")";
     }
     const string ss_str = ss.str();
     if(not ss_str.empty()) {
@@ -185,7 +185,7 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     ss << "void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << write_c99_type(b->type) << " a" << symbols[b] << "[static " << b->nelem << "]";
+        ss << write_c99_type(b->type) << " a" << symbols.baseID(b) << "[static " << b->nelem << "]";
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
@@ -204,14 +204,14 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
-            ss << write_c99_type(b->type) << " *a" << symbols[b];
+            ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
         spaces(ss, 4);
         ss << "execute(";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             bh_base *b = kernel.getNonTemps()[i];
-            ss << "a" << symbols[b];
+            ss << "a" << symbols.baseID(b);
             if (i+1 < kernel.getNonTemps().size()) {
                 ss << ", ";
             }

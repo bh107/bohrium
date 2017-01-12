@@ -37,10 +37,10 @@ void write_system_operation(const Scope &scope, const bh_instruction &instr, str
 
     switch (instr.opcode) {
         case BH_FREE:
-            out << "// FREE a" << scope.symbols[instr.operand[0]];
+            out << "// FREE a" << scope.getName(instr.operand[0]);
             break;
         case BH_SYNC:
-            out << "// SYNC a" << scope.symbols[instr.operand[0]];
+            out << "// SYNC a" << scope.getName(instr.operand[0]);
             break;
         case BH_NONE:
             out << "// NONE ";

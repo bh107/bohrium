@@ -53,11 +53,11 @@ public:
     };
 
     // Get the ID of 'base', throws exception if 'base' doesn't exist
-    size_t operator[] (bh_base *base) const {
+    size_t baseID(bh_base *base) const {
         return _base_map.at(base);
     }
     // Get the ID of 'view', throws exception if 'view' doesn't exist
-    size_t operator[] (const bh_view &view) const {
+    size_t viewID(const bh_view &view) const {
         //return _view_map.at(view);
         return _base_map.at(view.base);
     }
@@ -71,29 +71,40 @@ public:
 
 private:
     std::set<bh_base*> _tmps; // Set of temporary arrays
-    std::set<bh_base*> _scalar_replacements; // Set of scalar replaced arrays
-  //  std::set<bh_view> _scalar_replacements; // Set of scalar replaced arrays
+    std::set<bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
+    std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
     std::set<bh_view> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
     std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
     std::set<bh_base*> _local_declared; // Set of arrays that have been locally declared (e.g. a temporary variable)
 public:
+    template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
           const Scope *parent,
           const std::set<bh_base *> &tmps,
-          std::vector<const bh_view*> &scalar_replacements) : symbols(symbols),
-                                                         parent(parent),
-                                                         _tmps(tmps) {
-        for(const bh_view* view: scalar_replacements) {
-            _scalar_replacements.insert(view->base);
+          const T1 &scalar_replacements_rw,
+          const T2 &scalar_replacements_r) : symbols(symbols),
+                                             parent(parent),
+                                             _tmps(tmps) {
+        for(const bh_view* view: scalar_replacements_rw) {
+            _scalar_replacements_rw.insert(view->base);
+        }
+        for(const bh_view* view: scalar_replacements_r) {
+            _scalar_replacements_r.insert(*view);
         }
 
-        // No overlap between '_tmps' and '_scalar_replacements' is allowed
+        // No overlap between '_tmps', '_scalar_replacements_rw', and '_scalar_replacements_r' is allowed
     #ifndef NDEBUG
-        for (bh_base* base: _scalar_replacements) {
+        for (const bh_view &view: _scalar_replacements_r) {
+            assert(_tmps.find(view.base) == _tmps.end());
+            assert(_scalar_replacements_rw.find(view.base) == _scalar_replacements_rw.end());
+        }
+        for (bh_base* base: _scalar_replacements_rw) {
             assert(_tmps.find(base) == _tmps.end());
+//            assert(_scalar_replacements_r.find(view) == _scalar_replacements_r.end());
         }
         for (bh_base* base: _tmps) {
-            assert(_scalar_replacements.find(base) == _scalar_replacements.end());
+//            assert(_scalar_replacements_r.find(base) == _scalar_replacements_r.end());
+            assert(_scalar_replacements_rw.find(base) == _scalar_replacements_rw.end());
         }
     #endif
     }
@@ -111,7 +122,8 @@ public:
 
     // Check if 'base' has been scalar replaced
     bool isLocallyScalarReplaced(const bh_view &view) const {
-        return _scalar_replacements.find(view.base) != _scalar_replacements.end();
+        return _scalar_replacements_r.find(view) != _scalar_replacements_r.end() or
+               _scalar_replacements_rw.find(view.base) != _scalar_replacements_rw.end();
     }
 
     // Check if 'base' has been scalar replaced
@@ -178,13 +190,13 @@ public:
     void getName(const bh_view &view, T &out) const {
         if (isTmp(view.base)) {
             out << "t";
-            out << symbols[view.base];
+            out << symbols.baseID(view.base);
         } else if (isScalarReplaced(view)) {
             out << "s";
-            out << symbols[view];
+            out << symbols.baseID(view.base);
         } else {
             out << "a";
-            out << symbols[view];
+            out << symbols.baseID(view.base);
         }
     }
     std::string getName(const bh_view &view) const {
