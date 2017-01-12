@@ -75,7 +75,8 @@ private:
     std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
     std::set<bh_view> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
     std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
-    std::set<bh_base*> _local_declared; // Set of arrays that have been locally declared (e.g. a temporary variable)
+    std::set<bh_base*> _local_declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
+    std::set<bh_view> _local_declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
 public:
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
@@ -130,11 +131,11 @@ public:
             return false;
         }
     }
-    bool isScalarReplaced_RW(const bh_view &view) const {
-        if (util::exist(_scalar_replacements_rw, view.base)) {
+    bool isScalarReplaced_RW(const bh_base *base) const {
+        if (util::exist_nconst(_scalar_replacements_rw, base)) {
             return true;
         } else if (parent != NULL) {
-            return parent->isScalarReplaced_RW(view);
+            return parent->isScalarReplaced_RW(base);
         } else {
             return false;
         }
@@ -142,7 +143,7 @@ public:
 
     // Check if 'view' has been scalar replaced
     bool isScalarReplaced(const bh_view &view) const {
-        return isScalarReplaced_R(view) or isScalarReplaced_RW(view);
+        return isScalarReplaced_R(view) or isScalarReplaced_RW(view.base);
     }
 
     // Check if 'view' is a regular array (not temporary, scalar-replaced etc.)
@@ -178,19 +179,27 @@ public:
         }
     }
 
-    // Insert and check if 'base' has been locally declared (e.g. a temporary variable)
-    bool isDeclared(const bh_view &view) const {
-        if (_local_declared.find(view.base) != _local_declared.end()) {
+    // Check if 'view' has been locally declared (e.g. a temporary variable)
+    bool isBaseDeclared(const bh_base *base) const {
+        if (util::exist_nconst(_local_declared_base, base)) {
             return true;
         } else if (parent != NULL) {
-            return parent->isDeclared(view);
+            return parent->isBaseDeclared(base);
         } else {
             return false;
         }
     }
-    void insertDeclared(const bh_view &view) {
-        assert(not isDeclared(view));
-        _local_declared.insert(view.base);
+    bool isViewDeclared(const bh_view &view) const {
+        if (util::exist(_local_declared_view, view)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isViewDeclared(view);
+        } else {
+            return false;
+        }
+    }
+    bool isDeclared(const bh_view &view) const {
+        return isBaseDeclared(view.base) or isViewDeclared(view);
     }
 
     // Get the name (symbol) of the 'base'
@@ -219,7 +228,13 @@ public:
         out << type_str << " ";
         getName(view, out);
         out << ";";
-        insertDeclared(view);
+        if (isTmp(view.base) or isScalarReplaced_RW(view.base)) {
+            _local_declared_base.insert(view.base);
+        } else if (isScalarReplaced_R(view)){
+            _local_declared_view.insert(view);
+        } else {
+            throw std::runtime_error("calling writeDeclaration() on a regular array");
+        }
     }
 };
 
