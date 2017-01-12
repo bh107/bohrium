@@ -73,23 +73,35 @@ void write_loop_block(const SymbolTable &symbols,
         }
     }
 
-    set<const bh_view *> scalar_replaced_input_only;
-    if(0){
+    // Let's scalar replace input-only arrays that are used multiple times
+    vector<const bh_view*> scalar_replaced_input_only;
+    {
         const vector<InstrPtr> block_instr_list = block.getAllInstr();
-        set<bh_base *> output_bases;
+        // We have to ignore output arrays and arrays that are accumulated
+        set<bh_base *> ignore_bases;
         for (const InstrPtr &instr: block_instr_list) {
             if (bh_noperands(instr->opcode) > 0) {
-                output_bases.insert(instr->operand[0].base);
+                ignore_bases.insert(instr->operand[0].base);
+            }
+            if (bh_opcode_is_accumulate(instr->opcode)) {
+                ignore_bases.insert(instr->operand[1].base);
             }
         }
+        // First we add a valid view to the set of 'candidates' and if we encounter the view again
+        // we add it to the 'scalar_replaced_input_only'
+        set<bh_view> candidates;
         for (const InstrPtr &instr: block_instr_list) {
             const int nop = bh_noperands(instr->opcode);
             for(int i=1; i < nop; ++i) {
                 const bh_view &input = instr->operand[i];
-                if (output_bases.find(input.base) == output_bases.end()) {
+                if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
                     if (local_tmps.find(input.base) == local_tmps.end() and
                         (parent_scope == NULL or parent_scope->isArray(input))) {
-                        scalar_replaced_input_only.insert(&input);
+                        if (util::exist(candidates, input)) { // 'input' is used multiple times
+                            scalar_replaced_input_only.push_back(&input);
+                        } else {
+                            candidates.insert(input);
+                        }
                     }
                 }
             }
@@ -164,13 +176,22 @@ void write_loop_block(const SymbolTable &symbols,
         spaces(out, 8 + block.rank*4);
         out << type_writer(BH_UINT64) << " " << itername << " = 0;\n";
 
-        // Write temporary array declarations
+        // Write temporary and scalar replaced array declarations
         for (const InstrPtr instr: block.getLocalInstr()) {
             for (const bh_view *view: instr->get_views()) {
-                if (peeled_scope.isTmp(view->base) and not peeled_scope.isDeclared(*view)) {
-                    spaces(out, 8 + block.rank * 4);
-                    peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
-                    out << "\n";
+                if (not peeled_scope.isDeclared(*view)) {
+                    if (peeled_scope.isTmp(view->base)) {
+                        spaces(out, 8 + block.rank * 4);
+                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                        out << "\n";
+                    } else if (peeled_scope.isScalarReplaced_R(*view)) {
+                        spaces(out, 8 + block.rank * 4);
+                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                        out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                        write_array_subscription(*view, out);
+                        out << ";";
+                        out << "\n";
+                    }
                 }
             }
         }
@@ -193,13 +214,22 @@ void write_loop_block(const SymbolTable &symbols,
     // Write the for-loop header
     head_writer(symbols, scope, block, config, need_to_peel, threaded_blocks, out);
 
-    // Write temporary array declarations
+    // Write temporary and scalar replaced array declarations
     for (const InstrPtr instr: block.getLocalInstr()) {
         for (const bh_view *view: instr->get_views()) {
-            if (scope.isTmp(view->base) and not scope.isDeclared(*view)) {
-                spaces(out, 8 + block.rank * 4);
-                scope.writeDeclaration(*view, type_writer(view->base->type), out);
-                out << "\n";
+            if (not scope.isDeclared(*view)) {
+                if (scope.isTmp(view->base)) {
+                    spaces(out, 8 + block.rank * 4);
+                    scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                    out << "\n";
+                } else if (scope.isScalarReplaced_R(*view)) {
+                    spaces(out, 8 + block.rank * 4);
+                    scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                    out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                    write_array_subscription(*view, out);
+                    out << ";";
+                    out << "\n";
+                }
             }
         }
     }

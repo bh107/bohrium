@@ -58,8 +58,7 @@ public:
     }
     // Get the ID of 'view', throws exception if 'view' doesn't exist
     size_t viewID(const bh_view &view) const {
-        //return _view_map.at(view);
-        return _base_map.at(view.base);
+        return _view_map.at(view);
     }
 };
 
@@ -206,14 +205,14 @@ public:
     template <typename T>
     void getName(const bh_view &view, T &out) const {
         if (isTmp(view.base)) {
-            out << "t";
-            out << symbols.baseID(view.base);
+            out << "t" << symbols.baseID(view.base);
         } else if (isScalarReplaced(view)) {
-            out << "s";
-            out << symbols.baseID(view.base);
+            out << "s" << symbols.baseID(view.base);
+            if (isScalarReplaced_R(view)) {
+                out << "_" << symbols.viewID(view);;
+            }
         } else {
-            out << "a";
-            out << symbols.baseID(view.base);
+            out << "a" << symbols.baseID(view.base);
         }
     }
     std::string getName(const bh_view &view) const {
