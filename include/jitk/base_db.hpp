@@ -120,15 +120,29 @@ public:
         }
     }
 
-    // Check if 'base' has been scalar replaced
-    bool isScalarReplaced(const bh_view &view) const {
-        if (util::exist(_scalar_replacements_r, view) or util::exist(_scalar_replacements_rw, view.base)) {
+    // Check if 'base' has been scalar replaced read-only or read/write
+    bool isScalarReplaced_R(const bh_view &view) const {
+        if (util::exist(_scalar_replacements_r, view)) {
             return true;
         } else if (parent != NULL) {
-            return parent->isScalarReplaced(view);
+            return parent->isScalarReplaced_R(view);
         } else {
             return false;
         }
+    }
+    bool isScalarReplaced_RW(const bh_view &view) const {
+        if (util::exist(_scalar_replacements_rw, view.base)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isScalarReplaced_RW(view);
+        } else {
+            return false;
+        }
+    }
+
+    // Check if 'view' has been scalar replaced
+    bool isScalarReplaced(const bh_view &view) const {
+        return isScalarReplaced_R(view) or isScalarReplaced_RW(view);
     }
 
     // Check if 'view' is a regular array (not temporary, scalar-replaced etc.)
