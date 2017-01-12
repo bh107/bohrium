@@ -169,7 +169,8 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
             const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and not (util::exist(initiated, v.base) or util::exist(buffers, v.base))) {
+                if (v.base->data == NULL and not (util::exist_nconst(initiated, v.base)
+                                                  or util::exist_nconst(buffers, v.base))) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
                         instr->constructor = true;

@@ -111,7 +111,7 @@ public:
 
     // Check if 'base' is temporary
     bool isTmp(const bh_base *base) const {
-        if (util::exist(_tmps, base)) {
+        if (util::exist_nconst(_tmps, base)) {
             return true;
         } else if (parent != NULL) {
             return parent->isTmp(base);
@@ -121,14 +121,8 @@ public:
     }
 
     // Check if 'base' has been scalar replaced
-    bool isLocallyScalarReplaced(const bh_view &view) const {
-        return _scalar_replacements_r.find(view) != _scalar_replacements_r.end() or
-               _scalar_replacements_rw.find(view.base) != _scalar_replacements_rw.end();
-    }
-
-    // Check if 'base' has been scalar replaced
     bool isScalarReplaced(const bh_view &view) const {
-        if (isLocallyScalarReplaced(view)) {
+        if (util::exist(_scalar_replacements_r, view) or util::exist(_scalar_replacements_rw, view.base)) {
             return true;
         } else if (parent != NULL) {
             return parent->isScalarReplaced(view);

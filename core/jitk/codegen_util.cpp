@@ -242,14 +242,12 @@ void write_loop_block(const SymbolTable &symbols,
 
     // Let's copy the scalar replaced reduction outputs back to the original array
     for (const bh_view *view: scalar_replaced_reduction_outputs) {
-        if (scope.isLocallyScalarReplaced(*view)) {
-            spaces(out, 4 + block.rank*4);
-            out << "a" << symbols.baseID(view->base);
-            write_array_subscription(*view, out);
-            out << " = ";
-            scope.getName(*view, out);
-            out << ";\n";
-        }
+        spaces(out, 4 + block.rank*4);
+        out << "a" << symbols.baseID(view->base);
+        write_array_subscription(*view, out);
+        out << " = ";
+        scope.getName(*view, out);
+        out << ";\n";
     }
 }
 
