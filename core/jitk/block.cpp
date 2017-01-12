@@ -515,7 +515,7 @@ namespace {
 bool data_parallel_compatible(const bh_view &writer, const bh_view &reader, const int rank) {
 
     // Disjoint views or constants are obviously compatible
-    if (bh_is_constant(&writer) or bh_is_constant(&reader) or bh_view_disjoint(&writer, &reader)) {
+    if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
         return true;
     }
 
