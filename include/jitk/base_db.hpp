@@ -34,11 +34,31 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+// Compare class for the index sets and maps
+struct idx_less {
+    // This compare is the same as view compare ('v1 < v2') but ignoring their bases
+    bool operator() (const bh_view& v1, const bh_view& v2) const {
+        if (v1.start < v2.start) return true;
+        if (v2.start < v1.start) return false;
+        if (v1.ndim < v2.ndim) return true;
+        if (v2.ndim < v1.ndim) return false;
+        for (bh_intp i = 0; i < v1.ndim; ++i) {
+            if (v1.shape[i] < v2.shape[i]) return true;
+            if (v2.shape[i] < v1.shape[i]) return false;
+        }
+        for (bh_intp i = 0; i < v1.ndim; ++i) {
+            if (v1.stride[i] < v2.stride[i]) return true;
+            if (v2.stride[i] < v1.stride[i]) return false;
+        }
+        return false;
+    }
+};
 
 class SymbolTable {
 private:
     std::map<bh_base*, size_t> _base_map; // Mapping a base to its ID
-    std::map<bh_view, size_t> _view_map; // Mapping a base to its ID
+    std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
+    std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
 
 public:
     SymbolTable(const std::vector<InstrPtr> &instr_list) {
@@ -48,10 +68,10 @@ public:
             for (const bh_view *view: instr->get_views()) {
                 _base_map.insert(std::make_pair(view->base, _base_map.size()));
                 _view_map.insert(std::make_pair(*view, _view_map.size()));
+                _idx_map.insert(std::make_pair(*view, _idx_map.size()));
             }
         }
     };
-
     // Get the ID of 'base', throws exception if 'base' doesn't exist
     size_t baseID(bh_base *base) const {
         return _base_map.at(base);
@@ -60,31 +80,36 @@ public:
     size_t viewID(const bh_view &view) const {
         return _view_map.at(view);
     }
+    // Get the ID of 'index', throws exception if 'index' doesn't exist
+    size_t idxID(const bh_view &index) const {
+        return _idx_map.at(index);
+    }
+    // Get the ID of 'index', throws exception if 'index' doesn't exist
+    size_t existIdxID(const bh_view &index) const {
+        return util::exist(_idx_map, index);
+    }
 };
 
-
 class Scope {
-public:
+private:
     const SymbolTable &symbols;
     const Scope * const parent;
 
-private:
     std::set<bh_base*> _tmps; // Set of temporary arrays
     std::set<bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
     std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
     std::set<bh_view> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
     std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
-    std::set<bh_base*> _local_declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
-    std::set<bh_view> _local_declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
+    std::set<bh_base*> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
+    std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
+    std::set<bh_view, idx_less> _declared_idx; // Set of indexes that have been locally declared
 public:
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
           const Scope *parent,
           const std::set<bh_base *> &tmps,
           const T1 &scalar_replacements_rw,
-          const T2 &scalar_replacements_r) : symbols(symbols),
-                                             parent(parent),
-                                             _tmps(tmps) {
+          const T2 &scalar_replacements_r) : symbols(symbols), parent(parent), _tmps(tmps) {
         for(const bh_view* view: scalar_replacements_rw) {
             _scalar_replacements_rw.insert(view->base);
         }
@@ -97,14 +122,17 @@ public:
         for (const bh_view &view: _scalar_replacements_r) {
             assert(_tmps.find(view.base) == _tmps.end());
             assert(_scalar_replacements_rw.find(view.base) == _scalar_replacements_rw.end());
+            assert(symbols.viewID(view) >= 0);
         }
         for (bh_base* base: _scalar_replacements_rw) {
             assert(_tmps.find(base) == _tmps.end());
 //            assert(_scalar_replacements_r.find(view) == _scalar_replacements_r.end());
+            assert(symbols.baseID(base) >= 0);
         }
         for (bh_base* base: _tmps) {
 //            assert(_scalar_replacements_r.find(base) == _scalar_replacements_r.end());
             assert(_scalar_replacements_rw.find(base) == _scalar_replacements_rw.end());
+            assert(symbols.baseID(base) >= 0);
         }
     #endif
     }
@@ -180,7 +208,7 @@ public:
 
     // Check if 'view' has been locally declared (e.g. a temporary variable)
     bool isBaseDeclared(const bh_base *base) const {
-        if (util::exist_nconst(_local_declared_base, base)) {
+        if (util::exist_nconst(_declared_base, base)) {
             return true;
         } else if (parent != NULL) {
             return parent->isBaseDeclared(base);
@@ -189,7 +217,7 @@ public:
         }
     }
     bool isViewDeclared(const bh_view &view) const {
-        if (util::exist(_local_declared_view, view)) {
+        if (util::exist(_declared_view, view)) {
             return true;
         } else if (parent != NULL) {
             return parent->isViewDeclared(view);
@@ -199,6 +227,17 @@ public:
     }
     bool isDeclared(const bh_view &view) const {
         return isBaseDeclared(view.base) or isViewDeclared(view);
+    }
+
+    // Check if 'index' has been locally declared
+    bool isIdxDeclared(const bh_view &index) const {
+        if (util::exist(_declared_idx, index)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isIdxDeclared(index);
+        } else {
+            return false;
+        }
     }
 
     // Get the name (symbol) of the 'base'
@@ -224,16 +263,60 @@ public:
     // Write the variable declaration of 'base' using 'type_str' as the type string
     template <typename T>
     void writeDeclaration(const bh_view &view, const std::string &type_str, T &out) {
+        assert(not isDeclared(view));
         out << type_str << " ";
         getName(view, out);
         out << ";";
         if (isTmp(view.base) or isScalarReplaced_RW(view.base)) {
-            _local_declared_base.insert(view.base);
+            _declared_base.insert(view.base);
         } else if (isScalarReplaced_R(view)){
-            _local_declared_view.insert(view);
+            _declared_view.insert(view);
         } else {
             throw std::runtime_error("calling writeDeclaration() on a regular array");
         }
+    }
+
+    // Get the name (symbol) of the 'base'
+    template <typename T>
+    void getIdxName(const bh_view &view, T &out) const {
+        out << "idx" << symbols.idxID(view);
+    }
+    std::string getIdxName(const bh_view &view) const {
+        std::stringstream ss;
+        getIdxName(view, ss);
+        return ss.str();
+    }
+
+    // Write the variable declaration of the index calculation of 'view' using 'type_str' as the type string
+    template <typename T>
+    void writeIdxDeclaration(const bh_view &view, const std::string &type_str, T &out) {
+        assert(not isIdxDeclared(view));
+        _declared_idx.insert(view);
+        out << "const " << type_str << " ";
+        getIdxName(view, out);
+        out << "=";
+        bool empty_subscription = true;
+        if (view.start > 0) {
+            out << "(" << view.start;
+            empty_subscription = false;
+        } else {
+            out << "(";
+        }
+        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
+            for (int i = 0; i < view.ndim; ++i) {
+                int t = i;
+                if (view.stride[i] > 0) {
+                    out << " +i" << t;
+                    if (view.stride[i] != 1) {
+                        out << "*" << view.stride[i];
+                    }
+                    empty_subscription = false;
+                }
+            }
+        }
+        if (empty_subscription)
+            out << "0";
+        out << ");";
     }
 };
 

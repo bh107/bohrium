@@ -125,6 +125,16 @@ void write_loop_block(const SymbolTable &symbols,
         }
     }
 
+    // Find indexes we will declare later.
+    vector<const bh_view*> indexes;
+    for (const InstrPtr &instr: block.getLocalInstr()) {
+        for (const bh_view* view: instr->get_views()) {
+            if (symbols.existIdxID(*view)) {
+                indexes.push_back(view);
+            }
+        }
+    }
+
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
     {
@@ -188,11 +198,19 @@ void write_loop_block(const SymbolTable &symbols,
                         spaces(out, 8 + block.rank * 4);
                         peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
                         out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                        write_array_subscription(*view, out);
+                        write_array_subscription(peeled_scope, *view, out);
                         out << ";";
                         out << "\n";
                     }
                 }
+            }
+        }
+        // Write the indexes declarations
+        for (const bh_view *view: indexes) {
+            if (not peeled_scope.isIdxDeclared(*view)) {
+                spaces(out, 8 + block.rank * 4);
+                peeled_scope.writeIdxDeclaration(*view, type_writer(BH_UINT64), out);
+                out << "\n";
             }
         }
         out << "\n";
@@ -226,11 +244,19 @@ void write_loop_block(const SymbolTable &symbols,
                     spaces(out, 8 + block.rank * 4);
                     scope.writeDeclaration(*view, type_writer(view->base->type), out);
                     out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                    write_array_subscription(*view, out);
+                    write_array_subscription(scope, *view, out);
                     out << ";";
                     out << "\n";
                 }
             }
+        }
+    }
+    // Write the indexes declarations
+    for (const bh_view *view: indexes) {
+        if (not scope.isIdxDeclared(*view)) {
+            spaces(out, 8 + block.rank * 4);
+            scope.writeIdxDeclaration(*view, type_writer(BH_UINT64), out);
+            out << "\n";
         }
     }
 
@@ -274,7 +300,7 @@ void write_loop_block(const SymbolTable &symbols,
     for (const bh_view *view: scalar_replaced_reduction_outputs) {
         spaces(out, 4 + block.rank*4);
         out << "a" << symbols.baseID(view->base);
-        write_array_subscription(*view, out);
+        write_array_subscription(scope, *view, out, true);
         out << " = ";
         scope.getName(*view, out);
         out << ";\n";
