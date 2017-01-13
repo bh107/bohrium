@@ -125,12 +125,19 @@ void write_loop_block(const SymbolTable &symbols,
         }
     }
 
-    // Find indexes we will declare later.
+    // Find indexes we will declare later
     vector<const bh_view*> indexes;
-    for (const InstrPtr &instr: block.getLocalInstr()) {
-        for (const bh_view* view: instr->get_views()) {
-            if (symbols.existIdxID(*view)) {
-                indexes.push_back(view);
+    {
+        set<bh_view, idx_less> candidates;
+        for (const InstrPtr &instr: block.getLocalInstr()) {
+            for (const bh_view* view: instr->get_views()) {
+                if (symbols.existIdxID(*view) and scope.isArray(*view)) {
+                    if (util::exist(candidates, *view)) { // 'view' is used multiple times
+                        indexes.push_back(view);
+                    } else {
+                        candidates.insert(*view);
+                    }
+                }
             }
         }
     }
