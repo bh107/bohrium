@@ -29,136 +29,294 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_array.hpp>
 #include <bh_util.hpp>
 
+#include <jitk/kernel.hpp>
+
 namespace bohrium {
 namespace jitk {
 
-/* BaseDB is a database over base arrays. The main feature is getBases(),
- * which always returns the bases in the order they where inserted.
- */
-class BaseDB {
-  private:
-    std::map<bh_base*, size_t> _map; // Mapping a base to its ID
-    std::vector<bh_base*> _vec; // Vector of the bases where the vector index corresponds to a ID.
-    std::set<bh_base*> _tmps; // Set of temporary arrays
-    std::set<bh_base*> _scalar_replacements; // Set of scalar replaced arrays
-    std::set<bh_base*> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
-    std::set<bh_base*> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
-    std::set<bh_base*> _local_declared; // Set of arrays that have been locally declared (e.g. a temporary variable)
-  public:
-    BaseDB() {};
+// Compare class for the index sets and maps
+struct idx_less {
+    // This compare is the same as view compare ('v1 < v2') but ignoring their bases
+    bool operator() (const bh_view& v1, const bh_view& v2) const {
+        if (v1.start < v2.start) return true;
+        if (v2.start < v1.start) return false;
+        if (v1.ndim < v2.ndim) return true;
+        if (v2.ndim < v1.ndim) return false;
+        for (bh_intp i = 0; i < v1.ndim; ++i) {
+            if (v1.shape[i] < v2.shape[i]) return true;
+            if (v2.shape[i] < v1.shape[i]) return false;
+        }
+        for (bh_intp i = 0; i < v1.ndim; ++i) {
+            if (v1.stride[i] < v2.stride[i]) return true;
+            if (v2.stride[i] < v1.stride[i]) return false;
+        }
+        return false;
+    }
+};
 
-    // Insert a 'key'. Returns false and does nothing if 'key' exist, else true
-    bool insert(bh_base* base) {
-        if (_map.insert(std::make_pair(base, _vec.size())).second) {
-            _vec.push_back(base);
-            return true;
-        } else {
-            return false;
+class SymbolTable {
+private:
+    std::map<bh_base*, size_t> _base_map; // Mapping a base to its ID
+    std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
+    std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
+
+public:
+    SymbolTable(const std::vector<InstrPtr> &instr_list) {
+        // NB: by assigning the IDs in the order they appear in the 'instr_list',
+        //     the kernels can better be reused
+        for (const InstrPtr instr: instr_list) {
+            for (const bh_view *view: instr->get_views()) {
+                _base_map.insert(std::make_pair(view->base, _base_map.size()));
+                _view_map.insert(std::make_pair(*view, _view_map.size()));
+                _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+            }
         }
     };
-
-    // Return a vector of all bases in the order they where inserted
-    const std::vector<bh_base*> &getBases() const {
-        return _vec;
-    }
-
-    // Number of bases in the collection
-    size_t size() const {
-        return _vec.size();
-    }
-
     // Get the ID of 'base', throws exception if 'base' doesn't exist
-    size_t operator[] (const bh_base* base) const {
-        return _map.at(const_cast<bh_base*>(base));
+    size_t baseID(bh_base *base) const {
+        return _base_map.at(base);
     }
+    // Get the ID of 'view', throws exception if 'view' doesn't exist
+    size_t viewID(const bh_view &view) const {
+        return _view_map.at(view);
+    }
+    // Get the ID of 'index', throws exception if 'index' doesn't exist
+    size_t idxID(const bh_view &index) const {
+        return _idx_map.at(index);
+    }
+    // Get the ID of 'index', throws exception if 'index' doesn't exist
+    size_t existIdxID(const bh_view &index) const {
+        return util::exist(_idx_map, index);
+    }
+};
 
-    // Add the set of 'temps' as temporary arrays.
-    // NB: the arrays should exist in this database already
-    void insertTmp(const std::set<bh_base*> &temps) {
-        #ifndef NDEBUG
-        for (bh_base* b: temps)
-            assert(util::exist(_map, b));
-        #endif
-        _tmps.insert(temps.begin(), temps.end());
+class Scope {
+private:
+    const SymbolTable &symbols;
+    const Scope * const parent;
+
+    std::set<bh_base*> _tmps; // Set of temporary arrays
+    std::set<bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
+    std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
+    std::set<bh_view> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
+    std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
+    std::set<bh_base*> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
+    std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
+    std::set<bh_view, idx_less> _declared_idx; // Set of indexes that have been locally declared
+public:
+    template<typename T1, typename T2>
+    Scope(const SymbolTable &symbols,
+          const Scope *parent,
+          const std::set<bh_base *> &tmps,
+          const T1 &scalar_replacements_rw,
+          const T2 &scalar_replacements_r) : symbols(symbols), parent(parent), _tmps(tmps) {
+        for(const bh_view* view: scalar_replacements_rw) {
+            _scalar_replacements_rw.insert(view->base);
+        }
+        for(const bh_view* view: scalar_replacements_r) {
+            _scalar_replacements_r.insert(*view);
+        }
+
+        // No overlap between '_tmps', '_scalar_replacements_rw', and '_scalar_replacements_r' is allowed
+    #ifndef NDEBUG
+        for (const bh_view &view: _scalar_replacements_r) {
+            assert(_tmps.find(view.base) == _tmps.end());
+            assert(_scalar_replacements_rw.find(view.base) == _scalar_replacements_rw.end());
+            assert(symbols.viewID(view) >= 0);
+        }
+        for (bh_base* base: _scalar_replacements_rw) {
+            assert(_tmps.find(base) == _tmps.end());
+//            assert(_scalar_replacements_r.find(view) == _scalar_replacements_r.end());
+            assert(symbols.baseID(base) >= 0);
+        }
+        for (bh_base* base: _tmps) {
+//            assert(_scalar_replacements_r.find(base) == _scalar_replacements_r.end());
+            assert(_scalar_replacements_rw.find(base) == _scalar_replacements_rw.end());
+            assert(symbols.baseID(base) >= 0);
+        }
+    #endif
     }
 
     // Check if 'base' is temporary
-    bool isTmp(const bh_base* base) const {
-        return util::exist(_tmps, base);
+    bool isTmp(const bh_base *base) const {
+        if (util::exist_nconst(_tmps, base)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isTmp(base);
+        } else {
+            return false;
+        }
     }
 
-    // Add the 'base' as scalar replaced array
-    // NB: 'base' should exist in this database already
-    void insertScalarReplacement(bh_base* base) {
-        assert(util::exist(_map, base));
-        _scalar_replacements.insert(base);
+    // Check if 'base' has been scalar replaced read-only or read/write
+    bool isScalarReplaced_R(const bh_view &view) const {
+        if (util::exist(_scalar_replacements_r, view)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isScalarReplaced_R(view);
+        } else {
+            return false;
+        }
+    }
+    bool isScalarReplaced_RW(const bh_base *base) const {
+        if (util::exist_nconst(_scalar_replacements_rw, base)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isScalarReplaced_RW(base);
+        } else {
+            return false;
+        }
     }
 
-    // Erase 'base' from the set of scalar replaced arrays
-    void eraseScalarReplacement(bh_base* base) {
-        _scalar_replacements.erase(base);
+    // Check if 'view' has been scalar replaced
+    bool isScalarReplaced(const bh_view &view) const {
+        return isScalarReplaced_R(view) or isScalarReplaced_RW(view.base);
     }
 
-    // Check if 'base' has been scalar replaced
-    bool isScalarReplaced(const bh_base* base) const {
-        return util::exist(_scalar_replacements, base);
-    }
-
-    // Check if 'base' is a regular array (not temporary, scalar-replaced etc.)
-    bool isArray(const bh_base *base) const {
-        return not (isTmp(base) or isScalarReplaced(base));
+    // Check if 'view' is a regular array (not temporary, scalar-replaced etc.)
+    bool isArray(const bh_view &view) const {
+        return not (isTmp(view.base) or isScalarReplaced(view));
     }
 
     // Insert and check if 'base' should be guarded by OpenMP atomic
-    void insertOpenmpAtomic(bh_base* base) {
-        _omp_atomic.insert(base);
+    void insertOpenmpAtomic(const bh_view &view) {
+        _omp_atomic.insert(view);
     }
-    bool isOpenmpAtomic(const bh_base* base) const {
-        return util::exist(_omp_atomic, base);
+    bool isOpenmpAtomic(const bh_view &view) const {
+        if (_omp_atomic.find(view) != _omp_atomic.end()) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isOpenmpAtomic(view);
+        } else {
+            return false;
+        }
     }
 
     // Insert and check if 'base' should be guarded by OpenMP critical
-    void insertOpenmpCritical(bh_base* base) {
-        _omp_critical.insert(base);
+    void insertOpenmpCritical(const bh_view &view) {
+        _omp_critical.insert(view);
     }
-    bool isOpenmpCritical(const bh_base* base) const {
-        return util::exist(_omp_critical, base);
+    bool isOpenmpCritical(const bh_view &view) const {
+        if (_omp_critical.find(view) != _omp_critical.end()) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isOpenmpCritical(view);
+        } else {
+            return false;
+        }
     }
 
-    // Insert and check if 'base' has been locally declared (e.g. a temporary variable)
-    bool isLocallyDeclared(const bh_base* base) const {
-        return util::exist(_local_declared, base);
+    // Check if 'view' has been locally declared (e.g. a temporary variable)
+    bool isBaseDeclared(const bh_base *base) const {
+        if (util::exist_nconst(_declared_base, base)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isBaseDeclared(base);
+        } else {
+            return false;
+        }
     }
-    void insertLocallyDeclared(bh_base* base) {
-        assert(not isLocallyDeclared(base));
-        _local_declared.insert(base);
+    bool isViewDeclared(const bh_view &view) const {
+        if (util::exist(_declared_view, view)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isViewDeclared(view);
+        } else {
+            return false;
+        }
+    }
+    bool isDeclared(const bh_view &view) const {
+        return isBaseDeclared(view.base) or isViewDeclared(view);
+    }
+
+    // Check if 'index' has been locally declared
+    bool isIdxDeclared(const bh_view &index) const {
+        if (util::exist(_declared_idx, index)) {
+            return true;
+        } else if (parent != NULL) {
+            return parent->isIdxDeclared(index);
+        } else {
+            return false;
+        }
     }
 
     // Get the name (symbol) of the 'base'
     template <typename T>
-    void getName(const bh_base* base, T &out) const {
-        if (isTmp(base)) {
-            out << "t";
-        } else if (isScalarReplaced(base)) {
-            out << "s";
+    void getName(const bh_view &view, T &out) const {
+        if (isTmp(view.base)) {
+            out << "t" << symbols.baseID(view.base);
+        } else if (isScalarReplaced(view)) {
+            out << "s" << symbols.baseID(view.base);
+            if (isScalarReplaced_R(view)) {
+                out << "_" << symbols.viewID(view);;
+            }
         } else {
-            out << "a";
+            out << "a" << symbols.baseID(view.base);
         }
-        out << (*this)[base];
     }
-    std::string getName(const bh_base* base) const {
+    std::string getName(const bh_view &view) const {
         std::stringstream ss;
-        getName(base, ss);
+        getName(view, ss);
         return ss.str();
     }
 
     // Write the variable declaration of 'base' using 'type_str' as the type string
     template <typename T>
-    void writeDeclaration(bh_base* base, const std::string &type_str, T &out) {
+    void writeDeclaration(const bh_view &view, const std::string &type_str, T &out) {
+        assert(not isDeclared(view));
         out << type_str << " ";
-        getName(base, out);
+        getName(view, out);
         out << ";";
-        insertLocallyDeclared(base);
+        if (isTmp(view.base) or isScalarReplaced_RW(view.base)) {
+            _declared_base.insert(view.base);
+        } else if (isScalarReplaced_R(view)){
+            _declared_view.insert(view);
+        } else {
+            throw std::runtime_error("calling writeDeclaration() on a regular array");
+        }
+    }
+
+    // Get the name (symbol) of the 'base'
+    template <typename T>
+    void getIdxName(const bh_view &view, T &out) const {
+        out << "idx" << symbols.idxID(view);
+    }
+    std::string getIdxName(const bh_view &view) const {
+        std::stringstream ss;
+        getIdxName(view, ss);
+        return ss.str();
+    }
+
+    // Write the variable declaration of the index calculation of 'view' using 'type_str' as the type string
+    template <typename T>
+    void writeIdxDeclaration(const bh_view &view, const std::string &type_str, T &out) {
+        assert(not isIdxDeclared(view));
+        _declared_idx.insert(view);
+        out << "const " << type_str << " ";
+        getIdxName(view, out);
+        out << "=";
+        bool empty_subscription = true;
+        if (view.start > 0) {
+            out << "(" << view.start;
+            empty_subscription = false;
+        } else {
+            out << "(";
+        }
+        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
+            for (int i = 0; i < view.ndim; ++i) {
+                int t = i;
+                if (view.stride[i] > 0) {
+                    out << " +i" << t;
+                    if (view.stride[i] != 1) {
+                        out << "*" << view.stride[i];
+                    }
+                    empty_subscription = false;
+                }
+            }
+        }
+        if (empty_subscription)
+            out << "0";
+        out << ");";
     }
 };
 

@@ -37,39 +37,108 @@ bool sweeping_innermost_axis(InstrPtr instr) {
     return instr->sweep_axis() == instr->operand[1].ndim-1;
 }
 
-void write_loop_block(BaseDB &base_ids,
+void write_loop_block(const SymbolTable &symbols,
+                      const Scope *parent_scope,
                       const LoopB &block,
                       const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks,
                       bool opencl,
                       std::function<const char *(bh_type type)> type_writer,
-                      std::function<void (BaseDB &base_ids,
+                      std::function<void (const SymbolTable &symbols,
+                                          Scope &scope,
                                           const LoopB &block,
                                           const ConfigParser &config,
                                           bool loop_is_peeled,
                                           const std::vector<const LoopB *> &threaded_blocks,
                                           std::stringstream &out)> head_writer,
                       std::stringstream &out) {
-    spaces(out, 4 + block.rank*4);
 
     if (block.isSystemOnly()) {
-        out << "// Removed loop with only system instructions" << endl;
+        out << "// Removed loop with only system instructions\n";
         return;
     }
+    spaces(out, 4 + block.rank*4);
+
+    // Let's find the local temporary arrays and the arrays to scalar replace
+    const set<bh_base *> &local_tmps = block.getLocalTemps();
 
     // Let's scalar replace reduction outputs that reduces over the innermost axis
-    vector<bh_view> scalar_replacements;
+    vector<const bh_view*> scalar_replaced_reduction_outputs;
     for (const InstrPtr instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
-            bh_base *base = instr->operand[0].base;
-            if (base_ids.isTmp(base) or base_ids.isLocallyDeclared(base))
-                continue;
-            scalar_replacements.push_back(instr->operand[0]);
-            base_ids.insertScalarReplacement(base);
-            // Let's write the declaration of the scalar variable
-            base_ids.writeDeclaration(base, type_writer(base->type), out);
-            out << "\n";
-            spaces(out, 4 + block.rank * 4);
+            if (local_tmps.find(instr->operand[0].base) == local_tmps.end() and
+                    (parent_scope == NULL or parent_scope->isArray(instr->operand[0]))) {
+                scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
+            }
+        }
+    }
+
+    // Let's scalar replace input-only arrays that are used multiple times
+    vector<const bh_view*> scalar_replaced_input_only;
+    {
+        const vector<InstrPtr> block_instr_list = block.getAllInstr();
+        // We have to ignore output arrays and arrays that are accumulated
+        set<bh_base *> ignore_bases;
+        for (const InstrPtr &instr: block_instr_list) {
+            if (bh_noperands(instr->opcode) > 0) {
+                ignore_bases.insert(instr->operand[0].base);
+            }
+            if (bh_opcode_is_accumulate(instr->opcode)) {
+                ignore_bases.insert(instr->operand[1].base);
+            }
+        }
+        // First we add a valid view to the set of 'candidates' and if we encounter the view again
+        // we add it to the 'scalar_replaced_input_only'
+        set<bh_view> candidates;
+        for (const InstrPtr &instr: block_instr_list) {
+            const int nop = bh_noperands(instr->opcode);
+            for(int i=1; i < nop; ++i) {
+                const bh_view &input = instr->operand[i];
+                if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
+                    if (local_tmps.find(input.base) == local_tmps.end() and
+                        (parent_scope == NULL or parent_scope->isArray(input))) {
+                        if (util::exist(candidates, input)) { // 'input' is used multiple times
+                            scalar_replaced_input_only.push_back(&input);
+                        } else {
+                            candidates.insert(input);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // And then create the scope
+    Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, scalar_replaced_input_only);
+
+    // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
+    // it should be declared before the for-loop
+    for (const InstrPtr instr: block._sweeps) {
+        if (bh_opcode_is_reduction(instr->opcode)) {
+            const bh_view &output = instr->operand[0];
+            if (not scope.isDeclared(output) and not scope.isArray(output)) {
+                // Let's write the declaration of the scalar variable
+                scope.writeDeclaration(output, type_writer(output.base->type), out);
+                out << "\n";
+                spaces(out, 4 + block.rank * 4);
+            }
+        }
+    }
+
+    // Find indexes we will declare later
+    vector<const bh_view*> indexes;
+    {
+        set<bh_view, idx_less> candidates;
+        for (const InstrPtr &instr: block.getLocalInstr()) {
+            for (const bh_view* view: instr->get_views()) {
+                if (symbols.existIdxID(*view) and scope.isArray(*view)) {
+                    if (util::exist(candidates, *view)) { // 'view' is used multiple times
+                        indexes.push_back(view);
+                    } else {
+                        candidates.insert(*view);
+                    }
+                }
+            }
         }
     }
 
@@ -77,8 +146,8 @@ void write_loop_block(BaseDB &base_ids,
     bool need_to_peel = false;
     {
         for (const InstrPtr instr: block._sweeps) {
-            bh_base *b = instr->operand[0].base;
-            if (not (has_reduce_identity(instr->opcode) and (base_ids.isScalarReplaced(b) or base_ids.isTmp(b)))) {
+            const bh_view &v = instr->operand[0];
+            if (not (has_reduce_identity(instr->opcode) and (scope.isScalarReplaced(v) or scope.isTmp(v.base)))) {
                 need_to_peel = true;
                 break;
             }
@@ -88,35 +157,24 @@ void write_loop_block(BaseDB &base_ids,
     // When not peeling, we need a neutral initial reduction value
     if (not need_to_peel) {
         for (const InstrPtr instr: block._sweeps) {
-            bh_base *base = instr->operand[0].base;
-            if (not base_ids.isArray(base) and not base_ids.isLocallyDeclared(base)) {
-                base_ids.writeDeclaration(base, type_writer(base->type), out);
+            const bh_view &view = instr->operand[0];
+            if (not scope.isArray(view) and not scope.isDeclared(view)) {
+                scope.writeDeclaration(view, type_writer(view.base->type), out);
                 out << "\n";
                 spaces(out, 4 + block.rank * 4);
             }
-            base_ids.getName(base, out);
+            scope.getName(view, out);
             out << " = ";
-            write_reduce_identity(instr->opcode, base->type, out);
+            write_reduce_identity(instr->opcode, view.base->type, out);
             out << ";\n";
             spaces(out, 4 + block.rank * 4);
-        }
-    }
-
-    // Get local temporary arrays as a vector sorted by the ID
-    vector<bh_base*> local_tmps;
-    {
-        const set<bh_base *> t = block.getLocalTemps();
-        for (bh_base *base: base_ids.getBases()) {
-            if (util::exist(t, base)) {
-                local_tmps.push_back(base);
-            }
         }
     }
 
     // If this block is sweeped, we will "peel" the for-loop such that the
     // sweep instruction is replaced with BH_IDENTITY in the first iteration
     if (block._sweeps.size() > 0 and need_to_peel) {
-        BaseDB base_ids_tmp(base_ids);
+        Scope peeled_scope(scope);
         LoopB peeled_block(block);
         for (const InstrPtr instr: block._sweeps) {
             bh_instruction sweep_instr;
@@ -134,12 +192,31 @@ void write_loop_block(BaseDB &base_ids,
         out << "{ // Peeled loop, 1. sweep iteration\n";
         spaces(out, 8 + block.rank*4);
         out << type_writer(BH_UINT64) << " " << itername << " = 0;\n";
-        // Write temporary array declarations
-        for (bh_base* base: local_tmps) {
-            assert(base_ids_tmp.isTmp(base));
-            if (not base_ids_tmp.isLocallyDeclared(base)) {
+
+        // Write temporary and scalar replaced array declarations
+        for (const InstrPtr instr: block.getLocalInstr()) {
+            for (const bh_view *view: instr->get_views()) {
+                if (not peeled_scope.isDeclared(*view)) {
+                    if (peeled_scope.isTmp(view->base)) {
+                        spaces(out, 8 + block.rank * 4);
+                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                        out << "\n";
+                    } else if (peeled_scope.isScalarReplaced_R(*view)) {
+                        spaces(out, 8 + block.rank * 4);
+                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                        out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                        write_array_subscription(peeled_scope, *view, out);
+                        out << ";";
+                        out << "\n";
+                    }
+                }
+            }
+        }
+        // Write the indexes declarations
+        for (const bh_view *view: indexes) {
+            if (not peeled_scope.isIdxDeclared(*view)) {
                 spaces(out, 8 + block.rank * 4);
-                base_ids_tmp.writeDeclaration(base, type_writer(base->type), out);
+                peeled_scope.writeIdxDeclaration(*view, type_writer(BH_UINT64), out);
                 out << "\n";
             }
         }
@@ -148,10 +225,10 @@ void write_loop_block(BaseDB &base_ids,
             if (b.isInstr()) {
                 if (b.getInstr() != NULL) {
                     spaces(out, 4 + b.rank()*4);
-                    write_instr(base_ids_tmp, *b.getInstr(), out, opencl);
+                    write_instr(peeled_scope, *b.getInstr(), out, opencl);
                 }
             } else {
-                write_loop_block(base_ids_tmp, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
+                write_loop_block(symbols, &peeled_scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -160,14 +237,32 @@ void write_loop_block(BaseDB &base_ids,
     }
 
     // Write the for-loop header
-    head_writer(base_ids, block, config, need_to_peel, threaded_blocks, out);
+    head_writer(symbols, scope, block, config, need_to_peel, threaded_blocks, out);
 
-    // Write temporary array declarations
-    for (bh_base* base: local_tmps) {
-        assert(base_ids.isTmp(base));
-        if (not base_ids.isLocallyDeclared(base)) {
+    // Write temporary and scalar replaced array declarations
+    for (const InstrPtr instr: block.getLocalInstr()) {
+        for (const bh_view *view: instr->get_views()) {
+            if (not scope.isDeclared(*view)) {
+                if (scope.isTmp(view->base)) {
+                    spaces(out, 8 + block.rank * 4);
+                    scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                    out << "\n";
+                } else if (scope.isScalarReplaced_R(*view)) {
+                    spaces(out, 8 + block.rank * 4);
+                    scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                    out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                    write_array_subscription(scope, *view, out);
+                    out << ";";
+                    out << "\n";
+                }
+            }
+        }
+    }
+    // Write the indexes declarations
+    for (const bh_view *view: indexes) {
+        if (not scope.isIdxDeclared(*view)) {
             spaces(out, 8 + block.rank * 4);
-            base_ids.writeDeclaration(base, type_writer(base->type), out);
+            scope.writeIdxDeclaration(*view, type_writer(BH_UINT64), out);
             out << "\n";
         }
     }
@@ -179,10 +274,10 @@ void write_loop_block(BaseDB &base_ids,
             if (b.isInstr()) { // Finally, let's write the instruction
                 if (b.getInstr() != NULL) {
                     spaces(out, 4 + b.rank()*4);
-                    write_instr(base_ids, *b.getInstr(), out, true);
+                    write_instr(scope, *b.getInstr(), out, true);
                 }
             } else {
-                write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
+                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
             }
         }
     } else {
@@ -190,32 +285,32 @@ void write_loop_block(BaseDB &base_ids,
             if (b.isInstr()) { // Finally, let's write the instruction
                 const InstrPtr instr = b.getInstr();
                 if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
-                    if (base_ids.isOpenmpAtomic(instr->operand[0].base)) {
+                    if (scope.isOpenmpAtomic(instr->operand[0])) {
                         spaces(out, 4 + b.rank()*4);
                         out << "#pragma omp atomic\n";
-                    } else if (base_ids.isOpenmpCritical(instr->operand[0].base)) {
+                    } else if (scope.isOpenmpCritical(instr->operand[0])) {
                         spaces(out, 4 + b.rank()*4);
                         out << "#pragma omp critical\n";
                     }
                 }
                 spaces(out, 4 + b.rank()*4);
-                write_instr(base_ids, *instr, out);
+                write_instr(scope, *instr, out);
             } else {
-                write_loop_block(base_ids, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
+                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
             }
         }
     }
     spaces(out, 4 + block.rank*4);
     out << "}\n";
 
-    // Let's copy the scalar replacement back to the original array
-    for (const bh_view &view: scalar_replacements) {
+    // Let's copy the scalar replaced reduction outputs back to the original array
+    for (const bh_view *view: scalar_replaced_reduction_outputs) {
         spaces(out, 4 + block.rank*4);
-        const size_t id = base_ids[view.base];
-        out << "a" << id;
-        write_array_subscription(view, out);
-        out << " = s" << id << ";\n";
-        base_ids.eraseScalarReplacement(view.base); // It is not scalar replaced anymore
+        out << "a" << symbols.baseID(view->base);
+        write_array_subscription(scope, *view, out, true);
+        out << " = ";
+        scope.getName(*view, out);
+        out << ";\n";
     }
 }
 

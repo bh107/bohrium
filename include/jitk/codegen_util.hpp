@@ -42,15 +42,17 @@ void spaces(std::stringstream &out, int num) {
 }
 
 // Writes a loop block, which corresponds to a parallel for-loop.
-// The two functions 'type_writer' and 'head_writer' should writhe the
+// The two functions 'type_writer' and 'head_writer' should write the
 // backend specific data type names and for-loop headers respectively.
-void write_loop_block(BaseDB &base_ids,
+void write_loop_block(const SymbolTable &symbols,
+                      const Scope *parent_scope,
                       const LoopB &block,
                       const ConfigParser &config,
                       const std::vector<const LoopB *> &threaded_blocks,
                       bool opencl,
                       std::function<const char *(bh_type type)> type_writer,
-                      std::function<void (BaseDB &base_ids,
+                      std::function<void (const SymbolTable &symbols,
+                                          Scope &scope,
                                           const LoopB &block,
                                           const ConfigParser &config,
                                           bool loop_is_peeled,

@@ -85,7 +85,7 @@ Impl::~Impl() {
 }
 
 // Writing the OpenMP header, which include "parallel for" and "simd"
-void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParser &config, stringstream &out) {
+void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config, stringstream &out) {
     if (not config.defaultGet<bool>("compiler_openmp", false)) {
         return;
     }
@@ -101,19 +101,19 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
         for (const InstrPtr instr: block._sweeps) {
             assert(bh_noperands(instr->opcode) == 3);
-            bh_base *base = instr->operand[0].base;
-            if (openmp_reduce_compatible(instr->opcode) and (base_ids.isScalarReplaced(base) or base_ids.isTmp(base))) {
+            const bh_view &view = instr->operand[0];
+            if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
                 openmp_reductions.push_back(instr);
             } else if (openmp_atomic_compatible(instr->opcode)) {
-                base_ids.insertOpenmpAtomic(instr->operand[0].base);
+                scope.insertOpenmpAtomic(view);
             } else {
-                base_ids.insertOpenmpCritical(instr->operand[0].base);
+                scope.insertOpenmpCritical(view);
             }
         }
     }
 
     // "OpenMP SIMD" goes to the innermost loop (which might also be the outermost loop)
-    if (enable_simd and block.isInnermost() and simd_compatible(block, base_ids)) {
+    if (enable_simd and block.isInnermost() and simd_compatible(block, scope)) {
         ss << " simd";
         if (block.rank > 0) { //NB: avoid multiple reduction declarations
             for (const InstrPtr instr: block._sweeps) {
@@ -125,10 +125,9 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
     //Let's write the OpenMP reductions
     for (const InstrPtr instr: openmp_reductions) {
         assert(bh_noperands(instr->opcode) == 3);
-        bh_base *base = instr->operand[0].base;
         ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
-        ss << (base_ids.isScalarReplaced(base)?"s":"t");
-        ss << base_ids[base] << ")";
+        scope.getName(instr->operand[0], ss);
+        ss << ")";
     }
     const string ss_str = ss.str();
     if(not ss_str.empty()) {
@@ -138,7 +137,7 @@ void write_openmp_header(const LoopB &block, BaseDB &base_ids, const ConfigParse
 }
 
 // Writes the OpenMP specific for-loop header
-void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
+void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
                       const vector<const LoopB *> &threaded_blocks, stringstream &out) {
 
     // Let's write the OpenMP loop header
@@ -148,7 +147,7 @@ void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &
             --for_loop_size;
         // No need to parallel one-sized loops
         if (for_loop_size > 1) {
-            write_openmp_header(block, base_ids, config, out);
+            write_openmp_header(symbols, scope, block, config, out);
         }
     }
 
@@ -163,7 +162,7 @@ void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, stringstream &ss) {
+void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
 
     // Make sure all arrays are allocated
     for (bh_base *base: kernel.getNonTemps()) {
@@ -186,7 +185,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << "void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << write_c99_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
+        ss << write_c99_type(b->type) << " a" << symbols.baseID(b) << "[static " << b->nelem << "]";
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
@@ -194,7 +193,7 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
     ss << ") {\n";
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(base_ids, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
+    write_loop_block(symbols, NULL, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
 
     ss << "}\n\n";
 
@@ -205,14 +204,14 @@ void write_kernel(Kernel &kernel, BaseDB &base_ids, const ConfigParser &config, 
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
-            ss << write_c99_type(b->type) << " *a" << base_ids[b];
+            ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
         spaces(ss, 4);
         ss << "execute(";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             bh_base *b = kernel.getNonTemps()[i];
-            ss << "a" << base_ids[b];
+            ss << "a" << symbols.baseID(b);
             if (i+1 < kernel.getNonTemps().size()) {
                 ss << ", ";
             }
@@ -232,7 +231,7 @@ void set_constructor_flag(vector<bh_instruction> &instr_list) {
             const bh_view &v = instr.operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and not util::exist(initiated, v.base)) {
+                if (v.base->data == NULL and not util::exist_nconst(initiated, v.base)) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
                         instr.constructor = true;
@@ -334,20 +333,7 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
-        // Assign IDs to all base arrays
-        BaseDB base_ids;
-        // NB: by assigning the IDs in the order they appear in the 'instr_list',
-        //     the kernels can better be reused
-        for (const InstrPtr instr: kernel.getAllInstr()) {
-            const int nop = bh_noperands(instr->opcode);
-            for(int i=0; i<nop; ++i) {
-                const bh_view &v = instr->operand[i];
-                if (not bh_is_constant(&v)) {
-                    base_ids.insert(v.base);
-                }
-            }
-        }
-        base_ids.insertTmp(kernel.getAllTemps());
+        const SymbolTable symbols(kernel.getAllInstr());
 
         // Debug print
         if (config.defaultGet<bool>("verbose", false))
@@ -355,7 +341,7 @@ void Impl::execute(bh_ir *bhir) {
 
         // Code generation
         stringstream ss;
-        write_kernel(kernel, base_ids, config, ss);
+        write_kernel(kernel, symbols, config, ss);
 
         // Compile the kernel
         auto tbuild = chrono::steady_clock::now();

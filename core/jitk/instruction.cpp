@@ -33,14 +33,14 @@ namespace jitk {
 namespace { // We need some help functions
 
 // Write system operation
-void write_system_operation(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out) {
+void write_system_operation(const Scope &scope, const bh_instruction &instr, stringstream &out) {
 
     switch (instr.opcode) {
         case BH_FREE:
-            out << "// FREE a" << base_ids[instr.operand[0].base];
+            out << "// FREE " << scope.getName(instr.operand[0]);
             break;
         case BH_SYNC:
-            out << "// SYNC a" << base_ids[instr.operand[0].base];
+            out << "// SYNC " << scope.getName(instr.operand[0]);
             break;
         case BH_NONE:
             out << "// NONE ";
@@ -458,8 +458,20 @@ void dtype_min(bh_type dtype, stringstream &out) {
 
 } // Anon namespace
 
-void write_array_subscription(const bh_view &view, stringstream &out, int hidden_axis, const pair<int, int> axis_offset) {
+void write_array_subscription(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
+                              int hidden_axis, const pair<int, int> axis_offset) {
     assert(view.base != NULL); // Not a constant
+
+    // Let's check if the index is already declared as a variable
+    if (not ignore_declared_indexes) {
+        if (scope.isIdxDeclared(view)) {
+            out << "[";
+            scope.getIdxName(view, out);
+            out << "]";
+            return;
+        }
+    }
+
     bool empty_subscription = true;
     if (view.start > 0) {
         out << "[" << view.start;
@@ -490,9 +502,9 @@ void write_array_subscription(const bh_view &view, stringstream &out, int hidden
     out << "]";
 }
 
-void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstream &out, bool opencl) {
+void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
     if (bh_opcode_is_system(instr.opcode)) {
-        write_system_operation(base_ids, instr, out);
+        write_system_operation(scope, instr, out);
         return;
     }
     if (instr.opcode == BH_RANGE) {
@@ -500,9 +512,9 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         // Write output operand
         {
             stringstream ss;
-            base_ids.getName(instr.operand[0].base, ss);
-            if (base_ids.isArray(instr.operand[0].base)) {
-                write_array_subscription(instr.operand[0], ss);
+            scope.getName(instr.operand[0], ss);
+            if (scope.isArray(instr.operand[0])) {
+                write_array_subscription(scope, instr.operand[0], ss);
             }
             operands.push_back(ss.str());
         }
@@ -524,9 +536,9 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         // Write output operand
         {
             stringstream ss;
-            base_ids.getName(instr.operand[0].base, ss);
-            if (base_ids.isArray(instr.operand[0].base)) {
-                write_array_subscription(instr.operand[0], ss);
+            scope.getName(instr.operand[0], ss);
+            if (scope.isArray(instr.operand[0])) {
+                write_array_subscription(scope, instr.operand[0], ss);
             }
             operands.push_back(ss.str());
         }
@@ -551,25 +563,25 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         // Write output operand
         {
             stringstream ss;
-            base_ids.getName(instr.operand[0].base, ss);
-            if (base_ids.isArray(instr.operand[0].base)) {
-                write_array_subscription(instr.operand[0], ss);
+            scope.getName(instr.operand[0], ss);
+            if (scope.isArray(instr.operand[0])) {
+                write_array_subscription(scope, instr.operand[0], ss);
             }
             operands.push_back(ss.str());
         }
         // Write the previous element access, NB: this works because of loop peeling
         {
             stringstream ss;
-            base_ids.getName(instr.operand[0].base, ss);
-            write_array_subscription(instr.operand[0], ss, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
+            scope.getName(instr.operand[0], ss);
+            write_array_subscription(scope, instr.operand[0], ss, true, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
             operands.push_back(ss.str());
         }
         // Write the current element access
         {
             stringstream ss;
-            base_ids.getName(instr.operand[1].base, ss);
-            if (base_ids.isArray(instr.operand[1].base)) {
-                write_array_subscription(instr.operand[1], ss);
+            scope.getName(instr.operand[1], ss);
+            if (scope.isArray(instr.operand[1])) {
+                write_array_subscription(scope, instr.operand[1], ss);
             }
             operands.push_back(ss.str());
         }
@@ -583,14 +595,14 @@ void write_instr(const BaseDB &base_ids, const bh_instruction &instr, stringstre
         if (bh_is_constant(&view)) {
             instr.constant.pprint(ss, opencl);
         } else {
-            base_ids.getName(view.base, ss);
-            if (base_ids.isArray(view.base)) {
+            scope.getName(view, ss);
+            if (scope.isArray(view)) {
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
                     // reducing to a non-scalar
-                    write_array_subscription(view, ss, instr.sweep_axis());
+                    write_array_subscription(scope, view, ss, true, instr.sweep_axis());
                 } else {
-                    write_array_subscription(view, ss);
+                    write_array_subscription(scope, view, ss);
                 }
             }
         }

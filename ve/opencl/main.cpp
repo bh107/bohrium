@@ -58,7 +58,7 @@ class Impl : public ComponentImplWithChild {
     // The OpenCL engine
     EngineOpenCL engine;
     // Write an OpenCL kernel
-    void write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
+    void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const vector<const LoopB *> &threaded_blocks,
                       stringstream &ss);
 
   public:
@@ -97,8 +97,8 @@ bool sweeping_innermost_axis(InstrPtr instr) {
 }
 
 // Writes the OpenCL specific for-loop header
-void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
-                      const vector<const LoopB *> &threaded_blocks, stringstream &out) {
+void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config,
+                      bool loop_is_peeled, const vector<const LoopB *> &threaded_blocks, stringstream &out) {
     // Write the for-loop header
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
@@ -117,7 +117,7 @@ void loop_head_writer(BaseDB &base_ids, const LoopB &block, const ConfigParser &
     }
 }
 
-void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<const LoopB *> &threaded_blocks,
+void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const vector<const LoopB *> &threaded_blocks,
                         stringstream &ss) {
 
     // Write the need includes
@@ -133,7 +133,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     ss << "__kernel void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << "__global " << write_opencl_type(b->type) << " a" << base_ids[b] << "[static " << b->nelem << "]";
+        ss << "__global " << write_opencl_type(b->type) << " a" << symbols.baseID(b) << "[static " << b->nelem << "]";
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
@@ -154,7 +154,7 @@ void Impl::write_kernel(const Kernel &kernel, BaseDB &base_ids, const vector<con
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(base_ids, kernel.block, config, threaded_blocks, true, write_opencl_type, loop_head_writer, ss);
+    write_loop_block(symbols, NULL, kernel.block, config, threaded_blocks, true, write_opencl_type, loop_head_writer, ss);
 
     ss << "}\n\n";
 }
@@ -169,7 +169,8 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
             const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
-                if (v.base->data == NULL and not (util::exist(initiated, v.base) or util::exist(buffers, v.base))) {
+                if (v.base->data == NULL and not (util::exist_nconst(initiated, v.base)
+                                                  or util::exist_nconst(buffers, v.base))) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
                         instr->constructor = true;
@@ -292,20 +293,7 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
-        // Assign IDs to all base arrays
-        BaseDB base_ids;
-        // NB: by assigning the IDs in the order they appear in the 'instr_list',
-        //     the kernels can better be reused
-        for (const InstrPtr instr: kernel.getAllInstr()) {
-            const int nop = bh_noperands(instr->opcode);
-            for(int i=0; i<nop; ++i) {
-                const bh_view &v = instr->operand[i];
-                if (not bh_is_constant(&v)) {
-                    base_ids.insert(v.base);
-                }
-            }
-        }
-        base_ids.insertTmp(kernel.getAllTemps());
+        const SymbolTable symbols(kernel.getAllInstr());
 
         // Debug print
         if (verbose) {
@@ -371,7 +359,7 @@ void Impl::execute(bh_ir *bhir) {
 
             // Code generation
             stringstream ss;
-            write_kernel(kernel, base_ids, threaded_blocks, ss);
+            write_kernel(kernel, symbols, threaded_blocks, ss);
 
             if (verbose) {
                 cout << "\n************ GPU Kernel ************\n" << ss.str()

@@ -47,6 +47,10 @@ struct bh_instruction
     std::set<const bh_base *> get_bases_const() const;
     std::set<bh_base *> get_bases();
 
+    // Return a vector of views in this instruction.
+    // The first element is the output and the rest are inputs (the constant is ignored)
+    std::vector<const bh_view*> get_views() const;
+
     // Check if all views in this instruction is contiguous
     bool is_contiguous() const;
 

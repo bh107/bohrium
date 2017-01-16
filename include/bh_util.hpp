@@ -50,12 +50,16 @@ struct remove_all_const<T *const> {
 // Checks if 'element' is in 'container'
 // This function ignores 'const', which makes it possible to compare 'bh_base*' with 'const bh_base*' for example.
 template <typename container_type, typename element_type>
-bool exist(container_type &container, element_type &element) {
+bool exist_nconst(container_type &container, element_type &element) {
     return container.find(const_cast<typename remove_all_const<element_type>::type>(element)) != container.end();
 }
 
+// Checks if 'element' is in 'container'
+template <typename container_type, typename element_type>
+bool exist(container_type &container, element_type &element) {
+    return container.find(element) != container.end();
+}
+
 } // util
-
-
 
 #endif
