@@ -79,3 +79,22 @@ class test_overlapping:
         cmd_bh = cmd + "bh.add(res[:-1], 42, res[1:])"
         return cmd_np, cmd_bh
 
+
+class test_fill:
+    def init(self):
+        cmd = "res = M.ones(10); "
+        yield cmd
+
+    def test_function(self, cmd):
+        cmd += "bh.fill(res, 42)"
+        return cmd
+
+    def test_method(self, cmd):
+        cmd += "res.fill(42)"
+        return cmd
+
+    def test_view(self, cmd):
+        cmd += "res[...] = 42"
+        return cmd
+
+

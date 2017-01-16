@@ -635,6 +635,12 @@ BhArray_astype(PyObject *self, PyObject *args)
     return method2function("array", self, args);
 }
 
+static PyObject *
+BhArray_fill(PyObject *self, PyObject *args)
+{
+    return method2function("fill", self, args);
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,    METH_VARARGS,  NULL},
     {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
@@ -649,6 +655,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"sum",                BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
     {"prod",               BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
     {"astype",             BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
+    {"fill",               BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
