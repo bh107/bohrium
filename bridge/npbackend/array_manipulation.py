@@ -36,13 +36,6 @@ def flatten(ary):
     return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
 
 @fix_returned_biclass
-def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
-    D = diagonal(ary, offset=offset, axis1=axis1, axis2=axis2)
-    if dtype:
-        D = D.astype(dtype)
-    return numpy.add.reduce(D, axis=D.ndim-1)
-
-@fix_returned_biclass
 def diagonal(ary, offset=0, axis1=0, axis2=1):
     """
     Return specified diagonals.
@@ -133,9 +126,10 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
     # Calculate how many elements will be in the diagonal
     diag_size = max(0, min(ary.shape[-2], ary.shape[-1] - offset))
     ret_shape = ary.shape[:-2] + (diag_size,)
+
     # Return empty array if the diagonal has zero elements
     if diag_size == 0:
-        return numpy.empty(ret_shape, dtype=ary.dtype)
+        return array_create.empty(ret_shape, dtype=ary.dtype, bohrium=bhary.check(ary))
 
     ary = ary[..., :diag_size, offset:(offset + diag_size)]
 
@@ -338,6 +332,68 @@ def reshape(a, *newshape):
         t[...] = a
         a = t
     return numpy.ndarray.reshape(a, newshape)
+
+@fix_returned_biclass
+def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
+    """
+    Return the sum along diagonals of the array.
+
+    If `a` is 2-D, the sum along its diagonal with the given offset
+    is returned, i.e., the sum of elements ``a[i,i+offset]`` for all i.
+
+    If `a` has more than two dimensions, then the axes specified by axis1 and
+    axis2 are used to determine the 2-D sub-arrays whose traces are returned.
+    The shape of the resulting array is the same as that of `a` with `axis1`
+    and `axis2` removed.
+
+    Parameters
+    ----------
+    a : array_like
+        Input array, from which the diagonals are taken.
+    offset : int, optional
+        Offset of the diagonal from the main diagonal. Can be both positive
+        and negative. Defaults to 0.
+    axis1, axis2 : int, optional
+        Axes to be used as the first and second axis of the 2-D sub-arrays
+        from which the diagonals should be taken. Defaults are the first two
+        axes of `a`.
+    dtype : dtype, optional
+        Determines the data-type of the returned array and of the accumulator
+        where the elements are summed. If dtype has the value None and `a` is
+        of integer type of precision less than the default integer
+        precision, then the default integer precision is used. Otherwise,
+        the precision is the same as that of `a`.
+    out : ndarray, optional
+        Array into which the output is placed. Its type is preserved and
+        it must be of the right shape to hold the output.
+
+    Returns
+    -------
+    sum_along_diagonals : ndarray
+        If `a` is 2-D, the sum along the diagonal is returned.  If `a` has
+        larger dimensions, then an array of sums along diagonals is returned.
+
+    See Also
+    --------
+    diag, diagonal, diagflat
+
+    Examples
+    --------
+    >>> np.trace(np.eye(3))
+    3.0
+    >>> a = np.arange(8).reshape((2,2,2))
+    >>> np.trace(a)
+    array([6, 8])
+
+    >>> a = np.arange(24).reshape((2,2,2,3))
+    >>> np.trace(a).shape
+    (2, 3)
+
+    """
+    D = diagonal(ary, offset=offset, axis1=axis1, axis2=axis2)
+    if dtype:
+        D = D.astype(dtype)
+    return D.sum(axis=-1)
 
 def broadcast_arrays(*args):
     """

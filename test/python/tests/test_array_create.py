@@ -17,3 +17,20 @@ class test_array_create:
     def test_random(self, dtype):
         cmd = "R = bh.random.RandomState(42); res = R.random(%d,dtype=%s, bohrium=BH)" % (100, dtype)
         return cmd
+
+class test_arange:
+    def init(self):
+        for start in range(-3, 3):
+            for stop in range(-1, 6):
+                for step in range(1, 4):
+                    yield (start, stop, step)
+
+        for start in range(3, -3, -1):
+            for stop in range(5, -3, -1):
+                for step in range(-3, 0):
+                    yield (start, stop, step)
+
+    def test_arange(self, args):
+        (start, stop, step) = args
+        return "res = M.arange(%d, %d, %d, dtype=np.float64)" % (start, stop, step)
+

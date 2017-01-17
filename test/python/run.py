@@ -67,7 +67,10 @@ def run(args):
                     res_np = env['res']
                     env = {"np": numpy, "bh": bohrium}
                     exec(cmd_bh, env)
-                    res_bh = env['res'].copy2numpy()
+                    if numpy.isscalar(env['res']):
+                        res_bh = env['res']
+                    else:
+                        res_bh = env['res'].copy2numpy()
                     try:
                         similar = numpy.allclose(res_np, res_bh, equal_nan=True)
                     except TypeError as err:

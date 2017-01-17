@@ -585,7 +585,7 @@ BhArray_resize(PyObject *self, PyObject *args)
 
 //Help function to make methods calling a Python function
 static PyObject *
-method2function(char *name, PyObject *self, PyObject *args)
+method2function(char *name, PyObject *self, PyObject *args, PyObject *kwds)
 {
     //We parse the 'args' to bohrium.'name' with 'self' as the first argument
     Py_ssize_t i, size = PyTuple_Size(args);
@@ -600,45 +600,51 @@ method2function(char *name, PyObject *self, PyObject *args)
         Py_INCREF(t);
         PyTuple_SET_ITEM(func_args, i+1, t);
     }
-    PyObject *ret = PyObject_CallMethod(bohrium, name, "O", func_args);
+    PyObject *ret = PyObject_Call(PyObject_GetAttrString(bohrium, name), func_args, kwds);
     Py_DECREF(func_args);
     return ret;
 }
 
 static PyObject *
-BhArray_reshape(PyObject *self, PyObject *args)
+BhArray_reshape(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    return method2function("reshape", self, args);
+    return method2function("reshape", self, args, kwds);
 }
 
 static PyObject *
-BhArray_flatten(PyObject *self, PyObject *args)
+BhArray_flatten(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    return method2function("flatten", self, args);
+    return method2function("flatten", self, args, kwds);
 }
 
 static PyObject *
-BhArray_sum(PyObject *self, PyObject *args)
+BhArray_sum(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    return method2function("sum", self, args);
+    return method2function("sum", self, args, kwds);
 }
 
 static PyObject *
-BhArray_prod(PyObject *self, PyObject *args)
+BhArray_prod(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    return method2function("prod", self, args);
+    return method2function("prod", self, args, kwds);
 }
 
 static PyObject *
-BhArray_astype(PyObject *self, PyObject *args)
+BhArray_astype(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    return method2function("array", self, args);
+    return method2function("array", self, args, kwds);
 }
 
 static PyObject *
-BhArray_fill(PyObject *self, PyObject *args)
+BhArray_fill(PyObject *self, PyObject *args, PyObject *kwds)
 {
-    return method2function("fill", self, args);
+    return method2function("fill", self, args, kwds);
+}
+
+static PyObject *
+BhArray_trace(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("trace", self, args, kwds);
 }
 
 static PyMethodDef BhArrayMethods[] = {
@@ -649,13 +655,14 @@ static PyMethodDef BhArrayMethods[] = {
     {"copy",               BhArray_copy,        METH_NOARGS,   "Copy the array in C-style memory layout"},
     {"copy2numpy",         BhArray_copy2numpy,  METH_NOARGS,   "Copy the array in C-style memory layout to a regular NumPy array"},
     {"resize",             BhArray_resize,      METH_VARARGS,  "Change shape and size of array in-place"},
-    {"reshape",            BhArray_reshape,     METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
-    {"flatten",            BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"ravel",              BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"sum",                BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
-    {"prod",               BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
-    {"astype",             BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
-    {"fill",               BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
+    {"reshape",    (PyCFunction) BhArray_reshape,     METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
+    {"flatten",    (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"ravel",      (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"sum",        (PyCFunction) BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
+    {"prod",       (PyCFunction) BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
+    {"fill",       (PyCFunction) BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
+    {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 

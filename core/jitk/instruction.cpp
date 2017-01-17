@@ -440,6 +440,9 @@ void dtype_max(bh_type dtype, stringstream &out) {
         if (not bh_type_is_signed_integer(dtype)) {
             out << "u";
         }
+        if (dtype == BH_INT64 or dtype == BH_UINT64) {
+            out << "ll";
+        }
     } else {
         out.precision(std::numeric_limits<double>::max_digits10);
         out << bh_type_limit_max_float(dtype);
@@ -449,7 +452,10 @@ void dtype_max(bh_type dtype, stringstream &out) {
 // Print the minimum value of 'dtype'
 void dtype_min(bh_type dtype, stringstream &out) {
     if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_min_integer(dtype);
+        out << bh_type_limit_min_integer(dtype)+1;
+        if (dtype == BH_INT64 or dtype == BH_UINT64) {
+            out << "ll";
+        }
     } else {
         out.precision(std::numeric_limits<double>::max_digits10);
         out << bh_type_limit_min_float(dtype);

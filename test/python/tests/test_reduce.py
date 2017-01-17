@@ -23,16 +23,17 @@ class test_reduce_sum:
         for cmd, shape in util.gen_random_arrays("R", 3, dtype="np.float32"):
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
             for op in ["sum", "prod"]:
-                yield (cmd, op)
+                for axis in range(len(shape)):
+                    yield (cmd, op, axis)
 
     def test_func(self, arg):
-        (cmd, op) = arg
-        cmd += "res = M.%s(a)" % op
+        (cmd, op, axis) = arg
+        cmd += "res = M.%s(a, axis=%d)" % (op, axis)
         return cmd
 
     def test_method(self, arg):
-        (cmd, op) = arg
-        cmd += "res = a.%s()" % op
+        (cmd, op, axis) = arg
+        cmd += "res = a.%s(axis=%d)" % (op, axis)
         return cmd
 
 
@@ -43,8 +44,8 @@ class test_reduce_primitives:
             yield (op, "np.complex128")
 
         for op in ["add", "multiply", "minimum", "maximum"]:
-            yield (op, "np.float64")
-            yield (op, "np.bool")
+            for dtype in util.TYPES.NORMAL:
+                yield (op, dtype)
 
         for op in ["bitwise_or", "bitwise_xor"]:
             yield (op, "np.uint64")
