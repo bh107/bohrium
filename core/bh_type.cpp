@@ -18,6 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdint.h>
+
 #include <bh_type.h>
 #include <climits>
 #include <cfloat>
@@ -165,21 +167,21 @@ uint64_t bh_type_limit_max_integer(bh_type type)
         case BH_BOOL:
             return 1;
         case BH_INT8:
-            return SCHAR_MAX;
+            return INT8_MAX;
         case BH_INT16:
-            return SHRT_MAX;
+            return INT16_MAX;
         case BH_INT32:
-            return INT_MAX;
+            return INT32_MAX;
         case BH_INT64:
-            return LONG_MAX;
+            return INT64_MAX;
         case BH_UINT8:
-            return UCHAR_MAX;
+            return UINT8_MAX;
         case BH_UINT16:
-            return USHRT_MAX;
+            return UINT16_MAX;
         case BH_UINT32:
-            return UINT_MAX;
+            return UINT32_MAX;
         case BH_UINT64:
-            return ULONG_MAX;
+            return UINT64_MAX;
         default:
             assert(1 == 2);
             return 0;
@@ -193,13 +195,13 @@ int64_t bh_type_limit_min_integer(bh_type type)
         case BH_BOOL:
             return 1;
         case BH_INT8:
-            return SCHAR_MIN;
+            return INT8_MIN;
         case BH_INT16:
-            return SHRT_MIN;
+            return INT16_MIN;
         case BH_INT32:
-            return INT_MIN;
+            return INT32_MIN;
         case BH_INT64:
-            return LONG_MIN;
+            return INT64_MIN;
         case BH_UINT8:
             return 0;
         case BH_UINT16:
