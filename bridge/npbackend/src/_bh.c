@@ -641,6 +641,12 @@ BhArray_fill(PyObject *self, PyObject *args, PyObject *kwds)
     return method2function("fill", self, args, kwds);
 }
 
+static PyObject *
+BhArray_trace(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("trace", self, args, kwds);
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,    METH_VARARGS,  NULL},
     {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
@@ -656,6 +662,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"prod",       (PyCFunction) BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
     {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
     {"fill",       (PyCFunction) BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
+    {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
