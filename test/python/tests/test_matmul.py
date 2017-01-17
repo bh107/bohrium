@@ -1,6 +1,3 @@
-import util
-
-
 class test_matmul:
     def init(self):
         for t in ['np.float32','np.int64','np.complex128']:
@@ -20,3 +17,4 @@ class test_matmul:
     def test_dot(self, cmd):
         cmd += "res = M.dot(a , b)"
         return cmd
+

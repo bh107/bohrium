@@ -501,9 +501,30 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     """
     if not bohrium:
         return numpy.arange(start, stop, step, dtype)
-    if not stop:
+    if stop is None:
         stop = start
         start = type(stop)(0)
+
+    def isinteger(x):
+        """Small help function"""
+        return numpy.equal(numpy.mod(x, 1), 0)
+
+    if not (isinteger(stop) or isinteger(start)):
+        raise ValueError("arange(): start and stop must be integers")
+
+    if step == 0:
+        raise ValueError("arange(): step cannot be zero")
+
+    # Let's make sure that 'step' is always positive
+    swap_back = False
+    if step < 0:
+        step *= -1
+        (start, stop) = (stop, start)
+        swap_back = True
+
+    if start >= stop:
+        return empty([], dtype=dtype, bohrium=bohrium)
+
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
     if dtype is None:
         dtype = numpy.int64
@@ -513,8 +534,13 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         step = numpy.dtype(dtype).type(step)
 
     result = simply_range(size, dtype=dtype)
-    if  step != 1: result *= step
-    if start != 0: result += start
+    if swap_back:
+        step *= -1
+        (start, stop) = (stop, start)
+    if step != 1:
+        result *= step
+    if start != 0:
+        result += start
     return result
 
 @fix_returned_biclass
