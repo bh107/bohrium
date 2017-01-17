@@ -133,9 +133,10 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
     # Calculate how many elements will be in the diagonal
     diag_size = max(0, min(ary.shape[-2], ary.shape[-1] - offset))
     ret_shape = ary.shape[:-2] + (diag_size,)
+
     # Return empty array if the diagonal has zero elements
     if diag_size == 0:
-        return numpy.empty(ret_shape, dtype=ary.dtype)
+        return array_create.empty(ret_shape, dtype=ary.dtype, bohrium=bhary.check(ary))
 
     ary = ary[..., :diag_size, offset:(offset + diag_size)]
 
