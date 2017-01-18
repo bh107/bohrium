@@ -129,6 +129,10 @@ class Ufunc(object):
     def __init__(self, info):
         """A Bohrium Universal Function"""
         self.info = info
+        if sys.version_info.major >= 3:
+            self.__name__ = info['name']
+        else: # Scipy complains if '__name__' is unicode
+            self.__name__ = info['name'].encode('latin_1')
 
     def __str__(self):
         return "<bohrium Ufunc '%s'>" % self.info['name']

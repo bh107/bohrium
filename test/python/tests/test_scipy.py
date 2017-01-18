@@ -6,8 +6,12 @@ class _test_import:
     def init(self):
         yield ("")
 
-    def test_import(self, arg):
+    def test_scpy(self, arg):
         cmd = "import scipy; res = M.ones(10)"
+        return cmd
+
+    def test_sparse(self, arg):
+        cmd = "import scipy.sparse; res = M.ones(10)"
         return cmd
 
 try:
