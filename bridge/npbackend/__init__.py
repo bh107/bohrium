@@ -58,6 +58,13 @@ from . import random123 as random
 # Some modules (e.g. scipy) accesses '__all__' directly
 __all__ = [x for x in dir() if not x.startswith("_")]
 
+# Python v2 need '{set,get}_printoptions()' here
+if sys.version_info[0] < 3:
+    def set_printoptions(*args, **kwargs):
+        numpy.core.arrayprint.set_printoptions(*args, **kwargs)
+    def get_printoptions(*args, **kwargs):
+        return numpy.core.arrayprint.get_printoptions()
+
 # Let's bohriumify the exposed API
 if sys.version_info[0] < 3:
     from . import bohriumify

@@ -15,11 +15,17 @@ def _target_modules(targets):
         ret.append(m.replace("numpy.", "numpy_force."))
     return ret
 
+# Typically, we shouldn't bohriumify functions that accesses global variables
+IGNORE_MODULES = ['arrayprint']
+
 pattern_return_ndarray = re.compile("Return.*ndarray", re.DOTALL)
-def modules(targets=["numpy", "numpy_force"]):
+def modules(targets=["numpy", "numpy_force"], ignore_modules=IGNORE_MODULES):
     for m_name in _target_modules(targets):
         if m_name == "numpy":
             continue#At this point 'numpy' refers to Bohrium and we don't need to bohriumfy Bohrium
+        for ignore in ignore_modules:
+            if ignore in m_name:
+                continue
         try:
             m_obj = importlib.import_module(m_name)
         except:
@@ -28,5 +34,5 @@ def modules(targets=["numpy", "numpy_force"]):
             if (not hasattr(val, "_fixed_returned_biclass")) or val._fixed_returned_biclass == False:
                 if hasattr(val, "__doc__") and val.__doc__ is not None:
                     if pattern_return_ndarray.search(val.__doc__) is not None:
-                        setattr(m_obj,name,bhary.fix_returned_biclass(val))
+                        setattr(m_obj,name, bhary.fix_returned_biclass(val))
 
