@@ -63,6 +63,11 @@ def setitem(ary, loc, value):
     if not isinstance(loc, tuple):
         loc = (loc,)
 
+    # Let's try to convert non-arrays and npn-scalars to an array
+    # e.g. converting a python list to an array
+    if not (bhary.check(value) or np.isscalar(value)):
+        value = array_create.array(value)
+
     #Lets make sure that not all dimensions are indexed by integers
     loc = list(loc)
     if len(loc) == ary.ndim and all((np.isscalar(s) for s in loc)):
