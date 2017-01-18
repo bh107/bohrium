@@ -153,6 +153,7 @@ static void rewrite_chain_mul_div(bh_ir &bhir, vector<bh_instruction*>& chain)
     }
 
     // Set first instruction's new value
+    first.opcode = BH_MULTIPLY;
     first.constant.set_double(result);
 }
 
