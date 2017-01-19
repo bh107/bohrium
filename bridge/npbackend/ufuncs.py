@@ -326,7 +326,7 @@ class Ufunc(object):
                     ary = array_create.array(ary)
             else:
                 if bhary.check(ary):
-                    ary = a.copy2numpy()
+                    ary = ary.copy2numpy()
         #Let NumPy handle NumPy array reductions
         if not bhary.check(ary):
             func = eval("np.%s.reduce" % self.info['name'])
@@ -369,7 +369,12 @@ class Ufunc(object):
                                      "shape '%s' got '%s'"%(shape, out.shape))
 
             tmp = array_create.empty(shape, dtype=ary.dtype)
-            target.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
+
+            # NumPy compatibility: when the axis dimension size is zero NumPy just returns the neutral value
+            if ary.shape[axis] == 0:
+                tmp[...] = getattr(getattr(np, self.info['name']), "identity")
+            else:
+                target.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
 
             if out is not None:
                 out[...] = tmp
