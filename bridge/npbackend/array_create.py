@@ -125,7 +125,19 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 ary = numpy.expand_dims(ary, i)
             return ary
         else:
-            ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+            # Let's convert the array using regular NumPy.
+            # NB: "setting an array element with a sequence" is usually illegal unless the sequence consist
+            #     of 1-element Bohrium arrays, in which case we should convert them to NumPy scalars and try again
+            try:
+                ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+            except ValueError as msg:
+                if str(msg).find("setting an array element with a sequence.") != -1:
+                    for i in range(len(ary)): # Converting 1-element Bohrium arrays to NumPy scalars
+                        if bhary.check(ary[i]) and ary[i].size == 1:
+                            ary[i] = ary[i].copy2numpy()
+                    ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+
+            # In any case, the array must meet some requirements
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
 
             if not dtype_support(ary.dtype):
