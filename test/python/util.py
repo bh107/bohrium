@@ -60,9 +60,15 @@ class ViewOfDim:
     def size(self):
         ret = 0
         i = self.start
-        while i < self.end:
-            ret += 1
-            i += self.step
+        assert self.step != 0
+        if self.step > 0:
+            while i < self.end:
+                ret += 1
+                i += self.step
+        else:
+            while i > self.end:
+                ret += 1
+                i += self.step
         return ret
 
     def write(self):
@@ -90,13 +96,18 @@ def random_subscription(shape):
             end = random.randint(start+1, dim-1)
         else:
             end = start+1
+
+        if random.randint(0, 2) == 0:  # Let's reverse the stride sometimes
+            (start, end) = (end, start)
+            step *= -1
+
         v = ViewOfDim(start, step, end)
         view.append(v)
         view_shape.append(v.size())
     return write_subscription(view), view_shape
 
 
-def gen_random_arrays(random_state_name, max_ndim, max_dim=20, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
+def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
     for cmd, shape in gen_arrays(random_state_name, max_ndim, max_dim, min_ndim, samples_in_each_ndim, dtype, bh_arg):
         yield ("%s" % cmd, shape)
         if functools.reduce(operator.mul, shape) > 1:

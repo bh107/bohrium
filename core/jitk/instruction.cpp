@@ -490,7 +490,7 @@ void write_array_subscription(const Scope &scope, const bh_view &view, stringstr
             int t = i;
             if (i >= hidden_axis)
                 ++t;
-            if (view.stride[i] > 0) {
+            if (view.stride[i] != 0) {
                 if (axis_offset.first == t) {
                     out << " +(i" << t << "+(" << axis_offset.second << ")) ";
                 } else {
