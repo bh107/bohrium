@@ -4,11 +4,18 @@ Array Creation Routines
 
 """
 import math
+import warnings
 from . import bhary
 from .bhary import fix_returned_biclass
 import numpy_force as numpy
-from ._util import dtype_equal, dtype_in
+from ._util import dtype_equal, dtype_in, dtype_support
 from . import target
+
+
+def _warn_dtype(dtype, stacklevel):
+    """Raise a dtype-not-supported warning """
+    warnings.warn("Bohrium does not support the dtype '%s', the new array will be a regular NumPy array."
+                  % dtype, UserWarning, stacklevel)
 
 @fix_returned_biclass
 def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
@@ -120,6 +127,11 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
         else:
             ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
+
+            if not dtype_support(ary.dtype):
+                _warn_dtype(ary.dtype, 3)
+                return ary
+
             ret = empty(ary.shape, dtype=ary.dtype)
             if ret.size > 0:
                 ret._data_fill(ary)
@@ -167,6 +179,11 @@ def empty(shape, dtype=float, bohrium=True):
             [ 6586976, 22740995]])                          #random
 
     """
+
+    if not dtype_support(dtype):
+        _warn_dtype(dtype, 3)
+        bohrium = False
+
     if not bohrium:
         return numpy.empty(shape, dtype=dtype)
     return bhary.new(shape, dtype)

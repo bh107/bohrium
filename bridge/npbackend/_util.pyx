@@ -94,6 +94,13 @@ def type_sig(op_name, inputs):
 
     raise TypeError("The ufunc bohrium.%s() does not support input data type: %s."%(op_name, dtype))
 
+def dtype_support(dtype):
+    """Returns True when Bohrium supports 'dtype' """
+    if dtype_in(dtype, _info.numpy_types):
+        return True
+    else:
+        return False
+
 @atexit.register
 def shutdown():
     """Actions to invoke when shutting down."""
