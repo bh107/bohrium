@@ -34,3 +34,9 @@ class test_arange:
         (start, stop, step) = args
         return "res = M.arange(%d, %d, %d, dtype=np.float64)" % (start, stop, step)
 
+class test_seq_of_scalars:
+    def init(self):
+        yield ""
+
+    def test_list_of_scalars(self, cmd):
+        return "res = M.array(list(map(M.array, range(10))))"
