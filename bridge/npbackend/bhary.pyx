@@ -25,7 +25,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ._util import dtype_equal
+from ._util import dtype_equal, dtype_support
 from . import target
 import operator
 import functools
@@ -198,6 +198,8 @@ def get_bhc(ary):
         raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
     if not dtype_equal(ary, base):
         raise ValueError("Bohrium base and view must have same data type")
+    if not dtype_support(ary.dtype):
+        raise ValueError("Bohrium does not support the data type: %s" % ary.dtype)
 
     if 0 in ary.shape:#Lets use a dummy strides and offset for zero-sized views
         strides = [0]*ary.ndim
