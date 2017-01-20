@@ -116,6 +116,9 @@ struct bh_view
     // NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
     std::vector<std::tuple<int64_t, int64_t, int64_t> > python_notation() const;
 
+    // Returns a pretty print of this view (as a string)
+    std::string pprint(bool python_notation = true) const;
+
     // Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
     // NB: 0 <= 'dim' <= ndim
     void insert_axis(bh_index dim, bh_index size, bh_index stride);

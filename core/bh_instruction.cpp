@@ -248,25 +248,30 @@ bh_type bh_instruction::operand_type(int operand_index) const {
     }
 }
 
+string bh_instruction::pprint(bool python_notation) const {
+    stringstream ss;
+    if(opcode > BH_MAX_OPCODE_ID)//It is an extension method
+        ss << "ExtMethod";
+    else//Regular instruction
+        ss << bh_opcode_text(opcode);
+
+    for(int i=0; i < bh_noperands(opcode); i++)
+    {
+        const bh_view &v = operand[i];
+        ss << " ";
+        if(bh_is_constant(&v)) {
+            ss << constant;
+        } else {
+            ss << v.pprint(python_notation);
+        }
+    }
+    return ss.str();
+}
+
 //Implements pprint of an instruction
 ostream& operator<<(ostream& out, const bh_instruction& instr)
 {
-    string name;
-    if(instr.opcode > BH_MAX_OPCODE_ID)//It is an extension method
-        name = "ExtMethod";
-    else//Regular instruction
-        name = bh_opcode_text(instr.opcode);
-    out << name;
-
-    for(int i=0; i < bh_noperands(instr.opcode); i++)
-    {
-        const bh_view &v = instr.operand[i];
-        out << " ";
-        if(bh_is_constant(&v))
-            out << instr.constant;
-        else
-            out << v;
-    }
+    out << instr.pprint(true);
     return out;
 }
 

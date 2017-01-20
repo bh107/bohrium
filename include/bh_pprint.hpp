@@ -30,12 +30,27 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_type.h>
 
 
-// Pretty print of std::vector
-template<typename E>
-std::ostream& operator<<(std::ostream& out, const std::vector<E>& v)
+// Pretty print a C array
+template<typename T>
+std::string pprint_carray(const T *ary, uint64_t size) {
+    std::stringstream ss;
+    ss << "[";
+    for (uint64_t i=0; i<size; ++i) {
+        ss << ary[i];
+        if (i+1 < size) {
+            ss << ", ";
+        }
+    }
+    ss << "]";
+    return ss.str();
+}
+
+// Pretty print a std::vector
+template<typename T>
+std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
 {
     out << "[";
-    for (typename std::vector<E>::const_iterator i = v.cbegin();;)
+    for (typename std::vector<T>::const_iterator i = v.cbegin();;)
     {
         out << *i;
         if (++i == v.cend())

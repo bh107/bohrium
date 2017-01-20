@@ -176,22 +176,35 @@ vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
     return sne;
 }
 
-ostream& operator<<(ostream& out, const bh_view& v)
-{
-    unsigned int label = v.base->get_label();
-    out << "a" << label << "[";
-
-    const vector<tuple<int64_t, int64_t, int64_t> > sne = v.python_notation();
-    for(size_t i=0; i<sne.size(); ++i)
-    {
-        int64_t start  = std::get<0>(sne[i]);
-        int64_t end    = std::get<1>(sne[i]);
-        int64_t stride = std::get<2>(sne[i]);
-        out << start << ":" << end << ":" << stride;
-        if(i < sne.size()-1)//Not the last iteration
-            out << ",";
+string bh_view::pprint(bool py_notation) const {
+    stringstream ss;
+    ss << "a" << base->get_label() << "[";
+    if (bh_is_constant(this)) {
+        ss << "CONST";
+    } else if (py_notation) {
+        const vector<tuple<int64_t, int64_t, int64_t> > sne = python_notation();
+        for(size_t i=0; i<sne.size(); ++i)
+        {
+            int64_t start  = std::get<0>(sne[i]);
+            int64_t end    = std::get<1>(sne[i]);
+            int64_t stride = std::get<2>(sne[i]);
+            ss << start << ":" << end << ":" << stride;
+            if(i < sne.size()-1)//Not the last iteration
+                ss << ",";
+        }
+    } else {
+        ss << "start: " << start;
+        ss << ", ndim: " << ndim;
+        ss << ", shape: " << pprint_carray(shape, ndim);
+        ss << ", stride: " << pprint_carray(stride, ndim);
+        ss << ", base: " << base;
     }
-    out << "]";
+    ss << "]";
+    return ss.str();
+}
+
+ostream& operator<<(ostream& out, const bh_view& v) {
+    out << v.pprint(true);
     return out;
 }
 
