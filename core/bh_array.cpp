@@ -688,6 +688,12 @@ bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
  */
 bool bh_view_disjoint(const bh_view *a, const bh_view *b)
 {
+    // TODO: In order to fixed BUG like <https://github.com/bh107/bohrium/issues/178>, we say that sharing
+    //       the same base makes the views overlapping for now.
+    return bh_base_array(a) != bh_base_array(b);
+/*
+
+
     if (bh_is_constant(a) || bh_is_constant(b)) // One is a constant
         return true;
     if(bh_base_array(a) != bh_base_array(b)) //different base
@@ -717,4 +723,5 @@ bool bh_view_disjoint(const bh_view *a, const bh_view *b)
         bstart %= stride;
     }
     return stride > 1 && a->start % stride != b->start % stride;
+*/
 }
