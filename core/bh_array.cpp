@@ -146,16 +146,23 @@ vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
     int64_t offset = this->start;
     for(size_t i=0; i<sns.size(); ++i)
     {
-        int64_t stride = std::get<0>(sns[i]);
-        int64_t shape  = std::get<1>(sns[i]);
-        int64_t index  = std::get<2>(sns[i]);
+        const int64_t stride = std::get<0>(sns[i]);
+        const int64_t shape  = std::get<1>(sns[i]);
+        const int64_t index  = std::get<2>(sns[i]);
 
         int64_t start = 0;
         if (stride > 0)//avoid division by zero
             start = offset / stride;
         int64_t end = start + shape;
         offset -= start * stride;
+        assert(offset >= 0);
         sne[index] = make_tuple(start, end, stride);
+    }
+
+    // If 'offset' wasn't reduced to zero, we have to append a singleton dimension
+    // with the stride of 'offset'
+    if (offset > 0) {
+        sne.push_back(make_tuple(1, 2, offset));
     }
 
     /*
