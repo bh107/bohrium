@@ -436,15 +436,20 @@ def broadcast_arrays(*args):
            [3, 3, 3]])]
 
     """
-    ret = []
-    bargs = numpy.broadcast_arrays(*args)
-    for a, b in zip(args, bargs):
-        if numpy.isscalar(a):
-            ret.append(b)
-        elif bhary.identical_views(a, b):
-            ret.append(a)
-        else:
-            ret.append(b)
+    try:
+        ret = []
+        bargs = numpy.broadcast_arrays(*args)
+        for a, b in zip(args, bargs):
+            if numpy.isscalar(a):
+                ret.append(b)
+            elif bhary.identical_views(a, b):
+                ret.append(a)
+            else:
+                ret.append(b)
+    except ValueError as msg:
+        if str(msg).find("shape mismatch: objects cannot be broadcast to a single shape") != -1:
+            shapes = [arg.shape for arg in args]
+            raise ValueError("shape mismatch: objects cannot be broadcast to a single shape: %s" % shapes)
     return ret
 
 def fill(a, value):

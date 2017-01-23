@@ -222,19 +222,19 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
 }
 
 // Sets the constructor flag of each instruction in 'instr_list'
-void set_constructor_flag(vector<bh_instruction> &instr_list) {
+void set_constructor_flag(vector<bh_instruction*> &instr_list) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    for(bh_instruction &instr: instr_list) {
-        instr.constructor = false;
-        int nop = bh_noperands(instr.opcode);
+    for(bh_instruction *instr: instr_list) {
+        instr->constructor = false;
+        int nop = bh_noperands(instr->opcode);
         for (bh_intp o = 0; o < nop; ++o) {
-            const bh_view &v = instr.operand[o];
+            const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);
                 if (v.base->data == NULL and not util::exist_nconst(initiated, v.base)) {
                     if (o == 0) { // It is only the output that is initiated
                         initiated.insert(v.base);
-                        instr.constructor = true;
+                        instr->constructor = true;
                     }
                 }
             }
@@ -278,7 +278,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
-        set_constructor_flag(bhir->instr_list);
+        set_constructor_flag(instr_list);
     }
 
     // The cache system
