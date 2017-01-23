@@ -2,11 +2,15 @@
 from __future__ import print_function
 import argparse
 import time
-import bohrium
-import numpy
 import sys
 import os
 import imp
+
+import numpy
+import bohrium
+
+# Never run test with the '-m bohrium' switch
+assert (numpy != bohrium)
 
 # Terminal colors
 HEADER = '\033[95m'
@@ -64,13 +68,14 @@ def run(args):
                     # Let's execute the two commands
                     env = {"np": numpy, "bh": bohrium}
                     exec(cmd_np, env)
+                    assert(not bohrium.check(env['res']))
                     res_np = env['res']
                     env = {"np": numpy, "bh": bohrium}
                     exec(cmd_bh, env)
-                    if numpy.isscalar(env['res']):
-                        res_bh = env['res']
-                    else:
+                    if bohrium.check(env['res']):
                         res_bh = env['res'].copy2numpy()
+                    else:
+                        res_bh = env['res']
                     try:
                         similar = numpy.allclose(res_np, res_bh, equal_nan=True)
                     except TypeError as err:

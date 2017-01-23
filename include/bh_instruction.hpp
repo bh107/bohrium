@@ -87,6 +87,9 @@ struct bh_instruction
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
 
+    // Returns a pretty print of this instruction (as a string)
+    std::string pprint(bool python_notation = true) const;
+
     // Equality
     bool operator==(const bh_instruction& other) const {
         if (opcode != other.opcode) {

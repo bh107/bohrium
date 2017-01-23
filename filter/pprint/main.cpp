@@ -43,6 +43,7 @@ class Impl : public ComponentImplWithChild {
         f << "Trace " << count << ":" << endl;
         for(const bh_instruction &instr: bhir->instr_list) {
             f << instr << endl;
+         // f << instr.pprint(false) << endl;
         }
         f << endl;
         f.close();
