@@ -8,21 +8,20 @@ include(FeatureSummary)
 # and other auto-completion software
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
-# This is for the Clion IDE
+# For the Clion IDE
 ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
 # UseMultiArch sets variable
-#	CMAKE_INSTALL_LIBDIR	     to lib, lib64 or lib/x86_64-linux-gnu
-#	                             depending on the platform; use this path
-#	                             for platform-specific binaries.
+#  CMAKE_INSTALL_LIBDIR         to lib, lib64 or lib/x86_64-linux-gnu
+#                               depending on the platform; use this path
+#                               for platform-specific binaries.
 #
-#	CMAKE_INSTALL_LIBDIR_NOARCH  to lib or lib64 depending on the platform;
-#	                             use this path for architecture-independent
-#	                             files.
+#  CMAKE_INSTALL_LIBDIR_NOARCH  to lib or lib64 depending on the platform;
+#                               use this path for architecture-independent
+#                               files.
 include(UseMultiArch)
 message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}")
 
-# We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are:
     None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used), Debug, Release, RelWithDebInfo, and MinSizeRel.")
@@ -32,6 +31,7 @@ else()
 endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
+# We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 project(BOHRIUM)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)                                     # .local is default
@@ -41,9 +41,8 @@ endif()
 set(BENCHMARK_DIR "${CMAKE_SOURCE_DIR}/benchmark")                                  # Benchmarks (npbackend)
 message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
 
-#
+####################################
 # Default compile-flags for Bohrium
-#
 check_c_compiler_flag(-pedantic HAS_C_PEDANTIC)             # C Flags
 if (HAS_C_PEDANTIC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic ")
@@ -53,6 +52,7 @@ if (HAS_C_WALL)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ")
 endif()
 
+########################################
 # C99 for restrict, for(var name=0;...)
 # gnu99 for MAP_ANONYMOUS
 check_c_compiler_flag(-std=gnu99 HAS_GCC_GNU99)
@@ -91,6 +91,7 @@ else()
     endif()
 endif()
 
+###################
 # Warning as error
 set(USE_WERROR OFF CACHE BOOL "Use the -Werror flag if supported")
 if (USE_WERROR)
@@ -105,9 +106,8 @@ if (USE_WERROR)
     endif()
 endif()
 
-#
+########################
 # External dependencies
-
 find_package(PythonInterp)                                                          # Used for autogen
 set_package_properties(PythonInterp PROPERTIES DESCRIPTION "Python Programming Language" URL "www.python.org")
 set_package_properties(PythonInterp PROPERTIES TYPE REQUIRED PURPOSE "Python is required to build Bohrium")
@@ -118,9 +118,8 @@ set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries"
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
 
-#
+#####################
 # Bohrium components
-#
 add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)
@@ -140,27 +139,22 @@ add_subdirectory(bridge/NumCIL)
 add_subdirectory(bridge/cil)
 add_subdirectory(test)
 
-#
+#############################
 # Install thirdparty headers
-#
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
-#
+#########################################
 # Install JIT-kernels dependency headers
-#
 install(DIRECTORY include/jitk/kernel_dependencies
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
-#
+###############
 # Install misc
-#
-
 install(PROGRAMS misc/bh-info DESTINATION bin COMPONENT bohrium)
 
-#
+#############################
 # Bohrium configuration file
-#
 configure_file(${CMAKE_SOURCE_DIR}/config.ini.in ${CMAKE_BINARY_DIR}/config.ini)    # Fill out the config-template
 
 string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})              # Install it
