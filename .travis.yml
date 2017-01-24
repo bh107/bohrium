@@ -1,30 +1,52 @@
-sudo: false
-
-services:
-  - docker
-
-language: c
-
-compiler:
-  - gcc
+language: generic
 
 before_install:
-  - docker pull bohrium/ubuntu:16.04
-  - docker build -t bohrium_release -f package/docker/bohrium.dockerfile .
+  - ./.travis/before_install.sh
 
 env:
-  matrix:
+  global:
+    - BH_OPENMP_PROF=true
+    - BH_OPENMP_VOLATILE=true
+    - BH_OPENCL_PROF=true
+    - BH_OPENCL_VOLATILE=true
 
-      # Python v2
-      - BH_STACK=openmp BH_OPENMP_PROF=true BH_OPENMP_VOLATILE=true PYTHON_EXEC=python2.7
-      - BH_STACK=opencl BH_OPENCL_PROF=true BH_OPENCL_VOLATILE=true PYTHON_EXEC=python2.7
+matrix:
+  include:
+    # Linux - Python 2.7 - Docker
+    - os: linux
+      services: docker
+      env: BH_STACK=openmp PYTHON_EXEC=python2.7
+    - os: linux
+      services: docker
+      env: BH_STACK=opencl PYTHON_EXEC=python2.7
 
-      # Python v3
-      - BH_STACK=openmp BH_OPENMP_PROF=true BH_OPENMP_VOLATILE=true PYTHON_EXEC=python3.5
-      - BH_STACK=opencl BH_OPENCL_PROF=true BH_OPENCL_VOLATILE=true PYTHON_EXEC=python3.5
+    # Linux - Python 3.5 - Docker
+    - os: linux
+      services: docker
+      env: BH_STACK=openmp PYTHON_EXEC=python3.5
+    - os: linux
+      services: docker
+      env: BH_STACK=opencl PYTHON_EXEC=python3.5
+
+    # OS X - Python 2.7 - Metal
+    - os: osx
+      osx_image: xcode8.2
+      env: BH_STACK=openmp PYTHON_EXEC=python2.7
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+    # - os: osx
+    #   osx_image: xcode8.2
+    #   env: BH_STACK=opencl PYTHON_EXEC=python2.7
+    #   cache:
+    #     directories:
+    #       - $HOME/Library/Caches/Homebrew
+
+install:
+  - ./.travis/install.sh
+
+script:
+  - ./.travis/run.sh
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
-
-script:
-    - docker run -t -e BH_STACK -e BH_OPENMP_PROF -e BH_OPENCL_PROF -e PYTHON_EXEC -e BH_OPENMP_VOLATILE -e BH_OPENCL_VOLATILE bohrium_release
