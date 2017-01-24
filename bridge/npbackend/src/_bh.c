@@ -791,6 +791,15 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     return 0;
 }
 
+// Help function that returns true when 'k' is a scalar object
+static int is_scalar_key(PyObject *k) {
+#if defined(NPY_PY3K)
+    return (PyLong_Check(k) || PyArray_IsScalar(k, Integer) || (PyIndex_Check(k) && !PySequence_Check(k)));
+#else
+    return (PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k)));
+#endif
+}
+
 static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
@@ -832,27 +841,29 @@ BhArray_GetItem(PyObject *o, PyObject *k)
         return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
     }
 
-    //If the tuple access all dimensions we must check for Python slice objects
-    if(PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o)))
+    // When returning a scalar value, we copy the scalar back to NumPy without any warning
+    int scalar_output = 0;
+    if (PyArray_NDIM((PyArrayObject*)o) <= 1 && is_scalar_key(k)) { // A scalar index into a vector returns a scalar
+        scalar_output = 1;
+    }
+    else if(PyTuple_Check(k) && (PyTuple_GET_SIZE(k) == PyArray_NDIM((PyArrayObject*)o)))
     {
+        scalar_output = 1;
         for(i=0; i<PyTuple_GET_SIZE(k); ++i)
         {
             PyObject *a = PyTuple_GET_ITEM(k, i);
-            if(PySlice_Check(a))
+            if(!is_scalar_key(a))
             {
                 //A slice never results in a scalar output
-                return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
+                scalar_output = 0;
+                break;
             }
         }
     }
-    //If the result is a scalar we let NumPy handle it
-#if defined(NPY_PY3K)
-    if(PyLong_Check(k) || PyArray_IsScalar(k, Integer) || (PyIndex_Check(k) && !PySequence_Check(k)))
-#else
-    if(PyArray_IsIntegerScalar(k) || (PyIndex_Check(k) && !PySequence_Check(k)))
-#endif
+    if (scalar_output)
     {
-        if(BhArray_data_bhc2np(o, NULL) == NULL)
+        // printf("Copying scalar output to Python\n");
+        if (BhArray_data_bhc2np(o, NULL) == NULL)
             return NULL;
     }
     return PyArray_Type.tp_as_mapping->mp_subscript(o, k);
