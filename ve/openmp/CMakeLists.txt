@@ -65,7 +65,7 @@ if(APPLE)
     # Fallback on APPLE, this will run but without optimizations and parallelization.
     #
     set(VE_OPENMP_COMPILER_INC "")
-    set(VE_OPENMP_COMPILER_FLG "-x c -dynamiclib -arch i386 -arch x86_64")
+    set(VE_OPENMP_COMPILER_FLG "-x c -dynamiclib -arch x86_64")
     set(VE_OPENMP_COMPILER_LIB "-lm -L${VE_OPENMP_COMPILER_INC}/lib -lbh")
     set(VE_OPENMP_COMPILER_EXT "")
 else()

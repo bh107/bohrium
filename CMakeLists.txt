@@ -8,10 +8,6 @@ include(FeatureSummary)
 # and other auto-completion software
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
-if (APPLE)  # Build multi-arch OSX binaries
-    set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING "Sets multi-arch (fat) binaries for OSX builds")
-endif()
-
 # This is for the Clion IDE
 ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
@@ -191,4 +187,3 @@ MESSAGE(STATUS "CXX min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
 MESSAGE(STATUS "CXX flags:" ${CMAKE_CXX_FLAGS})
 
 feature_summary(WHAT ALL)
-
