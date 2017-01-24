@@ -56,9 +56,6 @@ class Store {
     // Whether we should write the kernel sources (.c files)
     const bool verbose;
 
-    // Component config
-    const ConfigParser &config;
-
   public:
     Store(const ConfigParser &config, jitk::Statistics &stat);
     ~Store();
