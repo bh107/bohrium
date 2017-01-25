@@ -22,6 +22,8 @@ def execfile_wrapper(path):
 # numpy becomes bohrium
 sys.modules['numpy_force'] = numpy
 sys.modules['numpy'] = bohrium
+sys.modules['numpy.random'] = bohrium.random
+sys.modules['numpy.linalg'] = bohrium.linalg
 
 # Set the module search path to the dir of the script
 sys.argv.pop(0)
