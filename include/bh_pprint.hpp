@@ -29,6 +29,86 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_ir.hpp>
 #include <bh_type.h>
 
+/* Pretty print a constant.
+ *
+ * @constant   The constant in question.
+ * @buf        Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_const(const bh_constant* constant, char buf[] );
+
+/* Pretty print an base.
+ *
+ * @op      The base in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_base(const bh_base *base, char buf[]);
+
+/* Pretty print an array.
+ *
+ * @view  The array view in question
+ */
+DLLEXPORT void bh_pprint_array(const bh_view *view);
+
+/* Pretty print an view.
+ *
+ * @op      The view in question
+ * @buf     Output buffer (must have sufficient size)
+ */
+DLLEXPORT void bh_sprint_view(const bh_view *op, char buf[]);
+
+/* Pretty print an instruction.
+ *
+ * @instr  The instruction in question
+ */
+DLLEXPORT void bh_pprint_instr(const bh_instruction *instr);
+
+/* Pretty print an instruction.
+ *
+ * @instr   The instruction in question
+ * @buf     Output buffer (must have sufficient size)
+ * @newline The new line string
+ */
+DLLEXPORT void bh_sprint_instr(const bh_instruction *instr, char buf[],
+                               const char newline[]);
+
+/* Pretty print an instruction list.
+ *
+ * @instr_list  The instruction list in question
+ * @ninstr      Number of instructions
+ * @txt         Text prepended the instruction list,
+ *              ignored when NULL
+ */
+DLLEXPORT void bh_pprint_instr_list(const bh_instruction instr_list[],
+                                    bh_intp ninstr, const char* txt);
+
+DLLEXPORT void bh_pprint_instr_krnl(const bh_ir_kernel* krnl, const char* txt);
+
+/* Pretty print an array view.
+ *
+ * @view  The array view in question
+ */
+DLLEXPORT void bh_pprint_array(const bh_view *view);
+
+/* Pretty print an array base.
+ *
+ * @base  The array base in question
+ */
+DLLEXPORT void bh_pprint_base(const bh_base *base);
+
+/* Pretty print an coordinate.
+ *
+ * @coord  The coordinate in question
+ * @ndims  Number of dimensions
+ */
+DLLEXPORT void bh_pprint_coord(const bh_index coord[], bh_index ndims);
+
+/* Pretty print an instruction trace of the BhIR.
+ *
+ * @bhir The BhIR in question
+ *
+ */
+DLLEXPORT void bh_pprint_trace_file(const bh_ir *bhir, char trace_fn[]);
+
 
 // Pretty print a C array
 template<typename T>

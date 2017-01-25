@@ -21,30 +21,29 @@ And if you want Python v3 support::
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python /usr/share/bohrium/test/python/run.py /usr/share/bohrium/test/python/tests/test_*.py
+  python /usr/share/bohrium/test/python/numpytest.py
 
 And you should see a result similar to this::
 
-  Testing test/python/tests/test_array_create.py/array_create/ones (0.84s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/random (3.11s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/zeros (0.72s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal/diagonal (4.65s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal_axis/diagonal (27.84s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten (6.15s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten_self (6.29s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/ravel (5.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/add (0.35s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/identity (0.08s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/doubletranspose (4.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/transpose (1.97s) ✓
-  Testing test/python/tests/test_emptiness.py/empty/add (0.00s) ✓
-  <string>:1: RuntimeWarning: invalid value encountered in arccosh
-  <string>:1: RuntimeWarning: invalid value encountered in arccosh
-  Testing test/python/tests/test_primitives.py/bh_opcodes/ufunc (67.92s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_primitives/vector (3.21s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
+    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
+    Testing test_primitives.py/bh_opcodes/ufunc
+    Testing test_primitives.py/numpy_ufunc/ufunc
+    Testing test_specials.py/doubletranspose/doubletranspose
+    Testing test_specials.py/largedim/largedim
+    Testing test_array_create.py/array_create/zeros
+    Testing test_benchmarks.py/gameoflife/gameoflife
+    Testing test_benchmarks.py/jacobi/jacobi
+    Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
+    Testing test_benchmarks.py/shallow_water/shallow_water
+    Testing test_matmul.py/matmul/dot
+    Testing test_matmul.py/matmul/matmul
+    Testing test_types.py/different_inputs/typecast
+    Testing test_reduce.py/reduce/reduce
+    Testing test_reduce.py/reduce1D/reduce
+    Testing test_views.py/diagonal/diagonal
+    Testing test_views.py/flatten/flatten
+    Testing test_sor.py/sor/sor
+    ************************ Finish ************************
 
 Visualizer (matplotlib alternative)
 ~~~~~~~~~~~~~~~~~~~~~
@@ -65,7 +64,7 @@ GPU Support
 
 In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the Bohrium GPU package::
 
-  sudo apt-get install bohrium-opencl
+  sudo apt-get install bohrium-gpu
 
 .. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
 
@@ -110,7 +109,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev  zlib1g-dev
+  sudo apt-get install python-numpy python-dev swig python-cheetah cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-thread-dev libboost-regex-dev libboost-system-dev  zlib1g-dev
 
 And for python v3 support::
   
@@ -152,31 +151,29 @@ The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python test/python/run.py  test/python/tests/test_*.py
+  python test/numpy/numpytest.py
 
 And you should see a result similar to this::
 
-  Testing test/python/tests/test_array_create.py/array_create/ones (0.84s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/random (3.11s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/zeros (0.72s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal/diagonal (4.65s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal_axis/diagonal (27.84s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten (6.15s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten_self (6.29s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/ravel (5.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/add (0.35s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/identity (0.08s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/doubletranspose (4.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/transpose (1.97s) ✓
-  Testing test/python/tests/test_emptiness.py/empty/add (0.00s) ✓
-  <string>:1: RuntimeWarning: invalid value encountered in arccosh
-  <string>:1: RuntimeWarning: invalid value encountered in arccosh
-  Testing test/python/tests/test_primitives.py/bh_opcodes/ufunc (67.92s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_primitives/vector (3.21s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
-
+    *** Testing the equivalency of Bohrium-NumPy and NumPy ***
+    Testing test_primitives.py/bh_opcodes/ufunc
+    Testing test_primitives.py/numpy_ufunc/ufunc
+    Testing test_specials.py/doubletranspose/doubletranspose
+    Testing test_specials.py/largedim/largedim
+    Testing test_array_create.py/array_create/zeros
+    Testing test_benchmarks.py/gameoflife/gameoflife
+    Testing test_benchmarks.py/jacobi/jacobi
+    Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
+    Testing test_benchmarks.py/shallow_water/shallow_water
+    Testing test_matmul.py/matmul/dot
+    Testing test_matmul.py/matmul/matmul
+    Testing test_types.py/different_inputs/typecast
+    Testing test_reduce.py/reduce/reduce
+    Testing test_reduce.py/reduce1D/reduce
+    Testing test_views.py/diagonal/diagonal
+    Testing test_views.py/flatten/flatten
+    Testing test_sor.py/sor/sor
+    ************************ Finish ************************
 
 C / C++
 ~~~~~~~
