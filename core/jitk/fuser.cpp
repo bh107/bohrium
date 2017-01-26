@@ -31,45 +31,60 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
+void simplify_instr(bh_instruction &instr) {
+    if (bh_noperands(instr.opcode) == 0) {
+        return;
+    }
+
+    // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
+    {
+        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        const int sa = instr.sweep_axis();
+        size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
+        for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
+            if (sa != i and dominating_shape[i] == 1) {
+                instr.remove_axis(i);
+                --ndim_left;
+            }
+        }
+    }
+
+    // Let's try to simplify the shape of the instruction
+    if (instr.max_ndim() >  1 and instr.reshapable()) {
+        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        assert(dominating_shape.size() > 0);
+
+        const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
+                                                      std::multiplies<int64_t>());
+        const vector<int64_t> shape = {totalsize};
+        instr.reshape(shape);
+    }
+}
+
 
 vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
 
+    vector<InstrPtr> instr_list_simply;
+    // Let's start by simplify the instruction list
+    for (const bh_instruction *instr: instr_list) {
+        bh_instruction instr_simply(*instr);
+        simplify_instr(instr_simply);
+        instr_list_simply.push_back(std::make_shared<const bh_instruction>(instr_simply));
+    }
+
     // Creates the _block_list based on the instr_list
     vector<Block> block_list;
-    for (auto it=instr_list.begin(); it != instr_list.end(); ++it) {
-        bh_instruction instr(**it);
-        const int nop = bh_noperands(instr.opcode);
+    for (auto it=instr_list_simply.begin(); it != instr_list_simply.end(); ++it) {
+        const InstrPtr &instr = *it;
+        const int nop = bh_noperands(instr->opcode);
         if (nop == 0)
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
-        // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
-        {
-            const vector<int64_t> dominating_shape = instr.dominating_shape();
-            const int sa = instr.sweep_axis();
-            size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
-            for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
-                if (sa != i and dominating_shape[i] == 1) {
-                    instr.remove_axis(i);
-                    --ndim_left;
-                }
-            }
-        }
-
-        // Let's try to simplify the shape of the instruction
-        if (instr.max_ndim() >  1 and instr.reshapable()) {
-            const vector<int64_t> dominating_shape = instr.dominating_shape();
-            assert(dominating_shape.size() > 0);
-
-            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
-                                                      std::multiplies<int64_t>());
-            const vector<int64_t> shape = {totalsize};
-            instr.reshape(shape);
-        }
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        const vector<int64_t> dominating_shape = instr->dominating_shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
-        vector<InstrPtr> single_instr = {std::make_shared<bh_instruction>(instr)};
+        vector<InstrPtr> single_instr = {instr};
         block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
     }
     return block_list;
