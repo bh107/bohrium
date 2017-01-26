@@ -1,6 +1,5 @@
 import util
 
-
 class test_flatten:
     def init(self):
         for cmd, shape in util.gen_random_arrays("R", 4, min_ndim=2, dtype="np.float32"):
@@ -96,5 +95,3 @@ class test_fill:
     def test_view(self, cmd):
         cmd += "res[...] = 42"
         return cmd
-
-

@@ -1,3 +1,4 @@
+import util
 
 class test_get:
     def init(self):
@@ -17,5 +18,3 @@ class test_get:
 
     def test_scalar_slice(self, cmd):
         return cmd + "res = a[1:2, 1]"
-
-

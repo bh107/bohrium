@@ -32,8 +32,6 @@ private:
     bool bh_visualize_initialized = false;
 
 public:
-    VisualizerImpl() : ExtmethodImpl() {}
-    ~VisualizerImpl() {};
     void execute(bh_instruction *instr, void* arg) {
 
         bh_view *subject = &instr->operand[0];

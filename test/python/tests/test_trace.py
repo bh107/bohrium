@@ -1,6 +1,5 @@
 import util
 
-
 class test_trace:
     def init(self):
         for cmd, shape in util.gen_random_arrays("R", 4, min_ndim=2, dtype="np.uint32"):
@@ -22,6 +21,7 @@ class test_trace_offset:
     def test_trace_offset(self, cmd):
         return cmd + "res = M.trace(a, offset=offset)"
 
+
 class test_trace_axis:
     def init(self):
         for cmd, shape in util.gen_random_arrays("R", 4, min_ndim=2, dtype="np.uint32"):
@@ -36,4 +36,3 @@ class test_trace_axis:
     def test_trace_offset(self, args):
         (cmd, offset, axis1, axis2) = args
         return cmd + "res = M.trace(a, offset=%d, axis1=%d, axis2=%d)" % (offset, axis1, axis2)
-

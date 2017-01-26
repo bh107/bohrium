@@ -77,8 +77,6 @@ class ExtmethodFace {
   private:
     // The name of the extmethod e.g. matmul or visualizer
     std::string _name;
-    // Path to the shared library file e.g. .so, .dylib, or .dll
-    std::string _lib_path;
     // Shared library handle
     void* _lib_handle;
     // Function pointer to the extmethod's create function
@@ -98,13 +96,11 @@ class ExtmethodFace {
         if (this != &other)
         {
             _name = other._name;
-            _lib_path = other._lib_path;
             _lib_handle = other._lib_handle;
             _create = other._create;
             _destroy = other._destroy;
             _implementation = other._implementation;
             other._name.clear();
-            other._lib_path.clear();
             other._lib_handle = NULL;
             other._create = NULL;
             other._destroy = NULL;
@@ -140,4 +136,3 @@ public:
 }} //namespace bohrium::extmethod
 
 #endif
-

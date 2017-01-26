@@ -73,7 +73,6 @@ ExtmethodFace::ExtmethodFace(const ConfigParser &parent_config,
         }
         if (found) {
             fail = false;
-            _lib_path = lib_path;
             break;
         } else {
             dlerror(); // Reset errors

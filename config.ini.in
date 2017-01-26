@@ -89,6 +89,3 @@ graph = false # Write a Graphviz graph for each kernel
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
-
-
-

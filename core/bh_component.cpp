@@ -27,8 +27,7 @@ using namespace std;
 namespace bohrium {
 namespace component {
 
-ComponentFace::ComponentFace(const string &lib_path, int stack_level) :
-                    _lib_path(lib_path) {
+ComponentFace::ComponentFace(const string &lib_path, int stack_level) {
 
     // Load the shared library
     _lib_handle = dlopen(lib_path.c_str(), RTLD_NOW);
