@@ -48,6 +48,8 @@ using namespace std;
 namespace {
 class Impl : public ComponentImpl {
   private:
+    // Some statistics
+    Statistics stat;
     // Fuse cache
     FuseCache fcache;
     // Compiled kernels store
@@ -56,11 +58,10 @@ class Impl : public ComponentImpl {
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
-    // Some statistics
-    Statistics stat;
 
   public:
-    Impl(int stack_level) : ComponentImpl(stack_level), fcache(stat), store(config, stat) {}
+    Impl(int stack_level) : ComponentImpl(stack_level), stat(config.defaultGet("prof", false)),
+                            fcache(stat), store(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -245,6 +246,9 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list) {
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
+    // Some statistics
+    stat.record(bhir->instr_list);
+
     // For now, we handle extension methods by executing them individually
     {
         vector<bh_instruction> instr_list;
@@ -312,16 +316,7 @@ void Impl::execute(bh_ir *bhir) {
         graph::DAG dag = graph::from_block_list(block_list);
         graph::pprint(dag, "dag");
     }
-
-    // Some statistics
     stat.time_fusion += chrono::steady_clock::now() - texecution;
-    if (config.defaultGet<bool>("prof", false)) {
-        for (const bh_instruction *instr: instr_list) {
-            if (not bh_opcode_is_system(instr->opcode)) {
-                stat.totalwork += bh_nelements(instr->operand[0]);
-            }
-        }
-    }
 
     for(const Block &block: block_list) {
         assert(not block.isInstr());

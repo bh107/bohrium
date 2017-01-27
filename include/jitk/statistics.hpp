@@ -25,6 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <ostream>
 #include <sstream>
+#include <vector>
+
+#include <bh_instruction.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -43,8 +46,10 @@ std::string pprint_ratio(uint64_t a, uint64_t b) {
  */
 class Statistics {
   public:
+    const bool enabled;
     uint64_t num_base_arrays=0;
     uint64_t num_temp_arrays=0;
+    uint64_t num_syncs=0;
     uint64_t max_memory_usage=0;
     uint64_t totalwork=0;
     uint64_t threading_below_threshold=0;
@@ -61,6 +66,8 @@ class Statistics {
     std::chrono::duration<double> time_copy2host{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
+    Statistics(bool enabled) : enabled(enabled) {}
+
     // Pretty print the recorded statistics into 'out' where 'backend_name' is the name of the caller
     void pprint(std::string backend_name, std::ostream &out) {
         using namespace std;
@@ -71,6 +78,7 @@ class Statistics {
         out << "\tKernel Cache Hits    " << pprint_ratio(kernel_cache_lookups - kernel_cache_misses, kernel_cache_lookups) << "\n";
         out << "\tArray contractions:  " << pprint_ratio(num_temp_arrays, num_base_arrays) << "\n";
         out << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB\n";
+        out << "\tSyncs to NumPy: " << num_syncs << "\n";
         out << "\tTotal Work: " << (double) totalwork << " operations\n";
         out << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%\n";
         out << "\tWall clock:  " << wallclock.count() << "s\n";
@@ -83,6 +91,21 @@ class Statistics {
         out << "\t  Copy2host: " << time_copy2host.count() << "s\n";
         out << "\t  Offload:   " << time_offload.count() << "s\n";
         out << endl;
+    }
+
+    // Record statistics based on the 'instr_list'
+    void record(std::vector<bh_instruction> &instr_list) {
+        if (enabled) {
+            for (const bh_instruction &instr: instr_list) {
+                if (not bh_opcode_is_system(instr.opcode)) {
+                    const std::vector<bh_index> dshape = instr.dominating_shape();
+                    totalwork += bh_nelements(dshape.size(), &dshape[0]);
+                }
+                if (instr.opcode == BH_SYNC) {
+                    ++num_syncs;
+                }
+            }
+        }
     }
 };
 

@@ -49,12 +49,12 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
   private:
+    // Some statistics
+    Statistics stat;
     // Fuse cache
     FuseCache fcache;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    // Some statistics
-    Statistics stat;
     // The OpenCL engine
     EngineOpenCL engine;
     // Write an OpenCL kernel
@@ -62,7 +62,8 @@ class Impl : public ComponentImplWithChild {
                       stringstream &ss);
 
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level), fcache(stat), engine(config, stat) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config.defaultGet("prof", false)),
+                            fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -184,6 +185,9 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
+    // Some statistics
+    stat.record(bhir->instr_list);
+
     // For now, we handle extension methods by executing them individually
     {
         vector<bh_instruction> instr_list;
@@ -229,14 +233,6 @@ void Impl::execute(bh_ir *bhir) {
         }
     }
 
-    // Some statistics
-    if (config.defaultGet<bool>("prof", false)) {
-        for (const bh_instruction *instr: instr_list) {
-            if (not bh_opcode_is_system(instr->opcode)) {
-                stat.totalwork += bh_nelements(instr->operand[0]);
-            }
-        }
-    }
     auto tfusion = chrono::steady_clock::now();
 
     // Set the constructor flag
