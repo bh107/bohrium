@@ -46,7 +46,6 @@ Store::Store(const ConfigParser &config, jitk::Statistics &stat) :
                                                     config.defaultGet<string>("compiler_flg", ""),
                                                     config.defaultGet<string>("compiler_ext", "")),
                                            verbose(config.defaultGet<bool>("verbose", false)),
-                                           config(config),
                                            stat(stat)
 {
     // Let's make sure that the directories exist
