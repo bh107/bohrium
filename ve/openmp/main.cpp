@@ -300,7 +300,7 @@ void Impl::execute(bh_ir *bhir) {
 
         } else {
             // Let's fuse the 'instr_list' into blocks
-            block_list = fuser_singleton(instr_list);
+            block_list = pre_fuser_lossy(instr_list);
             if (config.defaultGet<bool>("serial_fusion", false)) {
                 fuser_serial(block_list, 1);
             } else {

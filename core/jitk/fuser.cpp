@@ -61,6 +61,106 @@ void simplify_instr(bh_instruction &instr) {
     }
 }
 
+namespace {
+
+// Check if 'writer' and 'reader' supports data-parallelism when merged
+bool fully_data_parallel_compatible(const bh_view &writer, const bh_view &reader) {
+
+    // Disjoint views or constants are obviously compatible
+    if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
+        return true;
+    }
+
+    if (writer.start != reader.start) {
+        return false;
+    }
+
+    if (writer.ndim != reader.ndim) {
+        return false;
+    }
+
+    for (int64_t i=0; i < writer.ndim; ++i) {
+        if (writer.stride[i] == reader.stride[i] or writer.shape[i] == reader.shape[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Check if 'a' and 'b' (in that order) supports data-parallelism when merged
+bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
+    if (bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    {// The output of 'a' cannot conflict with the input and output of 'b'
+        const bh_view &src = a->operand[0];
+        const int b_nop = bh_noperands(b->opcode);
+        for (int i = 0; i < b_nop; ++i) {
+            if (not fully_data_parallel_compatible(src, b->operand[i])) {
+                return false;
+            }
+        }
+    }
+    {// The output of 'b' cannot conflict with the input and output of 'a'
+        const bh_view &src = b->operand[0];
+        const int a_nop = bh_noperands(a->opcode);
+        for (int i = 0; i < a_nop; ++i) {
+            if (not fully_data_parallel_compatible(src, a->operand[i])) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// Check if all instructions in 'instr_list' is fully fusible with 'instr'
+bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
+
+    if (instr_list.size() == 0)
+        return true;
+
+    const auto dshape = instr->dominating_shape();
+    for (const InstrPtr &i: instr_list) {
+        if (i->dominating_shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
+            return false;
+        }
+    }
+    return true;
+}
+}
+
+
+vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
+    vector<InstrPtr> instr_list_simply;
+    // Let's start by simplify the instruction list
+    for (const bh_instruction *instr: instr_list) {
+        bh_instruction instr_simply(*instr);
+        simplify_instr(instr_simply);
+        instr_list_simply.push_back(std::make_shared<const bh_instruction>(instr_simply));
+    }
+
+    vector<vector<InstrPtr> > block_lists;
+    for (auto it = instr_list_simply.begin(); it != instr_list_simply.end(); ) {
+        block_lists.push_back({*it});
+        vector<InstrPtr> &block = block_lists.back();
+        ++it;
+        // Let's search for fully fusible blocks
+        for (; it != instr_list_simply.end(); ++it) {
+            if (fully_fusible(block, *it)) {
+                block.push_back(*it);
+            } else {
+                break;
+            }
+        }
+    }
+
+    // Convert the block list to real Blocks
+    vector<Block> ret;
+    for (const vector<InstrPtr> &block: block_lists) {
+        ret.push_back(create_nested_block(block, 0, block[0]->dominating_shape()[0]));
+    }
+    return ret;
+}
 
 vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
 
