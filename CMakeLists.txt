@@ -120,6 +120,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 #####################
 # Bohrium components
+set(OPENMP_LIBS "")
+set(OPENCL_LIBS "")
+
 add_subdirectory(core)
 add_subdirectory(vem/node)
 add_subdirectory(vem/proxy)

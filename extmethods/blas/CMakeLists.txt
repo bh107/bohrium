@@ -25,6 +25,8 @@ if(BLAS_FOUND)
     target_link_libraries(bh_blas ${LIBS})
 
     install(TARGETS bh_blas DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+
+    set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_blas${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
 else()
     if (BLAS_INCLUDES_PRE)
         set_package_properties(BLAS PROPERTIES TYPE RECOMMENDED PURPOSE "BLAS was found, but not enabled. \n   Manually enable BLAS with BLAS_INCLUDES and BLAS_LIBRARIES\n   if you have a clang multi-arch BLAS binary.")
