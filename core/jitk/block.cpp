@@ -461,6 +461,42 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
     return ret;
 }
 
+
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
+    if (instr_list.empty()) {
+        throw runtime_error("create_nested_block: 'instr_list' is empty!");
+    }
+    if (bh_opcode_is_system(instr_list[0]->opcode)) {
+        throw runtime_error("create_nested_block: first instruction is a sysop!");
+    }
+    const int ndim = (int) instr_list[0]->max_ndim();
+    const vector<int64_t> shape = instr_list[0]->dominating_shape();
+    assert(ndim > rank);
+
+    LoopB ret_loop;
+    ret_loop.rank = rank;
+    ret_loop.size = shape[rank];
+    if (rank == ndim - 1) { // The innermost rank
+        ret_loop.rank = ndim-1;
+        ret_loop.size = shape[ndim-1];
+        for (InstrPtr instr: instr_list) {
+            if (bh_opcode_is_system(instr->opcode)) {
+                bh_instruction tmp = *instr;
+                tmp.reshape_force(shape);
+                ret_loop._block_list.emplace_back(tmp, ndim);
+            } else {
+                ret_loop._block_list.emplace_back(*instr, ndim);
+            }
+            assert(ret_loop._block_list.back().getInstr()->dominating_shape() == shape);
+        }
+    } else {
+        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1));
+    }
+    ret_loop.metadata_update();
+    assert(ret_loop.validation());
+    return Block(std::move(ret_loop));
+}
+
 Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim) {
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");

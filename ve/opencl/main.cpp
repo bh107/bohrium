@@ -255,7 +255,13 @@ void Impl::execute(bh_ir *bhir) {
 ;
         } else {
             // Let's fuse the 'instr_list' into blocks
-            block_list = fuser_singleton(instr_list);
+            // We start with the pre_fuser
+            if (config.defaultGet<bool>("pre_fuser", true)) {
+                block_list = pre_fuser_lossy(instr_list);
+            } else {
+                block_list = fuser_singleton(instr_list);
+            }
+            // Then we fuse fully
             if (config.defaultGet<bool>("serial_fusion", false)) {
                 fuser_serial(block_list, 1);
             } else {

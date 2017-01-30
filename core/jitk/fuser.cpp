@@ -118,9 +118,15 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 
     if (instr_list.size() == 0)
         return true;
+    if (bh_opcode_is_system(instr->opcode)) {
+        return true;
+    }
 
     const auto dshape = instr->dominating_shape();
     for (const InstrPtr &i: instr_list) {
+        if (bh_opcode_is_system(i->opcode)) {
+            continue;
+        }
         if (i->dominating_shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
             return false;
         }
@@ -128,7 +134,6 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
     return true;
 }
 }
-
 
 vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
     vector<InstrPtr> instr_list_simply;
@@ -143,6 +148,10 @@ vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
     for (auto it = instr_list_simply.begin(); it != instr_list_simply.end(); ) {
         block_lists.push_back({*it});
         vector<InstrPtr> &block = block_lists.back();
+        if (bh_opcode_is_system((*it)->opcode)) {
+            // We should not make blocks that start with a sysop since we only have LoopB::insert_system_after()
+            continue;
+        }
         ++it;
         // Let's search for fully fusible blocks
         for (; it != instr_list_simply.end(); ++it) {
@@ -157,7 +166,7 @@ vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
     // Convert the block list to real Blocks
     vector<Block> ret;
     for (const vector<InstrPtr> &block: block_lists) {
-        ret.push_back(create_nested_block(block, 0, block[0]->dominating_shape()[0]));
+        ret.push_back(create_nested_block(block));
     }
     return ret;
 }
