@@ -1,8 +1,17 @@
 import util
+import bohrium as bh
 import bohrium.blas
 
 class test_ext_blas:
     def init(self):
+        try:
+            a = bh.arange(4).astype(bh.float64).reshape(2, 2)
+            bh.blas.gemm(a, a)
+        except Exception as e:
+            print("\n[ext] Cannot test BLAS extension methods.")
+            print(e)
+            return
+
         for t in util.TYPES.FLOAT + util.TYPES.COMPLEX:
             rows = 5
             cols = 5
