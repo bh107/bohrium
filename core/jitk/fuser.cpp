@@ -135,15 +135,19 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 }
 }
 
-vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
-    vector<InstrPtr> instr_list_simply;
+vector<InstrPtr> simplify_instr_list(const vector<bh_instruction *> &instr_list) {
+    vector<InstrPtr> ret;
     // Let's start by simplify the instruction list
     for (const bh_instruction *instr: instr_list) {
         bh_instruction instr_simply(*instr);
         simplify_instr(instr_simply);
-        instr_list_simply.push_back(std::make_shared<const bh_instruction>(instr_simply));
+        ret.push_back(std::make_shared<const bh_instruction>(instr_simply));
     }
+    return ret;
+}
 
+vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
+    const vector<InstrPtr> instr_list_simply = simplify_instr_list(instr_list);
     vector<vector<InstrPtr> > block_lists;
     for (auto it = instr_list_simply.begin(); it != instr_list_simply.end(); ) {
         block_lists.push_back({*it});
@@ -173,13 +177,7 @@ vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
 
 vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
 
-    vector<InstrPtr> instr_list_simply;
-    // Let's start by simplify the instruction list
-    for (const bh_instruction *instr: instr_list) {
-        bh_instruction instr_simply(*instr);
-        simplify_instr(instr_simply);
-        instr_list_simply.push_back(std::make_shared<const bh_instruction>(instr_simply));
-    }
+    const vector<InstrPtr> instr_list_simply = simplify_instr_list(instr_list);
 
     // Creates the _block_list based on the instr_list
     vector<Block> block_list;
