@@ -38,7 +38,7 @@ class EngineOpenCL {
 private:
     // Map of all compiled OpenCL programs
     std::map<uint64_t, cl::Program> _programs;
-    // The OpenCL context, device, adn queue used throughout the execution
+    // The OpenCL context, device, and queue used throughout the execution
     cl::Context context;
     cl::Device default_device;
     cl::CommandQueue queue;

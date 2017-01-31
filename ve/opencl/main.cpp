@@ -122,7 +122,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
                         stringstream &ss) {
 
     // Write the need includes
-    ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable\n";
+    ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     ss << "#include <kernel_dependencies/complex_operations.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
     if (kernel.useRandom()) { // Write the random function
@@ -388,4 +388,3 @@ void Impl::execute(bh_ir *bhir) {
     }
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
-

@@ -375,4 +375,3 @@ void Impl::execute(bh_ir *bhir) {
     }
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
-

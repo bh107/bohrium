@@ -31,5 +31,4 @@ If not, see <http://www.gnu.org/licenses/>.
                         b *= b;               \
                     }                         \
                     }
-
 #endif

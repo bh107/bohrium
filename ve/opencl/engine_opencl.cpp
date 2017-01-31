@@ -143,4 +143,3 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
 }
 
 } // bohrium
-
