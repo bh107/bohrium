@@ -37,8 +37,6 @@ using namespace std;
 namespace {
 class Impl : public ExtmethodImpl {
 public:
-    Impl() : ExtmethodImpl() {}
-    ~Impl() {};
     void execute(bh_instruction *instr, void* arg) {
         bh_view *out  = &instr->operand[0];
         bh_view *in   = &instr->operand[1];

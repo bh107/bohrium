@@ -1,3 +1,4 @@
+import util
 
 class test_empty:
     def init(self):

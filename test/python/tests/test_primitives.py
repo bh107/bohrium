@@ -1,4 +1,5 @@
 import bohrium
+import util
 
 class test_bh_opcodes:
     def init(self):

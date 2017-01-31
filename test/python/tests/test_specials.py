@@ -1,3 +1,5 @@
+import util
+
 class test_double_write:
     def init(self):
         yield ""

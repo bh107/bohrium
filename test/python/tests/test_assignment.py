@@ -1,6 +1,5 @@
 import util
 
-
 class test_assign_vector:
     def init(self):
         yield "res = M.arange(100).reshape(10,10); "
@@ -16,5 +15,3 @@ class test_assign_vector:
 
     def test_column_list(self, cmd):
         return cmd + "res[:, 2] = [42]*10"
-
-

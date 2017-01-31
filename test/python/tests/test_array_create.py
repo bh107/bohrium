@@ -1,6 +1,5 @@
 import util
 
-
 class test_array_create:
     def init(self):
         for t in util.TYPES.ALL:

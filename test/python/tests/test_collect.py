@@ -2,11 +2,9 @@ import util
 
 class test_collect:
     def init(self):
-        dtype = 'np.float32'
-        cmd = "a = M.arange(%d, dtype=%s); " % (100, dtype)
-        yield cmd
-    #    for t in util.TYPES.SIGNED_INT:
-    #        yield t
+        for t in util.TYPES.ALL:
+            cmd = "a = M.arange(%d, dtype=%s); " % (100, t)
+            yield cmd
 
     def test_contract(self, cmd):
         cmd += "res = a / 180.0 * 3.14"

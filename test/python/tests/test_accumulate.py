@@ -1,6 +1,5 @@
 import util
 
-
 class test_accumulate_views:
     """ Test accumulate of all kind of views"""
     def init(self):
@@ -26,4 +25,3 @@ class test_accumulate_primitives:
         cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.accumulate(a)" % op
         return cmd
-

@@ -1,6 +1,5 @@
 import util
 
-
 class test_reduce_views:
     """ Test reduction of all kind of views"""
     def init(self):
@@ -58,4 +57,3 @@ class test_reduce_primitives:
         cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.reduce(a)" % op
         return cmd
-

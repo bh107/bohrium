@@ -1,6 +1,5 @@
 import util
 
-
 class _test_import:
     """ Test reduction of all kind of views"""
     def init(self):

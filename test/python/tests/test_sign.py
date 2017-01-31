@@ -1,7 +1,6 @@
 import util
 
 class test_sign:
-
     def init(self):
         for dtype in util.TYPES.SIGNED_INT:
             yield "a = M.arange(-10, 0, 1, dtype=%s); " % dtype

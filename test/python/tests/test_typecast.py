@@ -1,6 +1,5 @@
 import util
 
-
 class test_typecast:
     def init(self):
         for t1 in util.TYPES.ALL:

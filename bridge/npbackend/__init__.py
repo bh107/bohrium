@@ -69,4 +69,3 @@ if sys.version_info[0] < 3:
 if sys.version_info[0] < 3:
     from . import bohriumify
     bohriumify.modules() # Python3 crash at this point
-

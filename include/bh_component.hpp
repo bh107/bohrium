@@ -82,8 +82,6 @@ class ComponentImpl {
 // and destroy() function.
 class ComponentFace {
   private:
-    // Path to the shared library file e.g. .so, .dylib, or .dll
-    std::string _lib_path;
     // Shared library handle
     void* _lib_handle;
     // Function pointer to the component's create function
@@ -148,4 +146,3 @@ public:
 }} //namespace bohrium::component
 
 #endif
-
