@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <jitk/fuser.hpp>
 #include <jitk/graph.hpp>
+#include <bh_util.hpp>
 
 using namespace std;
 
@@ -133,15 +134,72 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
     }
     return true;
 }
+
+// Returns a set of bases that the instruction accesses and is in 'container'
+set<bh_base*> instr_accessing(const bh_instruction *instr, const set<bh_base*> &container) {
+    set<bh_base*> ret;
+    const int nop = bh_noperands(instr->opcode);
+    for (int i=0; i<nop; ++i) {
+        const bh_view &v = instr->operand[i];
+        if (not bh_is_constant(&v)) {
+            if (util::exist(container, v.base)) {
+                ret.insert(v.base);
+            }
+        }
+    }
+    return ret;
+}
 }
 
 vector<InstrPtr> simplify_instr_list(const vector<bh_instruction *> &instr_list) {
+
+    // Map from instruction to the set of bases that it is the last to access
+    map<const bh_instruction*, set<bh_base *> > last_access;
+    // Map from a base to the instruction that frees it (if any)
+    map<bh_base*, const bh_instruction*> base2frees_instr;
+    // Set of free instruction
+    set<const bh_instruction*> instr_frees;
+
+    // Find the instructions that should have frees inserted after them
+    {
+        set<bh_base*> base_frees;
+        for(auto it = instr_list.crbegin(); it != instr_list.crend(); ++it) {
+            const bh_instruction *instr = *it;
+            if (instr->opcode == BH_FREE) {
+                instr_frees.insert(instr);
+                base2frees_instr.insert(make_pair(instr->operand[0].base, instr));
+                base_frees.insert(instr->operand[0].base);
+            } else {
+                const set<bh_base*> bases = instr_accessing(instr, base_frees);
+                if (not bases.empty()) {
+                    last_access.insert(make_pair(instr, bases));
+                    for (bh_base *base: bases) {
+                        base_frees.erase(base);
+                    }
+                }
+            }
+        }
+    }
+
+    // Simplify and move BH_FREE's up the list
     vector<InstrPtr> ret;
-    // Let's start by simplify the instruction list
     for (const bh_instruction *instr: instr_list) {
-        bh_instruction instr_simply(*instr);
-        simplify_instr(instr_simply);
-        ret.push_back(std::make_shared<const bh_instruction>(instr_simply));
+        if (util::exist(instr_frees, instr)) {
+            continue; // Skipping frees that were moved
+        }
+        // Simplify and insert a regular instruction
+        {
+            bh_instruction instr_simply(*instr);
+            simplify_instr(instr_simply);
+            ret.push_back(std::make_shared<const bh_instruction>(instr_simply));
+        }
+        // Insert BH_FREE's after the instruction that last accesses them
+        if (util::exist(last_access, instr)) {
+            for (bh_base *base: last_access.at(instr)) {
+                ret.push_back(std::make_shared<const bh_instruction>(*base2frees_instr.at(base)));
+            }
+            last_access.erase(instr);
+        }
     }
     return ret;
 }
