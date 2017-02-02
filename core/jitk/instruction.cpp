@@ -675,6 +675,28 @@ vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> 
     return ret;
 }
 
+InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim) {
+    vector<int64_t> shape((size_t) rank + 1);
+    // The dimensions up til 'rank' (not including 'rank') are unchanged
+    for (int64_t r = 0; r < rank; ++r) {
+        shape[r] = instr->operand[0].shape[r];
+    }
+    int64_t size = 1; // The size of the reshapeable block
+    for (int64_t r = rank; r < instr->operand[0].ndim; ++r) {
+        size *= instr->operand[0].shape[r];
+    }
+    assert(size >= size_of_rank_dim);
+    shape[rank] = size_of_rank_dim;
+    if (size != size_of_rank_dim) { // We might have to add an extra dimension
+        if (size % size_of_rank_dim != 0)
+            throw runtime_error("reshape_rank(): shape is not divisible with 'size_of_rank_dim'");
+        shape.push_back(size / size_of_rank_dim);
+    }
+    bh_instruction ret = bh_instruction(*instr);
+    ret.reshape(shape);
+    return std::make_shared<bh_instruction>(ret);
+}
+
 } // jitk
 } // bohrium
 
