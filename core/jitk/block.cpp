@@ -606,6 +606,16 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
 }
 } // Unnamed namespace
 
+// Reshape 'l1' to match 'size_of_rank_dim' at 'l1.rank'
+Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
+    assert(l1._reshapable);
+    vector<InstrPtr> instr_list;
+    for (const InstrPtr &instr: l1.getAllInstr()) {
+        instr_list.push_back(reshape_rank(instr, l1.rank, size_of_rank_dim));
+    }
+    return create_nested_block(instr_list, l1.rank);
+}
+
 // Reshape and merges the two loop blocks 'l1' and 'l2' (in that order).
 // Returns a new block and a flag indicating whether the merge were possible
 pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
@@ -619,18 +629,16 @@ pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     }
     // Let's try to reshape 'l2' to see if it can match the shape of 'l1'
     if (l2._reshapable && l2.size % l1.size == 0) {
-        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
-        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
-        if (data_parallel_compatible(l1, create_nested_block(l2_instrs, l1.rank, l1.size).getLoop())) {
-            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l1.size), true);
+        const LoopB new_l2 = reshape(l2, l1.size).getLoop();
+        if (data_parallel_compatible(l1, new_l2)) {
+            return make_pair(Block(merge(l1, new_l2)), true);
         }
     }
     // Let's try to reshape 'l1' to see if it can match the shape of 'l2'
     if (l1._reshapable && l1.size % l2.size == 0) {
-        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
-        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
-        if (data_parallel_compatible(create_nested_block(l1_instrs, l1.rank, l2.size).getLoop(), l2)) {
-            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l2.size), true);
+        const LoopB new_l1 = reshape(l1, l2.size).getLoop();
+        if (data_parallel_compatible(new_l1, l2)) {
+            return make_pair(Block(merge(new_l1, l2)), true);
         }
     }
     return make_pair(Block(), false); // No match found
