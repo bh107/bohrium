@@ -134,7 +134,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     ss << "__kernel void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << "__global " << write_opencl_type(b->type) << " a" << symbols.baseID(b) << "[static " << b->nelem << "]";
+        ss << "__global " << write_opencl_type(b->type) << " *a" << symbols.baseID(b);
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
         }
