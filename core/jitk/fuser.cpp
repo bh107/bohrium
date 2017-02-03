@@ -81,7 +81,7 @@ bool fully_data_parallel_compatible(const bh_view &writer, const bh_view &reader
     }
 
     for (int64_t i=0; i < writer.ndim; ++i) {
-        if (writer.stride[i] == reader.stride[i] or writer.shape[i] == reader.shape[i]) {
+        if (writer.stride[i] != reader.stride[i] or writer.shape[i] != reader.shape[i]) {
             return false;
         }
     }
