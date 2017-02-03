@@ -14,7 +14,7 @@ And then install the package::
 
   sudo apt-get update
   sudo apt-get install bohrium
-  
+
 And if you want Python v3 support::
 
   sudo apt-get install bohrium3
@@ -113,7 +113,7 @@ And some additional packages::
   sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev  zlib1g-dev
 
 And for python v3 support::
-  
+
   sudo apt-get python3-dev python3-numpy python3-dev cython3
 
 Packages for visualization::
@@ -131,7 +131,7 @@ Build and install::
   make
   make install
 
-.. note:: The default install directory is ~/.local
+.. note:: The default install directory is ``~/.local``
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set ``-DPYTHON_EXECUTABLE=<custom python binary>``.
 
@@ -152,7 +152,7 @@ The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python test/python/run.py  test/python/tests/test_*.py
+  BH_OPENMP_VOLATILE=true python test/python/run.py  test/python/tests/test_*.py
 
 And you should see a result similar to this::
 
@@ -177,6 +177,8 @@ And you should see a result similar to this::
   Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
   Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
 
+
+.. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
 
 C / C++
 ~~~~~~~
@@ -240,7 +242,33 @@ Assuming that your GPU-hardware is functioning correctly you need to install an 
 
   sudo apt-get install opencl-dev libopencl1 libgl-dev
 
-You should now have everything you need to utilize the GPU engine.
+You should now have everything you need to utilize the GPU engine. Build Bohrium, set ``BH_STACK=opencl``, and try running the NumPy test suite::
+
+  BH_STACK=opencl python test/python/run.py  test/python/tests/test_*.py
+
+And you should see a result similar to this::
+
+  Using platform: AMD Accelerated Parallel Processing
+  Using device: Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz
+  Testing test/python/tests/test_array_create.py/array_create/ones (0.84s) ✓
+  Testing test/python/tests/test_array_create.py/array_create/random (3.11s) ✓
+  Testing test/python/tests/test_array_create.py/array_create/zeros (0.72s) ✓
+  Testing test/python/tests/test_array_manipulation.py/diagonal/diagonal (4.65s) ✓
+  Testing test/python/tests/test_array_manipulation.py/diagonal_axis/diagonal (27.84s) ✓
+  Testing test/python/tests/test_array_manipulation.py/flatten/flatten (6.15s) ✓
+  Testing test/python/tests/test_array_manipulation.py/flatten/flatten_self (6.29s) ✓
+  Testing test/python/tests/test_array_manipulation.py/flatten/ravel (5.94s) ✓
+  Testing test/python/tests/test_array_manipulation.py/overlapping/add (0.35s) ✓
+  Testing test/python/tests/test_array_manipulation.py/overlapping/identity (0.08s) ✓
+  Testing test/python/tests/test_array_manipulation.py/transpose/doubletranspose (4.94s) ✓
+  Testing test/python/tests/test_array_manipulation.py/transpose/transpose (1.97s) ✓
+  Testing test/python/tests/test_emptiness.py/empty/add (0.00s) ✓
+  Testing test/python/tests/test_primitives.py/bh_opcodes/ufunc (67.92s) ✓
+  Testing test/python/tests/test_reduce.py/reduce_primitives/vector (3.21s) ✓
+  Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
+  Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
+  Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
+
 
 
 .. MPI / Cluster Engine

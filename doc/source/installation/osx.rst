@@ -18,7 +18,7 @@ Then install Bohrium::
 
 You may be asked to install various Python items, this is the easy way to get them::
 
-  sudo easy_install pip 
+  sudo easy_install pip
   sudo pip install cheetah cython
 
 On some installs the NumPy package is not picked up by Homebrew, you can get it installed with::
@@ -117,7 +117,7 @@ The ``DYLD_LIBRARY_PATH`` should include the path to the installation directory:
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python test/python/numpytest.py
+  BH_OPENMP_VOLATILE=true python test/python/numpytest.py
 
 And you should see a result similar to this::
 
@@ -136,6 +136,8 @@ And you should see a result similar to this::
     Testing test_views.py/diagonal/diagonal
     Testing test_views.py/flatten/flatten
     ************************ Finish ************************
+
+.. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
 
 Mono / .NET
 ~~~~~~~~~~~
