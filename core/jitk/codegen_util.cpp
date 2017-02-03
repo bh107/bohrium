@@ -109,7 +109,8 @@ void write_loop_block(const SymbolTable &symbols,
     }
 
     // And then create the scope
-    Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, scalar_replaced_input_only);
+    Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs,
+                scalar_replaced_input_only, config.defaultGet<bool>("volatile", false));
 
     // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
     // it should be declared before the for-loop
