@@ -21,7 +21,7 @@ And if you want Python v3 support::
 
 Now the basic installation should work. Try running the NumPy test suite::
 
-  python /usr/share/bohrium/test/python/run.py /usr/share/bohrium/test/python/tests/test_*.py
+  BH_OPENMP_VOLATILE=true python /usr/share/bohrium/test/python/run.py /usr/share/bohrium/test/python/tests/test_*.py
 
 And you should see a result similar to this::
 
@@ -45,6 +45,8 @@ And you should see a result similar to this::
   Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
   Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
   Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
+
+.. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
 
 Visualizer (matplotlib alternative)
 ~~~~~~~~~~~~~~~~~~~~~
