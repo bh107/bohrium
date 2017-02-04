@@ -25,51 +25,231 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <jitk/fuser.hpp>
 #include <jitk/graph.hpp>
+#include <bh_util.hpp>
 
 using namespace std;
 
 namespace bohrium {
 namespace jitk {
 
+void simplify_instr(bh_instruction &instr) {
+    if (bh_noperands(instr.opcode) == 0) {
+        return;
+    }
 
-vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
+    // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
+    {
+        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        const int sa = instr.sweep_axis();
+        size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
+        for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
+            if (sa != i and dominating_shape[i] == 1) {
+                instr.remove_axis(i);
+                --ndim_left;
+            }
+        }
+    }
 
-    // Creates the _block_list based on the instr_list
-    vector<Block> block_list;
-    for (auto it=instr_list.begin(); it != instr_list.end(); ++it) {
-        bh_instruction instr(**it);
-        const int nop = bh_noperands(instr.opcode);
-        if (nop == 0)
-            continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
+    // Let's try to simplify the shape of the instruction
+    if (instr.max_ndim() >  1 and instr.reshapable()) {
+        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        assert(dominating_shape.size() > 0);
 
-        // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
-        {
-            const vector<int64_t> dominating_shape = instr.dominating_shape();
-            const int sa = instr.sweep_axis();
-            size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
-            for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
-                if (sa != i and dominating_shape[i] == 1) {
-                    instr.remove_axis(i);
-                    --ndim_left;
+        const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
+                                                      std::multiplies<int64_t>());
+        const vector<int64_t> shape = {totalsize};
+        instr.reshape(shape);
+    }
+}
+
+namespace {
+
+// Check if 'writer' and 'reader' supports data-parallelism when merged
+bool fully_data_parallel_compatible(const bh_view &writer, const bh_view &reader) {
+
+    // Disjoint views or constants are obviously compatible
+    if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
+        return true;
+    }
+
+    if (writer.start != reader.start) {
+        return false;
+    }
+
+    if (writer.ndim != reader.ndim) {
+        return false;
+    }
+
+    for (int64_t i=0; i < writer.ndim; ++i) {
+        if (writer.stride[i] != reader.stride[i] or writer.shape[i] != reader.shape[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Check if 'a' and 'b' (in that order) supports data-parallelism when merged
+bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
+    if (bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+        return true;
+
+    {// The output of 'a' cannot conflict with the input and output of 'b'
+        const bh_view &src = a->operand[0];
+        const int b_nop = bh_noperands(b->opcode);
+        for (int i = 0; i < b_nop; ++i) {
+            if (not fully_data_parallel_compatible(src, b->operand[i])) {
+                return false;
+            }
+        }
+    }
+    {// The output of 'b' cannot conflict with the input and output of 'a'
+        const bh_view &src = b->operand[0];
+        const int a_nop = bh_noperands(a->opcode);
+        for (int i = 0; i < a_nop; ++i) {
+            if (not fully_data_parallel_compatible(src, a->operand[i])) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// Check if all instructions in 'instr_list' is fully fusible with 'instr'
+bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
+
+    if (instr_list.size() == 0)
+        return true;
+    if (bh_opcode_is_system(instr->opcode)) {
+        return true;
+    }
+
+    const auto dshape = instr->dominating_shape();
+    for (const InstrPtr &i: instr_list) {
+        if (bh_opcode_is_system(i->opcode)) {
+            continue;
+        }
+        if (i->dominating_shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Returns a set of bases that the instruction accesses and is in 'container'
+set<bh_base*> instr_accessing(const bh_instruction *instr, const set<bh_base*> &container) {
+    set<bh_base*> ret;
+    const int nop = bh_noperands(instr->opcode);
+    for (int i=0; i<nop; ++i) {
+        const bh_view &v = instr->operand[i];
+        if (not bh_is_constant(&v)) {
+            if (util::exist(container, v.base)) {
+                ret.insert(v.base);
+            }
+        }
+    }
+    return ret;
+}
+}
+
+vector<InstrPtr> simplify_instr_list(const vector<bh_instruction *> &instr_list) {
+
+    // Map from instruction to the set of bases that it is the last to access
+    map<const bh_instruction*, set<bh_base *> > last_access;
+    // Map from a base to the instruction that frees it (if any)
+    map<bh_base*, const bh_instruction*> base2frees_instr;
+    // Set of free instruction
+    set<const bh_instruction*> instr_frees;
+
+    // Find the instructions that should have frees inserted after them
+    {
+        set<bh_base*> base_frees;
+        for(auto it = instr_list.crbegin(); it != instr_list.crend(); ++it) {
+            const bh_instruction *instr = *it;
+            if (instr->opcode == BH_FREE) {
+                instr_frees.insert(instr);
+                base2frees_instr.insert(make_pair(instr->operand[0].base, instr));
+                base_frees.insert(instr->operand[0].base);
+            } else {
+                const set<bh_base*> bases = instr_accessing(instr, base_frees);
+                if (not bases.empty()) {
+                    last_access.insert(make_pair(instr, bases));
+                    for (bh_base *base: bases) {
+                        base_frees.erase(base);
+                    }
                 }
             }
         }
+    }
 
-        // Let's try to simplify the shape of the instruction
-        if (instr.max_ndim() >  1 and instr.reshapable()) {
-            const vector<int64_t> dominating_shape = instr.dominating_shape();
-            assert(dominating_shape.size() > 0);
-
-            const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
-                                                      std::multiplies<int64_t>());
-            const vector<int64_t> shape = {totalsize};
-            instr.reshape(shape);
+    // Simplify and move BH_FREE's up the list
+    vector<InstrPtr> ret;
+    for (const bh_instruction *instr: instr_list) {
+        if (util::exist(instr_frees, instr)) {
+            continue; // Skipping frees that were moved
         }
+        // Simplify and insert a regular instruction
+        {
+            bh_instruction instr_simply(*instr);
+            simplify_instr(instr_simply);
+            ret.push_back(std::make_shared<const bh_instruction>(instr_simply));
+        }
+        // Insert BH_FREE's after the instruction that last accesses them
+        if (util::exist(last_access, instr)) {
+            for (bh_base *base: last_access.at(instr)) {
+                ret.push_back(std::make_shared<const bh_instruction>(*base2frees_instr.at(base)));
+            }
+            last_access.erase(instr);
+        }
+    }
+    return ret;
+}
+
+vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
+    const vector<InstrPtr> instr_list_simply = simplify_instr_list(instr_list);
+    vector<vector<InstrPtr> > block_lists;
+    for (auto it = instr_list_simply.begin(); it != instr_list_simply.end(); ) {
+        block_lists.push_back({*it});
+        vector<InstrPtr> &block = block_lists.back();
+        if (bh_opcode_is_system((*it)->opcode)) {
+            // We should not make blocks that start with a sysop since we only have LoopB::insert_system_after()
+            continue;
+        }
+        ++it;
+        // Let's search for fully fusible blocks
+        for (; it != instr_list_simply.end(); ++it) {
+            if (fully_fusible(block, *it)) {
+                block.push_back(*it);
+            } else {
+                break;
+            }
+        }
+    }
+
+    // Convert the block list to real Blocks
+    vector<Block> ret;
+    for (const vector<InstrPtr> &block: block_lists) {
+        ret.push_back(create_nested_block(block));
+    }
+    return ret;
+}
+
+vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
+
+    const vector<InstrPtr> instr_list_simply = simplify_instr_list(instr_list);
+
+    // Creates the _block_list based on the instr_list
+    vector<Block> block_list;
+    for (auto it=instr_list_simply.begin(); it != instr_list_simply.end(); ++it) {
+        const InstrPtr &instr = *it;
+        const int nop = bh_noperands(instr->opcode);
+        if (nop == 0)
+            continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
+
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        const vector<int64_t> dominating_shape = instr->dominating_shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
-        vector<InstrPtr> single_instr = {std::make_shared<bh_instruction>(instr)};
+        vector<InstrPtr> single_instr = {instr};
         block_list.push_back(create_nested_block(single_instr, 0, size_of_rank_dim));
     }
     return block_list;

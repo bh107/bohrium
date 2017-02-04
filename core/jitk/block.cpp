@@ -59,25 +59,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
 
     // Let's reshape the instruction to match 'size_of_rank_dim'
     if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
-        vector<int64_t> shape((size_t) rank + 1);
-        // The dimensions up til 'rank' (not including 'rank') are unchanged
-        for (int64_t r = 0; r < rank; ++r) {
-            shape[r] = instr->operand[0].shape[r];
-        }
-        int64_t size = 1; // The size of the reshapeable block
-        for (int64_t r = rank; r < instr->operand[0].ndim; ++r) {
-            size *= instr->operand[0].shape[r];
-        }
-        assert(size >= size_of_rank_dim);
-        shape[rank] = size_of_rank_dim;
-        if (size != size_of_rank_dim) { // We might have to add an extra dimension
-            if (size % size_of_rank_dim != 0)
-                throw runtime_error("add_instr_to_block(): shape is not divisible with 'size_of_rank_dim'");
-            shape.push_back(size / size_of_rank_dim);
-        }
-        bh_instruction instr_reshaped = bh_instruction(*instr);
-        instr_reshaped.reshape(shape);
-        instr.reset(new bh_instruction(instr_reshaped));
+        instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
     vector<int64_t> shape = instr->dominating_shape();
@@ -461,6 +443,42 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
     return ret;
 }
 
+
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
+    if (instr_list.empty()) {
+        throw runtime_error("create_nested_block: 'instr_list' is empty!");
+    }
+    if (bh_opcode_is_system(instr_list[0]->opcode)) {
+        throw runtime_error("create_nested_block: first instruction is a sysop!");
+    }
+    const int ndim = (int) instr_list[0]->max_ndim();
+    const vector<int64_t> shape = instr_list[0]->dominating_shape();
+    assert(ndim > rank);
+
+    LoopB ret_loop;
+    ret_loop.rank = rank;
+    ret_loop.size = shape[rank];
+    if (rank == ndim - 1) { // The innermost rank
+        ret_loop.rank = ndim-1;
+        ret_loop.size = shape[ndim-1];
+        for (InstrPtr instr: instr_list) {
+            if (bh_opcode_is_system(instr->opcode)) {
+                bh_instruction tmp = *instr;
+                tmp.reshape_force(shape);
+                ret_loop._block_list.emplace_back(tmp, ndim);
+            } else {
+                ret_loop._block_list.emplace_back(*instr, ndim);
+            }
+            assert(ret_loop._block_list.back().getInstr()->dominating_shape() == shape);
+        }
+    } else {
+        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1));
+    }
+    ret_loop.metadata_update();
+    assert(ret_loop.validation());
+    return Block(std::move(ret_loop));
+}
+
 Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim) {
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
@@ -588,6 +606,16 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
 }
 } // Unnamed namespace
 
+// Reshape 'l1' to match 'size_of_rank_dim' at 'l1.rank'
+Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
+    assert(l1._reshapable);
+    vector<InstrPtr> instr_list;
+    for (const InstrPtr &instr: l1.getAllInstr()) {
+        instr_list.push_back(reshape_rank(instr, l1.rank, size_of_rank_dim));
+    }
+    return create_nested_block(instr_list, l1.rank);
+}
+
 // Reshape and merges the two loop blocks 'l1' and 'l2' (in that order).
 // Returns a new block and a flag indicating whether the merge were possible
 pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
@@ -601,18 +629,16 @@ pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     }
     // Let's try to reshape 'l2' to see if it can match the shape of 'l1'
     if (l2._reshapable && l2.size % l1.size == 0) {
-        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
-        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
-        if (data_parallel_compatible(l1, create_nested_block(l2_instrs, l1.rank, l1.size).getLoop())) {
-            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l1.size), true);
+        const LoopB new_l2 = reshape(l2, l1.size).getLoop();
+        if (data_parallel_compatible(l1, new_l2)) {
+            return make_pair(Block(merge(l1, new_l2)), true);
         }
     }
     // Let's try to reshape 'l1' to see if it can match the shape of 'l2'
     if (l1._reshapable && l1.size % l2.size == 0) {
-        const vector<InstrPtr> l1_instrs = l1.getAllInstr();
-        const vector<InstrPtr> l2_instrs = l2.getAllInstr();
-        if (data_parallel_compatible(create_nested_block(l1_instrs, l1.rank, l2.size).getLoop(), l2)) {
-            return make_pair(create_nested_block(util::vector_cat(l1_instrs, l2_instrs), l1.rank, l2.size), true);
+        const LoopB new_l1 = reshape(l1, l2.size).getLoop();
+        if (data_parallel_compatible(new_l1, l2)) {
+            return make_pair(Block(merge(new_l1, l2)), true);
         }
     }
     return make_pair(Block(), false); // No match found

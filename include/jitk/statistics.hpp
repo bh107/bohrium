@@ -57,7 +57,10 @@ class Statistics {
     uint64_t kernel_cache_misses=0;
     uint64_t fuser_cache_lookups=0;
     uint64_t fuser_cache_misses=0;
+    uint64_t num_instrs_into_fuser=0;
+    uint64_t num_blocks_out_of_fuser=0;
     std::chrono::duration<double> time_total_execution{0};
+    std::chrono::duration<double> time_pre_fusion{0};
     std::chrono::duration<double> time_fusion{0};
     std::chrono::duration<double> time_exec{0};
     std::chrono::duration<double> time_compile{0};
@@ -74,22 +77,24 @@ class Statistics {
         const chrono::duration<double> wallclock{chrono::steady_clock::now() - time_started};
 
         out << "[" << backend_name << "] Profiling: \n";
-        out << "\tFuse Cache Hits:     " << pprint_ratio(fuser_cache_lookups - fuser_cache_misses, fuser_cache_lookups) << "\n";
-        out << "\tKernel Cache Hits    " << pprint_ratio(kernel_cache_lookups - kernel_cache_misses, kernel_cache_lookups) << "\n";
-        out << "\tArray contractions:  " << pprint_ratio(num_temp_arrays, num_base_arrays) << "\n";
-        out << "\tMaximum Memory Usage: " << max_memory_usage / 1024 / 1024 << " MB\n";
-        out << "\tSyncs to NumPy: " << num_syncs << "\n";
-        out << "\tTotal Work: " << (double) totalwork << " operations\n";
+        out << "\tFuse cache hits:    " << pprint_ratio(fuser_cache_lookups - fuser_cache_misses, fuser_cache_lookups) << "\n";
+        out << "\tKernel cache hits   " << pprint_ratio(kernel_cache_lookups - kernel_cache_misses, kernel_cache_lookups) << "\n";
+        out << "\tArray contractions: " << pprint_ratio(num_temp_arrays, num_base_arrays) << "\n";
+        out << "\tOuter-fusion ratio: " << pprint_ratio(num_blocks_out_of_fuser, num_instrs_into_fuser) << "\n";
+        out << "\tMax memory usage:   " << max_memory_usage / 1024 / 1024 << " MB\n";
+        out << "\tSyncs to NumPy:     " << num_syncs << "\n";
+        out << "\tTotal Work:         " << (double) totalwork << " operations\n";
         out << "\tWork below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%\n";
-        out << "\tWall clock:  " << wallclock.count() << "s\n";
-        out << "\tThroughput:  " << totalwork / (double)wallclock.count() << "ops\n";
+        out << "\tWall clock:       " << wallclock.count() << "s\n";
+        out << "\tThroughput:       " << totalwork / (double)wallclock.count() << "ops\n";
         out << "\tTotal Execution:  " << time_total_execution.count() << "s\n";
-        out << "\t  Fusion:    " << time_fusion.count() << "s\n";
-        out << "\t  Compile:   " << time_compile.count() << "s\n";
-        out << "\t  Exec:      " << time_exec.count() << "s\n";
-        out << "\t  Copy2dev:  " << time_copy2dev.count() << "s\n";
-        out << "\t  Copy2host: " << time_copy2host.count() << "s\n";
-        out << "\t  Offload:   " << time_offload.count() << "s\n";
+        out << "\t  Pre-fusion: " << time_pre_fusion.count() << "s\n";
+        out << "\t  Fusion:     " << time_fusion.count() << "s\n";
+        out << "\t  Compile:    " << time_compile.count() << "s\n";
+        out << "\t  Exec:       " << time_exec.count() << "s\n";
+        out << "\t  Copy2dev:   " << time_copy2dev.count() << "s\n";
+        out << "\t  Copy2host:  " << time_copy2host.count() << "s\n";
+        out << "\t  Offload:    " << time_offload.count() << "s\n";
         out << endl;
     }
 

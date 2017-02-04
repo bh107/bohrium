@@ -30,6 +30,13 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+// Creates an instruction of 'InstrPtr' from an instruction list
+std::vector<InstrPtr> simplify_instr_list(const std::vector<bh_instruction *> &instr_list);
+
+// Creates a block list based on the 'instr_list' where only fully fusible instructions
+// are fused
+std::vector<Block> pre_fuser_lossy(const std::vector<bh_instruction *> &instr_list);
+
 // Creates a block list based on the 'instr_list' where each instruction gets its own nested block
 // NB: this function might reshape the instructions in 'instr_list'
 std::vector<Block> fuser_singleton(const std::vector<bh_instruction *> &instr_list);

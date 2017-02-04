@@ -274,7 +274,11 @@ public:
 // Merge the two loop blocks, 'a' and 'b', in that order.
 LoopB merge(const LoopB &a, const LoopB &b);
 
-// Create a nested block based on 'instr_list' with the sets of new, free, and temp arrays given.
+// Create a nested block based on 'instr_list' fully (from 'rank' to the innermost block)
+// NB: ALL instructions (excl. sysop) must be fusible and have the same dominating shape.
+Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0);
+
+// Create a nested block based on 'instr_list' partially (only 'rank' dimension.
 // The dimensions from zero to 'rank-1' are ignored.
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
 Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim);

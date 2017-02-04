@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include <bh_instruction.hpp>
+#include <jitk/block.hpp>
 
 #include "base_db.hpp"
 
@@ -49,6 +50,10 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &o
 // 'syncs' and 'frees' are the sets of arrays that were removed.
 std::vector<bh_instruction*> remove_non_computed_system_instr(std::vector<bh_instruction> &instr_list,
                                                               std::set<bh_base *> &syncs, std::set<bh_base *> &frees);
+
+// Reshape 'instr' to match 'size_of_rank_dim' at the 'rank' dimension.
+// The dimensions from zero to 'rank-1' are untouched.
+InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim);
 
 } // jitk
 } // bohrium
