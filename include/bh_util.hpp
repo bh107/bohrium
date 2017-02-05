@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 #include <vector>
 #include <type_traits>
 
@@ -58,6 +59,12 @@ bool exist_nconst(container_type &container, element_type &element) {
 template <typename container_type, typename element_type>
 bool exist(container_type &container, element_type &element) {
     return container.find(element) != container.end();
+}
+
+// Checks if 'element' is in 'container' by searching through the container linearly
+template <typename container_type, typename element_type>
+bool exist_linearly(container_type &container, element_type &element) {
+    return std::find(container.begin(), container.end(), element) != container.end();
 }
 
 } // util
