@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <bh_array.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/kernel.hpp>
 
 #include "cl.hpp"
 
@@ -91,26 +92,33 @@ public:
 
     // Copy 'bases' to the device (ignoring bases that is already on the device)
     template <typename T>
-    void copyToDevice(T &bases) {
+    void copyListToDevice(T &bases) {
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: bases) {
-            if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                cl::Buffer *b = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                buffers[base].reset(b);
-
-                // If the host data is non-null we should copy it to the device
-                if (base->data != NULL) {
-                    if (verbose) {
-                        std::cout << "Copy to device: " << *base << std::endl;
-                    }
-                    queue.enqueueWriteBuffer(*b, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
-                }
-            }
+            copyToDevice(base);
         }
         queue.finish();
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
 
+    template <typename T>
+    cl::Buffer* copyToDevice(T &base) {
+        if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+            cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+            buffers[base].reset(buf);
+
+            // If the host data is non-null we should copy it to the device
+            if (base->data != NULL) {
+                if (verbose) {
+                    std::cout << "Copy to device: " << *base << std::endl;
+                }
+                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+            }
+
+            return buf;
+        }
+        return NULL;
+    }
 };
 
 

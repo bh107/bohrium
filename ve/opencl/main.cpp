@@ -348,7 +348,7 @@ void Impl::execute(bh_ir *bhir) {
         if (kernel_is_computing) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
-            engine.copyToDevice(kernel.getNonTemps());
+            engine.copyListToDevice(kernel.getNonTemps());
 
             if (config.defaultGet<bool>("prof", false)) {
                 // Let's check the current memory usage on the device
