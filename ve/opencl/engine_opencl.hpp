@@ -119,9 +119,31 @@ public:
         }
         return NULL;
     }
+
+    template <typename T>
+    cl::Buffer* getBuffer(T &base) {
+        if(buffers.find(base) != buffers.end()) {
+            return &(*buffers[base]);
+        } else {
+            return copyToDevice(base);
+        }
+    }
+
+    // Get C buffer from wrapped C++ object
+    template <typename T>
+    cl_mem getCBuffer(T &base) {
+        return (*getBuffer(base))();
+    }
+
+    cl::CommandQueue* getQueue() {
+        return &queue;
+    }
+
+    // Get C command queue from wrapped C++ object
+    cl_command_queue getCQueue() {
+        return queue();
+    }
 };
-
-
 
 } // bohrium
 
