@@ -6,7 +6,7 @@
 #include <set>
 
 #include "bh_opcode.h"
-#include <bh_array.hpp>
+#include <bh_view.hpp>
 #include "bh_error.h"
 
 // Forward declaration of class boost::serialization::access

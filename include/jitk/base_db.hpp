@@ -26,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <sstream>
 
-#include <bh_array.hpp>
+#include <bh_view.hpp>
 #include <bh_util.hpp>
 
 #include <jitk/kernel.hpp>

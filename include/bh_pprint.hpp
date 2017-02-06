@@ -24,7 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 #include <bh_opcode.h>
-#include <bh_array.hpp>
+#include <bh_view.hpp>
 #include <bh_error.h>
 #include <bh_ir.hpp>
 #include <bh_type.h>
