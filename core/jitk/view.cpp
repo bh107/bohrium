@@ -28,26 +28,12 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-void write_array_subscription(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
-                              int hidden_axis, const pair<int, int> axis_offset) {
-    assert(view.base != NULL); // Not a constant
-
-    // Let's check if the index is already declared as a variable
-    if (not ignore_declared_indexes) {
-        if (scope.isIdxDeclared(view)) {
-            out << "[";
-            scope.getIdxName(view, out);
-            out << "]";
-            return;
-        }
-    }
-
+void write_array_index(const Scope &scope, const bh_view &view, stringstream &out,
+                       int hidden_axis, const pair<int, int> axis_offset) {
     bool empty_subscription = true;
     if (view.start > 0) {
-        out << "[" << view.start;
+        out << view.start;
         empty_subscription = false;
-    } else {
-        out << "[";
     }
     if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
         for (int i = 0; i < view.ndim; ++i) {
@@ -69,6 +55,23 @@ void write_array_subscription(const Scope &scope, const bh_view &view, stringstr
     }
     if (empty_subscription)
         out << "0";
+}
+
+void write_array_subscription(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
+                              int hidden_axis, const pair<int, int> axis_offset) {
+    assert(view.base != NULL); // Not a constant
+
+    // Let's check if the index is already declared as a variable
+    if (not ignore_declared_indexes) {
+        if (scope.isIdxDeclared(view)) {
+            out << "[";
+            scope.getIdxName(view, out);
+            out << "]";
+            return;
+        }
+    }
+    out << "[";
+    write_array_index(scope, view, out, hidden_axis, axis_offset);
     out << "]";
 }
 
