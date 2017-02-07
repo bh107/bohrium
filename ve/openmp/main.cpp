@@ -261,6 +261,9 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list) {
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
+    const bool verbose = config.defaultGet<bool>("verbose", false);
+    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+
     // Some statistics
     stat.record(bhir->instr_list);
 
@@ -355,11 +358,16 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
         const SymbolTable symbols(kernel.getAllInstr());
-        const vector<const bh_view*> offset_strides = kernel.getOffsetAndStrides();
 
         // Debug print
-        if (config.defaultGet<bool>("verbose", false))
+        if (verbose)
             cout << kernel.block;
+
+        // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
+        vector<const bh_view*> offset_strides;
+        if (strides_as_variables) {
+            offset_strides = kernel.getOffsetAndStrides();
+        }
 
         // Code generation
         stringstream ss;
@@ -391,7 +399,7 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         auto texec = chrono::steady_clock::now();
-        // Call the launcher function with the 'data_list', which will execute the kernel
+        // Call the launcher function with the 'data_list' and 'offset_and_strides', which will execute the kernel
         func(&data_list[0], &offset_and_strides[0]);
         stat.time_exec += chrono::steady_clock::now() - texec;
 

@@ -132,9 +132,12 @@ private:
     std::set<bh_base*> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
     std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
     std::set<bh_view, idx_less> _declared_idx; // Set of indexes that have been locally declared
+public:
     // Should we declare scalar variables using the volatile keyword?
     const bool use_volatile;
-public:
+    // Should we use offset and strides as variables?
+    const bool strides_as_variables;
+
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
           const Scope *parent,
@@ -142,7 +145,8 @@ public:
           const T1 &scalar_replacements_rw,
           const T2 &scalar_replacements_r,
           const ConfigParser &config) : symbols(symbols), parent(parent), _tmps(tmps),
-                                        use_volatile(config.defaultGet<bool>("volatile", false)) {
+                                        use_volatile(config.defaultGet<bool>("volatile", false)),
+                                        strides_as_variables(config.defaultGet<bool>("strides_as_variables", true)) {
         for(const bh_view* view: scalar_replacements_rw) {
             _scalar_replacements_rw.insert(view->base);
         }

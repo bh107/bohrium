@@ -217,6 +217,7 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
+    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
@@ -298,7 +299,6 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
         const SymbolTable symbols(kernel.getAllInstr());
-        const vector<const bh_view*> offset_strides = kernel.getOffsetAndStrides();
 
         // Debug print
         if (verbose) {
@@ -360,6 +360,12 @@ void Impl::execute(bh_ir *bhir) {
                     sum += bh_base_size(b.first);
                 }
                 stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
+            }
+
+            // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
+            vector<const bh_view*> offset_strides;
+            if (strides_as_variables) {
+                offset_strides = kernel.getOffsetAndStrides();
             }
 
             // Code generation
