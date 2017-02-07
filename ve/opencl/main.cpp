@@ -122,7 +122,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
                         stringstream &ss) {
 
     // Write the need includes
-    ss << "#pragma OPENCL EXTENSION cl_khr_fp64: enable\n";
+    ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     ss << "#include <kernel_dependencies/complex_operations.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
     if (kernel.useRandom()) { // Write the random function
@@ -199,14 +199,9 @@ void Impl::execute(bh_ir *bhir) {
                 b.instr_list = instr_list;
                 this->execute(&b);
                 instr_list.clear();
-                // Make sure that the bases the extension method accesses are moved to the host
-                set<bh_base *> ext_bases = instr.get_bases();
-                engine.copyToHost(ext_bases);
-                for(bh_base *base: ext_bases) {
-                    engine.buffers.erase(base);
-                }
+
                 // Execute the extension method
-                ext->second.execute(&instr, NULL);
+                ext->second.execute(&instr, &engine);
             } else {
                 instr_list.push_back(instr);
             }
@@ -348,7 +343,7 @@ void Impl::execute(bh_ir *bhir) {
         if (kernel_is_computing) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
-            engine.copyToDevice(kernel.getNonTemps());
+            engine.copyListToDevice(kernel.getNonTemps());
 
             if (config.defaultGet<bool>("prof", false)) {
                 // Let's check the current memory usage on the device
@@ -388,4 +383,3 @@ void Impl::execute(bh_ir *bhir) {
     }
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
-

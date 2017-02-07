@@ -46,7 +46,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
 
     //get default device of the default platform
     vector<cl::Device> devices;
-    default_platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+    default_platform.getDevices(CL_DEVICE_TYPE_DEFAULT, &devices);
     if(devices.size()==0){
         throw runtime_error("No OpenCL device found");
     }
@@ -143,4 +143,3 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
 }
 
 } // bohrium
-

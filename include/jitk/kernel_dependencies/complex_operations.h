@@ -104,8 +104,8 @@ If not, see <http://www.gnu.org/licenses/>.
                      sini = sincos(a.s1, &cosi);                \
                      r.s0 = cosh(a.s0)*cosi;                    \
                      r.s1 = sinh(a.s0)*sini; }
-#define CTANH(t,r,a) r.s0 = 2.0*a.s0;                            \
-                     r.s1 = 2.0*a.s1;                            \
+#define CTANH(t,r,a) r.s0 = 2.0*a.s0;                           \
+                     r.s1 = 2.0*a.s1;                           \
                      if (fabs(r.s0) > logmax##t) {              \
                          r.s0 = (r.s0 > 0.0 ? 1.0 : -1.0);      \
                          r.s1 = 0.0;                            \
@@ -114,5 +114,4 @@ If not, see <http://www.gnu.org/licenses/>.
                          r.s0 = sinh(r.s0) / d;                 \
                          r.s1 = sin(r.s1) / d;                  \
                      }
-
 #endif
