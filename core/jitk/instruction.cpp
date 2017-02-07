@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/base_db.hpp>
+#include <jitk/view.hpp>
 
 using namespace std;
 
@@ -463,50 +464,6 @@ void dtype_min(bh_type dtype, stringstream &out) {
 }
 
 } // Anon namespace
-
-void write_array_subscription(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
-                              int hidden_axis, const pair<int, int> axis_offset) {
-    assert(view.base != NULL); // Not a constant
-
-    // Let's check if the index is already declared as a variable
-    if (not ignore_declared_indexes) {
-        if (scope.isIdxDeclared(view)) {
-            out << "[";
-            scope.getIdxName(view, out);
-            out << "]";
-            return;
-        }
-    }
-
-    bool empty_subscription = true;
-    if (view.start > 0) {
-        out << "[" << view.start;
-        empty_subscription = false;
-    } else {
-        out << "[";
-    }
-    if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
-        for (int i = 0; i < view.ndim; ++i) {
-            int t = i;
-            if (i >= hidden_axis)
-                ++t;
-            if (view.stride[i] != 0) {
-                if (axis_offset.first == t) {
-                    out << " +(i" << t << "+(" << axis_offset.second << ")) ";
-                } else {
-                    out << " +i" << t;
-                }
-                if (view.stride[i] != 1) {
-                    out << "*" << view.stride[i];
-                }
-                empty_subscription = false;
-            }
-        }
-    }
-    if (empty_subscription)
-        out << "0";
-    out << "]";
-}
 
 void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
     if (bh_opcode_is_system(instr.opcode)) {
