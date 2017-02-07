@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <chrono>
 
 #include <bh_config_parser.hpp>
-#include <bh_array.hpp>
+#include <bh_view.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/kernel.hpp>
 

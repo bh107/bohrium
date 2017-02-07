@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_ARRAY_H
-#define __BH_ARRAY_H
+#ifndef __BH_VIEW_H
+#define __BH_VIEW_H
 
 #include <algorithm>
 #include <stdbool.h>
@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <tuple>
 #include "bh_type.h"
+#include "bh_base.hpp"
 #include <bh_constant.hpp>
 #include "bh_error.h"
 #include "bh_win.h"
@@ -41,43 +42,6 @@ namespace boost {namespace serialization {class access;}}
 
 #define BH_MAXDIM (16)
 
-struct bh_base
-{
-    /// Pointer to the actual data.
-    bh_data_ptr   data;
-
-    /// The type of data in the array
-    bh_type       type;
-
-    /// The number of elements in the array
-    bh_index      nelem;
-
-    // Returns an unique ID of this base array
-    unsigned int get_label() const;
-
-    // Returns pprint string of this base array
-    std::string str() const;
-
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
-    {
-        size_t tmp = (size_t)data;
-        ar << tmp;
-        ar & type;
-        ar & nelem;
-    }
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version)
-    {
-        size_t tmp;
-        ar >> tmp;
-        data = (void*)tmp;
-        ar & type;
-        ar & nelem;
-    }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-};
-
 //Implements pprint of base arrays
 DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_base& b);
 
@@ -87,8 +51,10 @@ struct bh_view
     bh_view(const bh_view& view)
     {
         base = view.base;
-        if(base == NULL)
+        if(base == NULL) {
             return; //'view' is a constant thus the rest are garbage
+        }
+
         start = view.start;
         ndim = view.ndim;
         assert(ndim < BH_MAXDIM);
@@ -137,16 +103,17 @@ struct bh_view
         if (other.start < start) return false;
         if (ndim < other.ndim) return true;
         if (other.ndim < ndim) return false;
-        for (bh_intp i = 0; i < ndim; ++i)
-        {
+
+        for (bh_intp i = 0; i < ndim; ++i) {
             if (shape[i] < other.shape[i]) return true;
             if (other.shape[i] < shape[i]) return false;
         }
-        for (bh_intp i = 0; i < ndim; ++i)
-        {
+
+        for (bh_intp i = 0; i < ndim; ++i) {
             if (stride[i] < other.stride[i]) return true;
             if (other.stride[i] < stride[i]) return false;
         }
+
         return false;
     }
 
@@ -156,10 +123,19 @@ struct bh_view
         if (base != other.base) return false;
         if (ndim != other.ndim) return false;
         if (start != other.start) return false;
-        for (bh_intp i = 0; i < ndim; ++i)
-            if (shape[i] != other.shape[i]) return false;
-        for (bh_intp i = 0; i < ndim; ++i)
-            if (stride[i] != other.stride[i]) return false;
+
+        for (bh_intp i = 0; i < ndim; ++i) {
+            if (shape[i] != other.shape[i]) {
+                return false;
+            }
+        }
+
+        for (bh_intp i = 0; i < ndim; ++i) {
+            if (stride[i] != other.stride[i]) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -175,8 +151,7 @@ struct bh_view
         ar << tmp;
         ar & start;
         ar & ndim;
-        for(bh_intp i=0; i<ndim; ++i)
-        {
+        for(bh_intp i = 0; i < ndim; ++i) {
             ar & shape[i];
             ar & stride[i];
         }
@@ -189,8 +164,8 @@ struct bh_view
         base = (bh_base*)tmp;
         ar & start;
         ar & ndim;
-        for(bh_intp i=0; i<ndim; ++i)
-        {
+
+        for(bh_intp i = 0; i < ndim; ++i) {
             ar & shape[i];
             ar & stride[i];
         }
@@ -211,12 +186,6 @@ DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
 DLLEXPORT bh_error bh_create_base(bh_type    type,
                                   bh_index   nelements,
                                   bh_base**  new_base);
-
-/** Destroy the base array.
- *
- * @param base  The base array in question
- */
-DLLEXPORT void bh_destroy_base(bh_base**  base);
 
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
@@ -254,16 +223,8 @@ bh_index bh_nelements_nbcast(const bh_view *view);
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-DLLEXPORT bh_index bh_nelements(bh_intp ndim,
-                                const bh_index shape[]);
+DLLEXPORT bh_index bh_nelements(bh_intp ndim, const bh_index shape[]);
 DLLEXPORT bh_index bh_nelements(const bh_view& view);
-
-/* Size of the base array in bytes
- *
- * @base    The base in question
- * @return  The size of the base array in bytes
- */
-bh_index bh_base_size(const bh_base *base);
 
 /* Set the view stride to contiguous row-major
  *
@@ -296,22 +257,6 @@ DLLEXPORT bh_error bh_data_set(bh_view* view, bh_data_ptr data);
  * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
 DLLEXPORT bh_error bh_data_get(bh_view* view, bh_data_ptr* result);
-
-/* Allocate data memory for the given base if not already allocated.
- * For convenience, the base is allowed to be NULL.
- *
- * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
- */
-DLLEXPORT bh_error bh_data_malloc(bh_base* base);
-
-/* Frees data memory for the given view.
- * For convenience, the view is allowed to be NULL.
- *
- * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR)
- */
-bh_error bh_data_free(bh_base* base);
 
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *
@@ -384,6 +329,5 @@ DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b
  * @return The boolean answer
  */
 DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
-
 
 #endif

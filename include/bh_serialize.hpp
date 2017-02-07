@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
-#include <bh_array.hpp>
+#include <bh_view.hpp>
 #include <bh_ir.hpp>
 #include <bh_instruction.hpp>
 
