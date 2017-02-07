@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_view.hpp>
 #include <bh_util.hpp>
+#include <bh_config_parser.hpp>
 
 #include <jitk/kernel.hpp>
 
@@ -112,7 +113,8 @@ public:
           const std::set<bh_base *> &tmps,
           const T1 &scalar_replacements_rw,
           const T2 &scalar_replacements_r,
-          bool use_volatile) : symbols(symbols), parent(parent), _tmps(tmps), use_volatile(use_volatile) {
+          const ConfigParser &config) : symbols(symbols), parent(parent), _tmps(tmps),
+                                        use_volatile(config.defaultGet<bool>("volatile", false)) {
         for(const bh_view* view: scalar_replacements_rw) {
             _scalar_replacements_rw.insert(view->base);
         }
