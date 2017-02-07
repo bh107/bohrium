@@ -32,8 +32,12 @@ namespace bohrium {
 namespace jitk {
 
 // Write the array index, e.g. (2+i0*1+i1*10), but ignore the loop-variant of 'hidden_axis' if it isn't 'BH_MAXDIM'
+// Use 'axis_offset' to offset an axis, which is needed for accumulate
 void write_array_index(const Scope &scope, const bh_view &view, std::stringstream &out, int hidden_axis = BH_MAXDIM,
                        const std::pair<int, int> axis_offset = std::make_pair(BH_MAXDIM, 0));
+
+void write_array_index_variables(const Scope &scope, const bh_view &view, std::stringstream &out, int hidden_axis = BH_MAXDIM,
+                                 const std::pair<int, int> axis_offset = std::make_pair(BH_MAXDIM, 0));
 
 // Write the array subscription, e.g. A[2+i0*1+i1*10], but ignore the loop-variant of 'hidden_axis' if it isn't 'BH_MAXDIM'
 void write_array_subscription(const Scope &scope, const bh_view &view, std::stringstream &out,

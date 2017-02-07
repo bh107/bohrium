@@ -34,7 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
-typedef void (*KernelFunction)(void* data_list[]);
+typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[]);
 
 class Store {
   private:

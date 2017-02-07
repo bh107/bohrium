@@ -30,7 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_config_parser.hpp>
 
-#include <jitk/kernel.hpp>
+#include <jitk/block.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -55,11 +55,31 @@ struct idx_less {
     }
 };
 
+// Compare class for the OffsetAndStrides sets and maps
+struct OffsetAndStrides_less {
+    // This compare is the same as view compare ('v1 < v2') but ignoring their bases
+    bool operator() (const bh_view& v1, const bh_view& v2) const {
+        if (v1.ndim < v2.ndim) return true;
+        if (v2.ndim < v1.ndim) return false;
+        if (v1.start < v2.start) return true;
+        if (v2.start < v1.start) return false;
+        for (bh_intp i = 0; i < v1.ndim; ++i) {
+            if (v1.stride[i] < v2.stride[i]) return true;
+            if (v2.stride[i] < v1.stride[i]) return false;
+        }
+        return false;
+    }
+    bool operator() (const bh_view* v1, const bh_view* v2) const {
+        return (*this)(*v1, *v2);
+    }
+};
+
 class SymbolTable {
 private:
     std::map<bh_base*, size_t> _base_map; // Mapping a base to its ID
     std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
+    std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
 
 public:
     SymbolTable(const std::vector<InstrPtr> &instr_list) {
@@ -70,6 +90,7 @@ public:
                 _base_map.insert(std::make_pair(view->base, _base_map.size()));
                 _view_map.insert(std::make_pair(*view, _view_map.size()));
                 _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+                _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
             }
         }
     };
@@ -85,17 +106,24 @@ public:
     size_t idxID(const bh_view &index) const {
         return _idx_map.at(index);
     }
-    // Get the ID of 'index', throws exception if 'index' doesn't exist
+    // Check if 'index' exist
     size_t existIdxID(const bh_view &index) const {
         return util::exist(_idx_map, index);
+    }
+    // Get the offset-and-strides ID of 'view', throws exception if 'view' doesn't exist
+    size_t offsetStridesID(const bh_view &view) const {
+        return _offset_strides_map.at(view);
+    }
+    size_t existOffsetStridesID(const bh_view &view) const {
+        return util::exist(_offset_strides_map,view);
     }
 };
 
 class Scope {
-private:
+public:
     const SymbolTable &symbols;
     const Scope * const parent;
-
+private:
     std::set<bh_base*> _tmps; // Set of temporary arrays
     std::set<bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
     std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays

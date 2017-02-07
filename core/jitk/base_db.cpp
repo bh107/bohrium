@@ -33,7 +33,11 @@ void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, str
     out << "const " << type_str << " ";
     getIdxName(view, out);
     out << "= (";
-    write_array_index(*this, view, out);
+    if (isArray(view) and symbols.existOffsetStridesID(view)) {
+        write_array_index_variables(*this, view, out);
+    } else {
+        write_array_index(*this, view, out);
+    }
     out << ");";
 }
 

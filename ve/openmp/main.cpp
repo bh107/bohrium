@@ -163,7 +163,8 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
+void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+                  const vector<const bh_view*> &offset_strides, stringstream &ss) {
 
     // Make sure all arrays are allocated
     for (bh_base *base: kernel.getNonTemps()) {
@@ -186,9 +187,16 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     ss << "void execute(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        ss << write_c99_type(b->type) << " a" << symbols.baseID(b) << "[static " << b->nelem << "]";
+        ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
+        }
+    }
+    // Let's find all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
+    for (const bh_view *view: offset_strides) {
+        ss << ", " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
+        for (int i=0; i<view->ndim; ++i) {
+            ss << ", " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
         }
     }
     ss << ") {\n";
@@ -201,7 +209,7 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
-        ss << "void launcher(void* data_list[]) {\n";
+        ss << "void launcher(void* data_list[], uint64_t offset_strides[]) {\n";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
@@ -215,6 +223,13 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << "a" << symbols.baseID(b);
             if (i+1 < kernel.getNonTemps().size()) {
                 ss << ", ";
+            }
+        }
+        uint64_t count=0;
+        for (const bh_view *view: offset_strides) {
+            ss << ", offset_strides[" << count++ << "]";
+            for (int i=0; i<view->ndim; ++i) {
+                ss << ", offset_strides[" << count++ << "]";
             }
         }
         ss << ");\n";
@@ -340,6 +355,7 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
         const SymbolTable symbols(kernel.getAllInstr());
+        const vector<const bh_view*> offset_strides = kernel.getOffsetAndStrides();
 
         // Debug print
         if (config.defaultGet<bool>("verbose", false))
@@ -347,7 +363,7 @@ void Impl::execute(bh_ir *bhir) {
 
         // Code generation
         stringstream ss;
-        write_kernel(kernel, symbols, config, ss);
+        write_kernel(kernel, symbols, config, offset_strides, ss);
 
         // Compile the kernel
         auto tbuild = chrono::steady_clock::now();
@@ -362,10 +378,21 @@ void Impl::execute(bh_ir *bhir) {
             assert(base->data != NULL);
             data_list.push_back(base->data);
         }
+        // And the offset-and-strides
+        vector<uint64_t> offset_and_strides;
+        offset_and_strides.reserve(offset_strides.size());
+        for (const bh_view *view: offset_strides) {
+            const uint64_t t = (uint64_t) view->start;
+            offset_and_strides.push_back(t);
+            for (int i=0; i<view->ndim; ++i) {
+                const uint64_t s = (uint64_t) view->stride[i];
+                offset_and_strides.push_back(s);
+            }
+        }
 
         auto texec = chrono::steady_clock::now();
         // Call the launcher function with the 'data_list', which will execute the kernel
-        func(&data_list[0]);
+        func(&data_list[0], &offset_and_strides[0]);
         stat.time_exec += chrono::steady_clock::now() - texec;
 
         // Finally, let's cleanup
