@@ -28,6 +28,29 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
+namespace {
+// Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
+cl::Device getDevice(const cl::Platform &platform) {
+    cl::Device ret;
+    vector<cl::Device> device_list;
+    platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
+    if(device_list.size()==0){
+        throw runtime_error("No OpenCL device found");
+    }
+    for (cl_device_type type_bitmask: {CL_DEVICE_TYPE_GPU,
+                                       CL_DEVICE_TYPE_ACCELERATOR,
+                                       CL_DEVICE_TYPE_DEFAULT,
+                                       CL_DEVICE_TYPE_CPU}) {
+        for (auto &device: device_list) {
+            if ((device.getInfo<CL_DEVICE_TYPE>() & type_bitmask) == type_bitmask) {
+                ret = device;
+            }
+        }
+    }
+    return ret;
+}
+}
+
 namespace bohrium {
 
 static boost::hash<string> hasher;
@@ -44,15 +67,10 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     cl::Platform default_platform=platforms[0];
     cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
 
-    //get default device of the default platform
-    vector<cl::Device> devices;
-    default_platform.getDevices(CL_DEVICE_TYPE_DEFAULT, &devices);
-    if(devices.size()==0){
-        throw runtime_error("No OpenCL device found");
-    }
-    default_device = devices[0];
-    cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() << endl;
-
+    //get the device of the default platform
+    default_device = getDevice(default_platform);
+    cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() \
+         << " ("<< default_device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")" << endl;
     vector<cl::Device> dev_list = {default_device};
     context = cl::Context(dev_list);
     queue = cl::CommandQueue(context, default_device);
