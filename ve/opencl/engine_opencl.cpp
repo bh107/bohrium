@@ -31,7 +31,6 @@ using namespace std;
 namespace {
 // Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
 cl::Device getDevice(const cl::Platform &platform) {
-    cl::Device ret;
     vector<cl::Device> device_list;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
     if(device_list.size()==0){
@@ -43,11 +42,11 @@ cl::Device getDevice(const cl::Platform &platform) {
                                        CL_DEVICE_TYPE_CPU}) {
         for (auto &device: device_list) {
             if ((device.getInfo<CL_DEVICE_TYPE>() & type_bitmask) == type_bitmask) {
-                ret = device;
+                return device;
             }
         }
     }
-    return ret;
+    throw runtime_error("No OpenCL device of usable type found");
 }
 }
 
