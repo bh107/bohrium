@@ -294,36 +294,7 @@ public:
     }
 
     // Write the variable declaration of the index calculation of 'view' using 'type_str' as the type string
-    template <typename T>
-    void writeIdxDeclaration(const bh_view &view, const std::string &type_str, T &out) {
-        assert(not isIdxDeclared(view));
-        _declared_idx.insert(view);
-        out << "const " << type_str << " ";
-        getIdxName(view, out);
-        out << "=";
-        bool empty_subscription = true;
-        if (view.start > 0) {
-            out << "(" << view.start;
-            empty_subscription = false;
-        } else {
-            out << "(";
-        }
-        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
-            for (int i = 0; i < view.ndim; ++i) {
-                int t = i;
-                if (view.stride[i] > 0) {
-                    out << " +i" << t;
-                    if (view.stride[i] != 1) {
-                        out << "*" << view.stride[i];
-                    }
-                    empty_subscription = false;
-                }
-            }
-        }
-        if (empty_subscription)
-            out << "0";
-        out << ");";
-    }
+    void writeIdxDeclaration(const bh_view &view, const std::string &type_str, std::stringstream &out);
 };
 
 
