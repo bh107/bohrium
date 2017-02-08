@@ -59,7 +59,7 @@ class Impl : public ComponentImplWithChild {
     EngineOpenCL engine;
     // Write an OpenCL kernel
     void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const vector<const LoopB *> &threaded_blocks,
-                      stringstream &ss);
+                      const vector<const bh_view*> &offset_strides, stringstream &ss);
 
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config.defaultGet("prof", false)),
@@ -119,7 +119,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
 }
 
 void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const vector<const LoopB *> &threaded_blocks,
-                        stringstream &ss) {
+                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -137,6 +137,13 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
         ss << "__global " << write_opencl_type(b->type) << " *a" << symbols.baseID(b);
         if (i+1 < kernel.getNonTemps().size()) {
             ss << ", ";
+        }
+    }
+    // Let's find all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
+    for (const bh_view *view: offset_strides) {
+        ss << ", " << write_opencl_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
+        for (int i=0; i<view->ndim; ++i) {
+            ss << ", " << write_opencl_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
         }
     }
     ss << ") {\n";
@@ -210,6 +217,7 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
+    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
@@ -354,9 +362,15 @@ void Impl::execute(bh_ir *bhir) {
                 stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
             }
 
+            // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
+            vector<const bh_view*> offset_strides;
+            if (strides_as_variables) {
+                offset_strides = kernel.getOffsetAndStrides();
+            }
+
             // Code generation
             stringstream ss;
-            write_kernel(kernel, symbols, threaded_blocks, ss);
+            write_kernel(kernel, symbols, threaded_blocks, offset_strides, ss);
 
             if (verbose) {
                 cout << "\n************ GPU Kernel ************\n" << ss.str()
@@ -364,7 +378,7 @@ void Impl::execute(bh_ir *bhir) {
             }
 
             // Let's execute the OpenCL kernel
-            engine.execute(ss.str(), kernel, threaded_blocks);
+            engine.execute(ss.str(), kernel, threaded_blocks, offset_strides);
         }
 
         // Let's copy sync'ed arrays back to the host

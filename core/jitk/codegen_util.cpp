@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <jitk/codegen_util.hpp>
+#include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
 
 using namespace std;
@@ -110,7 +111,7 @@ void write_loop_block(const SymbolTable &symbols,
 
     // And then create the scope
     Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs,
-                scalar_replaced_input_only, config.defaultGet<bool>("volatile", false));
+                scalar_replaced_input_only, config);
 
     // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
     // it should be declared before the for-loop

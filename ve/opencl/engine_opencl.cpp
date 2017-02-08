@@ -115,7 +115,8 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
 }
 
 void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel,
-                           const vector<const jitk::LoopB*> &threaded_blocks) {
+                           const vector<const jitk::LoopB*> &threaded_blocks,
+                           const vector<const bh_view*> &offset_strides) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
     cl::Program program;
@@ -150,6 +151,14 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         cl_uint i = 0;
         for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
             opencl_kernel.setArg(i++, *buffers.at(base));
+        }
+        for (const bh_view *view: offset_strides) {
+            uint64_t t1 = (uint64_t) view->start;
+            opencl_kernel.setArg(i++, t1);
+            for (int j=0; j<view->ndim; ++j) {
+                uint64_t t2 = (uint64_t) view->stride[j];
+                opencl_kernel.setArg(i++, t2);
+            }
         }
     }
     const auto ranges = NDRanges(threaded_blocks);
