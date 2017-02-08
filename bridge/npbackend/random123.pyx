@@ -374,9 +374,10 @@ cdef class RandomState:
             raise ValueError("low >= high")
         diff = high - low
         if size is None:
-            return dtype(self.random123(size,bohrium=bohrium) % diff) + low
+            return dtype(dtype(self.random123(size,bohrium=bohrium) % diff) + low)
         else:
-            return np.array(self.random123(size,bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low
+            return np.array(np.array(self.random123(size,bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low,
+                            dtype=dtype, bohrium=bohrium)
 
     def uniform(self, low=0.0, high=1.0, size=None, dtype=float, bohrium=True):
         """
@@ -632,7 +633,7 @@ cdef class RandomState:
         if high is None:
             high = low
             low = 1
-        return self.randint(low, high+1, size)
+        return self.randint(low, high+1, size, dtype=dtype, bohrium=bohrium)
 
     # Complicated, continuous distributions:
     def standard_normal(self, size=None, dtype=float, bohrium=True):
