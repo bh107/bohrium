@@ -106,10 +106,11 @@ def random_subscription(shape):
     return write_subscription(view), view_shape
 
 
-def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
+def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, samples_in_each_ndim=3,
+                      dtype="np.float32", bh_arg="BH", no_views=False):
     for cmd, shape in gen_arrays(random_state_name, max_ndim, max_dim, min_ndim, samples_in_each_ndim, dtype, bh_arg):
         yield ("%s" % cmd, shape)
-        if functools.reduce(operator.mul, shape) > 1:
+        if functools.reduce(operator.mul, shape) > 1 and not no_views:
             sub_tried = set()
             for _ in range(samples_in_each_ndim):
                 sub, vshape = random_subscription(shape)

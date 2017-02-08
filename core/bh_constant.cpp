@@ -31,6 +31,8 @@ using namespace std;
 int64_t bh_constant::get_int64() const
 {
     switch(type) {
+        case BH_BOOL:
+            return int64_t{value.bool8};
         case BH_INT8:
             return int64_t{value.int8};
         case BH_INT16:
@@ -209,7 +211,9 @@ bool bh_constant::operator==(const bh_constant& other) const
 
 void bh_constant::pprint(ostream& out, bool opencl) const
 {
-    if (bh_type_is_integer(type)) {
+    if (type == BH_BOOL) {
+        out << get_int64();
+    } else if (bh_type_is_integer(type)) {
         if (bh_type_is_signed_integer(type)) {
             out << get_int64();
         } else {
