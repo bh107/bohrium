@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+
 set(EXT_BLAS true CACHE BOOL "EXT-BLAS: Build BLAS extension method.")
 if(NOT EXT_BLAS)
     return()
 endif()
-
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_BINARY_DIR}/include)
 
 #External dependencies
 find_package(BLAS)
