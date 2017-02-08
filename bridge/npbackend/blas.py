@@ -44,3 +44,47 @@ def __blas(name, a, b, alpha=1.0, c=None, beta=0.0):
 def gemm(a, b, alpha=1.0, c=None, beta=0.0):
     """ C := alpha * A * B + beta * C """
     return __blas("blas_gemm", a, b, alpha, c, beta)
+
+def symm(a, b, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A * B + beta * C """
+    """ Notes: A is a symmetric matrix """
+    return __blas("blas_symm", a, b, alpha, c, beta)
+
+def hemm(a, b, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A * B + beta * C """
+    """ Notes: A is a hermitian matrix """
+    return __blas("blas_hemm", a, b, alpha, c, beta)
+
+def syr2k(a, b, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A * B**T + alpha * B * A**T + beta * C """
+    """ Notes: C is a symmetric matrix """
+    return __blas("blas_syr2k", a, b, alpha, c, beta)
+
+def her2k(a, b, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A * B**H + conjg(alpha) * B * A**H + beta * C """
+    """ Notes: C is a hermitian matrix """
+    return __blas("blas_her2k", a, b, alpha, c, beta)
+
+# Only A and C are used
+def syrk(a, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A * A**T + beta * C """
+    """ Notes: C is a symmetric matrix """
+    return __blas("blas_syrk", a, None, alpha, c, beta)
+
+def herk(a, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A * A**H + beta * C """
+    """ Notes: C is a hermitian matrix """
+    return __blas("blas_herk", a, None, alpha, c, beta)
+
+# Only A and B are used
+def trmm(a, b, alpha=1.0):
+    """ B := alpha * A * B """
+    """ Notes: A is unit upper triangular matrix """
+    __blas("blas_trmm", a, b, alpha)
+    return b
+
+def trsm(a, b):
+    """ Solves: A * X = B """
+    """ Notes: A is unit upper triangular matrix """
+    __blas("blas_trsm", a, b)
+    return b
