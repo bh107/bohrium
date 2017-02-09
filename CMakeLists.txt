@@ -144,6 +144,9 @@ add_subdirectory(bridge/NumCIL)
 add_subdirectory(bridge/cil)
 add_subdirectory(test)
 
+string(REPLACE ";" ", " OPENMP_LIBS "${OPENMP_LIBS}")
+string(REPLACE ";" ", " OPENCL_LIBS "${OPENCL_LIBS}")
+
 #############################
 # Install thirdparty headers
 install(DIRECTORY thirdparty/Random123-1.08/include/Random123
