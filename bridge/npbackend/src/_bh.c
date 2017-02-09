@@ -726,15 +726,17 @@ static int obj_contains_a_list_or_ary(PyObject *o)
     return 0;
 }
 
-//Help function that returns True when 'k' is a bool mask of 'o'
-static int obj_is_a_bool_mask(PyObject *o, PyObject *k)
+//Help function that returns True when 'k' is a bool mask of 'o' and 'v' is a scalar
+static int obj_is_a_bool_mask_ass_scalar(PyObject *o, PyObject *k, PyObject *v)
 {
     Py_ssize_t i;
     assert(o != NULL);
     assert(k != NULL);
+    assert(v != NULL);
     assert(PyArray_Check(o));
 
     if ((!PyArray_Check(k)) ||
+        (!PyArray_CheckAnyScalar(v)) ||
         PyArray_TYPE((PyArrayObject*)k) != NPY_BOOL ||
         PyArray_SIZE((PyArrayObject*)o) != PyArray_SIZE((PyArrayObject*)k) ||
         PyArray_NDIM((PyArrayObject*)o) != PyArray_NDIM((PyArrayObject*)k))
@@ -766,8 +768,8 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     }
 
     // Let's handle assignments to a boolean masked array
-    if (obj_is_a_bool_mask(o, k)) {
-        PyObject *err = PyObject_CallMethod(ufuncs, "set_masked_item", "OOO", o, k, v);
+    if (obj_is_a_bool_mask_ass_scalar(o, k, v)) {
+        PyObject *err = PyObject_CallMethod(ufuncs, "set_scalar_in_masked_item", "OOO", o, k, v);
         if(err == NULL)
         {
             return -1;
