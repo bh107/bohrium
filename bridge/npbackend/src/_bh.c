@@ -726,6 +726,29 @@ static int obj_contains_a_list_or_ary(PyObject *o)
     return 0;
 }
 
+//Help function that returns True when 'k' is a bool mask of 'o'
+static int obj_is_a_bool_mask(PyObject *o, PyObject *k)
+{
+    Py_ssize_t i;
+    assert(o != NULL);
+    assert(k != NULL);
+    assert(PyArray_Check(o));
+
+    if ((!PyArray_Check(k)) ||
+        PyArray_TYPE((PyArrayObject*)k) != NPY_BOOL ||
+        PyArray_SIZE((PyArrayObject*)o) != PyArray_SIZE((PyArrayObject*)k) ||
+        PyArray_NDIM((PyArrayObject*)o) != PyArray_NDIM((PyArrayObject*)k))
+    {
+        return 0;
+    }
+    for(i=0; i<PyArray_NDIM((PyArrayObject*)o); ++i)
+    {
+        if (PyArray_DIM((PyArrayObject*)o, i) != PyArray_DIM((PyArrayObject*)k, i))
+            return 0;
+    }
+    return 1;
+}
+
 static int
 BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
 {
@@ -740,6 +763,17 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     {
         PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
+    }
+
+    // Let's handle assignments to a boolean masked array
+    if (obj_is_a_bool_mask(o, k)) {
+        PyObject *err = PyObject_CallMethod(ufuncs, "set_masked_item", "OOO", o, k, v);
+        if(err == NULL)
+        {
+            return -1;
+        }
+        Py_XDECREF(err);
+        return 0;
     }
 
     //We do not support indexing with arrays
@@ -807,7 +841,7 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     assert(k != NULL);
 
     //We do not support indexing with arrays
-    if(obj_contains_a_list_or_ary(k) == 1)
+    if(obj_contains_a_list_or_ary(k))
     {
         PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
                           "Bohrium will return a NumPy copy of the indexed array.",1);

@@ -80,6 +80,13 @@ def setitem(ary, loc, value):
     else:
         assign(value, ary[tuple(loc)])
 
+def set_masked_item(ary, bool_mask, value):
+    """Set the 'value' into 'ary' at the location specified through 'bool_mask'.
+    'bool_mask' is a boolean array of the same shape as 'ary'"""
+
+    ary *= ~bool_mask
+    ary += bool_mask * value
+
 def overlap_conflict(out, *inputs):
     """
     Return True when there is a possible memory conflict between the output
