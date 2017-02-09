@@ -2,6 +2,16 @@ import util
 import bohrium as bh
 import bohrium.blas
 
+import platform
+os = platform.system()
+if os == "Darwin":
+    print("\033[91m[EXT] Ignoring 64-bit OpenCL clBLAS tests on MacOS.\n[EXT] Intel graphics does not support 64-bit float and complex types.\033[0m")
+    float_types   = ['np.float32']
+    complex_types = []
+else:
+    float_types   = util.TYPES.FLOAT
+    complex_types = util.TYPES.COMPLEX
+
 def has_ext():
     try:
         a = bh.arange(4).astype(bh.float64).reshape(2, 2)
@@ -18,7 +28,7 @@ class test_ext_blas_identical:
         if not has_ext():
             return
 
-        for t in util.TYPES.FLOAT + util.TYPES.COMPLEX:
+        for t in float_types + complex_types:
             for r in range(1, 20):
                 cmd  = "a = M.arange(%d, dtype=%s).reshape(%s); " % (r*r, t, (r, r))
                 cmd += "b = M.arange(%d, dtype=%s).reshape(%s); " % (r*r, t, (r, r))
@@ -39,7 +49,7 @@ class test_ext_blas_identical:
     def test_her2k(self, args):
         cmd, t = args
 
-        if t not in util.TYPES.COMPLEX:
+        if t not in complex_types:
             return "res = 0;"
 
         cmd_np = cmd + "res = np.triu(np.dot(a, b.transpose()) + np.dot(b, a.transpose()));"
@@ -52,7 +62,7 @@ class test_ext_blas_symmetric:
         if not has_ext():
             return
 
-        for t in util.TYPES.FLOAT + util.TYPES.COMPLEX:
+        for t in float_types + complex_types:
             for r in range(2, 10):
                 # a will be symmetric/hermitian
                 cmd  = "a = M.arange(%d, dtype=%s).reshape(%s); a = ((a + a.T)/2);" % (r*r, t, (r, r))
@@ -68,7 +78,7 @@ class test_ext_blas_symmetric:
     def test_hemm(self, args):
         cmd, t = args
 
-        if t not in util.TYPES.COMPLEX:
+        if t not in complex_types:
             return "res = 0;"
 
         cmd_np = cmd + "res = np.dot(a, b);"
@@ -81,7 +91,7 @@ class test_ext_blas_only_a:
         if not has_ext():
             return
 
-        for t in util.TYPES.FLOAT + util.TYPES.COMPLEX:
+        for t in float_types + complex_types:
             for r in range(2, 10):
                 cmd  = "a = M.arange(%d, dtype=%s).reshape(%s);" % (r*r, t, (r, r))
                 yield cmd, t
@@ -95,7 +105,7 @@ class test_ext_blas_only_a:
     def test_herk(self, args):
         cmd, t = args
 
-        if t not in util.TYPES.COMPLEX:
+        if t not in complex_types:
             return "res = 0;"
 
         cmd_np = cmd + "res = np.triu(np.dot(a, a.transpose()));"
@@ -108,7 +118,7 @@ class test_ext_blas_unit_triangular:
         if not has_ext():
             return
 
-        for t in util.TYPES.FLOAT + util.TYPES.COMPLEX:
+        for t in float_types + complex_types:
             for r in range(2, 10):
                 cmd  = "a = np.arange(%d, dtype=%s).reshape(%s); np.fill_diagonal(a, 1); a = np.triu(a);" % (r*r, t, (r, r))
                 cmd += "b = M.arange(%d, dtype=%s).reshape(%s);" % (r*r, t, (r, r))
