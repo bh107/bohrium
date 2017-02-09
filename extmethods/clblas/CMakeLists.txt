@@ -15,7 +15,7 @@ if(CLBLAS_FOUND)
     file(MAKE_DIRECTORY ${EXTMETHOD_DIR})
     set(CLBLAS_LVL3 ${EXTMETHOD_DIR}/level3.cpp)
     set(CLBLAS_TEMPLATE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates/)
-    set(CLBLAS_PY   ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_clblas.py)
+    set(CLBLAS_PY   ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_blas.py)
     add_custom_command(
       OUTPUT ${CLBLAS_LVL3}
       COMMAND ${CLBLAS_PY} ${CLBLAS_TEMPLATE_DIR} ${CLBLAS_LVL3}

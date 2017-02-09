@@ -7,7 +7,7 @@ import argparse
 from argparse_utils import *
 
 """
-Generates the BLAS ext methods
+Generates the BLAS and clBLAS ext methods
 """
 
 def gen_level3(level3, header_tpl, body_tpl, func_tpl, footer_tpl):
@@ -79,14 +79,14 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Generates level3.cpp for BLAS ext methods'
+        description='Generates level3.cpp for BLAS and clBLAS ext methods'
     )
 
     parser.add_argument(
         'template_directory',
         type=is_dir,
         action=FullPaths,
-        help="The template directory, which contains the json file for autogenerating BLAS methods."
+        help="The template directory, which contains the json file for autogenerating the methods."
     )
 
     parser.add_argument(
