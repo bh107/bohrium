@@ -37,8 +37,7 @@ if(CLBLAS_FOUND)
     endif()
 
     include_directories(${CLBLAS_INCLUDES})
-    set(LIBS ${LIBS} ${CLBLAS_LIBRARIES})
-    target_link_libraries(bh_clblas ${LIBS})
+    target_link_libraries(bh_clblas ${CLBLAS_LIBRARIES})
 
     install(TARGETS bh_clblas DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
 
