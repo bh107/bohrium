@@ -64,12 +64,16 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
         throw runtime_error("No OpenCL platforms found");
     }
     cl::Platform default_platform=platforms[0];
-    cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
+    if(verbose) {
+        cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
+    }
 
     //get the device of the default platform
     default_device = getDevice(default_platform);
-    cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() \
-         << " ("<< default_device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")" << endl;
+    if(verbose) {
+        cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() \
+             << " ("<< default_device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")" << endl;
+     }
     vector<cl::Device> dev_list = {default_device};
     context = cl::Context(dev_list);
     queue = cl::CommandQueue(context, default_device);
@@ -133,6 +137,9 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         try {
             program.build({default_device}, compile_flg.c_str());
             if (verbose) {
+                cout << "********** Compile Flags **********" << endl \
+                << compile_flg.c_str() << endl \
+                << "************ Flags END ************" << endl << endl;
                 cout << "************ Build Log ************" << endl \
                  << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) \
                  << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
