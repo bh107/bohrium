@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+
 set(EXT_BLAS true CACHE BOOL "EXT-BLAS: Build BLAS extension method.")
 if(NOT EXT_BLAS)
     return()
 endif()
-
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_BINARY_DIR}/include)
 
 #External dependencies
 find_package(BLAS)
@@ -13,9 +11,23 @@ set_package_properties(BLAS PROPERTIES DESCRIPTION "Basic Linear Algebra Subprog
 set_package_properties(BLAS PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the BLAS extended method")
 
 if(BLAS_FOUND)
-    file(GLOB SRC main.cpp)
+    set(EXTMETHOD_DIR ${CMAKE_BINARY_DIR}/extmethods/blas)
+    file(MAKE_DIRECTORY ${EXTMETHOD_DIR})
+    set(BLAS_LVL3 ${EXTMETHOD_DIR}/level3.cpp)
+    set(BLAS_TEMPLATE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates/)
+    set(BLAS_PY   ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_blas.py)
+    add_custom_command(
+      OUTPUT ${BLAS_LVL3}
+      COMMAND ${BLAS_PY} ${BLAS_TEMPLATE_DIR} ${BLAS_LVL3}
+      DEPENDS ${BLAS_PY}
+    )
 
-    add_library(bh_blas SHARED ${SRC})
+    include_directories(${CMAKE_SOURCE_DIR}/include)
+    include_directories(${CMAKE_BINARY_DIR}/include)
+    add_library(
+      bh_blas SHARED
+      ${CMAKE_CURRENT_BINARY_DIR}/level3.cpp
+    )
 
     # We depend on bh.so
     target_link_libraries(bh_blas bh)

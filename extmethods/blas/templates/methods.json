@@ -1,0 +1,137 @@
+{
+  "level3": {
+    "methods": [
+      {
+        "name":    "gemm",
+        "types":   [ "s", "d", "c", "z" ],
+        "options": [ "layout", "transA", "transB" ],
+        "dims":    [ "m", "n", "k" ],
+        "matrix":  [ "A", "B", "C" ]
+      },
+      {
+        "name":    "symm",
+        "types":   [ "s", "d", "c", "z" ],
+        "options": [ "layout", "side", "uplo" ],
+        "dims":    [ "m", "n" ],
+        "matrix":  [ "A", "B", "C" ]
+      },
+      {
+        "name":    "hemm",
+        "types":   [ "c", "z" ],
+        "options": [ "layout", "side", "uplo" ],
+        "dims":    [ "m", "n" ],
+        "matrix":  [ "A", "B", "C" ]
+      },
+      {
+        "name":    "syrk",
+        "types":   [ "s", "d", "c", "z" ],
+        "options": [ "layout", "uplo", "transA" ],
+        "dims":    [ "n", "k" ],
+        "matrix":  [ "A", "C" ]
+      },
+      {
+        "name":     "herk",
+        "types":    [ "c", "z" ],
+        "options":  [ "layout", "uplo", "transA" ],
+        "dims":     [ "n", "k" ],
+        "matrix":   [ "A", "C" ],
+        "overrides": {
+          "c": {
+            "alpha_arg": "alpha.real",
+            "beta_arg":  "beta.real"
+          },
+          "z": {
+            "alpha_arg": "alpha.real",
+            "beta_arg":  "beta.real"
+          }
+        }
+      },
+      {
+        "name":    "syr2k",
+        "types":   [ "s", "d", "c", "z" ],
+        "options": [ "layout", "uplo", "transA" ],
+        "dims":    [ "n", "k" ],
+        "matrix":  [ "A", "B", "C" ]
+      },
+      {
+        "name":     "her2k",
+        "types":    [ "c", "z" ],
+        "options":  [ "layout", "uplo", "transA" ],
+        "dims":     [ "n", "k" ],
+        "matrix":   [ "A", "B", "C" ],
+        "overrides": {
+          "c": {
+            "beta_arg":  "beta.real"
+          },
+          "z": {
+            "beta_arg":  "beta.real"
+          }
+        }
+      },
+      {
+        "name":    "trmm",
+        "types":   [ "s", "d", "c", "z" ],
+        "options": [ "layout", "side", "uplo", "transA", "diag" ],
+        "dims":    [ "m", "n" ],
+        "matrix":  [ "A", "B" ],
+        "overrides": {
+          "c": {
+            "beta": ""
+          },
+          "z": {
+            "beta": ""
+          }
+        }
+      },
+      {
+        "name":    "trsm",
+        "types":   [ "s", "d", "c", "z" ],
+        "options": [ "layout", "side", "uplo", "transA", "diag" ],
+        "dims":    [ "m", "n" ],
+        "matrix":  [ "A", "B" ],
+        "overrides": {
+          "c": {
+            "beta": ""
+          },
+          "z": {
+            "beta": ""
+          }
+        }
+      }
+    ],
+    "options": {
+      "s": {
+        "type":        "bh_float32",
+        "scalar_type": "bh_float32",
+        "alpha":       "",
+        "alpha_arg":   "1.0",
+        "beta":        "",
+        "beta_arg":    "0.0"
+      },
+      "d": {
+        "type":        "bh_float64",
+        "scalar_type": "bh_float64",
+        "alpha":       "",
+        "alpha_arg":   "1.0",
+        "beta":        "",
+        "beta_arg":    "0.0"
+      },
+      "c": {
+        "type":        "bh_complex64",
+        "scalar_type": "bh_complex64",
+        "alpha":       "bh_complex64 alpha; alpha.real = 1.0; alpha.imag = 0.0;",
+        "alpha_arg":   "(void*) &alpha",
+        "beta":        "bh_complex64 beta; beta.real = 0.0; beta.imag = 0.0;",
+        "beta_arg":    "(void*) &beta"
+      },
+      "z": {
+        "type":        "bh_complex128",
+        "scalar_type": "bh_complex128",
+        "alpha":       "bh_complex128 alpha; alpha.real = 1.0; alpha.imag = 0.0;",
+        "alpha_arg":   "(void*) &alpha",
+        "beta":        "bh_complex128 beta; beta.real = 0.0; beta.imag = 0.0;",
+        "beta_arg":    "(void*) &beta"
+      }
+    }
+  }
+}
