@@ -236,8 +236,6 @@ void Impl::execute(bh_ir *bhir) {
         }
     }
 
-    auto tfusion = chrono::steady_clock::now();
-
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
         set_constructor_flag(instr_list, engine.buffers);
@@ -257,6 +255,8 @@ void Impl::execute(bh_ir *bhir) {
         if (hit) {
 ;
         } else {
+            const auto tpre_fusion = chrono::steady_clock::now();
+            stat.num_instrs_into_fuser += instr_list.size();
             // Let's fuse the 'instr_list' into blocks
             // We start with the pre_fuser
             if (config.defaultGet<bool>("pre_fuser", true)) {
@@ -264,6 +264,9 @@ void Impl::execute(bh_ir *bhir) {
             } else {
                 block_list = fuser_singleton(instr_list);
             }
+            stat.num_blocks_out_of_fuser += block_list.size();
+            const auto tfusion = chrono::steady_clock::now();
+            stat.time_pre_fusion +=  tfusion - tpre_fusion;
             // Then we fuse fully
             if (config.defaultGet<bool>("serial_fusion", false)) {
                 fuser_serial(block_list, 1);
@@ -273,6 +276,7 @@ void Impl::execute(bh_ir *bhir) {
                 block_list = split_for_threading(block_list, 1000);
                 block_list = collapse_redundant_axes(block_list);
             }
+            stat.time_fusion += chrono::steady_clock::now() - tfusion;
             fcache.insert(instr_list, block_list);
         }
     }
@@ -282,8 +286,6 @@ void Impl::execute(bh_ir *bhir) {
         graph::DAG dag = graph::from_block_list(block_list);
         graph::pprint(dag, "dag");
     }
-
-    stat.time_fusion += chrono::steady_clock::now() - tfusion;
 
     for(const Block &block: block_list) {
         assert(not block.isInstr());
