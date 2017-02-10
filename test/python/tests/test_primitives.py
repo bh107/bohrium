@@ -10,16 +10,19 @@ class test_bh_opcodes:
 
     def test_ufunc(self, arg):
         (op, type_sig) = arg
+
         cmd = "R = bh.random.RandomState(42); "
+
         for i, dtype in enumerate(type_sig[1:]):
-            cmd += "a%d = R.random(10, dtype=np.%s, bohrium=<BH>); " % (i, dtype)
+            cmd += "a%d = R.random(10, dtype=np.%s, bohrium=BH); " % (i, dtype)
+
         cmd += "res = M.%s(" % (op['name'])
+
         for i in range(op['nop']-1):
             cmd += "a%d, " % i
+
         cmd = cmd[:-2] + ");"
-        cmd_np = cmd.replace("<BH>", "False")
-        cmd_bh = cmd.replace("<BH>", "True")
-        return cmd_np, cmd_bh
+        return cmd
 
 
 class test_extra_binary_ops:
@@ -30,10 +33,10 @@ class test_extra_binary_ops:
 
     def test_ufunc(self, arg):
         (op, dtype) = arg
-        cmd = "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=<BH>); "%dtype
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=<BH>); "%dtype
+
+        cmd =  "R = bh.random.RandomState(42); "
+        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
         cmd += "res = M.%s(a0, a1)"%op
-        cmd_np = cmd.replace("<BH>", "False")
-        cmd_bh = cmd.replace("<BH>", "True")
-        return cmd_np, cmd_bh
+
+        return cmd
