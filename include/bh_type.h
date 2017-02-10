@@ -95,6 +95,13 @@ DLLEXPORT int bh_type_is_integer(bh_type type);
  */
 DLLEXPORT int bh_type_is_signed_integer(bh_type type);
 
+/* Is type an unsigned integer type
+ *
+ * @type   The type.
+ * @return 1 if true else 0.
+ */
+DLLEXPORT int bh_type_is_unsigned_integer(bh_type type);
+
 /* Is type an float type
  *
  * @type   The type.

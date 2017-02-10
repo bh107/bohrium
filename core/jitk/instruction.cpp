@@ -265,10 +265,17 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             break;
         case BH_ABSOLUTE: {
             const bh_type t0 = instr.operand_type(1);
-            if (opencl and bh_type_is_complex(t0)) {
+
+            if (t0 == BH_BOOL) {
+                out << operands[0] << " = true;" << endl;
+            } else if (bh_type_is_unsigned_integer(t0)) {
+                out << operands[0] << " = " << operands[1] << ";" << endl; // no-op
+            } else if (opencl and bh_type_is_complex(t0)) {
                 out << "CABS(" << operands[0] << ", " << operands[1] << ");" << endl;
             } else if (bh_type_is_float(t0)) {
                 out << operands[0] << " = fabs(" << operands[1] << ");" << endl;
+            } else if (!opencl and t0 == BH_INT64) {
+                out << operands[0] << " = llabs(" << operands[1] << ");" << endl;
             } else {
                 out << operands[0] << " = abs(" << operands[1] << ");" << endl;
             }
@@ -656,4 +663,3 @@ InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim)
 
 } // jitk
 } // bohrium
-
