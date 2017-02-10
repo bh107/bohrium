@@ -121,6 +121,20 @@ int bh_type_is_integer(bh_type type)
     }
 }
 
+int bh_type_is_unsigned_integer(bh_type type)
+{
+    switch(type)
+    {
+        case BH_UINT8:
+        case BH_UINT16:
+        case BH_UINT32:
+        case BH_UINT64:
+            return true;
+        default:
+            return false;
+    }
+}
+
 int bh_type_is_signed_integer(bh_type type)
 {
     switch(type)

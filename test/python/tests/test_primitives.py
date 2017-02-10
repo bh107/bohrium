@@ -4,8 +4,8 @@ import util
 class test_bh_opcodes:
     def init(self):
         for op in bohrium._info.op.values():
-            if op['name'] not in ["identity", "sign"]:
-                for type_sig in op['type_sig']:
+            if op["name"] not in ["identity", "sign"]:
+                for type_sig in op["type_sig"]:
                     yield (op, type_sig)
 
     def test_ufunc(self, arg):
@@ -16,9 +16,12 @@ class test_bh_opcodes:
         for i, dtype in enumerate(type_sig[1:]):
             cmd += "a%d = R.random(10, dtype=np.%s, bohrium=BH); " % (i, dtype)
 
-        cmd += "res = M.%s(" % (op['name'])
+        if op["name"] == "arccosh":
+            cmd += "a%d += 1;" % i
 
-        for i in range(op['nop']-1):
+        cmd += "res = M.%s(" % (op["name"])
+
+        for i in range(op["nop"]-1):
             cmd += "a%d, " % i
 
         cmd = cmd[:-2] + ");"
