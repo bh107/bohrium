@@ -16,6 +16,9 @@ class test_bh_opcodes:
         for i, dtype in enumerate(type_sig[1:]):
             cmd += "a%d = R.random(10, dtype=np.%s, bohrium=BH); " % (i, dtype)
 
+        if op["name"] == "arccosh":
+            cmd += "a%d += 1;" % i
+
         cmd += "res = M.%s(" % (op["name"])
 
         for i in range(op["nop"]-1):
