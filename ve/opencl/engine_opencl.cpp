@@ -29,23 +29,52 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 namespace {
+
+#define CL_DEVICE_AUTO 1024 // More than maximum in the bitmask
+
+map<const string, cl_device_type> device_map = {
+    {"auto",        CL_DEVICE_AUTO},
+    {"gpu",         CL_DEVICE_TYPE_GPU},
+    {"accelerator", CL_DEVICE_TYPE_ACCELERATOR},
+    {"default",     CL_DEVICE_TYPE_DEFAULT},
+    {"cpu",         CL_DEVICE_TYPE_CPU}
+};
+
 // Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
-cl::Device getDevice(const cl::Platform &platform) {
+cl::Device getDevice(const cl::Platform &platform, const string &default_device_type) {
     vector<cl::Device> device_list;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
-    if(device_list.size()==0){
+
+    if(device_list.size() == 0){
         throw runtime_error("No OpenCL device found");
     }
-    for (cl_device_type type_bitmask: {CL_DEVICE_TYPE_GPU,
-                                       CL_DEVICE_TYPE_ACCELERATOR,
-                                       CL_DEVICE_TYPE_DEFAULT,
-                                       CL_DEVICE_TYPE_CPU}) {
+
+    if (!util::exist(device_map, default_device_type)) {
+        stringstream ss;
+        ss << "'" << default_device_type << "' is not a OpenCL device type. " \
+           << "Must be one of 'auto', 'gpu', 'accelerator', 'cpu', or 'default'";
+        throw runtime_error(ss.str());
+    } else if (device_map[default_device_type] != CL_DEVICE_AUTO) {
         for (auto &device: device_list) {
-            if ((device.getInfo<CL_DEVICE_TYPE>() & type_bitmask) == type_bitmask) {
+            if ((device.getInfo<CL_DEVICE_TYPE>() & device_map[default_device_type]) == device_map[default_device_type]) {
+                return device;
+            }
+        }
+        stringstream ss;
+        ss << "Could not find selected OpenCL device type ('" \
+           << default_device_type << "') on default platform";
+        throw runtime_error(ss.str());
+    }
+
+    // Type was 'auto'
+    for (auto &device_type: device_map) {
+        for (auto &device: device_list) {
+            if ((device.getInfo<CL_DEVICE_TYPE>() & device_type.second) == device_type.second) {
                 return device;
             }
         }
     }
+
     throw runtime_error("No OpenCL device of usable type found");
 }
 }
@@ -56,6 +85,7 @@ static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     compile_flg(config.defaultGet<string>("compiler_flg", "")),
+                                    default_device_type(config.defaultGet<string>("device_type", "auto")),
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat) {
     vector<cl::Platform> platforms;
@@ -69,14 +99,16 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     }
 
     //get the device of the default platform
-    default_device = getDevice(default_platform);
+    device = getDevice(default_platform, default_device_type);
+
     if(verbose) {
-        cout << "Using device: " << default_device.getInfo<CL_DEVICE_NAME>() \
-             << " ("<< default_device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")" << endl;
-     }
-    vector<cl::Device> dev_list = {default_device};
+        cout << "Using device: " << device.getInfo<CL_DEVICE_NAME>() \
+             << " ("<< device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")" << endl;
+    }
+
+    vector<cl::Device> dev_list = {device};
     context = cl::Context(dev_list);
-    queue = cl::CommandQueue(context, default_device);
+    queue = cl::CommandQueue(context, device);
 }
 
 
@@ -135,17 +167,17 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         ++stat.kernel_cache_misses;
         program = cl::Program(context, source);
         try {
-            program.build({default_device}, compile_flg.c_str());
+            program.build({device}, compile_flg.c_str());
             if (verbose) {
                 cout << "********** Compile Flags **********" << endl \
                 << compile_flg.c_str() << endl \
                 << "************ Flags END ************" << endl << endl;
                 cout << "************ Build Log ************" << endl \
-                 << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) \
+                 << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) \
                  << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
             }
         } catch (cl::Error e) {
-            cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(default_device) << endl;
+            cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
             throw;
         }
         _programs[hash] = program;
