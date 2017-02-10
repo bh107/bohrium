@@ -93,8 +93,11 @@ def run(args):
                     try:
                         similar = numpy.allclose(res_np, res_bh, equal_nan=True)
                     except TypeError as err:
-                        # Old versions of NumPy do not have the 'equal_nan' option
-                        similar = numpy.allclose(res_np, res_bh)
+                        try:
+                            # Old versions of NumPy do not have the 'equal_nan' option
+                            similar = numpy.allclose(res_np, res_bh)
+                        except:
+                            similar = res_np == res_bh or res_np is res_bh
 
                     if not similar:
                         print("\n")
