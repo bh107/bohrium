@@ -33,9 +33,9 @@ for _name, _f in UFUNCS.items():
 _aliases = [
     ('abs', 'absolute')
 ]
-
 for _f, _t in _aliases:
     exec("%s = %s" % (_f, _t))
+cumsum = add.accumulate
 
 # Expose all data types
 for _t in numpy_types:
