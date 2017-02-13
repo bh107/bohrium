@@ -26,15 +26,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <signal.h>
 
 #ifdef __cplusplus
+#include <sstream>
 extern "C" {
 #endif
 
 /** Init arrays and signal handler
  *
  * @param void
- * @returnm void
  */
-int bh_mem_signal_init(void);
+void bh_mem_signal_init(void);
 
 /** Shutdown of this library */
 void bh_mem_signal_shutdown(void);
@@ -46,17 +46,15 @@ void bh_mem_signal_shutdown(void);
  * @param size - Size of memory segment in bytes
  * @param callback - Callback function which is executed when segfault hits in the memory
  *                   segment. The function is called with the memory idx and the address pointer
- * @return - error code
  */
-int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
+void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
                          void (*callback)(void*, void*));
 
 /** Detach signal
  *
  * @param addr - Start address of memory segment.
- * @return - error code
  */
-int bh_mem_signal_detach(const void *addr);
+void bh_mem_signal_detach(const void *addr);
 
 #ifdef __cplusplus
 }

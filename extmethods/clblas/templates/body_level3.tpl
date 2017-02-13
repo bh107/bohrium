@@ -36,11 +36,8 @@ public:
         bh_view* C = &instr->operand[0];
 
         // We allocate the C data, if not already present
-        if (bh_data_malloc(C->base) != BH_SUCCESS) {
-            cerr << "Cannot allocate memory for C-matrix" << endl;
-            return;
-        }
-
+        bh_data_malloc(C->base);
+        
         assert(A->base->type == C->base->type);
         cl_mem bufC = engine->getCBuffer(C->base);
         ${endif_C}

@@ -391,49 +391,45 @@ void bh_assign_complete_base(bh_view *view, bh_base *base)
  *
  * @view   The view in question
  * @data   The new data pointer
- * @return Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_set(bh_view* view, bh_data_ptr data)
+void bh_data_set(bh_view* view, bh_data_ptr data)
 {
     bh_base* base;
 
     if(view == NULL) {
-        fprintf(stderr, "Attempt to set data pointer for a null view\n");
-        return BH_ERROR;
+        stringstream ss;
+        ss << "Attempt to set data pointer for a null view" << endl;
+        throw runtime_error(ss.str());
     }
 
     base = bh_base_array(view);
 
     if(base->data != NULL && data != NULL) {
-        fprintf(stderr, "Attempt to set data pointer an array with existing data pointer\n");
-        return BH_ERROR;
+        stringstream ss;
+        ss << "Attempt to set data pointer an array with existing data pointer" << endl;
+        throw runtime_error(ss.str());
     }
 
     base->data = data;
-
-    return BH_SUCCESS;
 }
 
 /* Get the data pointer for the view.
  *
  * @view    The view in question
  * @result  Output data pointer
- * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_get(bh_view* view, bh_data_ptr* result)
+void bh_data_get(bh_view* view, bh_data_ptr* result)
 {
     bh_base* base;
 
     if(view == NULL) {
-        fprintf(stderr, "Attempt to get data pointer for a null view\n");
-        return BH_ERROR;
+        stringstream ss;
+        ss << "Attempt to get data pointer for a null view" << endl;
+        throw runtime_error(ss.str());
     }
 
     base = bh_base_array(view);
-
     *result = base->data;
-
-    return BH_SUCCESS;
 }
 
 /* Determines whether the base array is a scalar.

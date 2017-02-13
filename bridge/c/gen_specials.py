@@ -87,14 +87,17 @@ def main(args):
         impl += """\
 {
     bh_base *b = ((multi_array<%(cpp)s>*)ary)->meta.base;
-    if(force_alloc)
-    {
-        if(bh_data_malloc(b) != 0)
-            return NULL;
+
+    if(force_alloc) {
+        bh_data_malloc(b);
     }
+
     %(bhc)s* ret = (%(bhc)s*)(b->data);
-    if(nullify)
+
+    if(nullify) {
         b->data = NULL;
+    }
+
     return ret;
 }
 """%t

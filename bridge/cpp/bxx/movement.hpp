@@ -39,10 +39,11 @@ T* bh_data_export(multi_array<T>& op, Export::Option option)
     // Handle export options
     //
 
-    if ((NULL==data) && ((option & Export::WO_ALLOC)==0)) { // Allocate data
-        bh_error res = bh_data_malloc(base);
-        data = (T*)base->data;
-        if ((BH_SUCCESS!=res) || (NULL==data)) {             // Verify allocation
+    if (NULL == data && (option & Export::WO_ALLOC) == 0) { // Allocate data
+        bh_data_malloc(base);
+        data = (T*) base->data;
+
+        if (NULL == data) {             // Verify allocation
             throw std::runtime_error("Export error: allocation failed.");
         }
         if ((option & Export::WO_ZEROING)==0) {             // Zero-initialize by..
@@ -52,7 +53,7 @@ T* bh_data_export(multi_array<T>& op, Export::Option option)
         }
     }
 
-    if ((data) && ((option & Export::RELEASED)>0)) {        // Release it from Bohrium
+    if (data && ((option & Export::RELEASED) > 0)) {        // Release it from Bohrium
         base->data = NULL;
     }
     bh_free(op);

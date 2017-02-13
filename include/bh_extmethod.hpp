@@ -28,7 +28,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/ini_parser.hpp>
 
 #include <bh_config_parser.hpp>
-#include <bh_error.h>
 #include <bh_ir.hpp>
 #include <bh_opcode.h>
 
