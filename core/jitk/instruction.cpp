@@ -62,7 +62,6 @@ void write_system_operation(const Scope &scope, const bh_instruction &instr, str
 
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
 void write_sign_function(const string &operand, stringstream &out) {
-
     out << "((" << operand << " > 0) - (0 > " << operand << "))";
 }
 
@@ -81,9 +80,7 @@ void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, cons
 
 // Write the 'instr' using the string in 'operands' as operands
 void write_operation(const bh_instruction &instr, const vector<string> &operands, stringstream &out, bool opencl) {
-
     switch (instr.opcode) {
-
         // Opcodes that are Complex/OpenCL agnostic
         case BH_ADD:
             out << operands[0] << " = " << operands[1] << " + " << operands[2] << ";" << endl;
@@ -240,8 +237,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             out << operands[0] << " = " << operands[1] << ";" << endl;
             break;
 
-
-            // Opcodes that uses a different function name in OpenCL
+        // Opcodes that uses a different function name in OpenCL
         case BH_SIN:
             write_opcodes_with_special_opencl_complex(instr, operands, out, opencl, "sin", "CSIN");
             break;
@@ -323,7 +319,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
         }
 
 
-            // Multiplication and division are handled differently in OpenCL
+        // Multiplication and division are handled differently in OpenCL
         case BH_MULTIPLY:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
                 out << "CMUL(" << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
@@ -356,7 +352,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             break;
         }
 
-            // In OpenCL we have to do explicit conversion of complex numbers
+        // In OpenCL we have to do explicit conversion of complex numbers
         case BH_IDENTITY: {
             out << operands[0] << " = ";
             const bh_type t0 = instr.operand_type(0);
@@ -377,7 +373,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             break;
         }
 
-            // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
+        // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
@@ -391,7 +387,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             break;
         }
 
-            // Extracting the real or imaginary part differ in OpenCL
+        // Extracting the real or imaginary part differ in OpenCL
         case BH_REAL:
             if (opencl) {
                 out << operands[0] << " = " << operands[1] << ".s0;" << endl;
@@ -407,27 +403,38 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             }
             break;
 
-            /* NB: there are different ways to define sign of complex numbers.
-               *     We uses the same definition as in NumPy
-               *     <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
-               */
+        /* NOTE: There are different ways to define sign of complex numbers.
+         * We uses the same definition as in NumPy
+         * <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
+         */
         case BH_SIGN: {
             const bh_type t0 = instr.operand_type(0);
             if (bh_type_is_complex(t0)) {
+                //              1         if Re(z) > 0
+                // csgn(z) = { -1         if Re(z) < 0
+                //             sgn(Im(z)) if Re(z) = 0
                 const char *ctype = (t0 == BH_COMPLEX64 ? "float" : "double");
                 if (opencl) {
-                    out << ctype << " real = " << operands[1] << ".s0; ";
-                    out << ctype << " imag = " << operands[1] << ".s1; ";
-                } else {
-                    out << ctype << " real = creal(" << operands[1] << "); ";
-                    out << ctype << " imag = cimag(" << operands[1] << "); ";
-                }
-                out << operands[0] << " = real != 0 ? ";
-                write_sign_function("real", out);
-                out << " : ";
-                write_sign_function("imag", out);
-                out << ";" << endl;
+                    out << ctype << " real = " << operands[1] << ".s0; " << endl;
+                    out << ctype << " imag = " << operands[1] << ".s1; " << endl;
 
+                    // Complex sign always have Im(x) = 0
+                    out << operands[0] << ".s1 = 0.0;" << endl;
+
+                    out << operands[0] << ".s0 ";
+                } else {
+                    out << ctype << " real = creal(" << operands[1] << "); " << endl;
+                    out << ctype << " imag = cimag(" << operands[1] << "); " << endl;
+
+                    out << operands[0] << " ";
+                }
+
+                out << "= (real == 0 ? ";
+
+                write_sign_function("imag", out);
+                out << " : ";
+                write_sign_function("real", out);
+                out << ");" << endl;
             } else {
                 out << operands[0] << " = ";
                 write_sign_function(operands[1], out);

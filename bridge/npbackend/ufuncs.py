@@ -521,16 +521,6 @@ class Negative(Ufunc):
             return out
 UFUNCS["negative"] = Negative({'name': 'negative'})
 
-class Sign(Ufunc):
-    @fix_returned_biclass
-    def __call__(self, ary, out=None):
-        if out is None:
-            return (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
-        else:
-            out[...] = (ary < 0)*ary.dtype.type(-1) + (ary>0)*ary.dtype.type(1)
-            return out
-UFUNCS["sign"] = Sign({'name':'sign'})
-
 class TrueDivide(Ufunc):
     @fix_returned_biclass
     def __call__(self, a1, a2, out=None):
