@@ -85,8 +85,8 @@ def where(condition, x=None, y=None):
         return numpy.where(condition, x, y)
 
     if x is None or y is None:
-        warnings.warn("Bohrium only supports where() when 'x' and 'y' are specified")
-        return numpy.where(condition, x, y)
+        warnings.warn("Bohrium only supports where() when 'x' and 'y' are specified", stacklevel=2)
+        return numpy.where(condition)
 
     # Let's find a non-scalar and make sure that non-scalars are Bohrium arrays
     t = None

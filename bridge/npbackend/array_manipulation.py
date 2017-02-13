@@ -440,7 +440,7 @@ def broadcast_arrays(*args):
         ret = []
         bargs = numpy.broadcast_arrays(*args)
         for a, b in zip(args, bargs):
-            if numpy.isscalar(a):
+            if numpy.isscalar(a) or not isinstance(a, numpy.ndarray):
                 ret.append(b)
             elif bhary.identical_views(a, b):
                 ret.append(a)
