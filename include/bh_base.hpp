@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "bh_type.h"
 #include <bh_constant.hpp>
-#include "bh_error.h"
 #include "bh_win.h"
 
 #include <boost/serialization/split_member.hpp>
@@ -85,16 +84,14 @@ bh_index bh_base_size(const bh_base *base);
  * For convenience, the base is allowed to be NULL.
  *
  * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-DLLEXPORT bh_error bh_data_malloc(bh_base* base);
+DLLEXPORT void bh_data_malloc(bh_base* base);
 
 /* Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.
  *
  * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_free(bh_base* base);
+void bh_data_free(bh_base* base);
 
 #endif

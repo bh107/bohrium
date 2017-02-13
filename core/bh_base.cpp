@@ -34,24 +34,19 @@ using namespace std;
  * @param type The type of data in the array
  * @param nelements The number of elements
  * @param new_base The handler for the newly created base
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
-bh_error bh_create_base(bh_type    type,
-                        bh_index   nelements,
-                        bh_base**  new_base)
+void bh_create_base(bh_type type, bh_index nelements, bh_base** new_base)
 {
-
     bh_base *base = (bh_base *) malloc(sizeof(bh_base));
+
     if(base == NULL) {
-        return BH_OUT_OF_MEMORY;
+        throw runtime_error("Out of memeory in bh_create_base()");
     }
 
-    base->type = type;
+    base->type  = type;
     base->nelem = nelements;
-    base->data = NULL;
-    *new_base = base;
-
-    return BH_SUCCESS;
+    base->data  = NULL;
+    *new_base   = base;
 }
 
 // Returns the label of this base array
@@ -96,56 +91,56 @@ void bh_destroy_base(bh_base**  base)
  * For convenience, the base is allowed to be NULL.
  *
  * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR, BH_OUT_OF_MEMORY)
  */
-bh_error bh_data_malloc(bh_base* base)
+void bh_data_malloc(bh_base* base)
 {
     bh_intp bytes;
 
-    if(base == NULL) return BH_SUCCESS;
-    if(base->data != NULL) return BH_SUCCESS;
+    if(base == NULL) return;
+    if(base->data != NULL) return;
 
     bytes = bh_base_size(base);
 
     // We allow zero sized arrays.
-    if(bytes == 0) return BH_SUCCESS;
-    if(bytes < 0) return BH_ERROR;
+    if(bytes == 0) return;
 
-    base->data = bh_memory_malloc(bytes);
-    if(base->data == NULL) {
-        int errsv = errno; // mmap() sets the errno.
-        printf("bh_data_malloc() could not allocate a data region. "
-               "Returned error code: %s.\n", strerror(errsv));
-        return BH_OUT_OF_MEMORY;
+    if(bytes < 0) {
+        throw runtime_error("Cannot allocate less than zero bytes.");
     }
 
-    return BH_SUCCESS;
+    base->data = bh_memory_malloc(bytes);
+
+    if(base->data == NULL) {
+        stringstream ss;
+        ss << "bh_data_malloc() could not allocate a data region. " \
+           << "Returned error code: " << strerror(errno);
+        throw runtime_error(ss.str());
+    }
 }
 
 /* Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.
  *
  * @base    The base in question
- * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-bh_error bh_data_free(bh_base* base)
+void bh_data_free(bh_base* base)
 {
     bh_intp bytes;
 
-    if(base == NULL) return BH_SUCCESS;
-    if(base->data == NULL) return BH_SUCCESS;
+    if(base == NULL) return;
+    if(base->data == NULL) return;
 
     bytes = bh_base_size(base);
 
     if(bh_memory_free(base->data, bytes) != 0) {
-        int errsv = errno; // munmmap() sets the errno.
-        printf("bh_data_free() could not free a data region. "
-               "Returned error code: %s.\n", strerror(errsv));
-        return BH_ERROR;
+        stringstream ss;
+        ss << "bh_data_free() could not free a data region. " \
+           << "Returned error code: " << strerror(errno);
+        throw runtime_error(ss.str());
     }
 
     base->data = NULL;
-    return BH_SUCCESS;
+    return;
 }
 
 /* Size of the base array in bytes

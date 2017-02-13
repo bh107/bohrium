@@ -7,7 +7,6 @@
 
 #include "bh_opcode.h"
 #include <bh_view.hpp>
-#include "bh_error.h"
 
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}

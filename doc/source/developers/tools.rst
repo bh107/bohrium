@@ -63,7 +63,7 @@ Build and install Bohrium (with some components deactivated)::
   cd bohrium-master
   mkdir build
   cd build
-  cmake .. -DPYTHON_EXECUTABLE=/usr/bin/dython -DEXT_FFTW=OFF -DEXT_VISUALIZER=OFF -DVEM_VISUALIZER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF  -DBRIDGE_NUMCIL=OFF -DTEST_CIL=OFF
+  cmake .. -DPYTHON_EXECUTABLE=/usr/bin/dython -DEXT_FFTW=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DVE_GPU=OFF  -DBRIDGE_NUMCIL=OFF -DTEST_CIL=OFF
   make
   make install
   cd ..
@@ -181,4 +181,3 @@ Setup jenkins::
   sudo apt-get install jenkins
 
 Then configure it via web-interface.
-

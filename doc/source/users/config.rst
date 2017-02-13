@@ -37,12 +37,6 @@ The default configuration file looks similar to the config below::
   port = 4200
   impl = /usr/lib/libbh_vem_proxy.so
 
-  [visualizer]
-  address = localhost
-  port = 4200
-  impl = /usr/lib/libbh_vem_visualizer.so
-  libs = /usr/lib/libbh_visualizer.so
-
 
   #
   # Filters - Helpers / Tools

@@ -31,7 +31,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include <bh_mem_signal.h>
-#include <bh_error.h>
 
 using namespace std;
 
@@ -118,7 +117,6 @@ static void sighandler(int signal_number, siginfo_t *info, void *context)
     pthread_mutex_unlock(&signal_mutex);
     if(s == segments.end())//Address not found in 'segments'
     {
-//        printf("bh_signal: Defaulting to segfaul at addr: %p\n", info->si_addr);
         signal(signal_number, SIG_DFL);
     }
     else
@@ -130,9 +128,8 @@ static void sighandler(int signal_number, siginfo_t *info, void *context)
 /** Init arrays and signal handler
  *
  * @param void
- * @returnm void
  */
-int bh_mem_signal_init(void)
+void bh_mem_signal_init(void)
 {
     pthread_mutex_lock(&signal_mutex);
     if(!initialized)
@@ -146,16 +143,16 @@ int bh_mem_signal_init(void)
     }
     initialized = true;
     pthread_mutex_unlock(&signal_mutex);
-    return 0;
 }
 
 /** Shutdown of this library */
 void bh_mem_signal_shutdown(void)
 {
     pthread_mutex_lock(&signal_mutex);
-    if(segments.size() > 0)
-    {
-        cerr << "mem_signal: not all attached memory segments are detached!" << endl;
+    if(segments.size() > 0) {
+        stringstream ss;
+        ss << "mem_signal: not all attached memory segments are detached!" << endl;
+        throw runtime_error(ss.str());
     }
     pthread_mutex_unlock(&signal_mutex);
 }
@@ -169,45 +166,39 @@ void bh_mem_signal_shutdown(void)
  *                   segment. The function is called with the memory idx and the address pointer
  * @return - error code
  */
-int bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
+void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
                          void (*callback)(void*, void*))
 {
     pthread_mutex_lock(&signal_mutex);
 
-    //Create new memory segment that we will attach
+    // Create new memory segment that we will attach
     Segment segment(addr, size, idx, callback);
 
-    //Let's check for double attachments
+    // Let's check for double attachments
     if(segments.find(segment) != segments.end())
     {
         auto conflict = segments.find(Segment(addr, size));
-        cerr << "mem_signal: Could not attach signal, memory segment (" \
-             << segment.addr_begin() << " to " << segment.addr_end() \
-             << ") is in conflict with already attached memory segment (" \
-             << conflict->addr_begin() << " to " << conflict->addr_end() << ")" << endl;
+        stringstream ss;
+        ss << "mem_signal: Could not attach signal, memory segment (" \
+           << segment.addr_begin() << " to " << segment.addr_end() \
+           << ") is in conflict with already attached memory segment (" \
+           << conflict->addr_begin() << " to " << conflict->addr_end() << ")" << endl;
         pthread_mutex_unlock(&signal_mutex);
-        return BH_ERROR;
+        throw runtime_error(ss.str());
     }
 
-    //Finally, let's insert the new segment
+    // Finally, let's insert the new segment
     segments.insert(segment);
-//    printf("bh_mem_signal_attach()\n");
-//    cout << segments << endl;
     pthread_mutex_unlock(&signal_mutex);
-    return 0;
 }
 
 /** Detach signal
  *
  * @param addr - Start address of memory segment.
- * @return - error code
  */
-int bh_mem_signal_detach(const void *addr)
+void bh_mem_signal_detach(const void *addr)
 {
     pthread_mutex_lock(&signal_mutex);
     segments.erase(addr);
-//    printf("bh_mem_signal_detach()\n");
-//    cout << segments << endl;
     pthread_mutex_unlock(&signal_mutex);
-    return 0;
 }

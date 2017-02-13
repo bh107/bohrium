@@ -47,10 +47,8 @@ extern "C" {
 
 
 bh_type type_py2cph(int npy_type);
-int type_cph2py(bh_type type);
-bh_error bh_set_constant(int npy_type, bh_constant* constant, void * data);
-bh_error bh_set_int_constant(int npy_type, bh_constant* constant,  long long integer);
-const char* bh_npy_type_text(int npy_type);
+void bh_set_constant(int npy_type, bh_constant* constant, void * data);
+void bh_set_int_constant(int npy_type, bh_constant* constant,  long long integer);
 
 #ifdef __cplusplus
 }

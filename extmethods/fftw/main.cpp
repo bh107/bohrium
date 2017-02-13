@@ -50,11 +50,8 @@ public:
         int sign = args[0];
 
         //Make sure that the arrays memory are allocated.
-        if(bh_data_malloc(out->base) != BH_SUCCESS)
-            throw bad_alloc();
-
-        if(bh_data_malloc(in->base) != BH_SUCCESS)
-            throw bad_alloc();
+        bh_data_malloc(out->base);
+        bh_data_malloc(in->base);
 
         fftw_complex *i = (fftw_complex*) in->base->data;
         fftw_complex *o = (fftw_complex*) out->base->data;

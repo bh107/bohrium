@@ -32,7 +32,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_type.h"
 #include "bh_base.hpp"
 #include <bh_constant.hpp>
-#include "bh_error.h"
 #include "bh_win.h"
 
 #include <boost/serialization/split_member.hpp>
@@ -181,11 +180,8 @@ DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
  * @param type The type of data in the array
  * @param nelements The number of elements
  * @param new_base The handler for the newly created base
- * @return Error code (BH_SUCCESS, BH_OUT_OF_MEMORY)
  */
-DLLEXPORT bh_error bh_create_base(bh_type    type,
-                                  bh_index   nelements,
-                                  bh_base**  new_base);
+DLLEXPORT void bh_create_base(bh_type type, bh_index nelements, bh_base** new_base);
 
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
@@ -246,17 +242,15 @@ DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
  *
  * @view   The view in question
  * @data   The new data pointer
- * @return Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_data_set(bh_view* view, bh_data_ptr data);
+DLLEXPORT void bh_data_set(bh_view* view, bh_data_ptr data);
 
 /* Get the data pointer for the view.
  *
  * @view    The view in question
  * @result  Output data pointer
- * @return  Error code (BH_SUCCESS, BH_ERROR)
  */
-DLLEXPORT bh_error bh_data_get(bh_view* view, bh_data_ptr* result);
+DLLEXPORT void bh_data_get(bh_view* view, bh_data_ptr* result);
 
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *
