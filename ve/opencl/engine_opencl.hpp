@@ -41,7 +41,7 @@ private:
     std::map<uint64_t, cl::Program> _programs;
     // The OpenCL context, device, and queue used throughout the execution
     cl::Context context;
-    cl::Device default_device;
+    cl::Device device;
     cl::CommandQueue queue;
     // OpenCL work group sizes
     cl_ulong work_group_size_1dx = 128;
@@ -52,6 +52,8 @@ private:
     cl_ulong work_group_size_3dz = 2;
     // OpenCL compile flags
     const std::string compile_flg;
+    // Default device type
+    const std::string default_device_type;
     // Verbose flag
     const bool verbose;
     // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'

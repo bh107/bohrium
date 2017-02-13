@@ -89,6 +89,8 @@ verbose = false
 prof = false
 # Write a Graphviz graph for each kernel
 graph = false
+# Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
+device_type = auto
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
