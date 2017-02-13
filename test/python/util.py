@@ -17,11 +17,15 @@ class TYPES:
 
 
 def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
-    for ndim in range(min_ndim,max_ndim+1):
-        shape = [1]*ndim
+    for ndim in range(min_ndim, max_ndim+1):
+        shape = [1] * ndim
+
         if iters:
-            yield shape #Min shape
-            yield [max_dim]*(ndim) #Max shape
+            # Min shape
+            yield shape
+            # Max shape
+            yield [max_dim]*(ndim)
+
             for _ in range(iters):
                 for d in range(len(shape)):
                     shape[d] = np.random.randint(1,max_dim)
@@ -30,7 +34,7 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
             finished = False
             while not finished:
                 yield shape
-                #Find next shape
+                # Find next shape
                 d = ndim-1
                 while True:
                     shape[d] += 1
@@ -56,10 +60,13 @@ class ViewOfDim:
         self.step = step
         self.end = end
 
+
     def size(self):
         ret = 0
         i = self.start
+
         assert self.step != 0
+
         if self.step > 0:
             while i < self.end:
                 ret += 1
@@ -76,27 +83,32 @@ class ViewOfDim:
 
 def write_subscription(view):
     ret = "["
+
     for dim in view[:-1]:
-        ret += "%s, "%dim.write()
-    ret += "%s]"%view[-1].write()
+        ret += "%s, " % dim.write()
+
+    ret += "%s]" % view[-1].write()
     return ret
 
 
 def random_subscription(shape):
     view = []
     view_shape = []
+
     for dim in shape:
         start = random.randint(0, dim-1)
         if dim > 3:
             step = random.randint(1, dim//3)
         else:
             step = 1
+
         if start+1 < dim-1:
             end = random.randint(start+1, dim-1)
         else:
             end = start+1
 
-        if random.randint(0, 2) == 0:  # Let's reverse the stride sometimes
+        # Let's reverse the stride sometimes
+        if random.randint(0, 2) == 0:
             (start, end) = (end, start)
             step *= -1
 
@@ -110,10 +122,13 @@ def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, sampl
                       dtype="np.float32", bh_arg="BH", no_views=False):
     for cmd, shape in gen_arrays(random_state_name, max_ndim, max_dim, min_ndim, samples_in_each_ndim, dtype, bh_arg):
         yield ("%s" % cmd, shape)
+
         if functools.reduce(operator.mul, shape) > 1 and not no_views:
             sub_tried = set()
+
             for _ in range(samples_in_each_ndim):
                 sub, vshape = random_subscription(shape)
+
                 if sub not in sub_tried:
                     yield ("%s%s" % (cmd, sub), vshape)
                     sub_tried.add(sub)

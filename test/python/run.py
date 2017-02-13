@@ -12,30 +12,35 @@ import bohrium
 # Never run test with the '-m bohrium' switch
 assert (numpy != bohrium)
 
+
 # Terminal colors
-HEADER = '\033[95m'
-OKBLUE = '\033[94m'
+HEADER  = '\033[95m'
+OKBLUE  = '\033[94m'
 OKGREEN = '\033[92m'
 WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
+FAIL    = '\033[91m'
+ENDC    = '\033[0m'
 
 
 def get_test_object_names(obj):
-    """Returns all attribute names that starts with "test_"""
+    """ Returns all attribute names that starts with "test_" """
     ret = []
+
     for o in dir(obj):
         if o.startswith("test_"):
             ret.append(o)
+
     return ret
 
 
 def run(args):
     for filename in args.files:
         if not filename.endswith("py"):
-            continue  # Ignore non-python files
+            # Ignore non-python files
+            continue
 
-        module_name = os.path.basename(filename)[:-3]  # Remove ".py"
+        # Remove ".py"
+        module_name = os.path.basename(filename)[:-3]
         m = imp.load_source(module_name, filename)
 
         if len(args.class_list) > 0:
@@ -65,7 +70,7 @@ def run(args):
                     if len(cmd) == 2:
                         (cmd_np, cmd_bh) = cmd
                     else:
-                        # if not returning a pair, the NumPy and Bohrium command are identical
+                        # If not returning a pair, the NumPy and Bohrium command are identical
                         cmd_np = cmd
                         cmd_bh = cmd
 
@@ -82,7 +87,7 @@ def run(args):
                     assert(not bohrium.check(env['res']))
 
                     res_np = env['res']
-                    env = {"np": numpy, "bh": bohrium}
+                    env = { "np": numpy, "bh": bohrium }
                     exec(cmd_bh, env)
 
                     if bohrium.check(env['res']):

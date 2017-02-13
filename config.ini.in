@@ -1,18 +1,17 @@
-#
-# Stack configurations, which are a comma separated lists of components.
-# NB: 'stacks' is a reserved section name and 'default'
-#     is used when 'BH_STACKS' is unset.
-#     The bridge is never part of the list
-#
+##########################################################################
+# Stack configurations, which are a comma separated lists of components. #
+# NB: 'stacks' is a reserved section name and 'default'                  #
+#     is used when 'BH_STACKS' is unset.                                 #
+#     The bridge is never part of the list                               #
+##########################################################################
 [stacks]
 default    = bcexp, bccon, node, openmp
 openmp     = bcexp, bccon, node, openmp
 opencl     = bcexp, bccon, node, opencl, openmp
 
-#
-# Managers
-#
-
+############
+# Managers #
+############
 [node]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
@@ -29,15 +28,15 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_vem_visualizer${CMAKE_SHARED_LIBRARY_SU
 libs = ${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 
-#
-# Filters - Helpers / Tools
-#
+#############################
+# Filters - Helpers / Tools #
+#############################
 [pprint]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
 
-#
-# Filters - Bytecode transformers
-#
+###################################
+# Filters - Bytecode transformers #
+###################################
 [bccon]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 collect = true
@@ -63,14 +62,16 @@ impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_filter_noneremover${CMAKE_SHARED_LIBRAR
 timing = false
 verbose = false
 
-#
-# Engines
-#
+###########
+# Engines #
+###########
 [openmp]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_openmp${CMAKE_SHARED_LIBRARY_SUFFIX}
 verbose = false
-prof = false # Profiling statistics
-graph = false # Write a Graphviz graph for each kernel
+# Profiling statistics
+prof = false
+# Write a Graphviz graph for each kernel
+graph = false
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD}"
 compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 compiler_lib = "${VE_OPENMP_COMPILER_LIB}"
@@ -84,8 +85,10 @@ strides_as_variables = true
 [opencl]
 impl = ${CMAKE_INSTALL_PREFIX}/lib/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
 verbose = false
-prof = false #Profiling statistics
-graph = false # Write a Graphviz graph for each kernel
+# Profiling statistics
+prof = false
+# Write a Graphviz graph for each kernel
+graph = false
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods

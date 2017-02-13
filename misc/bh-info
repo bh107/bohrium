@@ -47,17 +47,21 @@ def parse_config(verbose=True):
         if guess is not None and os.path.isfile(guess):
             if verbose:
                 print("%sFound config file%s:\n\t%s" % (OKBLUE, END, guess))
+
             confparser = SafeConfigParser()
             confparser.read(guess)
             return confparser
+
     raise RuntimeError("Config file now found")
 
 
 def get_stack(config, verbose=True):
     name = os.getenv("BH_STACK", "default")
     stack = config.get("stacks", name)
+
     if verbose:
         print("%sComponent stack:%s \n\t%s = %s" % (OKBLUE, END, name, stack))
+
     return [s.strip() for s in stack.split(",")]
 
 
@@ -69,6 +73,7 @@ def get_value(config, component, key, default=None, verbose=False, prefix="\t"):
 
     if verbose:
         print("%s%s.%s = %s" % (prefix, component, key, ret))
+
     return ret
 
 
@@ -81,6 +86,7 @@ def print_stack_keys(config, stack, key, prefix="\t"):
 
 def print_compiler(config, component, prefix="\t"):
     cmd = get_value(config, component, "compiler_cmd", verbose=True, prefix=prefix)
+
     try:
         cmd_version = "%s -v"%cmd
         version = subprocess.check_output(cmd_version, stderr=subprocess.STDOUT, shell=True)
@@ -88,7 +94,9 @@ def print_compiler(config, component, prefix="\t"):
     except subprocess.CalledProcessError:
         print ('%sFail cmd "%s"%s'%(FAIL, cmd_version, END))
         raise
-    print('%s%s.%s = "%s"'%(prefix, component, "compiler_ver", version))
+
+    print('%s%s.%s = "%s"' % (prefix, component, "compiler_ver", version))
+
     get_value(config, component, "compiler_lib", verbose=True, prefix=prefix)
     get_value(config, component, "compiler_flg", verbose=True, prefix=prefix)
     get_value(config, component, "libs",         verbose=True, prefix=prefix)
@@ -101,6 +109,7 @@ if __name__ == "__main__":
     print ("%sbh-info - Printing formation of the current Bohrium setup%s" % (HEADER, END))
     args.config = parse_config()
     args.stack = get_stack(args.config)
+
     print ("%sJIT compiler options:%s" % (OKBLUE, END))
     print_compiler(args.config, args.stack[-1])
 
