@@ -7,6 +7,7 @@ NumPy ufunc encapsulation
 """
 from __future__ import print_function
 import sys
+import os
 from . import _util
 from . import array_create
 import numpy_force as np
@@ -133,6 +134,9 @@ def assign(ary, out):
         target.ufunc(identity, out, ary)
     else:
         if bhary.check(ary):
+            if "BH_SYNC_WARN" in os.environ:
+                import warnings
+                warnings.warn("BH_SYNC_WARN: Copying the array to NumPy", RuntimeWarning, stacklevel=2)
             get_base(ary)._data_bhc2np()
         out[...] = ary
 
