@@ -78,13 +78,15 @@
 %typemap(in) bh_float32 const {
     $1 = PyFloat_AsDouble($input);
 }
-%typemap(in) bh_complex64 const {
-    $1.real = PyComplex_RealAsDouble($input);
-    $1.imag = PyComplex_ImagAsDouble($input);
+%typemap(in) bh_complex64  const{
+    Py_complex t = PyComplex_AsCComplex($input);
+    $1.real = (float) t.real;
+    $1.imag = (float) t.imag;
 }
-%typemap(in) bh_complex128 const {
-    $1.real = PyComplex_RealAsDouble($input);
-    $1.imag = PyComplex_ImagAsDouble($input);
+%typemap(in) bh_complex128 const{
+    Py_complex t = PyComplex_AsCComplex($input);
+    $1.real = t.real;
+    $1.imag = t.imag;
 }
 %typemap(in) bh_bool {
     if(PyObject_IsTrue($input))
@@ -155,12 +157,14 @@
     $1 = PyFloat_AsDouble($input);
 }
 %typemap(in) bh_complex64 {
-    $1.real = PyComplex_RealAsDouble($input);
-    $1.imag = PyComplex_ImagAsDouble($input);
+    Py_complex t = PyComplex_AsCComplex($input);
+    $1.real = (float) t.real;
+    $1.imag = (float) t.imag;
 }
 %typemap(in) bh_complex128 {
-    $1.real = PyComplex_RealAsDouble($input);
-    $1.imag = PyComplex_ImagAsDouble($input);
+    Py_complex t = PyComplex_AsCComplex($input);
+    $1.real = t.real;
+    $1.imag = t.imag;
 }
 %typemap(in) int64_t const {
     %#if PY_MAJOR_VERSION >= 3
