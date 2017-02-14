@@ -223,10 +223,18 @@ void bh_constant::pprint(ostream& out, bool opencl) const
         out.precision(numeric_limits<double>::max_digits10);
         switch(type) {
             case BH_FLOAT32:
-                out << value.float32;
+                if (value.float32 != value.float32) {
+                    out << "NAN";
+                } else {
+                    out << value.float32;
+                }
                 break;
             case BH_FLOAT64:
-                out << value.float64;
+                if (value.float64 != value.float64) {
+                    out << "NAN";
+                } else {
+                    out << value.float64;
+                }
                 break;
             case BH_R123:
                 out << "{.start = " << value.r123.start << ", .key = " << value.r123.key << "}";
