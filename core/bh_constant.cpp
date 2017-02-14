@@ -216,7 +216,7 @@ namespace {
     void ppfloat(T value, ostream& out) {
         if (value != value) {
             out << "NAN";
-        } else if (isinf(value)) {
+        } else if (std::isinf(value)) {
             if (signbit(value)) {
                 out << "(-INFINITY)";
             } else {
