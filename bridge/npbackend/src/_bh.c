@@ -51,6 +51,7 @@ PyObject *bhary = NULL; //The bhary Python module
 PyObject *ufuncs = NULL; //The ufuncs Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
+int bh_sync_warn = 0; // Boolean: should we warn when copying from Bohrium to NumPy
 
 typedef struct
 {
@@ -898,7 +899,12 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     }
     if (scalar_output)
     {
-        // printf("Copying scalar output to Python\n");
+        if (bh_sync_warn) {
+            int err = PyErr_WarnEx(NULL,"BH_SYNC_WARN: Copying the scalar output to NumPy", 1);
+            if (err) {
+                return NULL;
+            }
+        }
         if (BhArray_data_bhc2np(o, NULL) == NULL)
             return NULL;
     }
@@ -1111,6 +1117,12 @@ PyMODINIT_FUNC init_bh(void)
     array_create = PyImport_ImportModule("bohrium.array_create");
     if(array_create == NULL)
         return RETVAL;
+
+    //Check the 'BH_SYNC_WARN' flag
+    const char *value = getenv("BH_SYNC_WARN");
+    if (value != NULL) {
+        bh_sync_warn = 1;
+    }
 
     //Initialize the signal handler
     bh_mem_signal_init();
