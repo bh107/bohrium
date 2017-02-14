@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_constant.hpp>
 #include <bh_type.h>
+#include <cmath>
 
 using namespace std;
 
@@ -209,6 +210,24 @@ bool bh_constant::operator==(const bh_constant& other) const
     }
 }
 
+namespace {
+    template<typename T>
+    // Print float while handling nan and inf
+    void ppfloat(T value, ostream& out) {
+        if (value != value) {
+            out << "NAN";
+        } else if (isinf(value)) {
+            if (signbit(value)) {
+                out << "(-INFINITY)";
+            } else {
+                out << "INFINITY";
+            }
+        } else {
+            out << value;
+        }
+    }
+}
+
 void bh_constant::pprint(ostream& out, bool opencl) const
 {
     if (type == BH_BOOL) {
@@ -223,34 +242,42 @@ void bh_constant::pprint(ostream& out, bool opencl) const
         out.precision(numeric_limits<double>::max_digits10);
         switch(type) {
             case BH_FLOAT32:
-                if (value.float32 != value.float32) {
-                    out << "NAN";
-                } else {
-                    out << value.float32;
-                }
+                ppfloat(value.float32, out);
                 break;
             case BH_FLOAT64:
-                if (value.float64 != value.float64) {
-                    out << "NAN";
-                } else {
-                    out << value.float64;
-                }
+                ppfloat(value.float64, out);
                 break;
             case BH_R123:
                 out << "{.start = " << value.r123.start << ", .key = " << value.r123.key << "}";
                 break;
             case BH_COMPLEX64:
                 if (opencl) {
-                    out << "(float2)(" << value.complex64.real << ", " << value.complex64.imag << ")";
+                    out << "(float2)(";
+                    ppfloat(value.complex64.real, out);
+                    out << ", ";
+                    ppfloat(value.complex64.imag, out);
+                    out << ")";
                 } else {
-                    out << "(" << value.complex64.real << "+" << value.complex64.imag << "*I)";
+                    out << "(";
+                    ppfloat(value.complex64.real, out);
+                    out << " + ";
+                    ppfloat(value.complex64.imag, out);
+                    out << "*I)";
                 }
                 break;
             case BH_COMPLEX128:
                 if (opencl) {
-                    out << "(double2)(" << value.complex128.real << ", " << value.complex128.imag << ")";
+                    out << "(double2)(";
+                    ppfloat(value.complex128.real, out);
+                    out << ", ";
+                    ppfloat(value.complex128.imag, out);
+                    out << ")";
                 } else {
-                    out << "(" << value.complex128.real << "+" << value.complex128.imag << "*I)";
+                    out << "(";
+                    ppfloat(value.complex128.real, out);
+                    out << " + ";
+                    ppfloat(value.complex128.imag, out);
+                    out << "*I)";
                 }
                 break;
             case BH_UNKNOWN:
