@@ -5,7 +5,7 @@ Welcome!
 
 Bohrium provides a runtime environment for efficiently executing vectorized applications using your favourite programming language Python/NumPy, C#, F# on Linux, Windows and MacOS.
 
-Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes and locks to utilize your multi-core CPU and forget about MPI to program your cluster just Bohrium!
+Forget handcrafting CUDA/OpenCL, forget threading, mutexes, and locks, use Bohrium!
 
 Features
 --------
