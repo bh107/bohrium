@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-set(BRIDGE_NUMCIL true CACHE BOOL "BRIDGE-NUMCIL: Build the NUMCIL-bridge.")
-if(NOT BRIDGE_NUMCIL)
+set(BRIDGE_CIL true CACHE BOOL "BRIDGE-CIL: Build the CIL-bridge.")
+if(NOT BRIDGE_CIL)
     return()
 endif()
 
@@ -8,7 +8,7 @@ find_package(Mono)
 set_package_properties(Mono PROPERTIES DESCRIPTION "An open source implementation the CLR" URL "www.mono-project.com")
 set_package_properties(Mono PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the NumCIL package")
 
-if(BRIDGE_NUMCIL AND MONO_FOUND)
+if(BRIDGE_CIL AND MONO_FOUND)
 
   # Enumerate over all .tt files and apply T4 to them
   SET(numcil_tt_outputs)
@@ -30,7 +30,7 @@ if(BRIDGE_NUMCIL AND MONO_FOUND)
   set(build_type "Release")
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(build_type "Debug")
-  endif()  
+  endif()
 
   file(GLOB sln_sources NumCIL/*.cs NumCIL/*.csproj NumCIL.Unsafe/*.cs NumCIL.Unsafe/*.csproj)
   set(numcil_binaries ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/NumCIL.dll ${CMAKE_CURRENT_BINARY_DIR}/bin/${build_type}/NumCIL.Unsafe.dll)
@@ -47,7 +47,7 @@ if(BRIDGE_NUMCIL AND MONO_FOUND)
   )
 
   install(FILES ${numcil_binaries} DESTINATION lib/mono COMPONENT bohrium-numcil)
-  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.dll)")  
-  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Unsafe.dll)")  
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.dll)")
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Unsafe.dll)")
 
 endif()

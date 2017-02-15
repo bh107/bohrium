@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-set(TEST_CIL true CACHE BOOL "TEST-CIL: CIL-Tests.")
-if(NOT TEST_CIL)
+set(BRIDGE_CIL true CACHE BOOL "BRIDGE-CIL: Build the CIL-bridge.")
+if(NOT BRIDGE_CIL)
     return()
 endif()
 
