@@ -93,19 +93,23 @@ def where(condition, x=None, y=None):
     if not numpy.isscalar(condition):
         condition = array_create.array(condition)
         t = condition
+
     if not numpy.isscalar(x):
         x = array_create.array(x)
         t = x
+
     if not numpy.isscalar(y):
         y = array_create.array(y)
         t = y
-    if t is None: # All arguments are scalars
+
+    # All arguments are scalars
+    if t is None:
         if condition:
             return x
         else:
             return y
+
     ret = array_create.zeros_like(t)
     ret += condition * x
     ret += ~condition * y
     return ret
-

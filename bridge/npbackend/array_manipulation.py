@@ -1,7 +1,6 @@
 """
 Array manipulation routines
 ===========================
-
 """
 from . import array_create
 import numpy_force as numpy
@@ -34,6 +33,7 @@ def flatten(ary):
     array([1, 2, 3, 4])
     """
     return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
+
 
 @fix_returned_biclass
 def diagonal(ary, offset=0, axis1=0, axis2=1):
@@ -136,6 +136,7 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
     ret_strides = ary.strides[:-2] + (ary.strides[-1] + ary.strides[-2],)
     return numpy.lib.stride_tricks.as_strided(ary, shape=ret_shape, strides=ret_strides)
 
+
 @fix_returned_biclass
 def diagflat(d, k=0):
     """
@@ -182,6 +183,7 @@ def diagflat(d, k=0):
     Ad = diagonal(A, offset=k)
     Ad[...] = d
     return A
+
 
 @fix_returned_biclass
 def diag(v, k=0):
@@ -239,6 +241,7 @@ def diag(v, k=0):
         return diagonal(v, k)
     else:
         raise ValueError("Input must be 1- or 2-d.")
+
 
 @fix_returned_biclass
 def reshape(a, *newshape):
@@ -322,16 +325,19 @@ def reshape(a, *newshape):
            [3, 4],
            [5, 6]])
     """
-    #Lets make sure that newshape is a flat sequence
+    # Lets make sure that newshape is a flat sequence
     if len(newshape) == 1:
-        if hasattr(newshape[0], "__getitem__"):#The item is a sequence
+        # The item is a sequence
+        if hasattr(newshape[0], "__getitem__"):
             newshape = newshape[0]
 
     if not a.flags['C_CONTIGUOUS']:
         t = array_create.empty_like(a)
         t[...] = a
         a = t
+
     return numpy.ndarray.reshape(a, newshape)
+
 
 @fix_returned_biclass
 def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
@@ -391,9 +397,12 @@ def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
 
     """
     D = diagonal(ary, offset=offset, axis1=axis1, axis2=axis2)
+
     if dtype:
         D = D.astype(dtype)
+
     return D.sum(axis=-1)
+
 
 def broadcast_arrays(*args):
     """
@@ -439,6 +448,7 @@ def broadcast_arrays(*args):
     try:
         ret = []
         bargs = numpy.broadcast_arrays(*args)
+
         for a, b in zip(args, bargs):
             if numpy.isscalar(a) or not isinstance(a, numpy.ndarray):
                 ret.append(b)
@@ -450,7 +460,9 @@ def broadcast_arrays(*args):
         if str(msg).find("shape mismatch: objects cannot be broadcast to a single shape") != -1:
             shapes = [arg.shape for arg in args]
             raise ValueError("shape mismatch: objects cannot be broadcast to a single shape: %s" % shapes)
+
     return ret
+
 
 def fill(a, value):
     """

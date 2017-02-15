@@ -26,8 +26,11 @@ class Base(object):
     :param numpy.dtype dtype: Data type of the elements
     """
     def __init__(self, size, dtype):
-        self.size = size        # Total number of elements
-        self.dtype = dtype      # Data type
+        # Total number of elements
+        self.size = size
+        # Data type
+        self.dtype = dtype
+
 
 class View(object):
     """
@@ -41,20 +44,29 @@ class View(object):
     :param interface.Base base: Base associated with array.
     """
     def __init__(self, ndim, start, shape, strides, base):
-        self.ndim = ndim        # Number of dimensions
-        self.shape = shape      # Tuple of dimension sizes
-        self.base = base        # The base array this view refers to
+        # Number of dimensions
+        self.ndim = ndim
+        # Tuple of dimension sizes
+        self.shape = shape
+        # The base array this view refers to
+        self.base = base
+        # Data type
         self.dtype = base.dtype
-        self.start = start * base.dtype.itemsize # Offset from base (in bytes)
-        self.strides = [x * base.dtype.itemsize for x in strides] #Tuple of strides (in bytes)
+        # Offset from base (in bytes)
+        self.start = start * base.dtype.itemsize
+        # Tuple of strides (in bytes)
+        self.strides = [x * base.dtype.itemsize for x in strides]
+
 
 def runtime_flush():
-    """Flush the runtime system"""
+    """ Flush the runtime system """
     pass
 
+
 def tally():
-    """Tally the runtime system"""
+    """ Tally the runtime system """
     pass
+
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     """
@@ -70,6 +82,7 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     """
     raise NotImplementedError()
 
+
 def set_bhc_data_from_ary(self, ary):
     """
     Copy data from 'ary' into the array 'self'
@@ -80,6 +93,7 @@ def set_bhc_data_from_ary(self, ary):
     """
     raise NotImplementedError()
 
+
 def ufunc(op, *args):
     """
     Perform the ufunc 'op' on the 'args' arrays
@@ -89,6 +103,7 @@ def ufunc(op, *args):
     :rtype: None
     """
     raise NotImplementedError()
+
 
 def reduce(op, out, ary, axis):
     """
@@ -102,6 +117,7 @@ def reduce(op, out, ary, axis):
     """
     raise NotImplementedError()
 
+
 def accumulate(op, out, ary, axis):
     """
     Accumulate/scan 'axis' dimension of 'ary' and write the result to 'out'.
@@ -114,6 +130,7 @@ def accumulate(op, out, ary, axis):
     """
     raise NotImplementedError()
 
+
 def extmethod(name, out, in1, in2):
     """
     Apply the extension method 'name'.
@@ -125,6 +142,7 @@ def extmethod(name, out, in1, in2):
     """
     raise NotImplementedError()
 
+
 def arange(size, dtype):
     """
     Create a new array containing the values [0:size[.
@@ -133,8 +151,8 @@ def arange(size, dtype):
     :param np.dtype dtype: Type of elements in the returned range.
     :rtype: Mixed
     """
-
     raise NotImplementedError()
+
 
 def random123(size, start_index, key):
     """
@@ -146,6 +164,7 @@ def random123(size, start_index, key):
     :param int key: TODO
     """
     raise NotImplementedError()
+
 
 def gather(out, ary, indexes):
     """

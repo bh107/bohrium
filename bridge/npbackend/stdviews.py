@@ -1,8 +1,8 @@
 """
 View Constructors
 =================
-
 """
+
 from __future__ import print_function
 import itertools
 
@@ -68,4 +68,3 @@ def diagonals(x, size):
             result.append(data[i])
     result.pop(2)
     return result
-

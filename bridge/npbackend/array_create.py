@@ -1,7 +1,6 @@
 """
 Array Creation Routines
 =======================
-
 """
 import math
 import warnings
@@ -16,6 +15,7 @@ def _warn_dtype(dtype, stacklevel):
     """Raise a dtype-not-supported warning """
     warnings.warn("Bohrium does not support the dtype '%s', the new array will be a regular NumPy array."
                   % dtype, UserWarning, stacklevel)
+
 
 @fix_returned_biclass
 def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
@@ -115,14 +115,18 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
         if bhary.check(ary):
             if order == 'F':
                 raise ValueError("Cannot convert a Bohrium array to column-major ('F') memory representation")
+
             if copy:
                 ary = ary.copy()
+
             if dtype is not None and not dtype_equal(dtype, ary.dtype):
                 t = empty_like(ary, dtype=dtype)
                 t[...] = ary
                 ary = t
+
             for i in range(ary.ndim, ndmin):
                 ary = numpy.expand_dims(ary, i)
+
             return ary
         else:
             # Let's convert the array using regular NumPy.
@@ -135,6 +139,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                     for i in range(len(ary)): # Converting 1-element Bohrium arrays to NumPy scalars
                         if bhary.check(ary[i]) and ary[i].size == 1:
                             ary[i] = ary[i].copy2numpy()
+
                     ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
 
             # In any case, the array must meet some requirements
@@ -147,6 +152,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             ret = empty(ary.shape, dtype=ary.dtype)
             if ret.size > 0:
                 ret._data_fill(ary)
+
             return ret
     else:
         if bhary.check(ary):
@@ -154,6 +160,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             return numpy.array(ret, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
         else:
             return numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+
 
 @fix_returned_biclass
 def empty(shape, dtype=float, bohrium=True):
@@ -198,7 +205,9 @@ def empty(shape, dtype=float, bohrium=True):
 
     if not bohrium:
         return numpy.empty(shape, dtype=dtype)
+
     return bhary.new(shape, dtype)
+
 
 @fix_returned_biclass
 def ones(shape, dtype=float, bohrium=True):
@@ -247,6 +256,7 @@ def ones(shape, dtype=float, bohrium=True):
     A[...] = A.dtype.type(1)
     return A
 
+
 @fix_returned_biclass
 def zeros(shape, dtype=float, bohrium=True):
     """
@@ -292,6 +302,7 @@ def zeros(shape, dtype=float, bohrium=True):
     A = empty(shape, dtype=dtype, bohrium=bohrium)
     A[...] = A.dtype.type(0)
     return A
+
 
 @fix_returned_biclass
 def empty_like(a, dtype=None, bohrium=None):
@@ -343,9 +354,12 @@ def empty_like(a, dtype=None, bohrium=None):
     """
     if dtype is None:
         dtype = a.dtype
+
     if bohrium is None:
         bohrium = bhary.check(a)
+
     return empty(a.shape, dtype, bohrium)
+
 
 @fix_returned_biclass
 def zeros_like(a, dtype=None, bohrium=None):
@@ -401,11 +415,15 @@ def zeros_like(a, dtype=None, bohrium=None):
     """
     if dtype is None:
         dtype = a.dtype
+
     if bohrium is None:
         bohrium = bhary.check(a)
+
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[...] = b.dtype.type(0)
+
     return b
+
 
 @fix_returned_biclass
 def ones_like(a, dtype=None, bohrium=None):
@@ -461,11 +479,15 @@ def ones_like(a, dtype=None, bohrium=None):
     """
     if dtype is None:
         dtype = a.dtype
+
     if bohrium is None:
         bohrium = bhary.check(a)
+
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[...] = b.dtype.type(1)
+
     return b
+
 
 @fix_returned_biclass
 def arange(start, stop=None, step=1, dtype=None, bohrium=True):
@@ -530,15 +552,12 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     """
     if not bohrium:
         return numpy.arange(start, stop, step, dtype)
+
     if stop is None:
         stop = start
         start = type(stop)(0)
 
-    def isinteger(x):
-        """Small help function"""
-        return numpy.equal(numpy.mod(x, 1), 0)
-
-    if not (isinteger(stop) or isinteger(start)):
+    if not (stop.is_integer() and start.is_integer()):
         raise ValueError("arange(): start and stop must be integers")
 
     if step == 0:
@@ -566,11 +585,15 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     if swap_back:
         step *= -1
         (start, stop) = (stop, start)
+
     if step != 1:
         result *= step
+
     if start != 0:
         result += start
+
     return result
+
 
 @fix_returned_biclass
 def simply_range(size, dtype=numpy.uint64):
@@ -578,10 +601,13 @@ def simply_range(size, dtype=numpy.uint64):
         integers = (int, long)
     except:
         integers = (int,)
+
     if not isinstance(size, integers):
         raise ValueError("size must be an integer")
+
     if size < 1:
         raise ValueError("size must be greater than 0")
+
     if dtype_in(dtype, [numpy.int8,
                         numpy.int16,
                         numpy.int32,
@@ -594,14 +620,17 @@ def simply_range(size, dtype=numpy.uint64):
         A = empty((size,), dtype=numpy.uint32, bohrium=True)
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
+
     ret = target.arange(size, A.dtype)
     A = bhary.new((size,), A.dtype, ret)
+
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)
         B[...] = A[...]
         return B
     else:
         return A
+
 
 @fix_returned_biclass
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, bohrium=True):
@@ -675,9 +704,11 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
     if not bohrium:
         #TODO: add copy=False to .astype()
         return numpy.linspace(start, stop, num=num, endpoint=endpoint, retstep=retstep).astype(dtype)
+
     num = int(num)
     if num <= 0:
         return array([], dtype=dtype)
+
     if endpoint:
         if num == 1:
             return array([numpy.dtype(dtype).type(start)])
@@ -693,6 +724,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         return y, step
     else:
         return y
+
 
 def load(file, mmap_mode=None, bohrium=True):
     """
@@ -777,9 +809,12 @@ def load(file, mmap_mode=None, bohrium=True):
 
     """
     arr = numpy.load(file, mmap_mode)
+
     if bohrium:
         arr = array(arr, bohrium=True)
+
     return arr
+
 
 def save(file, arr):
     """
@@ -818,8 +853,11 @@ def save(file, arr):
 
     """
     bohrium = bhary.check(arr)
+
     if bohrium:
         array(arr, bohrium=False)
+
     numpy.save(file, arr)
+
     if bohrium:
         array(arr, bohrium=True)

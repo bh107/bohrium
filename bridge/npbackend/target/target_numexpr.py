@@ -12,35 +12,39 @@ import ctypes
 from . import target_numpy
 
 class Base(target_numpy.Base):
-    """base array handle"""
+    """ Base array handle """
     pass
 
 
 class View(target_numpy.View):
-    """array view handle"""
+    """ Array view handle """
     pass
 
+
 def views2numpy(views):
-    """Returns the ndarray associated with the given View."""
+    """ Returns the ndarray associated with the given View """
     ret = []
     for view in views:
         if isinstance(view, View):
             ret.append(view.ndarray)
         else:
             ret.append(view)
+
     return ret
+
 
 def get_data_pointer(ary, allocate=False, nullify=False):
     return target_numpy.get_data_pointer(ary, allocate, nullify)
 
+
 def set_bhc_data_from_ary(self, ary):
     return target_numpy.set_bhc_data_from_ary(self, ary)
 
+
 # Setup numexpr
 numexpr.set_num_threads(int(os.getenv('OMP_NUM_THREADS', 1)))
-print("using numexpr target with %d threads" %
-      int(os.getenv('OMP_NUM_THREADS', 1))
-)
+print("using numexpr target with %d threads" % int(os.getenv('OMP_NUM_THREADS', 1)))
+
 UFUNC_CMDS = {
     'identity': "i1",
     'add':      "i1 + i2",
@@ -52,8 +56,9 @@ UFUNC_CMDS = {
     'sqrt':     "sqrt(i1)"
 }
 
+
 def ufunc(op, *args):
-    """Apply the 'op' on args, which is the output followed by one or two inputs"""
+    """ Apply the 'op' on args, which is the output followed by one or two inputs """
     args = views2numpy(args)
     i1 = args[1]
     if len(args) > 2:
@@ -70,8 +75,9 @@ def ufunc(op, *args):
         func = eval("np.%s" % op.info['name'])
         func(*args[1:], out=args[0])
 
+
 def reduce(op, out, ary, axis):
-    """reduce 'axis' dimension of 'a' and write the result to out"""
+    """ Reduce 'axis' dimension of 'a' and write the result to out """
 
     (ary, out) = views2numpy((ary, out))
     if op.info['name'] == 'add':
@@ -81,25 +87,22 @@ def reduce(op, out, ary, axis):
     else:
         print ("WARNING: reduce '%s' not compiled" % op.info['name'])
         func = eval("np.%s.reduce" % op.info['name'])
-        if ary.ndim == 1:
-            keepdims = True
-        else:
-            keepdims = False
+        keepdims = ary.ndim == 1:
         func(ary, axis=axis, out=out, keepdims=keepdims)
 
+
 def accumulate(op, out, ary, axis):
-    """accumulate 'axis' dimension of 'a' and write the result to out"""
+    """ Accumulate 'axis' dimension of 'a' and write the result to out """
 
     func = eval("np.%s.accumulate" % op.info['name'])
+
     (ary, out) = views2numpy((ary, out))
-    if ary.ndim == 1:
-        keepdims = True
-    else:
-        keepdims = False
+    keepdims = ary.ndim == 1
     func(ary, axis=axis, out=out, keepdims=keepdims)
 
+
 def extmethod(name, out, in1, in2):
-    """Apply the extended method 'name' """
+    """ Apply the extended method 'name' """
 
     (out, in1, in2) = views2numpy((out, in1, in2))
     if name == "matmul":
@@ -108,16 +111,20 @@ def extmethod(name, out, in1, in2):
         raise NotImplementedError("The current runtime system does not support "
                                   "the extension method '%s'" % name)
 
+
 def arange(size, dtype):
-    """create a new array containing the values [0:size["""
+    """ Create a new array containing the values [0:size[ """
     raise NotImplementedError()
     return np.arange((size,), dtype=dtype)
 
 def random123(size, start_index, key):
-    """Create a new random array using the random123 algorithm.
-    The dtype is uint64 always."""
+    """
+    Create a new random array using the random123 algorithm.
+    The dtype is always uint64.
+    """
     raise NotImplementedError()
     return np.random.random(size)
+
 
 import atexit
 @atexit.register

@@ -19,7 +19,7 @@ import os
 DEFAULT_TARGET = "bhc"
 
 def _get_target():
-    """Returns the target backend module to use"""
+    """ Returns the target backend module to use """
 
     files = os.listdir(os.path.dirname(os.path.abspath(__file__)))
     targets = []
@@ -27,19 +27,24 @@ def _get_target():
         if f.startswith("target_") and f.endswith(".py"):
             targets.append(f)
 
-    target = None               # Check for environment override of default target
+    # Check for environment override of default target
+    target = None
     for env_var in ['BHPY_BACKEND', 'BHPY_TARGET', 'NPBE_TARGET']:
         target = os.getenv(env_var)
         if target:
             break
+
     target = target if target else DEFAULT_TARGET
     target = "target_%s.py"%target
 
-    if target not in targets:   # Validate the target
+    # Validate the target
+    if target not in targets:
         msg  = "Unsupported npbackend target: '%s'. "%target[len("target_"):-len(".py")]
         msg += "Use one of: "
+
         for t in targets:
             msg += "'%s', "%t[len("target_"):-len(".py")]
+
         msg = "%s."%msg[:-2]
         raise RuntimeError(msg)
 
@@ -53,6 +58,5 @@ from .interface import *
 # Then we import the target backend implementation
 exec("from .%s import *"%_target[:-len(".py")])
 
-#Finally, we expose the chosen target name
+# Finally, we expose the chosen target name
 TARGET = _target[len("target_"):-len(".py")]
-
