@@ -87,7 +87,7 @@ def reduce(op, out, ary, axis):
     else:
         print ("WARNING: reduce '%s' not compiled" % op.info['name'])
         func = eval("np.%s.reduce" % op.info['name'])
-        keepdims = ary.ndim == 1:
+        keepdims = ary.ndim == 1
         func(ary, axis=axis, out=out, keepdims=keepdims)
 
 
