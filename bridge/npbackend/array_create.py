@@ -557,7 +557,11 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         stop = start
         start = type(stop)(0)
 
-    if not (stop.is_integer() and start.is_integer()):
+    try:
+        integers = (int, long)
+    except:
+        integers = (int,)
+    if not (isinstance(stop, integers) and isinstance(start, integers)):
         raise ValueError("arange(): start and stop must be integers")
 
     if step == 0:
