@@ -17,3 +17,45 @@ Features
 | Windows   |                 |                       |               |               |     |    |    |
 
 The documentation is available at www.bh107.org
+
+Installation
+------------
+On Ubuntu use apt-get:
+```
+sudo add-apt-repository ppa:bohrium/nightly
+sudo apt-get update
+sudo apt-get install bohrium
+```
+
+On MacOS use [Homebrew](https://brew.sh):
+```
+brew install bh107/homebrew-bohrium/bohrium
+```
+
+Alternatively, build from source:
+```
+wget https://github.com/bh107/bohrium/archive/master.zip
+unzip master.zip
+cd bohrium-master
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
+make install
+```
+
+Find the full installation guide at: http://bohrium.readthedocs.io/installation/
+
+
+User Guide
+----------
+
+In order to use Bohrium, simply run your Python/NumPy program using the command line argument `-m bohrium`:
+```
+python -m bohrium my_numpy_app.py
+```
+In which case, all instances of `import numpy` is converted to `import bohrium` seamlessly. If you need to access the real numpy module use `import numpy_force`.
+
+For the full user guide, which include C, C++, and .NET languages, see: http://bohrium.readthedocs.io/users/index.html
+
+
+
