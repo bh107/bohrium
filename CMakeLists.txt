@@ -164,15 +164,20 @@ install(PROGRAMS misc/bh-info DESTINATION bin COMPONENT bohrium)
 # Bohrium configuration file
 configure_file(${CMAKE_SOURCE_DIR}/config.ini.in ${CMAKE_BINARY_DIR}/config.ini)    # Fill out the config-template
 
-string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})              # Install it
-if ("${ROOT_INSTALL}" STREQUAL "")
-    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
+set(FORCE_CONFIG_PATH "OFF" CACHE STRING "Manually setting the install path of the config (ini) file")
+if ("${FORCE_CONFIG_PATH}" STREQUAL "OFF")
+    string(REGEX MATCH "^$ENV{HOME}" ROOT_INSTALL ${CMAKE_INSTALL_PREFIX})
+    if ("${ROOT_INSTALL}" STREQUAL "")
+        install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION etc/bohrium COMPONENT bohrium)
+    else()
+        install(CODE "
+        if(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
+            configure_file(${CMAKE_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPYONLY)
+        endif(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
+        " COMPONENT bohrium)
+    endif()
 else()
-    install(CODE "
-    if(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
-        configure_file(${CMAKE_BINARY_DIR}/config.ini \"\$ENV{HOME}/.bohrium/config.ini\" COPYONLY)
-    endif(NOT EXISTS \"\$ENV{HOME}/.bohrium/config.ini\")
-    " COMPONENT bohrium)
+    install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION ${FORCE_CONFIG_PATH} COMPONENT bohrium)
 endif()
 
 MESSAGE(STATUS "C compiler:" ${CMAKE_C_COMPILER})
