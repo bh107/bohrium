@@ -19,6 +19,9 @@ add_library(bh SHARED ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/bh_opcode.cpp)
 target_link_libraries(bh ${CMAKE_DL_LIBS})      # bh_component depends on dlopen etc.
 target_link_libraries(bh ${Boost_LIBRARIES})    # A shit ton of stuff depends on boost
 
+set(CORE_LINK_FLAGS "" CACHE STRING "Link flags to use when creating _bh.so (e.g. -static-libgcc -static-libstdc++)")
+target_link_libraries(bh ${CORE_LINK_FLAGS})
+
 install(TARGETS bh DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
 install(DIRECTORY ${BOHRIUM_SOURCE_DIR}/include/ DESTINATION include/bohrium COMPONENT bohrium)
 install(DIRECTORY ${INCLUDE_DIR}/ DESTINATION include/bohrium COMPONENT bohrium)
