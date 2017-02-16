@@ -311,6 +311,11 @@ class BenchHelper:
         env = os.environ.copy()
         env['BH_PROXY_PORT'] = "4201"
 
+        # SIP on macOS won't allow passing on DYLD_LIBRARY_PATH in env, so
+        # we attach it to the command instead.
+        if "DYLD_LIBRARY_PATH" in env:
+            cmd = ["DYLD_LIBRARY_PATH=" + env["DYLD_LIBRARY_PATH"]] + cmd
+
         # Execute the benchmark
         out = shell_cmd(cmd, verbose=self.args.verbose, env=env)
         if 'elapsed-time' not in out:
