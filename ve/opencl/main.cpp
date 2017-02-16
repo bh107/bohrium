@@ -55,6 +55,7 @@ class Impl : public ComponentImplWithChild {
     FuseCache fcache;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
+    set<bh_opcode> child_extmethods;
     // The OpenCL engine
     EngineOpenCL engine;
     // Write an OpenCL kernel
@@ -69,7 +70,13 @@ class Impl : public ComponentImplWithChild {
     void extmethod(const string &name, bh_opcode opcode) {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
-        extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
+        try {
+            extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
+        } catch(extmethod::ExtmethodNotFound e) {
+            // I don't know this function, lets try my child
+            child.extmethod(name, opcode);
+            child_extmethods.insert(opcode);
+        }
     }
 };
 }
@@ -200,15 +207,29 @@ void Impl::execute(bh_ir *bhir) {
         vector<bh_instruction> instr_list;
         for (bh_instruction &instr: bhir->instr_list) {
             auto ext = extmethods.find(instr.opcode);
-            if (ext != extmethods.end()) {
+            auto childext = child_extmethods.find(instr.opcode);
+
+            if (ext != extmethods.end() or childext != child_extmethods.end()) {
                 // Execute the instructions up until now
                 bh_ir b;
                 b.instr_list = instr_list;
                 this->execute(&b);
                 instr_list.clear();
 
-                // Execute the extension method
-                ext->second.execute(&instr, &engine);
+                if (ext != extmethods.end()) {
+                    // Execute the extension method
+                    ext->second.execute(&instr, &engine);
+                } else if (childext != child_extmethods.end()) {
+                    // We let the child component execute the instrution
+                    set<bh_base *> ext_bases = instr.get_bases();
+                    engine.copyToHost(ext_bases);
+
+                    std::vector<bh_instruction> child_instr_list;
+                    child_instr_list.push_back(instr);
+                    b.instr_list = child_instr_list;
+
+                    child.execute(&b);
+                }
             } else {
                 instr_list.push_back(instr);
             }
