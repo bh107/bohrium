@@ -6,12 +6,17 @@ public:
 
         // A is a m*k matrix
         bh_view* A = &instr->operand[1];
+        // We allocate the A data, if not already present
+        bh_data_malloc(A->base);
         void *A_data;
         bh_data_get(A, (bh_data_ptr*) &A_data);
 
         ${if_B}
         // B is a k*n matrix
         bh_view* B = &instr->operand[2];
+        // We allocate the B data, if not already present
+        bh_data_malloc(B->base);
+
         assert(A->base->type == B->base->type);
         void *B_data;
         bh_data_get(B, (bh_data_ptr*) &B_data);
