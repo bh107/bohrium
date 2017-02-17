@@ -50,12 +50,13 @@ User Guide
 ----------
 
 In order to use Bohrium, simply run your Python/NumPy program using the command line argument `-m bohrium`:
+
 ```
 python -m bohrium my_numpy_app.py
 ```
+
 In which case, all instances of `import numpy` is converted to `import bohrium` seamlessly. If you need to access the real numpy module use `import numpy_force`.
 
+If you have [Jupyter](http://jupyter.org/) installed, you can use the magic command `%%bohrium` to achieve the same results. 
+
 For the full user guide, which include C, C++, and .NET languages, see: http://bohrium.readthedocs.io/users/index.html
-
-
-

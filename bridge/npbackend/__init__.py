@@ -25,6 +25,33 @@ from numpy_force import dtype
 asarray = array
 asanyarray = array
 
+
+def replace_numpy(function):
+    def wrapper(*args, **kwargs):
+        import numpy
+        import bohrium
+
+        __numpy = sys.modules['numpy']
+        __numpy_random = sys.modules['numpy.random']
+        __numpy_linalg = sys.modules['numpy.linalg']
+
+        # Overwrite Bohrium
+        sys.modules['numpy_force']  = numpy
+        sys.modules['numpy']        = bohrium
+        sys.modules['numpy.random'] = bohrium.random
+        sys.modules['numpy.linalg'] = bohrium.linalg
+
+        # Run your function/program
+        function(*args, **kwargs)
+
+        # Put NumPy back together
+        sys.modules.pop('numpy_force', None)
+        sys.modules['numpy']        = __numpy
+        sys.modules['numpy.random'] = __numpy_random
+        sys.modules['numpy.linalg'] = __numpy_linalg
+    return wrapper
+
+
 # Expose all ufuncs
 for _name, _f in UFUNCS.items():
     exec("%s = _f" % _name)

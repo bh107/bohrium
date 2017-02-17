@@ -5,9 +5,9 @@
 
 import sys
 import os
-import numpy
 import bohrium
 
+@bohrium.replace_numpy
 def execfile_wrapper(path):
     """execfile() does not exist in Python 3"""
 
@@ -18,12 +18,6 @@ def execfile_wrapper(path):
         import runpy
         return runpy.run_path(path, init_globals={}, run_name="__main__")
     return execfile(path, {"__name__": "__main__", "__file__": path})
-
-# numpy becomes bohrium
-sys.modules['numpy_force'] = numpy
-sys.modules['numpy'] = bohrium
-sys.modules['numpy.random'] = bohrium.random
-sys.modules['numpy.linalg'] = bohrium.linalg
 
 # Set the module search path to the dir of the script
 sys.argv.pop(0)
@@ -37,4 +31,3 @@ if len(sys.argv) > 0:
     execfile_wrapper(sys.argv[0])
 else:
     print ('ERR: the "-m bohrium" does not support interactive mode')
-
