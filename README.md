@@ -27,6 +27,16 @@ sudo apt-get update
 sudo apt-get install bohrium
 ```
 
+On Linux-64 use [Anaconda](https://www.continuum.io/downloads):
+```
+# Create a new environment 'bh' with the 'bohrium' package from the 'bohrium' channel:
+conda create -n bh -c bohrium bohrium
+# And source the new environment:
+source activate bh 
+
+```
+
+
 On MacOS use [Homebrew](https://brew.sh):
 ```
 brew install bh107/homebrew-bohrium/bohrium
