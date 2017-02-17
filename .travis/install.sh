@@ -9,7 +9,9 @@ if [[ $TRAVIS_OS_NAME == "osx" ]]; then
   # Fetch 'benchpress'
   mkdir -p $HOME/benchpress
   wget -nv https://github.com/bh107/benchpress/archive/master.zip -O $HOME/benchpress/master.zip
-  unzip -q $HOME/benchpress/master.zip
+  pushd $HOME/benchpress
+  unzip -q master.zip
+  popd
 
   export PATH="$HOME/benchpress/benchpress-master/bin:$PATH"
   export DYLD_LIBRARY_PATH="/usr/lib:$HOME/.local/lib:$DYLD_LIBRARY_PATH"

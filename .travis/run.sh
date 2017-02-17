@@ -21,8 +21,10 @@ if [[ $TRAVIS_OS_NAME == "osx" ]]; then
       ;;
   esac
 
-  $PEXEC $TRAVIS_BUILD_DIR/test/python/run.py $TRAVIS_BUILD_DIR/test/python/tests/test_*.py
-  $PEXEC $TRAVIS_BUILD_DIR/test/python/numpytest.py --file $TRAVIS_BUILD_DIR/test/python/test_benchmarks.py
+  cd $TRAVIS_BUILD_DIR
+  bh-info
+  $PEXEC test/python/run.py test/python/tests/test_*.py
+  $PEXEC test/python/numpytest.py --file test_benchmarks.py
 else
   #############
   #   LINUX   #
