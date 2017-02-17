@@ -11,17 +11,21 @@ source:
 
 requirements:
   build:
+    - icu 54.*
+    - bzip2
+    - zlib
     - python >=2.7
     - numpy >=1.8
     - cmake >=2.8
     - cheetah
     - cython
     - swig
-    - boost-pic
+    - gcc
 
   run:
     - python >=2.7
     - numpy >=1.8
+    - gcc
 
 about:
   home: http://bh107.org
