@@ -16,6 +16,11 @@ Features
 | MacOS     |                 |                       | ✓             |               | ✓   | ✓  | ✓  |
 | Windows   |                 |                       |               |               |     |    |    |
 
+- **Lazy Evaluation**, Bohrium will lazy evaluate all Python/NumPy operations until it encounters a “Python Read” such a printing an array or having a if-statement testing the value of an array.
+- **Views** Bohrium supports NumPy views fully thus operating on array slices does not involve data copying. 
+- **Loop Fusion**, Bohrium uses a [fusion algorithm](http://dl.acm.org/citation.cfm?id=2967945) that fuses (or merges) array operations into the same computation kernel that are then JIT-compiled and executed. However, Bohrium can only fuse operations that have some common sized dimension and no horizontal data conflicts. 
+- **Lazy CPU/GPU Communiction**, Bohrium only move data between the host and the GPU when the data is accessed directly by Python or a Python C-extension.
+
 The documentation is available at www.bh107.org
 
 Installation
