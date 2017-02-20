@@ -186,13 +186,13 @@ void Contracter::contract_collect(bh_ir &bhir)
             for(size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                if (is_add_sub(collect_opcode) and is_add_sub(other_instr.opcode) and bh_is_constant(&instr.operand[2])) {
+                if (is_add_sub(collect_opcode) and is_add_sub(other_instr.opcode) and bh_is_constant(&other_instr.operand[2])) {
                     // Both are ADD or SUBTRACT
                     if (*views.back() == other_instr.operand[1]) {
                         views.push_back(&other_instr.operand[0]);
                         chain.push_back(&other_instr);
                     }
-                } else if (is_mul_div(collect_opcode) and is_mul_div(other_instr.opcode) and bh_is_constant(&instr.operand[2])) {
+                } else if (is_mul_div(collect_opcode) and is_mul_div(other_instr.opcode) and bh_is_constant(&other_instr.operand[2])) {
                     // Both are MULTIPLY or DIVIDE
 
                     // We are not allowed to DIVIDE when the result operand has integer type
