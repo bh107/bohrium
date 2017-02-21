@@ -167,7 +167,6 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         ++stat.kernel_cache_misses;
         program = cl::Program(context, source);
         try {
-            program.build({device}, compile_flg.c_str());
             if (verbose) {
                 cout << "********** Compile Flags **********" << endl \
                 << compile_flg.c_str() << endl \
@@ -176,6 +175,7 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
                  << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) \
                  << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
             }
+            program.build({device}, compile_flg.c_str());
         } catch (cl::Error e) {
             cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
             throw;
