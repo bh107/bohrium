@@ -542,23 +542,6 @@ BhArray_data_fill(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-BhArray_copy(PyObject *self, PyObject *args)
-{
-    assert(args == NULL);
-    PyObject *ret = PyObject_CallMethod(array_create, "empty_like", "O", self);
-    if(ret == NULL)
-        return NULL;
-    PyObject *err = PyObject_CallMethod(ufuncs, "assign", "OO", self, ret);
-    if(err == NULL)
-    {
-        Py_DECREF(ret);
-        return NULL;
-    }
-    Py_DECREF(err);
-    return ret;
-}
-
-static PyObject *
 BhArray_copy2numpy(PyObject *self, PyObject *args)
 {
     assert(args == NULL);
@@ -604,6 +587,12 @@ method2function(char *name, PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *ret = PyObject_Call(PyObject_GetAttrString(bohrium, name), func_args, kwds);
     Py_DECREF(func_args);
     return ret;
+}
+
+static PyObject *
+BhArray_copy(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("copy", self, args, kwds);
 }
 
 static PyObject *
@@ -659,9 +648,9 @@ static PyMethodDef BhArrayMethods[] = {
     {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
     {"_data_np2bhc",       BhArray_data_np2bhc, METH_NOARGS,   "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,   METH_VARARGS,  "Fill the Bohrium-C data from a numpy NumPy"},
-    {"copy",               BhArray_copy,        METH_NOARGS,   "Copy the array in C-style memory layout"},
     {"copy2numpy",         BhArray_copy2numpy,  METH_NOARGS,   "Copy the array in C-style memory layout to a regular NumPy array"},
     {"resize",             BhArray_resize,      METH_VARARGS,  "Change shape and size of array in-place"},
+    {"copy",       (PyCFunction) BhArray_copy,        METH_VARARGS | METH_KEYWORDS, "a.copy(order='C')\n\nReturn a copy of the array."},
     {"reshape",    (PyCFunction) BhArray_reshape,     METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
     {"flatten",    (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
     {"ravel",      (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
