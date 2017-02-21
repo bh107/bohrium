@@ -73,8 +73,8 @@ static inline bool is_constant(const bh_instruction& instr)
 
 static inline bool is_doing_stupid_math(const bh_instruction& instr)
 {
-    return bh_type_is_integer(instr.constant.type) and
-           is_constant(instr) and
+    return is_constant(instr) and
+           bh_type_is_integer(instr.constant.type) and
            (
                is_multiplying_by_one(instr) or
                is_dividing_by_one(instr) or
