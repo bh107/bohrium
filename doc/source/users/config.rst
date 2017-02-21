@@ -102,12 +102,17 @@ The configuration file consists of two things: ``components`` and orchestration 
 
 Components marked with square brackets. For example ``[node]``, ``[openmp]``, ``[opencl]`` are all components available for the runtime system.
 
-The ``stacks`` define different default sane configurations of the runtime environment and one can switch between them using the environment var ``BH_STACK``.
+The ``stacks`` define different default configurations of the runtime environment and one can switch between them using the environment var ``BH_STACK``.
 
 Environment Variables
 ---------------------
 
-The configuration of a component can be overwritten with environment vars using the naming convention ``BH_[COMPONENT]_[OPTION]``, below are a couple of examples controlling the behavior of the CPU vector engine::
+The configuration of a component can be overwritten with environment variables using the naming convention ``BH_[COMPONENT]_[OPTION]``, below are a couple of examples controlling the behavior of the CPU vector engine::
 
   BH_OPENMP_PROF=true    -- Prints a performance profile at the end of execution.
   BH_OPENMP_VERBOSE=true -- Prints a lot of information including the source of the JIT compiled kernels.
+  
+Useful environment variables::
+  
+  BH_WARN_SYNC=true -- Show Python warnings in all instances when copying data from the backend to Python.
+  BH_<backend>_GRAPH=true -- Dump a dependecy graph of the instructions send to the backends (graphviz .dot file).
