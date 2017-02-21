@@ -31,36 +31,21 @@ int bh_type_size(bh_type type)
 {
     switch(type)
     {
-    case BH_BOOL:
-        return 1;
-    case BH_INT8:
-        return 1;
-    case BH_INT16:
-        return 2;
-    case BH_INT32:
-        return 4;
-    case BH_INT64:
-        return 8;
-    case BH_UINT8:
-        return 1;
-    case BH_UINT16:
-        return 2;
-    case BH_UINT32:
-        return 4;
-    case BH_UINT64:
-        return 8;
-    case BH_FLOAT32:
-        return 4;
-    case BH_FLOAT64:
-        return 8;
-    case BH_COMPLEX64:
-        return 8;
-    case BH_COMPLEX128:
-        return 16;
-    case BH_UNKNOWN:
-        return -1;
-    default:
-        return -1;
+        case BH_BOOL:       return  1;
+        case BH_INT8:       return  1;
+        case BH_INT16:      return  2;
+        case BH_INT32:      return  4;
+        case BH_INT64:      return  8;
+        case BH_UINT8:      return  1;
+        case BH_UINT16:     return  2;
+        case BH_UINT32:     return  4;
+        case BH_UINT64:     return  8;
+        case BH_FLOAT32:    return  4;
+        case BH_FLOAT64:    return  8;
+        case BH_COMPLEX64:  return  8;
+        case BH_COMPLEX128: return 16;
+        case BH_UNKNOWN:    return -1;
+        default:            return -1;
 	}
 }
 
@@ -68,38 +53,22 @@ const char* bh_type_text(bh_type type)
 {
     switch(type)
     {
-    case BH_BOOL:
-        return "BH_BOOL";
-    case BH_INT8:
-        return "BH_INT8";
-    case BH_INT16:
-        return "BH_INT16";
-    case BH_INT32:
-        return "BH_INT32";
-    case BH_INT64:
-        return "BH_INT64";
-    case BH_UINT8:
-        return "BH_UINT8";
-    case BH_UINT16:
-        return "BH_UINT16";
-    case BH_UINT32:
-        return "BH_UINT32";
-    case BH_UINT64:
-        return "BH_UINT64";
-    case BH_FLOAT32:
-        return "BH_FLOAT32";
-    case BH_FLOAT64:
-        return "BH_FLOAT64";
-    case BH_COMPLEX64:
-        return "BH_COMPLEX64";
-    case BH_COMPLEX128:
-        return "BH_COMPLEX128";
-    case BH_R123:
-        return "BH_R123";
-    case BH_UNKNOWN:
-        return "BH_UNKNOWN";
-    default:
-        return "Unknown type";
+        case BH_BOOL:       return "BH_BOOL";
+        case BH_INT8:       return "BH_INT8";
+        case BH_INT16:      return "BH_INT16";
+        case BH_INT32:      return "BH_INT32";
+        case BH_INT64:      return "BH_INT64";
+        case BH_UINT8:      return "BH_UINT8";
+        case BH_UINT16:     return "BH_UINT16";
+        case BH_UINT32:     return "BH_UINT32";
+        case BH_UINT64:     return "BH_UINT64";
+        case BH_FLOAT32:    return "BH_FLOAT32";
+        case BH_FLOAT64:    return "BH_FLOAT64";
+        case BH_COMPLEX64:  return "BH_COMPLEX64";
+        case BH_COMPLEX128: return "BH_COMPLEX128";
+        case BH_R123:       return "BH_R123";
+        case BH_UNKNOWN:    return "BH_UNKNOWN";
+        default:            return "Unknown type";
     }
 }
 
@@ -107,17 +76,17 @@ int bh_type_is_integer(bh_type type)
 {
     switch(type)
     {
-    case BH_UINT8:
-    case BH_UINT16:
-    case BH_UINT32:
-    case BH_UINT64:
-    case BH_INT8:
-    case BH_INT16:
-    case BH_INT32:
-    case BH_INT64:
-        return true;
-    default:
-        return false;
+        case BH_UINT8:
+        case BH_UINT16:
+        case BH_UINT32:
+        case BH_UINT64:
+        case BH_INT8:
+        case BH_INT16:
+        case BH_INT32:
+        case BH_INT64:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -178,24 +147,15 @@ uint64_t bh_type_limit_max_integer(bh_type type)
 {
     switch(type)
     {
-        case BH_BOOL:
-            return 1;
-        case BH_INT8:
-            return INT8_MAX;
-        case BH_INT16:
-            return INT16_MAX;
-        case BH_INT32:
-            return INT32_MAX;
-        case BH_INT64:
-            return INT64_MAX;
-        case BH_UINT8:
-            return UINT8_MAX;
-        case BH_UINT16:
-            return UINT16_MAX;
-        case BH_UINT32:
-            return UINT32_MAX;
-        case BH_UINT64:
-            return UINT64_MAX;
+        case BH_BOOL:   return 1;
+        case BH_INT8:   return INT8_MAX;
+        case BH_INT16:  return INT16_MAX;
+        case BH_INT32:  return INT32_MAX;
+        case BH_INT64:  return INT64_MAX;
+        case BH_UINT8:  return UINT8_MAX;
+        case BH_UINT16: return UINT16_MAX;
+        case BH_UINT32: return UINT32_MAX;
+        case BH_UINT64: return UINT64_MAX;
         default:
             assert(1 == 2);
             return 0;
@@ -206,24 +166,15 @@ int64_t bh_type_limit_min_integer(bh_type type)
 {
     switch(type)
     {
-        case BH_BOOL:
-            return 1;
-        case BH_INT8:
-            return INT8_MIN;
-        case BH_INT16:
-            return INT16_MIN;
-        case BH_INT32:
-            return INT32_MIN;
-        case BH_INT64:
-            return INT64_MIN;
-        case BH_UINT8:
-            return 0;
-        case BH_UINT16:
-            return 0;
-        case BH_UINT32:
-            return 0;
-        case BH_UINT64:
-            return 0;
+        case BH_BOOL:   return 1;
+        case BH_INT8:   return INT8_MIN;
+        case BH_INT16:  return INT16_MIN;
+        case BH_INT32:  return INT32_MIN;
+        case BH_INT64:  return INT64_MIN;
+        case BH_UINT8:  return 0;
+        case BH_UINT16: return 0;
+        case BH_UINT32: return 0;
+        case BH_UINT64: return 0;
         default:
             assert(1 == 2);
             return 0;
@@ -234,10 +185,8 @@ double bh_type_limit_max_float(bh_type type)
 {
     switch(type)
     {
-        case BH_FLOAT32:
-            return FLT_MAX_EXP;
-        case BH_FLOAT64:
-            return DBL_MAX_EXP;
+        case BH_FLOAT32: return FLT_MAX_EXP;
+        case BH_FLOAT64: return DBL_MAX_EXP;
         default:
             assert(1 == 2);
             return 0;
@@ -248,10 +197,8 @@ double bh_type_limit_min_float(bh_type type)
 {
     switch(type)
     {
-        case BH_FLOAT32:
-            return FLT_MIN_EXP;
-        case BH_FLOAT64:
-            return DBL_MIN_EXP;
+        case BH_FLOAT32: return FLT_MIN_EXP;
+        case BH_FLOAT64: return DBL_MIN_EXP;
         default:
             assert(1 == 2);
             return 0;

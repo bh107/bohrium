@@ -35,10 +35,10 @@ struct bh_instruction
     bh_instruction(){}
     bh_instruction(const bh_instruction& instr)
     {
-        opcode = instr.opcode;
-        constant = instr.constant;
+        opcode      = instr.opcode;
+        constant    = instr.constant;
         constructor = instr.constructor;
-        origin_id = instr.origin_id;
+        origin_id   = instr.origin_id;
         std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
     }
 
