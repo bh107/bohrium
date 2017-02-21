@@ -8,7 +8,6 @@ public:
 
     ~${uname}Impl(void) {
         clWaitForEvents(1, &event);
-        clReleaseEvent(event);
         clblasTeardown();
     };
 
@@ -37,7 +36,7 @@ public:
 
         // We allocate the C data, if not already present
         bh_data_malloc(C->base);
-        
+
         assert(A->base->type == C->base->type);
         cl_mem bufC = engine->getCBuffer(C->base);
         ${endif_C}
