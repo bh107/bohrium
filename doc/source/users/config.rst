@@ -114,5 +114,5 @@ The configuration of a component can be overwritten with environment variables u
   
 Useful environment variables::
   
-  BH_WARN_SYNC=true -- Show Python warnings in all instances when copying data from the backend to Python.
-  BH_<backend>_GRAPH=true -- Dump a dependecy graph of the instructions send to the backends (graphviz .dot file).
+  BH_WARN_SYNC=true       -- Show Python warnings in all instances when copying data to Python.
+  BH_<backend>_GRAPH=true -- Dump a dependecy graph of the instructions send to the backends (.dot file).
