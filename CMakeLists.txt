@@ -180,7 +180,7 @@ else()
     install(FILES ${CMAKE_BINARY_DIR}/config.ini DESTINATION ${FORCE_CONFIG_PATH} COMPONENT bohrium)
 endif()
 
-find_package(jupyter)
+find_package(Jupyter)
 if(JUPYTER_FOUND)
   if ("${ROOT_INSTALL}" STREQUAL "")
       message(STATUS "Can't install IPython magic commands globally.")
