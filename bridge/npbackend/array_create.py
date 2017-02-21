@@ -117,7 +117,9 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 raise ValueError("Cannot convert a Bohrium array to column-major ('F') memory representation")
 
             if copy:
-                ary = ary.copy()
+                t = empty_like(ary)
+                t[...] = ary
+                ary = t
 
             if dtype is not None and not dtype_equal(dtype, ary.dtype):
                 t = empty_like(ary, dtype=dtype)
@@ -728,3 +730,50 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         return y, step
     else:
         return y
+
+
+def copy(a, order='K'):
+    """
+    Return an array copy of the given object.
+
+    Parameters
+    ----------
+    a : array_like
+        Input data.
+    order : {'C', 'F', 'A', 'K'}, optional
+        Controls the memory layout of the copy. 'C' means C-order,
+        'F' means F-order, 'A' means 'F' if `a` is Fortran contiguous,
+        'C' otherwise. 'K' means match the layout of `a` as closely
+        as possible. (Note that this function and :meth:ndarray.copy are very
+        similar, but have different default values for their order=
+        arguments.)
+
+    Returns
+    -------
+    arr : ndarray
+        Array interpretation of `a`.
+
+    Notes
+    -----
+    This is equivalent to
+
+    >>> np.array(a, copy=True)                              #doctest: +SKIP
+
+    Examples
+    --------
+    Create an array x, with a reference y and a copy z:
+
+    >>> x = np.array([1, 2, 3])
+    >>> y = x
+    >>> z = np.copy(x)
+
+    Note that, when we modify x, y changes, but not z:
+
+    >>> x[0] = 10
+    >>> x[0] == y[0]
+    True
+    >>> x[0] == z[0]
+    False
+
+    """
+    return array(a, order=order, copy=True)
