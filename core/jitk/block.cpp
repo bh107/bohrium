@@ -647,6 +647,37 @@ pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     return make_pair(Block(), false); // No match found
 }
 
+bool mergeable(const Block &b1, const Block &b2) {
+    if (b1.isInstr() or b2.isInstr()) {
+        return false;
+    }
+    const LoopB &l1 = b1.getLoop();
+    const LoopB &l2 = b2.getLoop();
+    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
+    // thus we can simply append system instructions without further checks.
+    if (l2.isSystemOnly()) {
+        LoopB block(l1);
+        for (const InstrPtr instr: l2.getAllInstr()) {
+            if (bh_noperands(instr->opcode) > 0) {
+                block.insert_system_after(instr, instr->operand[0].base);
+            }
+        }
+        return true;
+    }
+    // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
+    if (sweeps_accessed_by_block(l1._sweeps, l2)) {
+        return false;
+    }
+
+    if (l1.size == l2.size or // Perfect match
+        (l2._reshapable && l2.size % l1.size == 0) or // 'l2' is reshapable to match 'l1'
+        (l1._reshapable && l1.size % l2.size == 0)) { // 'l1' is reshapable to match 'l2'
+        return data_parallel_compatible(l1, l2);
+    } else {
+        return false;
+    }
+}
+
 pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2, uint64_t min_threading) {
     if (b1.isInstr() or b2.isInstr()) {
         return make_pair(Block(), false);
