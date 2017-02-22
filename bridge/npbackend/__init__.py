@@ -43,13 +43,15 @@ def replace_numpy(function):
         sys.modules['numpy.linalg'] = bohrium.linalg
 
         # Run your function/program
-        function(*args, **kwargs)
+        result = function(*args, **kwargs)
 
         # Put NumPy back together
         sys.modules.pop('numpy_force', None)
         sys.modules['numpy']        = __numpy
         sys.modules['numpy.random'] = __numpy_random
         sys.modules['numpy.linalg'] = __numpy_linalg
+
+        return result
     return wrapper
 
 
