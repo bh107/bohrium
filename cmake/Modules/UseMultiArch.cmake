@@ -14,7 +14,7 @@
 
 # Fedora uses lib64/ for 64-bit systems, Debian uses lib/x86_64-linux-gnu;
 # Fedora put module files in lib64/ too, but Debian uses lib/ for that
-if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux" AND "${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
   # Debian or Ubuntu?
   if (EXISTS "/etc/debian_version")
     set (_libdir_def "lib/${CMAKE_LIBRARY_ARCHITECTURE}")
