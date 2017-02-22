@@ -36,7 +36,7 @@ Please note:
 
    <script>
      ((window.gitter = {}).chat = {}).options = {
-       room: 'bh107'
+       room: 'bh107/Lobby'
      };
    </script>
    <script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script>
