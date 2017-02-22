@@ -32,6 +32,15 @@ Please note:
     * Bohrium is a 64bit project exclusively.
     * We are working on a Windows version that uses the .NET frontend and CPU backend.
 
+.. raw:: html
+
+   <script>
+     ((window.gitter = {}).chat = {}).options = {
+       room: 'bh107'
+     };
+   </script>
+   <script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script>
+
 Get Started!
 ------------
 
