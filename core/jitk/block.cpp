@@ -530,16 +530,12 @@ pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
 namespace {
 
 // Check if 'writer' and 'reader' supports data-parallelism when merged
-bool data_parallel_compatible(const bh_view &writer, const bh_view &reader, const int rank) {
+bool data_parallel_compatible(const bh_view &writer,
+                              const bh_view &reader) {
 
     // Disjoint views or constants are obviously compatible
     if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
         return true;
-    }
-
-    // This is possible if 'a' or 'b' is the output of a reduction
-    if (writer.ndim <= rank or reader.ndim <= rank) {
-        return false;
     }
 
     // The views must have the same offset
@@ -547,14 +543,19 @@ bool data_parallel_compatible(const bh_view &writer, const bh_view &reader, cons
         return false;
     }
 
-    // For now, they should use the same stride.
-    // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
-    //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
-    return writer.stride[rank] == reader.stride[rank];
+    // Same dimensionally requires same shape
+    if (writer.ndim == reader.ndim) {
+        // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
+        //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
+        return std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);
+    }
+
+    // Finally, two contiguous arrays are also parallel compatible
+    return bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
 }
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
-bool data_parallel_compatible(const InstrPtr a, const InstrPtr b, const int rank) {
+bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
@@ -562,7 +563,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b, const int rank
         const bh_view &src = a->operand[0];
         const int b_nop = bh_noperands(b->opcode);
         for(int i=0; i<b_nop; ++i) {
-            if (not data_parallel_compatible(src, b->operand[i], rank)) {
+            if (not data_parallel_compatible(src, b->operand[i])) {
                 return false;
             }
         }
@@ -571,7 +572,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b, const int rank
         const bh_view &src = b->operand[0];
         const int a_nop = bh_noperands(a->opcode);
         for(int i=0; i<a_nop; ++i) {
-            if (not data_parallel_compatible(src, a->operand[i], rank)) {
+            if (not data_parallel_compatible(src, a->operand[i])) {
                 return false;
             }
         }
@@ -585,7 +586,7 @@ bool data_parallel_compatible(const LoopB &b1, const LoopB &b2) {
     for (const InstrPtr i1 : b1.getAllInstr()) {
         for (const InstrPtr i2 : b2.getAllInstr()) {
             if (i1.get() != i2.get()) {
-                if (not data_parallel_compatible(i1, i2, b1.rank)) {
+                if (not data_parallel_compatible(i1, i2)) {
                     return false;
                 }
             }
@@ -631,6 +632,7 @@ pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     if (l2._reshapable && l2.size % l1.size == 0) {
         const LoopB new_l2 = reshape(l2, l1.size).getLoop();
         if (data_parallel_compatible(l1, new_l2)) {
+            assert(data_parallel_compatible(l1, l2));
             return make_pair(Block(merge(l1, new_l2)), true);
         }
     }
@@ -638,10 +640,42 @@ pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     if (l1._reshapable && l1.size % l2.size == 0) {
         const LoopB new_l1 = reshape(l1, l2.size).getLoop();
         if (data_parallel_compatible(new_l1, l2)) {
+            assert(data_parallel_compatible(l1, l2));
             return make_pair(Block(merge(new_l1, l2)), true);
         }
     }
     return make_pair(Block(), false); // No match found
+}
+
+bool mergeable(const Block &b1, const Block &b2) {
+    if (b1.isInstr() or b2.isInstr()) {
+        return false;
+    }
+    const LoopB &l1 = b1.getLoop();
+    const LoopB &l2 = b2.getLoop();
+    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
+    // thus we can simply append system instructions without further checks.
+    if (l2.isSystemOnly()) {
+        LoopB block(l1);
+        for (const InstrPtr instr: l2.getAllInstr()) {
+            if (bh_noperands(instr->opcode) > 0) {
+                block.insert_system_after(instr, instr->operand[0].base);
+            }
+        }
+        return true;
+    }
+    // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
+    if (sweeps_accessed_by_block(l1._sweeps, l2)) {
+        return false;
+    }
+
+    if (l1.size == l2.size or // Perfect match
+        (l2._reshapable && l2.size % l1.size == 0) or // 'l2' is reshapable to match 'l1'
+        (l1._reshapable && l1.size % l2.size == 0)) { // 'l1' is reshapable to match 'l2'
+        return data_parallel_compatible(l1, l2);
+    } else {
+        return false;
+    }
 }
 
 pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2, uint64_t min_threading) {

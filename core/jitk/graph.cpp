@@ -284,7 +284,7 @@ void pprint(const DAG &dag, const char *filename, uint64_t min_threading) {
             Vertex dst = target(e, graph);
             out << "[label=\" ";
             out << (double) weight(graph[src], graph[dst]) << " bytes\"";
-            if (not merge_if_possible(graph[src], graph[dst], thds).second) {
+            if (not mergeable(graph[src], graph[dst])) {
                 out << " color=red";
             }
             out << "]";
@@ -316,7 +316,7 @@ void greedy(DAG &dag, uint64_t min_threading) {
                 if(path_exist(v1, v2, dag, true)) {
                     boost::remove_edge(e, dag);
                 } else {
-                    if (merge_if_possible(dag[source(e, dag)], dag[target(e, dag)], min_threading).second) {
+                    if (mergeable(dag[source(e, dag)], dag[target(e, dag)])) {
                         fusibles.push_back(e);
                     }
                 }
