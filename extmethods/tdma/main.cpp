@@ -19,10 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdexcept>
 #include <cassert>
-#if defined(_OPENMP)
-#include <omp.h>
-#else
-#endif
 
 #include <bh_extmethod.hpp>
 
@@ -36,6 +32,7 @@ private:
     template<typename T>
     void tdma(const T* a, const T* b, const T* c, const T* d, T* c_prime, T* d_prime, const int n) const
     {
+      // See https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
       c_prime[0] = c[0] / b[0];
       d_prime[0] = d[0] / b[0];
       for(int i=1; i < n; ++i)
@@ -63,22 +60,17 @@ private:
       T *o = (T*) out->base->data + out->start;
       T *t = tmp;
 
-      #pragma omp parallel for
+      #pragma omp parallel for num_threads(8)
       for(int i=0; i < m; ++i)
       {
-          if(i > 0)
-          {
-              a += diagonals->stride[1];
-              b += diagonals->stride[1];
-              c += diagonals->stride[1];
-              r += rhs->stride[0];
-              o += out->stride[0];
-              t += n;
-          }
-          tdma(a,b,c,r,t,o,n);
-
+          tdma(a + i * diagonals->stride[1],
+               b + i * diagonals->stride[1],
+               c + i * diagonals->stride[1],
+               r + i * rhs->stride[0],
+               t + i * n,
+               o + i * out->stride[0],
+               n);
       }
-
       free(tmp);
     }
 

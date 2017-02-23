@@ -439,9 +439,30 @@ def tensordot(a, b, axes=2):
 
 
 def solve_tridiagonal(a, b, c, rhs):
+    """
+    Solver for tridiagonal systems,
+
+    ..math::
+        A x = b
+
+    based on the Thomas algorithm (not unconditionally stable).
+
+    If the input arrays have more than one dimension, solutions are computed along the last axis.
+    Systems are solved in parallel if OpenMP is present. All inputs must have equal shape, and
+    be of dtype `float32` or `float64`.
+
+    :param a: Lower diagonal elements. a[...,0] is not used.
+    :param b: Main diagonal elements.
+    :param c: Upper diagonal elements. c[...,-1] is not used.
+    :param rhs: Solution vector.
+    :returns: Solution of the tridiagonal system(s). Has the same shape as the input arrays.
+    """
     if not (a.shape == b.shape == c.shape == rhs.shape):
         raise ValueError("All inputs must have equal shapes")
-        
+
+    if a.shape[-1] < 2:
+        raise ValueError("Last axis must contain at least 2 elements")
+
     out_shape = a.shape
     num_systems = 1
     if a.ndim > 1:
@@ -455,6 +476,5 @@ def solve_tridiagonal(a, b, c, rhs):
     diagonals[2] = c.reshape(num_systems,system_size)
     rhs = rhs.reshape(num_systems,system_size)
     out = array_create.zeros_like(rhs)
-
     ufuncs.extmethod("tdma", out, diagonals, rhs)
     return out.reshape(out_shape)
