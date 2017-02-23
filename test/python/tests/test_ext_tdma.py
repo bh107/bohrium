@@ -8,7 +8,7 @@ def has_ext():
         bh.linalg.solve_tridiagonal(a, a, a, a)
         return True
     except Exception as e:
-        print("\n[ext] Cannot test TDMA extension methods.")
+        print("\n\033[31m[ext] Cannot test TDMA extension methods.\033[0m")
         print(e)
         return False
 

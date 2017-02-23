@@ -1,9 +1,3 @@
-# This is a Dockerfile for installing and testing Bohrium
-# It is based on the image 'bohrium/ubuntu', which must be on docker hub or locally.
-# Please make sure that the build "context" is pointing to the root of Bohrium source files
-# e.g. 'docker build -t bohrium -f <path to this file> <path to bohrium source>'
-# Then you can run 'docker run -t bohrium' to Bohrium test
-
 FROM bohrium/ubuntu:16.04
 MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 
@@ -16,7 +10,7 @@ ENV LC_ALL en_US.UTF-8
 # Download benchpress
 RUN mkdir -p /benchpress
 WORKDIR /benchpress/
-RUN wget -nv https://github.com/bh107/benchpress/archive/master.zip
+ADD https://github.com/bh107/benchpress/archive/master.zip .
 RUN unzip -q master.zip
 ENV PATH "/benchpress/benchpress-master/bin:$PATH"
 ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"

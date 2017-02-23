@@ -19,7 +19,7 @@ def has_ext():
         bh.blas.gemm(a, a)
         return True
     except Exception as e:
-        print("\n[ext] Cannot test BLAS extension methods.")
+        print("\n\033[31m[ext] Cannot test BLAS extension methods.\033[0m")
         print(e)
         return False
 
