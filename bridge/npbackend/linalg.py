@@ -436,3 +436,25 @@ def tensordot(a, b, axes=2):
     bt = b.transpose(newaxes_b).reshape(newshape_b)
     res = dot(at, bt)
     return res.reshape(olda + oldb)
+
+
+def solve_tridiagonal(a, b, c, rhs):
+    if not (a.shape == b.shape == c.shape == rhs.shape):
+        raise ValueError("All inputs must have equal shapes")
+        
+    out_shape = a.shape
+    num_systems = 1
+    if a.ndim > 1:
+        for s in out_shape[:-1]:
+            num_systems *= s
+    system_size = out_shape[-1]
+
+    diagonals = array_create.empty((3, num_systems, system_size), dtype=rhs.dtype, bohrium=True)
+    diagonals[0] = a.reshape(num_systems,system_size)
+    diagonals[1] = b.reshape(num_systems,system_size)
+    diagonals[2] = c.reshape(num_systems,system_size)
+    rhs = rhs.reshape(num_systems,system_size)
+    out = array_create.zeros_like(rhs)
+
+    ufuncs.extmethod("tdma", out, diagonals, rhs)
+    return out.reshape(out_shape)
