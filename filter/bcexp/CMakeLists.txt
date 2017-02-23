@@ -13,4 +13,4 @@ add_library(bh_filter_bcexp SHARED ${SRC})
 
 target_link_libraries(bh_filter_bcexp bh) # We depend on bh.so
 
-install(TARGETS bh_filter_bcexp DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+install(TARGETS bh_filter_bcexp DESTINATION ${LIBDIR} COMPONENT bohrium)
