@@ -35,7 +35,7 @@ if(CBLAS_FOUND)
     include_directories(${CBLAS_INCLUDES})
     target_link_libraries(bh_blas ${CBLAS_LIBRARIES})
 
-    install(TARGETS bh_blas DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+    install(TARGETS bh_blas DESTINATION ${LIBDIR} COMPONENT bohrium)
 
     set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_blas${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
 else()

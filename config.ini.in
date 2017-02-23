@@ -13,26 +13,26 @@ opencl     = bcexp, bccon, node, opencl, openmp
 # Managers #
 ############
 [node]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_vem_node${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
 
 [proxy]
 address = localhost
 port = 4200
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 
 #############################
 # Filters - Helpers / Tools #
 #############################
 [pprint]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_pprint${CMAKE_SHARED_LIBRARY_SUFFIX}
 
 ###################################
 # Filters - Bytecode transformers #
 ###################################
 [bccon]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_bccon${CMAKE_SHARED_LIBRARY_SUFFIX}
 collect = true
 stupidmath = true
 muladd = true
@@ -42,7 +42,7 @@ timing = false
 verbose = false
 
 [bcexp]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
 matmul = true
 powk = true
 sign = false
@@ -52,7 +52,7 @@ timing = false
 verbose = false
 
 [noneremover]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_filter_noneremover${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_noneremover${CMAKE_SHARED_LIBRARY_SUFFIX}
 timing = false
 verbose = false
 
@@ -60,7 +60,7 @@ verbose = false
 # Engines #
 ###########
 [openmp]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_ve_openmp${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_openmp${CMAKE_SHARED_LIBRARY_SUFFIX}
 verbose = false
 # Profiling statistics
 prof = false
@@ -77,7 +77,7 @@ libs = ${OPENMP_LIBS}
 strides_as_variables = true
 
 [opencl]
-impl = ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
 verbose = false
 # Profiling statistics
 prof = false

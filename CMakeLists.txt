@@ -17,6 +17,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(FeatureSummary)
+include(LibVsLib64) # Sets LIBDIR
+
+message(STATUS "LIBDIR: ${LIBDIR}")
 
 # Write all compile commands to 'compile_commands.json', which can be used by YouCompleteMe
 # and other auto-completion software
@@ -24,17 +27,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
 # For the Clion IDE
 ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
-
-# UseMultiArch sets variable
-#  CMAKE_INSTALL_LIBDIR         to lib, lib64 or lib/x86_64-linux-gnu
-#                               depending on the platform; use this path
-#                               for platform-specific binaries.
-#
-#  CMAKE_INSTALL_LIBDIR_NOARCH  to lib or lib64 depending on the platform;
-#                               use this path for architecture-independent
-#                               files.
-include(UseMultiArch)
-message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)                                     # .local is default
     set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "The install prefix (default path is ~/.local)" FORCE)

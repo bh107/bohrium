@@ -14,7 +14,7 @@ add_library(bh_ve_openmp SHARED ${SRC})
 
 target_link_libraries(bh_ve_openmp bh)
 
-install(TARGETS bh_ve_openmp DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+install(TARGETS bh_ve_openmp DESTINATION ${LIBDIR} COMPONENT bohrium)
 
 
 #
@@ -66,7 +66,7 @@ if(APPLE)
     #
     set(VE_OPENMP_COMPILER_INC "")
     set(VE_OPENMP_COMPILER_FLG "-x c -dynamiclib -arch x86_64")
-    set(VE_OPENMP_COMPILER_LIB "-lm -L${VE_OPENMP_COMPILER_INC}/${CMAKE_INSTALL_LIBDIR} -lbh")
+    set(VE_OPENMP_COMPILER_LIB "-lm -L${VE_OPENMP_COMPILER_INC}/${LIBDIR} -lbh")
     set(VE_OPENMP_COMPILER_EXT "")
 else()
     #
@@ -94,7 +94,7 @@ endif()
 set(VE_OPENMP_COMPILER_CMD         "${CMAKE_C_COMPILER}"                    CACHE STRING "VE_OPENMP: JIT-Compiler")
 set(VE_OPENMP_COMPILER_INC         "-I${CMAKE_INSTALL_PREFIX}/share/bohrium/include")
 set(VE_OPENMP_COMPILER_INC         "${VE_OPENMP_COMPILER_INC}"              CACHE STRING "VE_OPENMP: JIT-Compiler includes")
-set(VE_OPENMP_COMPILER_LIB         "-lm -L${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR} -lbh" CACHE STRING "VE_OPENMP: JIT-Compiler libraries")
+set(VE_OPENMP_COMPILER_LIB         "-lm -L${CMAKE_INSTALL_PREFIX}/${LIBDIR} -lbh" CACHE STRING "VE_OPENMP: JIT-Compiler libraries")
 set(VE_OPENMP_COMPILER_FLG         "${VE_OPENMP_COMPILER_FLG}"              CACHE STRING "VE_OPENMP: JIT-Compiler flags")
 set(VE_OPENMP_COMPILER_OPENMP      ${OPENMP_FOUND}                          CACHE BOOL   "VE_OPENMP: JIT-Compiler use OpenMP")
 set(VE_OPENMP_COMPILER_OPENMP_SIMD ${OPENMP_SIMD_FOUND}                     CACHE BOOL   "VE_OPENMP: JIT-Compiler use OpenMP-SIMD")
