@@ -43,7 +43,6 @@ verbose = false
 
 [bcexp]
 impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
-matmul = true
 powk = true
 sign = false
 repeat = false

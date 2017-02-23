@@ -59,7 +59,6 @@ The default configuration file looks similar to the config below::
 
   [bcexp]
   impl = /usr/lib/libbh_filter_bcexp.so
-  matmul = true
   powk = true
   sign = false
   repeat = false
@@ -111,9 +110,9 @@ The configuration of a component can be overwritten with environment variables u
 
   BH_OPENMP_PROF=true    -- Prints a performance profile at the end of execution.
   BH_OPENMP_VERBOSE=true -- Prints a lot of information including the source of the JIT compiled kernels.
-  
+
 Useful environment variables::
-  
+
   BH_SYNC_WARN=true       -- Show Python warnings in all instances when copying data to Python.
   BH_<backend>_GRAPH=true -- Dump a dependecy graph of the instructions send to the backends (.dot file).
   BH_<backend>_VOLATILE=true -- Declare temporary variables using `volatile`, which avoid precision differences because of Intel's use of 80-bit floats internally.

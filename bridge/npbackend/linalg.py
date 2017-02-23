@@ -127,7 +127,8 @@ def jacobi(a, b, tol=0.0005):
         error = norm(x-xo)/norm(x)
     return x
 
-def matmul(a,b):
+
+def matmul(a, b, no_blas=False):
     """
     Matrix multiplication of two 2-D arrays.
 
@@ -161,19 +162,26 @@ def matmul(a,b):
     """
     if not dtype_equal(a,b):
         raise ValueError("Input must be of same type")
+
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
 
-    if not(bhary.check(a) or bhary.check(b)):
-        return numpy.dot(a, b)
+    if bhary.check(a) or bhary.check(b):
+        a = array_create.array(a)
+        b = array_create.array(b)
 
-    a = array_create.array(a)
-    b = array_create.array(b)
-    c = np.empty((a.shape[0], b.shape[1]), dtype=a.dtype)
-    target.matmul(ufuncs.get_bhc(c), ufuncs.get_bhc(a), ufuncs.get_bhc(b))
-    return c
+    # If the dtypes are both float, we can use BLAS to calculate
+    # the dot-product, if BLAS is present.
+    if not no_blas and a.dtype.kind in np.typecodes["AllFloat"] and b.dtype.kind in np.typecodes["AllFloat"]:
+        try:
+            return blas.gemm(a, b)
+        except:
+            pass
 
-def dot(a, b, no_matmul=False):
+    return ufuncs.add.reduce(a[:, numpy.newaxis] * numpy.transpose(b), -1)
+
+
+def dot(a, b, no_blas=False):
     """
     Dot product of two arrays.
 
@@ -246,7 +254,7 @@ def dot(a, b, no_matmul=False):
     if a.ndim == 1:
         return ufuncs.add.reduce(a * numpy.transpose(b), -1)
 
-    if a.ndim == 2 and b.ndim == 2:
+    if not no_blas and a.ndim == 2 and b.ndim == 2:
         # If the dtypes are both float, we can use BLAS to calculate
         # the dot-product, if BLAS is present.
         if a.dtype.kind in np.typecodes["AllFloat"] and b.dtype.kind in np.typecodes["AllFloat"]:
@@ -254,9 +262,6 @@ def dot(a, b, no_matmul=False):
                 return blas.gemm(a, b)
             except:
                 pass
-
-        if not no_matmul:
-            return matmul(a,b)
 
     return ufuncs.add.reduce(a[:, numpy.newaxis] * numpy.transpose(b), -1)
 

@@ -138,11 +138,8 @@ def extmethod(name, out, in1, in2):
     """ Apply the extended method 'name' """
 
     (out, in1, in2) = views2numpy((out, in1, in2))
-    if name == "matmul":
-        out[:] = np.dot(in1, in2)
-    else:
-        raise NotImplementedError("The current runtime system does not support "
-                                  "the extension method '%s'" % name)
+    raise NotImplementedError("The current runtime system does not support "
+                              "the extension method '%s'" % name)
 
 
 def arange(size, dtype):

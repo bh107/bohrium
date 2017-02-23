@@ -93,9 +93,5 @@ def extmethod(name, out, in1, in2):
     """Apply the extended method 'name' """
 
     (out, in1, in2) = views2clary((out, in1, in2))
-    if name == "matmul":
-        pygpu.blas.gemm(1, in1, in2, 1, out, overwrite_c=True)
-    else:
-        raise NotImplementedError("The current runtime system does not support "
-                                  "the extension method '%s'"%name)
-
+    raise NotImplementedError("The current runtime system does not support "
+                              "the extension method '%s'"%name)

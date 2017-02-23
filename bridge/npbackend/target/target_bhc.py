@@ -158,18 +158,6 @@ def ufunc(op, *args, **kwd):
     _bhc_exec(eval(fname), *args)
 
 
-def matmul(out, in1, in2):
-    """
-    Perform matrix multiplication of 'in1' and 'in2' and store it in 'out'.
-
-    :out ?:
-    :in1 ?:
-    :in2 ?:
-    :rtype: None
-    """
-    ufunc("matmul", out, in1, in2)
-
-
 def reduce(op, out, ary, axis):
     """
     Reduce 'axis' dimension of 'ary' and write the result to out

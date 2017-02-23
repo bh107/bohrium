@@ -69,7 +69,7 @@ class ComponentImpl {
 
     /* Register a new extension method.
      *
-     * @name   Name of the function e.g. matmul
+     * @name   Name of the function
      * @opcode Opcode for the new function.
      * Throws exceptions on error
      */
@@ -112,7 +112,7 @@ class ComponentFace {
 
     /* Register a new extension method.
      *
-     * @name   Name of the function e.g. matmul
+     * @name   Name of the function
      * @opcode Opcode for the new function.
      * Throws exceptions on error
      */

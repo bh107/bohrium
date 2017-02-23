@@ -689,33 +689,6 @@ void bh_gather (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs
 
 
 
-// bh_matmul - BH_MATMUL - runtime.nops3 - 3 (A,A,A)
-template <typename TO, typename TL, typename TR>
-inline
-void bh_matmul (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
-{
-    Runtime::instance().typecheck<BH_MATMUL, TO, TL, TR>();
-    Runtime::instance().enqueue((bh_opcode)BH_MATMUL, res, lhs, rhs);
-}
-
-// bh_matmul - BH_MATMUL - runtime.nops3 - 3 (A,A,K)
-template <typename TO, typename TL, typename TR>
-inline
-void bh_matmul (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
-{
-    Runtime::instance().typecheck<BH_MATMUL, TO, TL, TR>();
-    Runtime::instance().enqueue((bh_opcode)BH_MATMUL, res, lhs, rhs);
-}
-
-// bh_matmul - BH_MATMUL - runtime.nops3 - 3 (A,K,A)
-template <typename TO, typename TL, typename TR>
-inline
-void bh_matmul (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
-{
-    Runtime::instance().typecheck<BH_MATMUL, TO, TL, TR>();
-    Runtime::instance().enqueue((bh_opcode)BH_MATMUL, res, lhs, rhs);
-}
-
 
 // bh_identity - BH_IDENTITY - runtime.nops2 - 2 (A,A)
 template <typename OutT, typename InT>

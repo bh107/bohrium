@@ -230,9 +230,6 @@
 ["sign",        "BH_SIGN",      "sugar.nops2",   true],
 ["bh_sign",     "BH_SIGN",      "runtime.nops2", true],
 
-["matmul",      "BH_MATMUL",    "sugar.nops3",   true],
-["bh_matmul",   "BH_MATMUL",    "runtime.nops3", true],
-
 ["bh_none",     "BH_NONE",      "runtime.nops0", true],
 ["bh_tally",    "BH_TALLY",     "runtime.nops0", true],
 ["bh_free",     "BH_FREE",      "runtime.nops1", true],

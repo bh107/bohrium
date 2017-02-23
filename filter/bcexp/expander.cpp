@@ -29,13 +29,11 @@ namespace bcexp {
 Expander::Expander(
     bool verbose,
     size_t threshold,
-    int matmul,
     int sign,
     int powk,
     int reduce1d,
     int repeat)
     : gc_threshold_(threshold),
-      matmul_(matmul),
       sign_(sign),
       powk_(powk),
       reduce1d_(reduce1d),
@@ -54,14 +52,6 @@ void Expander::expand(bh_ir& bhir)
         case BH_POWER:
             if (powk_) {
                 increase = expand_powk(bhir, pc);
-                end += increase;
-                pc += increase;
-            }
-            break;
-
-        case BH_MATMUL:
-            if (matmul_) {
-                increase = expand_matmul(bhir, pc);
                 end += increase;
                 pc += increase;
             }

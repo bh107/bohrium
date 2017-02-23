@@ -19,7 +19,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(bool verbose, size_t threshold, int matmul, int sign, int powk, int reduce_1d, int repeat);
+    Expander(bool verbose, size_t threshold, int sign, int powk, int reduce_1d, int repeat);
 
     /**
      *  Tear down the expander.
@@ -80,7 +80,6 @@ public:
     template <typename T>
     inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2);
 
-    int expand_matmul(bh_ir& bhir, int pc);
     int expand_sign(bh_ir& bhir, int pc);
     int expand_powk(bh_ir& bhir, int pc);
     int expand_reduce1d(bh_ir& bhir, int pc, int fold_limit);
@@ -90,7 +89,6 @@ private:
     static const char TAG[];
     std::vector<bh_base*> bases_;
     size_t gc_threshold_;
-    int matmul_;
     int sign_;
     int powk_;
     int reduce1d_;
