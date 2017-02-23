@@ -8,125 +8,37 @@ def has_ext():
         bh.linalg.solve_tridiagonal(a, a, a, a)
         return True
     except Exception as e:
-        print("\n[ext] Cannot test BLAS extension methods.")
+        print("\n[ext] Cannot test TDMA extension methods.")
         print(e)
         return False
 
 
-class test_ext_tdma_identical:
+class test_ext_tdma:
     def init(self):
         if not has_ext():
             return
 
-        for t in float_types + complex_types:
-            for r in range(1, 20):
-                cmd  = "a = M.arange(%d, dtype=%s).reshape(%s); " % (r*r, t, (r, r))
-                cmd += "b = M.arange(%d, dtype=%s).reshape(%s); " % (r*r, t, (r, r))
-                cmd += "c = M.arange(%d, dtype=%s).reshape(%s); " % (r*r, t, (r, r))
-                cmd += "d = M.arange(%d, dtype=%s).reshape(%s); " % (r*r, t, (r, r))
-                cmd += "matrix = M.zeros((2, %d, %d), dtype=%s); " % (r*r, t, (r, r))
-                cmd += "matrix[0] = M.diag(a[0], k=-1) + M.diag(b[0]) + M.diag(c[0], k=1);"
-                cmd +) "matrix[1] = M.diag(a[1], k=-1) + M.diag(b[1]) + M.diag(c[1], k=1); "
+        for t in util.TYPES.FLOAT:
+            for r in (2, 10, 100):
+                cmd  = "np.random.seed(123456); "
+                # matrix has to be diagonally dominant for Thomas algorithm to be stable
+                cmd += "a = 1 - 2 * M.array(np.random.rand(*%s), dtype=%s); " % ((2, r), t)
+                cmd += "b = 100 * M.array(np.random.rand(*%s), dtype=%s); " % ((2, r), t)
+                cmd += "c = 1 - 2 * M.array(np.random.rand(*%s), dtype=%s); " % ((2, r), t)
+                cmd += "d = M.array(np.random.rand(*%s), dtype=%s); " % ((2, r), t)
+                cmd += "matrix = M.empty(%s, dtype=%s); " % ((2, r, r), t)
+                cmd += "matrix[0] = M.diag(a[0,1:], k=-1) + M.diag(b[0]) + M.diag(c[0,:-1], k=1); "
+                cmd += "matrix[1] = M.diag(a[1,1:], k=-1) + M.diag(b[1]) + M.diag(c[1,:-1], k=1); "
                 yield cmd, t
 
-    def test_gemm(self, args):
+    def test_1d(self, args):
         cmd, _ = args
-        cmd_np = cmd + "res = np.dot(a, b);"
-        cmd_bh = cmd + "res = bh.blas.gemm(a, b);"
+        cmd_np = cmd + "res = np.linalg.solve(matrix[0], d[0]); "
+        cmd_bh = cmd + "res = bh.linalg.solve_tridiagonal(a[0], b[0], c[0], d[0]); "
         return cmd_np, cmd_bh
 
-    def test_syr2k(self, args):
+    def test_multidim(self, args):
         cmd, _ = args
-        cmd_np = cmd + "res = np.triu(np.dot(a, b.transpose()) + np.dot(b, a.transpose()));"
-        cmd_bh = cmd + "res = bh.blas.syr2k(a, b);"
-        return cmd_np, cmd_bh
-
-    def test_her2k(self, args):
-        cmd, t = args
-
-        if t not in complex_types:
-            return "res = 0;"
-
-        cmd_np = cmd + "res = np.triu(np.dot(a, b.transpose()) + np.dot(b, a.transpose()));"
-        cmd_bh = cmd + "res = bh.blas.her2k(a, b);"
-        return cmd_np, cmd_bh
-
-
-class test_ext_blas_symmetric:
-    def init(self):
-        if not has_ext():
-            return
-
-        for t in float_types + complex_types:
-            for r in range(2, 10):
-                # a will be symmetric/hermitian
-                cmd  = "a = M.arange(%d, dtype=%s).reshape(%s); a = ((a + a.T)/2);" % (r*r, t, (r, r))
-                cmd += "b = M.arange(%d, dtype=%s).reshape(%s);" % (r*r, t, (r, r))
-                yield cmd, t
-
-    def test_symm(self, args):
-        cmd, _ = args
-        cmd_np = cmd + "res = np.dot(a, b);"
-        cmd_bh = cmd + "res = bh.blas.symm(a, b);"
-        return cmd_np, cmd_bh
-
-    def test_hemm(self, args):
-        cmd, t = args
-
-        if t not in complex_types:
-            return "res = 0;"
-
-        cmd_np = cmd + "res = np.dot(a, b);"
-        cmd_bh = cmd + "res = bh.blas.hemm(a, b);"
-        return cmd_np, cmd_bh
-
-
-class test_ext_blas_only_a:
-    def init(self):
-        if not has_ext():
-            return
-
-        for t in float_types + complex_types:
-            for r in range(2, 10):
-                cmd  = "a = M.arange(%d, dtype=%s).reshape(%s);" % (r*r, t, (r, r))
-                yield cmd, t
-
-    def test_syrk(self, args):
-        cmd, _ = args
-        cmd_np = cmd + "res = np.triu(np.dot(a, a.transpose()));"
-        cmd_bh = cmd + "res = bh.blas.syrk(a);"
-        return cmd_np, cmd_bh
-
-    def test_herk(self, args):
-        cmd, t = args
-
-        if t not in complex_types:
-            return "res = 0;"
-
-        cmd_np = cmd + "res = np.triu(np.dot(a, a.transpose()));"
-        cmd_bh = cmd + "res = bh.blas.herk(a);"
-        return cmd_np, cmd_bh
-
-
-class test_ext_blas_unit_triangular:
-    def init(self):
-        if not has_ext():
-            return
-
-        for t in float_types + complex_types:
-            for r in range(2, 10):
-                cmd  = "a = np.arange(%d, dtype=%s).reshape(%s); np.fill_diagonal(a, 1); a = np.triu(a);" % (r*r, t, (r, r))
-                cmd += "b = M.arange(%d, dtype=%s).reshape(%s);" % (r*r, t, (r, r))
-                yield cmd, t
-
-    def test_trmm(self, args):
-        cmd, _ = args
-        cmd_np = cmd + "res = np.dot(a, b);"
-        cmd_bh = cmd + "a = bh.array(a); res = bh.blas.trmm(a, b);"
-        return cmd_np, cmd_bh
-
-    def test_trsm(self, args):
-        cmd, _ = args
-        cmd_np = cmd + "from numpy.linalg import inv; res = np.dot(inv(a), b);"
-        cmd_bh = cmd + "a = bh.array(a); res = bh.blas.trsm(a, b);"
+        cmd_np = cmd + "res = np.array([np.linalg.solve(mm, dd) for mm,dd in zip(matrix,d)]); "
+        cmd_bh = cmd + "res = bh.linalg.solve_tridiagonal(a, b, c, d); "
         return cmd_np, cmd_bh

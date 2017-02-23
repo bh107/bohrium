@@ -58,16 +58,15 @@ private:
       T *c = (T*) diagonals->base->data + diagonals->start + 2*diagonals->stride[0];
       T *r = (T*) rhs->base->data + rhs->start;
       T *o = (T*) out->base->data + out->start;
-      T *t = tmp;
 
-      #pragma omp parallel for num_threads(8)
+      #pragma omp parallel for
       for(int i=0; i < m; ++i)
       {
           tdma(a + i * diagonals->stride[1],
                b + i * diagonals->stride[1],
                c + i * diagonals->stride[1],
                r + i * rhs->stride[0],
-               t + i * n,
+               tmp + i * n,
                o + i * out->stride[0],
                n);
       }
