@@ -1,3 +1,4 @@
+
 extern "C" ExtmethodImpl* blas_${name}_create() {
     return new ${uname}Impl();
 }
