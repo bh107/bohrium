@@ -24,7 +24,7 @@ if(FFTW_FOUND)
     set(LIBS ${LIBS} ${FFTW_LIBRARIES})
     target_link_libraries(bh_fftw ${LIBS})
 
-    install(TARGETS bh_fftw DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+    install(TARGETS bh_fftw DESTINATION ${LIBDIR} COMPONENT bohrium)
 
     set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
 else()

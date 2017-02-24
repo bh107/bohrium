@@ -60,7 +60,7 @@ if (GLUT_FOUND AND OPENGL_FOUND)
     #We depend on bh.so
     target_link_libraries(bh_visualizer bh ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
 
-    install(TARGETS bh_visualizer DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium-visualizer)
+    install(TARGETS bh_visualizer DESTINATION ${LIBDIR} COMPONENT bohrium-visualizer)
 
     # Add visualizer to OpenMP and OpenCL libs
     set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)

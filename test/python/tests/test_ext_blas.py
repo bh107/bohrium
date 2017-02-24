@@ -5,7 +5,7 @@ import bohrium.blas
 import platform
 from os import environ
 os = platform.system()
-if os == "Darwin" and environ["BH_STACK"] == "opencl":
+if os == "Darwin" and environ.get("BH_STACK", "") == "opencl":
     print("\033[91m[EXT] Ignoring 64-bit OpenCL clBLAS tests on MacOS.\n[EXT] Intel graphics does not support 64-bit float and complex types.\033[0m")
     float_types   = ['np.float32']
     complex_types = []

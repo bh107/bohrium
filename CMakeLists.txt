@@ -1,27 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")    # Shared modules
-include(CheckCXXCompilerFlag)
-include(CheckCCompilerFlag)
-include(FeatureSummary)
 
-# Write all compile commands to 'compile_commands.json', which can be used by YouCompleteMe
-# and other auto-completion software
-set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
-
-# For the Clion IDE
-ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
-
-# UseMultiArch sets variable
-#  CMAKE_INSTALL_LIBDIR         to lib, lib64 or lib/x86_64-linux-gnu
-#                               depending on the platform; use this path
-#                               for platform-specific binaries.
-#
-#  CMAKE_INSTALL_LIBDIR_NOARCH  to lib or lib64 depending on the platform;
-#                               use this path for architecture-independent
-#                               files.
-include(UseMultiArch)
-message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}")
-
+# We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are:
     None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used), Debug, Release, RelWithDebInfo, and MinSizeRel.")
@@ -31,8 +10,23 @@ else()
 endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-# We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
+# Everyting else should come after 'project(BOHRIUM)' since 'project()' defines many of the CMAKE_BUILD_* vars
 project(BOHRIUM)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")    # Shared modules
+include(CheckCXXCompilerFlag)
+include(CheckCCompilerFlag)
+include(FeatureSummary)
+include(LibVsLib64) # Sets LIBDIR
+
+message(STATUS "LIBDIR: ${LIBDIR}")
+
+# Write all compile commands to 'compile_commands.json', which can be used by YouCompleteMe
+# and other auto-completion software
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+
+# For the Clion IDE
+ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)                                     # .local is default
     set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "The install prefix (default path is ~/.local)" FORCE)

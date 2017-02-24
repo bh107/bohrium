@@ -13,20 +13,20 @@ set_package_properties(CBLAS PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the CB
 if(CBLAS_FOUND)
     set(EXTMETHOD_DIR ${CMAKE_BINARY_DIR}/extmethods/blas)
     file(MAKE_DIRECTORY ${EXTMETHOD_DIR})
-    set(BLAS_LVL3 ${EXTMETHOD_DIR}/level3.cpp)
+    set(BLAS_LVL3 ${EXTMETHOD_DIR}/blas.cpp)
     set(BLAS_TEMPLATE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/templates/)
-    set(BLAS_PY   ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_blas.py)
+    set(GEN_EXTMETHOD ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_extmethod.py)
     add_custom_command(
       OUTPUT ${BLAS_LVL3}
-      COMMAND ${BLAS_PY} ${BLAS_TEMPLATE_DIR} ${BLAS_LVL3}
-      DEPENDS ${BLAS_PY}
+      COMMAND ${GEN_EXTMETHOD} ${BLAS_TEMPLATE_DIR} ${BLAS_LVL3}
+      DEPENDS ${GEN_EXTMETHOD}
     )
 
     include_directories(${CMAKE_SOURCE_DIR}/include)
     include_directories(${CMAKE_BINARY_DIR}/include)
     add_library(
       bh_blas SHARED
-      ${CMAKE_CURRENT_BINARY_DIR}/level3.cpp
+      ${CMAKE_CURRENT_BINARY_DIR}/blas.cpp
     )
 
     # We depend on bh.so
@@ -35,11 +35,11 @@ if(CBLAS_FOUND)
     include_directories(${CBLAS_INCLUDES})
     target_link_libraries(bh_blas ${CBLAS_LIBRARIES})
 
-    install(TARGETS bh_blas DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bohrium)
+    install(TARGETS bh_blas DESTINATION ${LIBDIR} COMPONENT bohrium)
 
     set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_blas${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
 else()
     if (CBLAS_INCLUDES_PRE)
-        set_package_properties(BLAS PROPERTIES TYPE RECOMMENDED PURPOSE "CBLAS was found, but not enabled. \n   Manually enable BLAS with CBLAS_INCLUDES and CBLAS_LIBRARIES\n   if you have a clang multi-arch BLAS binary.")
+        set_package_properties(BLAS PROPERTIES TYPE RECOMMENDED PURPOSE "CBLAS was found, but not enabled. \n   Manually enable BLAS with CBLAS_INCLUDES and CBLAS_LIBRARIES.")
     endif()
 endif()
