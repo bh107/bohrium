@@ -60,20 +60,9 @@ static inline bool is_entire_view(const bh_instruction& instr)
     return false;
 }
 
-static inline bool is_constant(const bh_instruction& instr)
-{
-    for(int i = 0; i < bh_noperands(instr.opcode); ++i) {
-        if (bh_is_constant(&(instr.operand[i]))) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 static inline bool is_doing_stupid_math(const bh_instruction& instr)
 {
-    return is_constant(instr) and
+    return instr.has_constant() and
            bh_type_is_integer(instr.constant.type) and
            (
                is_multiplying_by_one(instr) or
