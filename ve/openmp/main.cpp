@@ -194,11 +194,25 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     }
     // Let's find all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
     for (const bh_view *view: offset_strides) {
-        ss << ", " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
+        ss << ", const " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
         for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+            ss << ", const " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
         }
     }
+
+    if (symbols.constIDs().size() > 0) {
+        if (kernel.getNonTemps().size() > 0) {
+            ss << ", "; // If any args were written before us, we need a comma
+        }
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            const InstrPtr &instr = *it;
+            ss << "const " << write_c99_type(instr->constant.type) << " c" << symbols.constID(*instr);
+            if (++it != symbols.constIDs().end()) { // Not the last iteration
+                ss << ", ";
+            }
+        }
+    }
+
     ss << ") {\n";
 
     // Write the block that makes up the body of 'execute()'
@@ -216,6 +230,16 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
+
+        ss.precision(numeric_limits<double>::max_digits10);
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
+            spaces(ss, 4);
+            const InstrPtr &instr = *it;
+            ss << write_c99_type(instr->constant.type) << " c" << symbols.constID(*instr) << " = ";
+            instr->constant.pprint(ss);
+            ss << ";\n";
+        }
+
         spaces(ss, 4);
         ss << "execute(";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
@@ -230,6 +254,19 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << ", offset_strides[" << count++ << "]";
             for (int i=0; i<view->ndim; ++i) {
                 ss << ", offset_strides[" << count++ << "]";
+            }
+        }
+        ss.precision(numeric_limits<double>::max_digits10);
+        if (symbols.constIDs().size() > 0) {
+            if (kernel.getNonTemps().size() > 0) {
+                ss << ", "; // If any args were written before us, we need a comma
+            }
+            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+                const InstrPtr &instr = *it;
+                ss << "c" << symbols.constID(*instr);
+                if (++it != symbols.constIDs().end()) { // Not the last iteration
+                    ss << ", ";
+                }
             }
         }
         ss << ");\n";
