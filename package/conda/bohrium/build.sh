@@ -2,7 +2,7 @@
 
 mkdir build
 cd build
-export 
+export
 ls $CONDA_PREFIX
 ls $CONDA_PREFIX/lib
 ls $PREFIX
@@ -30,6 +30,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 	 -DBoost_USE_STATIC_LIBS=ON \
 	 -DCORE_LINK_FLAGS="-static-libgcc -static-libstdc++" \
 	 -DFORCE_CONFIG_PATH=$PREFIX/etc/bohrium \
+         -DLIBDIR=lib \
 	 -DCMAKE_INSTALL_PREFIX=$PREFIX
 
 make VERBOSE=1
