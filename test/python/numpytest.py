@@ -210,7 +210,7 @@ def shell_cmd(cmd, cwd=None, verbose=False, env=None):
         pipe.kill()
         raise
 
-    return out
+    return (out, err)
 
 
 class BenchHelper:
@@ -317,12 +317,12 @@ class BenchHelper:
             cmd = ["DYLD_LIBRARY_PATH=" + env["DYLD_LIBRARY_PATH"]] + cmd
 
         # Execute the benchmark
-        out = shell_cmd(cmd, verbose=self.args.verbose, env=env)
+        (out, err) = shell_cmd(cmd, verbose=self.args.verbose, env=env)
         if 'elapsed-time' not in out:
-            raise Exception("Cannot find elapsed time, output:\n%s\n" % out)
+            raise Exception(_C.FAIL + "Cannot find elapsed time, output:\n%s\nWith error:\n%s\n" % (out, err) + _C.ENDC)
 
         if not os.path.exists(outputfn):
-            raise Exception('Benchmark did not produce any output, expected: %s\n' % outputfn)
+            raise Exception(_C.FAIL + 'Benchmark did not produce any output, expected: %s\n' % outputfn + _C.ENDC)
 
         # Load the result from disk
         npzs = np.load(outputfn)
