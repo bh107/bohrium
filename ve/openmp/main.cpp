@@ -35,9 +35,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_util.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/dtype.hpp>
 
 #include "store.hpp"
-#include "c99_type.hpp"
 #include "openmp_util.hpp"
 
 using namespace bohrium;
@@ -199,7 +199,6 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << ", const " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
         }
     }
-
     if (symbols.constIDs().size() > 0) {
         if (kernel.getNonTemps().size() > 0) {
             ss << ", "; // If any args were written before us, we need a comma
@@ -212,7 +211,6 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             }
         }
     }
-
     ss << ") {\n";
 
     // Write the block that makes up the body of 'execute()'
@@ -230,7 +228,6 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
-
         ss.precision(numeric_limits<double>::max_digits10);
         for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
             spaces(ss, 4);
@@ -239,7 +236,6 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             instr->constant.pprint(ss);
             ss << ";\n";
         }
-
         spaces(ss, 4);
         ss << "execute(";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {

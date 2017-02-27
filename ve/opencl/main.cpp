@@ -37,9 +37,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/transformer.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_util.hpp>
+#include <jitk/dtype.hpp>
 
 #include "engine_opencl.hpp"
-#include "opencl_type.hpp"
 
 using namespace bohrium;
 using namespace jitk;
