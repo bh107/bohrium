@@ -181,6 +181,7 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
+    write_c99_dtype_union(ss); // We always need to declare the union of all constant data types
     ss << "\n";
 
     // Write the header of the execute function
@@ -192,7 +193,6 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << ", ";
         }
     }
-    // Let's find all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
     for (const bh_view *view: offset_strides) {
         ss << ", const " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
         for (int i=0; i<view->ndim; ++i) {
@@ -221,20 +221,12 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
-        ss << "void launcher(void* data_list[], uint64_t offset_strides[]) {\n";
+        ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
             ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
-        }
-        ss.precision(numeric_limits<double>::max_digits10);
-        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
-            spaces(ss, 4);
-            const InstrPtr &instr = *it;
-            ss << write_c99_type(instr->constant.type) << " c" << symbols.constID(*instr) << " = ";
-            instr->constant.pprint(ss);
-            ss << ";\n";
         }
         spaces(ss, 4);
         ss << "execute(";
@@ -252,14 +244,14 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
                 ss << ", offset_strides[" << count++ << "]";
             }
         }
-        ss.precision(numeric_limits<double>::max_digits10);
         if (symbols.constIDs().size() > 0) {
             if (kernel.getNonTemps().size() > 0) {
                 ss << ", "; // If any args were written before us, we need a comma
             }
+            uint64_t i=0;
             for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
                 const InstrPtr &instr = *it;
-                ss << "c" << symbols.constID(*instr);
+                ss << "constants[" << i++ << "]." << bh_type_text(instr->constant.type);
                 if (++it != symbols.constIDs().end()) { // Not the last iteration
                     ss << ", ";
                 }
@@ -430,10 +422,16 @@ void Impl::execute(bh_ir *bhir) {
                 offset_and_strides.push_back(s);
             }
         }
+        // And the constants
+        vector<bh_constant_value> constants;
+        constants.reserve(symbols.constIDs().size());
+        for (const InstrPtr &instr: symbols.constIDs()) {
+            constants.push_back(instr->constant.value);
+        }
 
         auto texec = chrono::steady_clock::now();
-        // Call the launcher function with the 'data_list' and 'offset_and_strides', which will execute the kernel
-        func(&data_list[0], &offset_and_strides[0]);
+        // Call the launcher function, which will execute the kernel
+        func(&data_list[0], &offset_and_strides[0], &constants[0]);
         stat.time_exec += chrono::steady_clock::now() - texec;
 
         // Finally, let's cleanup
