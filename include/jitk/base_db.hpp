@@ -91,7 +91,7 @@ private:
     std::set<InstrPtr, Constant_less> _constant_set; // Sets of instructions to a constant ID
 
 public:
-    SymbolTable(const std::vector<InstrPtr> &instr_list) {
+    SymbolTable(const std::vector<InstrPtr> &instr_list, bool const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -101,9 +101,12 @@ public:
                 _idx_map.insert(std::make_pair(*view, _idx_map.size()));
                 _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
             }
-            assert(instr->origin_id >= 0);
-            if (instr->has_constant() and bh_opcode_is_elementwise(instr->opcode) and instr->opcode != BH_RANDOM) {
-                _constant_set.insert(instr);
+            if (const_as_var) {
+                assert(instr->origin_id >= 0);
+                if (instr->has_constant() and bh_opcode_is_elementwise(instr->opcode)
+                    and instr->opcode != BH_RANDOM) {
+                    _constant_set.insert(instr);
+                }
             }
         }
     };
