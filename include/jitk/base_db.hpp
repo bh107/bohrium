@@ -133,14 +133,23 @@ public:
     bool existOffsetStridesID(const bh_view &view) const {
         return util::exist(_offset_strides_map,view);
     }
-    // Get the ID of the constant within 'instr', which is simply 'instr.origin_id'
-    size_t constID(const bh_instruction &instr) const {
-        assert(instr.origin_id >= 0);
-        return instr.origin_id;
-    }
+    // Get the set of constants
     const std::set<InstrPtr, Constant_less> &constIDs() const {
         return _constant_set;
     };
+    // Get the ID of the constant within 'instr', which is the number it appear in the set of constants.
+    // Or returns -1 when 'instr' has no ID
+    int64_t constID(const bh_instruction &instr) const {
+        assert(instr.origin_id >= 0);
+        size_t count=0;
+        // Since the size of '_constant_set' is small (way below a 1000), we simply do a linear search
+        for (const InstrPtr &i: _constant_set) {
+            count++;
+            if (i->origin_id == instr.origin_id)
+                return count;
+        }
+        return -1;
+    }
 };
 
 class Scope {

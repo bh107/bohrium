@@ -570,7 +570,8 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         const bh_view &view = instr.operand[o];
         stringstream ss;
         if (bh_is_constant(&view)) {
-            if (bh_opcode_is_elementwise(instr.opcode) and instr.opcode != BH_RANDOM) {
+            const int64_t constID = scope.symbols.constID(instr);
+            if (constID >= 0) {
                 ss << "c" << scope.symbols.constID(instr);
             } else {
                 instr.constant.pprint(ss, opencl);
