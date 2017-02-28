@@ -129,6 +129,7 @@ add_subdirectory(ve/opencl)
 add_subdirectory(extmethods/blas)
 add_subdirectory(extmethods/clblas)
 add_subdirectory(extmethods/visualizer)
+add_subdirectory(extmethods/tdma)
 
 add_subdirectory(bridge/cpp)
 add_subdirectory(bridge/c)
