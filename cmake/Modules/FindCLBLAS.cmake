@@ -7,13 +7,8 @@
 
 include (FindPackageHandleStandardArgs)
 
-if (APPLE)
-  find_path (CLBLAS_INCLUDES_PRE Accelerate.h)
-  find_library (CLBLAS_LIBRARIES_PRE NAMES Accelerate)
-else ()
-  find_path (CLBLAS_INCLUDES_PRE clBLAS.h)
-  find_library (CLBLAS_LIBRARIES_PRE NAMES clBLAS)
-endif ()
+find_path (CLBLAS_INCLUDES_PRE clBLAS.h)
+find_library (CLBLAS_LIBRARIES_PRE NAMES clBLAS)
 
 # handle the QUIETLY and REQUIRED arguments and set CLBLAS_FOUND to TRUE if
 # all listed variables are TRUE
