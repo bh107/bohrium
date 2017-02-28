@@ -38,26 +38,26 @@ void write_system_operation(const Scope &scope, const bh_instruction &instr, str
 
     switch (instr.opcode) {
         case BH_FREE:
-            out << "// FREE " << scope.getName(instr.operand[0]);
+//            out << "// FREE " << scope.getName(instr.operand[0]);
             break;
         case BH_SYNC:
-            out << "// SYNC " << scope.getName(instr.operand[0]);
+//            out << "// SYNC " << scope.getName(instr.operand[0]);
             break;
         case BH_NONE:
-            out << "// NONE ";
+//            out << "// NONE ";
             break;
         case BH_TALLY:
-            out << "// TALLY";
+//            out << "// TALLY";
             break;
         case BH_REPEAT:
-            out << "// REPEAT";
+//            out << "// REPEAT";
             break;
         default:
             std::cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
                       ") not supported for non complex operations." << endl;
             throw std::runtime_error("Instruction not supported.");
     }
-    out << endl;
+//    out << endl;
 }
 
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
@@ -570,7 +570,12 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         const bh_view &view = instr.operand[o];
         stringstream ss;
         if (bh_is_constant(&view)) {
-            instr.constant.pprint(ss, opencl);
+            const int64_t constID = scope.symbols.constID(instr);
+            if (constID >= 0) {
+                ss << "c" << scope.symbols.constID(instr);
+            } else {
+                instr.constant.pprint(ss, opencl);
+            }
         } else {
             scope.getName(view, ss);
             if (scope.isArray(view)) {

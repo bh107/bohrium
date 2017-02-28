@@ -37,9 +37,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/transformer.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_util.hpp>
+#include <jitk/dtype.hpp>
 
 #include "engine_opencl.hpp"
-#include "opencl_type.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -146,11 +146,22 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
             ss << ", ";
         }
     }
-    // Let's find all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
     for (const bh_view *view: offset_strides) {
         ss << ", " << write_opencl_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
         for (int i=0; i<view->ndim; ++i) {
             ss << ", " << write_opencl_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+        }
+    }
+    if (symbols.constIDs().size() > 0) {
+        if (kernel.getNonTemps().size() > 0) {
+            ss << ", "; // If any args were written before us, we need a comma
+        }
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            const InstrPtr &instr = *it;
+            ss << "const " << write_opencl_type(instr->constant.type) << " c" << symbols.constID(*instr);
+            if (++it != symbols.constIDs().end()) { // Not the last iteration
+                ss << ", ";
+            }
         }
     }
     ss << ") {\n";
@@ -321,7 +332,7 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
-        const SymbolTable symbols(kernel.getAllInstr());
+        const SymbolTable symbols(kernel.getAllInstr(), config.defaultGet("const_as_var", true));
 
         // Debug print
         if (verbose) {
@@ -400,8 +411,15 @@ void Impl::execute(bh_ir *bhir) {
                      << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
             }
 
+            // Create the constant vector
+            vector<const bh_instruction*> constants;
+            constants.reserve(symbols.constIDs().size());
+            for (const InstrPtr &instr: symbols.constIDs()) {
+                constants.push_back(&(*instr));
+            }
+
             // Let's execute the OpenCL kernel
-            engine.execute(ss.str(), kernel, threaded_blocks, offset_strides);
+            engine.execute(ss.str(), kernel, threaded_blocks, offset_strides, constants);
         }
 
         // Let's copy sync'ed arrays back to the host

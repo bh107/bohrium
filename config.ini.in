@@ -75,6 +75,7 @@ compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
 libs = ${OPENMP_LIBS}
 strides_as_variables = true
+const_as_var = true
 
 [opencl]
 impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -90,3 +91,4 @@ compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${OPENCL_LIBS}
 strides_as_variables = true
+const_as_var = true

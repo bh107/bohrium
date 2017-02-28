@@ -70,7 +70,8 @@ public:
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
-                 const std::vector<const bh_view*> &offset_strides);
+                 const std::vector<const bh_view*> &offset_strides,
+                 const std::vector<const bh_instruction*> &constants);
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>

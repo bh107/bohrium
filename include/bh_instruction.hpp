@@ -50,6 +50,16 @@ struct bh_instruction
     // The first element is the output and the rest are inputs (the constant is ignored)
     std::vector<const bh_view*> get_views() const;
 
+    // Returns true when one of the operands of 'instr' is a constant
+    bool has_constant() const {
+        for(int i = 0; i < bh_noperands(this->opcode); ++i) {
+            if (bh_is_constant(&(this->operand[i]))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Check if all views in this instruction is contiguous
     bool is_contiguous() const;
 

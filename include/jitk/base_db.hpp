@@ -74,23 +74,39 @@ struct OffsetAndStrides_less {
     }
 };
 
+// Compare class for the constant_map
+struct Constant_less {
+    // This compare tje 'origin_id' member of the instructions
+    bool operator() (const InstrPtr &i1, const InstrPtr& i2) const {
+        return i1->origin_id < i2->origin_id;
+    }
+};
+
 class SymbolTable {
 private:
     std::map<bh_base*, size_t> _base_map; // Mapping a base to its ID
     std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
+    std::set<InstrPtr, Constant_less> _constant_set; // Sets of instructions to a constant ID
 
 public:
-    SymbolTable(const std::vector<InstrPtr> &instr_list) {
+    SymbolTable(const std::vector<InstrPtr> &instr_list, bool const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
-        for (const InstrPtr instr: instr_list) {
+        for (const InstrPtr &instr: instr_list) {
             for (const bh_view *view: instr->get_views()) {
                 _base_map.insert(std::make_pair(view->base, _base_map.size()));
                 _view_map.insert(std::make_pair(*view, _view_map.size()));
                 _idx_map.insert(std::make_pair(*view, _idx_map.size()));
                 _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
+            }
+            if (const_as_var) {
+                assert(instr->origin_id >= 0);
+                if (instr->has_constant() and bh_opcode_is_elementwise(instr->opcode)
+                    and instr->opcode != BH_RANDOM) {
+                    _constant_set.insert(instr);
+                }
             }
         }
     };
@@ -107,15 +123,32 @@ public:
         return _idx_map.at(index);
     }
     // Check if 'index' exist
-    size_t existIdxID(const bh_view &index) const {
+    bool existIdxID(const bh_view &index) const {
         return util::exist(_idx_map, index);
     }
     // Get the offset-and-strides ID of 'view', throws exception if 'view' doesn't exist
     size_t offsetStridesID(const bh_view &view) const {
         return _offset_strides_map.at(view);
     }
-    size_t existOffsetStridesID(const bh_view &view) const {
+    bool existOffsetStridesID(const bh_view &view) const {
         return util::exist(_offset_strides_map,view);
+    }
+    // Get the set of constants
+    const std::set<InstrPtr, Constant_less> &constIDs() const {
+        return _constant_set;
+    };
+    // Get the ID of the constant within 'instr', which is the number it appear in the set of constants.
+    // Or returns -1 when 'instr' has no ID
+    int64_t constID(const bh_instruction &instr) const {
+        assert(instr.origin_id >= 0);
+        size_t count=0;
+        // Since the size of '_constant_set' is small (way below a 1000), we simply do a linear search
+        for (const InstrPtr &i: _constant_set) {
+            count++;
+            if (i->origin_id == instr.origin_id)
+                return count;
+        }
+        return -1;
     }
 };
 

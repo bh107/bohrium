@@ -35,9 +35,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_util.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/dtype.hpp>
 
 #include "store.hpp"
-#include "c99_type.hpp"
 #include "openmp_util.hpp"
 
 using namespace bohrium;
@@ -181,6 +181,7 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
+    write_c99_dtype_union(ss); // We always need to declare the union of all constant data types
     ss << "\n";
 
     // Write the header of the execute function
@@ -192,11 +193,22 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << ", ";
         }
     }
-    // Let's find all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
     for (const bh_view *view: offset_strides) {
-        ss << ", " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
+        ss << ", const " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
         for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+            ss << ", const " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+        }
+    }
+    if (symbols.constIDs().size() > 0) {
+        if (kernel.getNonTemps().size() > 0) {
+            ss << ", "; // If any args were written before us, we need a comma
+        }
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            const InstrPtr &instr = *it;
+            ss << "const " << write_c99_type(instr->constant.type) << " c" << symbols.constID(*instr);
+            if (++it != symbols.constIDs().end()) { // Not the last iteration
+                ss << ", ";
+            }
         }
     }
     ss << ") {\n";
@@ -209,7 +221,7 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
-        ss << "void launcher(void* data_list[], uint64_t offset_strides[]) {\n";
+        ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             spaces(ss, 4);
             bh_base *b = kernel.getNonTemps()[i];
@@ -230,6 +242,19 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
             ss << ", offset_strides[" << count++ << "]";
             for (int i=0; i<view->ndim; ++i) {
                 ss << ", offset_strides[" << count++ << "]";
+            }
+        }
+        if (symbols.constIDs().size() > 0) {
+            if (kernel.getNonTemps().size() > 0) {
+                ss << ", "; // If any args were written before us, we need a comma
+            }
+            uint64_t i=0;
+            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+                const InstrPtr &instr = *it;
+                ss << "constants[" << i++ << "]." << bh_type_text(instr->constant.type);
+                if (++it != symbols.constIDs().end()) { // Not the last iteration
+                    ss << ", ";
+                }
             }
         }
         ss << ");\n";
@@ -357,7 +382,7 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
-        const SymbolTable symbols(kernel.getAllInstr());
+        const SymbolTable symbols(kernel.getAllInstr(), config.defaultGet("const_as_var", true));
 
         // Debug print
         if (verbose)
@@ -397,10 +422,16 @@ void Impl::execute(bh_ir *bhir) {
                 offset_and_strides.push_back(s);
             }
         }
+        // And the constants
+        vector<bh_constant_value> constants;
+        constants.reserve(symbols.constIDs().size());
+        for (const InstrPtr &instr: symbols.constIDs()) {
+            constants.push_back(instr->constant.value);
+        }
 
         auto texec = chrono::steady_clock::now();
-        // Call the launcher function with the 'data_list' and 'offset_and_strides', which will execute the kernel
-        func(&data_list[0], &offset_and_strides[0]);
+        // Call the launcher function, which will execute the kernel
+        func(&data_list[0], &offset_and_strides[0], &constants[0]);
         stat.time_exec += chrono::steady_clock::now() - texec;
 
         // Finally, let's cleanup
