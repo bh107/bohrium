@@ -84,6 +84,7 @@ def fix_biclass_wrapper(func):
 
     def inner(*args, **kwargs):
         """Invokes 'func' and strips "biclass" from the result."""
+        args = [fix_biclass(a) for a in args]
         ret = func(*args, **kwargs)
         return fix_biclass(ret)
 
