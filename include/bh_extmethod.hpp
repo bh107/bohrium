@@ -74,7 +74,7 @@ class ExtmethodImpl {
 // and destroy() function.
 class ExtmethodFace {
   private:
-    // The name of the extmethod e.g. matmul or visualizer
+    // The name of the extmethod
     std::string _name;
     // Shared library handle
     void* _lib_handle;

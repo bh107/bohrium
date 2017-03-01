@@ -1715,40 +1715,6 @@ inline multi_array<TL>& atan2 (const TL lhs, multi_array<TR>& rhs)
     return *res;
 }
 
-template <typename TL, typename TR>
-inline multi_array<TL>& matmul (multi_array<TL>& lhs, multi_array<TR>& rhs)
-{
-    multi_array<TL>* left    = &lhs;
-    multi_array<TR>* right   = &rhs;
-    
-    
-    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
-    bh_matmul (*res, *left, *right); // Encode and enqueue
-    res->setTemp(true); // Mark res as temp
-
-    return *res;
-}
-
-template <typename TL, typename TR>
-inline multi_array<TL>& matmul (multi_array<TL>& lhs, const TR rhs)
-{
-    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
-    bh_matmul (*res, lhs, rhs); // Encode and enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
-template <typename TL, typename TR>
-inline multi_array<TL>& matmul (const TL lhs, multi_array<TR>& rhs)
-{
-    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
-    bh_matmul (*res, lhs, rhs); // Encode and enqueue
-    res->setTemp(true); // Mark result as temp
-
-    return *res;
-}
-
 
 
 template <typename T>

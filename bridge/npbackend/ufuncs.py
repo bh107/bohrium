@@ -25,15 +25,6 @@ def extmethod(name, out, in1, in2):
 
 
 @fix_returned_biclass
-def matmul(out, in1, in2):
-    assert(in1.dtype == in2.dtype)
-    if not out:
-        out = array_create.empty((in1.shape[0], in2.shape[1]), dtype=in1.dtype)
-    assert(in1.dtype == out.dtype)
-    target.matmul(get_bhc(out), get_bhc(in1), get_bhc(in2))
-
-
-@fix_returned_biclass
 def gather(ary, indexes):
     """
     gather(ary, indexes)

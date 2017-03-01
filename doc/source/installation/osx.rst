@@ -131,8 +131,6 @@ And you should see a result similar to this::
     Testing test_benchmarks.py/jacobi/jacobi
     Testing test_benchmarks.py/jacobi_stencil/jacobi_stencil
     Testing test_benchmarks.py/shallow_water/shallow_water
-    Testing test_matmul.py/matmul/dot
-    Testing test_matmul.py/matmul/matmul
     Testing test_views.py/diagonal/diagonal
     Testing test_views.py/flatten/flatten
     ************************ Finish ************************
@@ -175,5 +173,3 @@ And you should see a result similar to this::
 If you prefer to not mess with your system and instead use the commandline, you can execute the unittest like this::
 
   MONO_PATH=~/.local/lib/mono DYLD_LIBRARY_PATH=~/.local/lib mono ~/.local/share/bohrium/test/cil/bin/UnitTest.exe
-
-
