@@ -29,6 +29,7 @@ from ._util import dtype_equal, dtype_support
 from . import target
 import operator
 import functools
+import numpy_force as numpy
 
 def check(ary):
     """Returns True if 'ary' is a Bohrium array"""
@@ -43,6 +44,8 @@ def check(ary):
 def check_biclass_np_over_bh(ary):
     """Returns True if 'ary' is a NumPy view with a Bohrium base array"""
 
+    if not isinstance(ary, numpy.ndarray):
+        return False
     try:
         if not check(get_base(ary)):
             return False
