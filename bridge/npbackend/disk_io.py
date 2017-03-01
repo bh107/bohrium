@@ -6,8 +6,9 @@ Disk IO
 import warnings
 import numpy_force as numpy
 from . import array_create
+from .bhary import fix_biclass_wrapper
 
-
+@fix_biclass_wrapper
 def load(file, mmap_mode=None, allow_pickle=True, fix_imports=True, encoding='ASCII', bohrium=True):
     """
     Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
@@ -118,6 +119,7 @@ def load(file, mmap_mode=None, allow_pickle=True, fix_imports=True, encoding='AS
         return array_create.array(f, bohrium=bohrium)
 
 
+@fix_biclass_wrapper
 def save(file, arr, allow_pickle=True, fix_imports=True):
     """
     Save an array to a binary file in NumPy ``.npy`` format.
@@ -173,6 +175,7 @@ def save(file, arr, allow_pickle=True, fix_imports=True):
     return numpy.save(file, array_create.array(arr, bohrium=False), allow_pickle, fix_imports)
 
 
+@fix_biclass_wrapper
 def _savez(file, args, kwds, compress, allow_pickle=True, pickle_kwargs=None):
 
     ary_list = []
@@ -229,6 +232,7 @@ def _savez(file, args, kwds, compress, allow_pickle=True, pickle_kwargs=None):
     zipf.close()
 
 
+@fix_biclass_wrapper
 def savez(file, *args, **kwds):
     """
     Save several arrays into a single file in uncompressed ``.npz`` format.
@@ -313,6 +317,7 @@ def savez(file, *args, **kwds):
     return numpy.savez(file, *ary_list, **kwds)
 
 
+@fix_biclass_wrapper
 def savez_compressed(file, *args, **kwds):
     """
     Save several arrays into a single file in compressed ``.npz`` format.
@@ -343,6 +348,7 @@ def savez_compressed(file, *args, **kwds):
     return numpy.savez_compressed(file, *ary_list, **kwds)
 
 
+@fix_biclass_wrapper
 def loadtxt(fname, dtype=float, comments='#', delimiter=None,
             converters=None, skiprows=0, usecols=None, unpack=False,
             ndmin=0, bohrium=True):
@@ -441,6 +447,7 @@ def loadtxt(fname, dtype=float, comments='#', delimiter=None,
     f = numpy.loadtxt(fname, dtype, comments, delimiter, converters, skiprows, usecols, unpack, ndmin)
     return array_create.array(f, bohrium=bohrium)
 
+@fix_biclass_wrapper
 def savetxt(fname, X, fmt='%.18e', delimiter=' ', newline='\n', header='',
             footer='', comments='# '):
     """
@@ -559,6 +566,7 @@ def savetxt(fname, X, fmt='%.18e', delimiter=' ', newline='\n', header='',
                          newline=newline, header=header, footer=footer, comments=comments)
 
 
+@fix_biclass_wrapper
 def fromregex(file, regexp, dtype, bohrium=True):
     """
     Construct an array from a text file, using regular expression parsing.
@@ -617,6 +625,8 @@ def fromregex(file, regexp, dtype, bohrium=True):
 
     return array_create.array(numpy.fromregex(file, regexp, dtype), bohrium=bohrium)
 
+
+@fix_biclass_wrapper
 def print_to_file(arr, fid, sep="", format="%s"):
     """
     a.tofile(arr, fid, sep="", format="%s")

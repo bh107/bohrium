@@ -9,6 +9,8 @@ from . import ufuncs
 import numpy_force as numpy
 from . import bhary
 
+
+@bhary.fix_biclass_wrapper
 def sum(a, axis=None, out=None):
     """
     Sum of array elements over a given axis.
@@ -82,6 +84,7 @@ def sum(a, axis=None, out=None):
     else:
         return ufuncs.add.reduce(a, axis=axis, out=out)
 
+@bhary.fix_biclass_wrapper
 def prod(a, axis=None, out=None):
     """
     Product of array elements over a given axis.
@@ -140,6 +143,7 @@ def prod(a, axis=None, out=None):
     else:
         return ufuncs.multiply.reduce(a, axis=axis, out=out)
 
+@bhary.fix_biclass_wrapper
 def max(a, axis=None, out=None):
     """
     Return the maximum of an array or maximum along an axis.
@@ -219,7 +223,7 @@ def max(a, axis=None, out=None):
     else:
         return ufuncs.maximum.reduce(a, axis=axis, out=out)
 
-
+@bhary.fix_biclass_wrapper
 def min(a, axis=None, out=None):
     """
     Return the minimum of an array or minimum along an axis.

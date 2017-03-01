@@ -17,6 +17,7 @@ def _warn_dtype(dtype, stacklevel):
                   % dtype, UserWarning, stacklevel)
 
 
+# Notice, array() is not decorated with @fix_biclass_wrapper() since @fix_biclass_wrapper() calls array()
 def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array -- Bohrium or NumPy ndarray.
@@ -731,6 +732,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         return y
 
 
+@bhary.fix_biclass_wrapper
 def copy(a, order='K'):
     """
     Return an array copy of the given object.

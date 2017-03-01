@@ -404,6 +404,7 @@ def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
     return D.sum(axis=-1)
 
 
+@fix_biclass_wrapper
 def broadcast_arrays(*args):
     """
     Broadcast any number of arrays against each other.
@@ -464,6 +465,7 @@ def broadcast_arrays(*args):
     return ret
 
 
+@fix_biclass_wrapper
 def fill(a, value):
     """
     a.fill(value)
