@@ -15,7 +15,7 @@ from .array_create import *
 from .array_manipulation import *
 from .ufuncs import UFUNCS, gather
 from .masking import *
-from .bhary import check, check_biclass, fix_biclass, in_bhmem
+from .bhary import check, fix_biclass, in_bhmem
 from ._info import numpy_types
 from ._util import flush
 from . import linalg

@@ -18,7 +18,9 @@ from . import ufuncs
 from . import target
 from . import array_create
 from ._util import dtype_equal
+from .bhary import fix_biclass_wrapper
 
+@fix_biclass_wrapper
 def gauss(a):
     """
     Performe Gausian elimination on matrix a without pivoting
@@ -30,6 +32,7 @@ def gauss(a):
     return a
 
 
+@fix_biclass_wrapper
 def lu(a):
     """
     Performe LU decomposition on the matrix a so A = L*U
@@ -44,6 +47,7 @@ def lu(a):
     return (l,u)
 
 
+@fix_biclass_wrapper
 def solve(a, b):
     """
     Solve a linear matrix equation, or system of linear scalar equations
@@ -85,6 +89,8 @@ def solve(a, b):
         np.flush(x)
     return x
 
+
+@fix_biclass_wrapper
 def jacobi(a, b, tol=0.0005):
     """
     Solve a linear matrix equation, or system of linear scalar equations
@@ -128,6 +134,7 @@ def jacobi(a, b, tol=0.0005):
     return x
 
 
+@fix_biclass_wrapper
 def matmul(a, b, no_blas=False):
     """
     Matrix multiplication of two 2-D arrays.
@@ -181,6 +188,7 @@ def matmul(a, b, no_blas=False):
     return ufuncs.add.reduce(a[:, numpy.newaxis] * numpy.transpose(b), -1)
 
 
+@fix_biclass_wrapper
 def dot(a, b, no_blas=False):
     """
     Dot product of two arrays.
@@ -265,6 +273,8 @@ def dot(a, b, no_blas=False):
 
     return ufuncs.add.reduce(a[:, numpy.newaxis] * numpy.transpose(b), -1)
 
+
+@fix_biclass_wrapper
 def norm(x, ord=None, axis=None):
     """
     This version of norm is not fully compliant with the NumPy version,
@@ -283,6 +293,8 @@ def norm(x, ord=None, axis=None):
         r = r_f32
     return np.sqrt(r)
 
+
+@fix_biclass_wrapper
 def tensordot(a, b, axes=2):
     """
     Compute tensor dot product along specified axes for arrays >= 1-D.
@@ -457,6 +469,7 @@ def tensordot(a, b, axes=2):
     return res.reshape(olda + oldb)
 
 
+@fix_biclass_wrapper
 def solve_tridiagonal(a, b, c, rhs):
     """
     Solver for tridiagonal systems,

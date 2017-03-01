@@ -6,10 +6,13 @@ Common linear algebra functions
 
 """
 from . import ufuncs
+from . import array_create
 import numpy_force as numpy
 from . import bhary
 
-def sum(a, axis=None, out=None):
+
+@bhary.fix_biclass_wrapper
+def sum(a, axis=None, dtype=None, out=None):
     """
     Sum of array elements over a given axis.
 
@@ -27,6 +30,13 @@ def sum(a, axis=None, out=None):
 
         If this is a tuple of ints, a sum is performed on multiple
         axes, instead of a single axis or all the axes as before.
+    dtype : dtype, optional
+        The type of the returned array and of the accumulator in which the
+        elements are summed.  The dtype of `a` is used by default unless `a`
+        has an integer dtype of less precision than the default platform
+        integer.  In that case, if `a` is signed then the platform integer
+        is used while if `a` is unsigned then an unsigned integer of the
+        same precision as the platform integer is used.
     out : ndarray, optional
         Array into which the output is placed.  By default, a new array is
         created.  If `out` is given, it must be of the appropriate shape
@@ -78,11 +88,14 @@ def sum(a, axis=None, out=None):
     """
 
     if not bhary.check(a) and not bhary.check(out):
-        return numpy.sum(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
+        return numpy.sum(a, axis=axis, dtype=dtype, out=out)
     else:
+        if dtype is not None:
+            a = array_create.array(a, dtype=dtype)
         return ufuncs.add.reduce(a, axis=axis, out=out)
 
-def prod(a, axis=None, out=None):
+@bhary.fix_biclass_wrapper
+def prod(a, axis=None, dtype=None, out=None):
     """
     Product of array elements over a given axis.
 
@@ -100,6 +113,13 @@ def prod(a, axis=None, out=None):
 
         If this is a tuple of ints, a multiply is performed on multiple
         axes, instead of a single axis or all the axes as before.
+    dtype : dtype, optional
+        The type of the returned array and of the accumulator in which the
+        elements are summed.  The dtype of `a` is used by default unless `a`
+        has an integer dtype of less precision than the default platform
+        integer.  In that case, if `a` is signed then the platform integer
+        is used while if `a` is unsigned then an unsigned integer of the
+        same precision as the platform integer is used.
     out : ndarray, optional
         Array into which the output is placed.  By default, a new array is
         created.  If `out` is given, it must be of the appropriate shape
@@ -136,10 +156,13 @@ def prod(a, axis=None, out=None):
     """
 
     if not bhary.check(a) and not bhary.check(out):
-        return numpy.prod(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
+        return numpy.prod(a, axis=axis, dtype=dtype, out=out)
     else:
+        if dtype is not None:
+            a = array_create.array(a, dtype=dtype)
         return ufuncs.multiply.reduce(a, axis=axis, out=out)
 
+@bhary.fix_biclass_wrapper
 def max(a, axis=None, out=None):
     """
     Return the maximum of an array or maximum along an axis.
@@ -219,7 +242,7 @@ def max(a, axis=None, out=None):
     else:
         return ufuncs.maximum.reduce(a, axis=axis, out=out)
 
-
+@bhary.fix_biclass_wrapper
 def min(a, axis=None, out=None):
     """
     Return the minimum of an array or minimum along an axis.

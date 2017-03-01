@@ -41,4 +41,4 @@ def modules(targets=["numpy", "numpy_force"], ignore_modules=IGNORE_MODULES):
             if (not hasattr(val, "_fixed_returned_biclass")) or val._fixed_returned_biclass == False:
                 if hasattr(val, "__doc__") and val.__doc__ is not None:
                     if pattern_return_ndarray.search(val.__doc__) is not None:
-                        setattr(m_obj,name, bhary.fix_returned_biclass(val))
+                        setattr(m_obj,name, bhary.fix_biclass_wrapper(val))

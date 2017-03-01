@@ -7,6 +7,7 @@ Common functions for visualization.
 import bohrium as np
 from . import ufuncs, bhary, array_create
 
+
 def plot_surface(ary, mode, colormap, lowerbound, upperbound):
 
     mode = mode.lower()

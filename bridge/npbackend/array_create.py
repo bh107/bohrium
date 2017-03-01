@@ -5,7 +5,7 @@ Array Creation Routines
 import math
 import warnings
 from . import bhary
-from .bhary import fix_returned_biclass
+from .bhary import fix_biclass_wrapper
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in, dtype_support
 from . import target
@@ -17,7 +17,7 @@ def _warn_dtype(dtype, stacklevel):
                   % dtype, UserWarning, stacklevel)
 
 
-@fix_returned_biclass
+# Notice, array() is not decorated with @fix_biclass_wrapper() since @fix_biclass_wrapper() calls array()
 def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array -- Bohrium or NumPy ndarray.
@@ -164,7 +164,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             return numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def empty(shape, dtype=float, bohrium=True):
     """
     Return a new matrix of given shape and type, without initializing entries.
@@ -211,7 +211,7 @@ def empty(shape, dtype=float, bohrium=True):
     return bhary.new(shape, dtype)
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def ones(shape, dtype=float, bohrium=True):
     """
     Matrix of ones.
@@ -259,7 +259,7 @@ def ones(shape, dtype=float, bohrium=True):
     return A
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def zeros(shape, dtype=float, bohrium=True):
     """
     Return a matrix of given shape and type, filled with zeros.
@@ -306,7 +306,7 @@ def zeros(shape, dtype=float, bohrium=True):
     return A
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def empty_like(a, dtype=None, bohrium=None):
     """
     Return a new array with the same shape and type as a given array.
@@ -363,7 +363,7 @@ def empty_like(a, dtype=None, bohrium=None):
     return empty(a.shape, dtype, bohrium)
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def zeros_like(a, dtype=None, bohrium=None):
     """
     Return an array of zeros with the same shape and type as a given array.
@@ -427,7 +427,7 @@ def zeros_like(a, dtype=None, bohrium=None):
     return b
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def ones_like(a, dtype=None, bohrium=None):
     """
     Return an array of ones with the same shape and type as a given array.
@@ -491,7 +491,7 @@ def ones_like(a, dtype=None, bohrium=None):
     return b
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     """
     arange([start,] stop[, step,], dtype=None)
@@ -601,7 +601,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
     return result
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def simply_range(size, dtype=numpy.uint64):
     try:
         integers = (int, long)
@@ -638,7 +638,7 @@ def simply_range(size, dtype=numpy.uint64):
         return A
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, bohrium=True):
     """
     Return evenly spaced numbers over a specified interval.
@@ -732,6 +732,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
         return y
 
 
+@bhary.fix_biclass_wrapper
 def copy(a, order='K'):
     """
     Return an array copy of the given object.

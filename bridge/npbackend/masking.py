@@ -7,9 +7,9 @@ import warnings
 from . import array_create
 from . import bhary
 import numpy_force as numpy
-from .bhary import fix_returned_biclass
+from .bhary import fix_biclass_wrapper
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def where(condition, x=None, y=None):
     """
     where(condition, [x, y])

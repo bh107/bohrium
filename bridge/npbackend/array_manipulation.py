@@ -5,9 +5,9 @@ Array manipulation routines
 from . import array_create
 import numpy_force as numpy
 from . import bhary
-from .bhary import fix_returned_biclass
+from .bhary import fix_biclass_wrapper
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def flatten(ary):
     """
     Return a copy of the array collapsed into one dimension.
@@ -35,7 +35,7 @@ def flatten(ary):
     return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def diagonal(ary, offset=0, axis1=0, axis2=1):
     """
     Return specified diagonals.
@@ -137,7 +137,7 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
     return numpy.lib.stride_tricks.as_strided(ary, shape=ret_shape, strides=ret_strides)
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def diagflat(d, k=0):
     """
     Create a two-dimensional array with the flattened input as a diagonal.
@@ -185,7 +185,7 @@ def diagflat(d, k=0):
     return A
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def diag(v, k=0):
     """
     Extract a diagonal or construct a diagonal array.
@@ -243,7 +243,7 @@ def diag(v, k=0):
         raise ValueError("Input must be 1- or 2-d.")
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def reshape(a, *newshape):
     """
     Gives a new shape to an array without changing its data.
@@ -339,7 +339,7 @@ def reshape(a, *newshape):
     return numpy.ndarray.reshape(a, newshape)
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
     """
     Return the sum along diagonals of the array.
@@ -404,6 +404,7 @@ def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
     return D.sum(axis=-1)
 
 
+@fix_biclass_wrapper
 def broadcast_arrays(*args):
     """
     Broadcast any number of arrays against each other.
@@ -464,6 +465,7 @@ def broadcast_arrays(*args):
     return ret
 
 
+@fix_biclass_wrapper
 def fill(a, value):
     """
     a.fill(value)
