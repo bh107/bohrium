@@ -40,7 +40,7 @@ def check(ary):
         base = ary
     return hasattr(base, "bhc_ary")
 
-def check_biclass(ary):
+def check_biclass_np_over_bh(ary):
     """Returns True if 'ary' is a NumPy view with a Bohrium base array"""
 
     try:
@@ -52,14 +52,22 @@ def check_biclass(ary):
     from . import _bh #We import locally in order to avoid import cycle
     return not isinstance(ary, _bh.ndarray)
 
+def check_biclass_bh_over_np(ary):
+    """Returns True if 'ary' is a Bohrium view with a NumPy base array"""
+
+    return hasattr(ary, "bhc_ary") and not check(get_base(ary))
+
 def fix_biclass(ary):
     """
-    Returns a Bohrium version of 'ary' if 'ary' is a NumPy view with a
-    Bohrium base array else 'ary' is returned unmodified
+    Makes sure that when 'ary' or its base is a Bohrium array, both of them are.
     """
 
-    if check_biclass(ary):
+    if check_biclass_np_over_bh(ary):
         return ary.view(type(get_base(ary)))
+    elif check_biclass_bh_over_np(ary):
+        from . import array_create
+        ary = array_create.array(ary, bohrium=False)
+        return array_create.array(ary, bohrium=True)
     else:
         return ary
 
