@@ -13,18 +13,18 @@ from . import array_create
 import numpy_force as np
 from . import _info
 from ._util import dtype_equal
-from .bhary import get_bhc, get_base, fix_returned_biclass
+from .bhary import get_bhc, get_base, fix_biclass_wrapper
 from . import bhary
 from . import target
 from .array_manipulation import broadcast_arrays
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
     target.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def gather(ary, indexes):
     """
     gather(ary, indexes)
@@ -112,7 +112,7 @@ def overlap_conflict(out, *inputs):
     return False
 
 
-@fix_returned_biclass
+@fix_biclass_wrapper
 def assign(ary, out):
     """Copy data from array 'ary' to 'out'"""
 
@@ -161,7 +161,7 @@ class Ufunc(object):
         return "<bohrium Ufunc '%s'>" % self.info['name']
 
 
-    @fix_returned_biclass
+    @fix_biclass_wrapper
     def __call__(self, *args, **kwargs):
         args = list(args)
 
@@ -266,7 +266,7 @@ class Ufunc(object):
         return out
 
 
-    @fix_returned_biclass
+    @fix_biclass_wrapper
     def reduce(self, ary, axis=0, out=None):
         """
         A Bohrium Reduction
@@ -423,7 +423,7 @@ class Ufunc(object):
             return out
 
 
-    @fix_returned_biclass
+    @fix_biclass_wrapper
     def accumulate(self, ary, axis=0, out=None):
         """
         accumulate(array, axis=0, out=None)
@@ -535,7 +535,7 @@ UFUNCS["bh_divide"] = UFUNCS["divide"]
 # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
 #       such as "negative" which can be done like below.
 class Negative(Ufunc):
-    @fix_returned_biclass
+    @fix_biclass_wrapper
     def __call__(self, ary, out=None):
         if out is None:
             return -1 * ary
@@ -546,7 +546,7 @@ UFUNCS["negative"] = Negative({'name': 'negative'})
 
 
 class TrueDivide(Ufunc):
-    @fix_returned_biclass
+    @fix_biclass_wrapper
     def __call__(self, a1, a2, out=None):
         if _util.dtype_is_float(a1) or _util.dtype_is_float(a2):
             # Floating points automatically use Bohrium division
@@ -566,7 +566,7 @@ UFUNCS["true_divide"] = TrueDivide({'name': 'true_divide'})
 
 
 class FloorDivide(Ufunc):
-    @fix_returned_biclass
+    @fix_biclass_wrapper
     def __call__(self, a1, a2, out=None):
         if _util.dtype_is_float(a1) or _util.dtype_is_float(a2):
             ret = UFUNCS["floor"](a1 / a2)

@@ -74,10 +74,9 @@ def fix_biclass(ary):
     else:
         return ary
 
-def fix_returned_biclass(func):
+def fix_biclass_wrapper(func):
     """
-    Function decorator that makes sure that the function doesn't return a
-    biclass.
+    Function decorator that makes sure that the function doesn't reads or writes biclass arrays
     """
 
     if hasattr(func, "_fixed_returned_biclass"):
