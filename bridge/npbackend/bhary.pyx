@@ -80,6 +80,9 @@ def fix_returned_biclass(func):
     biclass.
     """
 
+    if hasattr(func, "_fixed_returned_biclass"):
+        return func
+
     def inner(*args, **kwargs):
         """Invokes 'func' and strips "biclass" from the result."""
         ret = func(*args, **kwargs)
