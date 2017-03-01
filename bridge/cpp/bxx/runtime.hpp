@@ -377,8 +377,8 @@ void Runtime::enqueue_extension(const std::string& name,
         opcode = it->second;
     } else {                        // Add it
         opcode = extension_count++;
-        extensions.insert(std::pair<std::string, bh_opcode>(name, opcode));
         runtime.extmethod(name.c_str(), opcode);
+        extensions.insert(std::pair<std::string, bh_opcode>(name, opcode));
     }
 
     guard();
