@@ -78,7 +78,9 @@ _type_aliases = [
     ('int',     'int'),
     ('uint',    'numpy.uint64'),
     ('float',   'float'),
-    ('complex', 'complex')
+    ('complex', 'complex'),
+    ('fmod',    'mod'),
+    ('mod',     'remainder')
 ]
 
 for _f, _t in _type_aliases:

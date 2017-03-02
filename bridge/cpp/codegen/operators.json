@@ -32,9 +32,12 @@
 ["bh_divide",       "BH_DIVIDE",    "runtime.nops3",   true],
 
 ["mod",             "BH_MOD",   "sugar.nops3",     true],
-["operator%",       "BH_MOD",   "sugar.nops3",     true],
-["operator%=",      "BH_MOD",   "sugar.nops3.intern", true],
 ["bh_mod",          "BH_MOD",   "runtime.nops3",   true],
+
+["remainder",       "BH_REMAINDER",   "sugar.nops3",     true],
+["operator%",       "BH_REMAINDER",   "sugar.nops3",     true],
+["operator%=",      "BH_REMAINDER",   "sugar.nops3.intern", true],
+["bh_remainder",    "BH_REMAINDER",   "runtime.nops3",   true],
 
 ["bitwise_and",     "BH_BITWISE_AND",   "sugar.nops3",     true],
 ["operator&",       "BH_BITWISE_AND",   "sugar.nops3",     true],

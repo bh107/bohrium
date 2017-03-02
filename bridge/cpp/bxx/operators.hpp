@@ -852,6 +852,54 @@ inline multi_array<TL>& mod (const TL lhs, multi_array<TR>& rhs)
 }
 
 template <typename TL, typename TR>
+inline multi_array<TL>& remainder (multi_array<TL>& lhs, multi_array<TR>& rhs)
+{
+    multi_array<TL>* left    = &lhs;
+    multi_array<TR>* right   = &rhs;
+    
+    if (!same_shape(*left, *right)) {           // Broadcast
+        left    = &Runtime::instance().temp_view(lhs);
+        right   = &Runtime::instance().temp_view(rhs);
+
+        if (lhs.getRank() < rhs.getRank()) {    // Left-handside has lowest rank
+            if (!broadcast(*left, *right)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        } else {                                // Right-handside has lowest rank
+            if (!broadcast(*right, *left)) {
+                throw std::runtime_error("Failed broadcasting.");
+            }
+        }
+    }
+    
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
+    bh_remainder (*res, *left, *right); // Encode and enqueue
+    res->setTemp(true); // Mark res as temp
+
+    return *res;
+}
+
+template <typename TL, typename TR>
+inline multi_array<TL>& remainder (multi_array<TL>& lhs, const TR rhs)
+{
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
+    bh_remainder (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+template <typename TL, typename TR>
+inline multi_array<TL>& remainder (const TL lhs, multi_array<TR>& rhs)
+{
+    multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
+    bh_remainder (*res, lhs, rhs); // Encode and enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
+
+template <typename TL, typename TR>
 inline multi_array<TL>& operator% (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
     multi_array<TL>* left    = &lhs;
@@ -873,7 +921,7 @@ inline multi_array<TL>& operator% (multi_array<TL>& lhs, multi_array<TR>& rhs)
     }
     
     multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
-    bh_mod (*res, *left, *right); // Encode and enqueue
+    bh_remainder (*res, *left, *right); // Encode and enqueue
     res->setTemp(true); // Mark res as temp
 
     return *res;
@@ -883,7 +931,7 @@ template <typename TL, typename TR>
 inline multi_array<TL>& operator% (multi_array<TL>& lhs, const TR rhs)
 {
     multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
-    bh_mod (*res, lhs, rhs); // Encode and enqueue
+    bh_remainder (*res, lhs, rhs); // Encode and enqueue
     res->setTemp(true); // Mark result as temp
 
     return *res;
@@ -893,7 +941,7 @@ template <typename TL, typename TR>
 inline multi_array<TL>& operator% (const TL lhs, multi_array<TR>& rhs)
 {
     multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
-    bh_mod (*res, lhs, rhs); // Encode and enqueue
+    bh_remainder (*res, lhs, rhs); // Encode and enqueue
     res->setTemp(true); // Mark result as temp
 
     return *res;
@@ -2366,7 +2414,7 @@ template <typename T>
 inline
 multi_array<T>& multi_array<T>::operator%= (const T& rhs)
 {
-    bh_mod (*this, *this, rhs);
+    bh_remainder (*this, *this, rhs);
     return *this;
 }
 
@@ -2374,7 +2422,7 @@ template <typename T>
 inline
 multi_array<T>& multi_array<T>::operator%= (multi_array<T>& rhs)
 {
-    bh_mod (*this, *this, rhs);
+    bh_remainder (*this, *this, rhs);
     return *this;
 }
 
