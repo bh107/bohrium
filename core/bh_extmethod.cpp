@@ -18,7 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <dlfcn.h>
+#ifdef _WIN32
+    #include <windows.h>
+    #include <dlfcn-win32.h>
+#else
+    #include <dlfcn.h>
+#endif
+
 #include <string>
 #include <vector>
 #include <sstream>

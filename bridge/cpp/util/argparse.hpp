@@ -3,8 +3,8 @@ This file is part of Bohrium and Copyright (c) 2012 the Bohrium team:
 http://bohrium.bitbucket.org
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
@@ -24,7 +24,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 #include <cstdlib>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+
 #include <getopt.h>
 
 namespace argparse {
@@ -45,7 +49,7 @@ bool parse_args(int argc, char *argv[], arguments_t& args)
     };
 
     args.verbose = false;       // Default: verbose = false
-                                
+
     while ((opt = getopt_long(argc, argv,"sv",
             long_options, &long_index )) != -1) {
         const char *str = optarg;
@@ -57,7 +61,7 @@ bool parse_args(int argc, char *argv[], arguments_t& args)
                         str++;
                     }
                     args.size.push_back(atoi(std::string(begin,str).c_str()));
-                    
+
                 } while(*str++ != 0);
                 break;
             case 'v':           // Parse verbose
@@ -68,8 +72,7 @@ bool parse_args(int argc, char *argv[], arguments_t& args)
         }
     }
     return true;
-} 
+}
 
 }
 #endif
-

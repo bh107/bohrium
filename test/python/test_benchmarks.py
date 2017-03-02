@@ -71,7 +71,7 @@ class test_gameoflife(BenchHelper, numpytest):
         self.script     = "gameoflife"
         self.dtypes     = [bh.float64]
         self.sizetxt    = "10*10*50*1"
-        self.inputfn    = "gameoflife_input-{0}-12*12.npz"
+        self.inputfn    = "gameoflife_input-{0}-12x12.npz"
 
     def test_gameoflife(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -87,7 +87,7 @@ class test_gauss(BenchHelper, numpytest):
         self.script     = "gauss"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "4*4"
-        self.inputfn    = "gauss_input-{0}-4*4.npz"
+        self.inputfn    = "gauss_input-{0}-4x4.npz"
 
     def test_gauss(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -103,7 +103,7 @@ class test_gauss_20x20(BenchHelper, numpytest):
         self.script     = "gauss"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "20*20"
-        self.inputfn    = "gauss_input-{0}-20*20.npz"
+        self.inputfn    = "gauss_input-{0}-20x20.npz"
 
     def test_gauss_20x20(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -190,7 +190,7 @@ class test_lu(BenchHelper, numpytest):
         self.script     = "lu"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "100*100"
-        self.inputfn    = "lu_input-{0}-100*100.npz"
+        self.inputfn    = "lu_input-{0}-100x100.npz"
 
     def test_lu(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -212,7 +212,7 @@ class test_mxmul(BenchHelper, numpytest):
         self.script     = "mxmul"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "500"
-        self.inputfn    = "mxmul_y-{0}-500*500_x-{0}-500*500.npz"
+        self.inputfn    = "mxmul_y-{0}-500x500_x-{0}-500x500.npz"
 
     def test_mxmul(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -270,7 +270,7 @@ class test_shallow_water(BenchHelper, numpytest):
         self.script     = "shallow_water"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "20*20*10"
-        self.inputfn    = "shallow_water_input-{0}-20*20.npz"
+        self.inputfn    = "shallow_water_input-{0}-20x20.npz"
 
     def test_shallow_water(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -287,7 +287,7 @@ class test_snakes_and_ladders(BenchHelper, numpytest):
         self.script     = "snakes_and_ladders"
         self.dtypes     = [bh.float64]
         self.sizetxt    = "100*100"
-        self.inputfn    = "snakes_and_ladders_a-{0}-101_p-{0}-101*101.npz"
+        self.inputfn    = "snakes_and_ladders_a-{0}-101_p-{0}-101x101.npz"
 
     def test_snakes_and_ladders(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -345,7 +345,7 @@ class test_wireworld(BenchHelper, numpytest):
         self.script     = "wireworld"
         self.dtypes     = [bh.uint8]
         self.sizetxt    = "100*10"
-        self.inputfn    = "wireworld_input-{0}-1002*1002.npz"
+        self.inputfn    = "wireworld_input-{0}-1002x1002.npz"
 
     def test_wireworld(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -361,7 +361,7 @@ class test_mfe(BenchHelper, numpytest):
         self.script     = "magnetic_field_extrapolation"
         self.dtypes     = [bh.float32, bh.float64]
         self.sizetxt    = "16*16*5"
-        self.inputfn    = "idl_input-float64_512*512.npz"
+        self.inputfn    = "idl_input-float64_512x512.npz"
 
     def test_mfe(self, pseudo_arrays):
         return self.run(pseudo_arrays)
@@ -403,4 +403,3 @@ class test_jacobi_module(numpytest):
         jacobi = eval("la.jacobi")
         res = jacobi(a[0],a[1])
         return (res,"res = la.jacobi(a[0],a[1]);")
-

@@ -21,6 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_MEM_SIGNAL_H
 #define __BH_MEM_SIGNAL_H
 
+#include <pthread.h>
+
+#ifndef _WIN32
+    #include <unistd.h>
+    #include "bh_win.h"
+#endif
+
 #include <stdint.h>
 #include <sys/mman.h>
 #include <signal.h>

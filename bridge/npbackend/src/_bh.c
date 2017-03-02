@@ -24,7 +24,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <Python.h>
 #include <structmember.h>
-#include <dlfcn.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+    #include <dlfcn-win32.h>
+#else
+    #include <dlfcn.h>
+#endif
+
 #include <bh_mem_signal.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION

@@ -21,6 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_CONFIG_PARSER_H
 #define __BH_CONFIG_PARSER_H
 
+#include "bh_win.h"
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
 #include <string>
@@ -203,4 +205,3 @@ class ConfigParser {
 } //namespace bohrium
 
 #endif
-

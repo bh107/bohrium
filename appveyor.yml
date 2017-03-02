@@ -1,0 +1,55 @@
+skip_tags: true
+max_jobs: 4
+image: Visual Studio 2015
+shallow_clone: true # fetch zip
+
+environment:
+  BOOST_ROOT: C:\Libraries\boost_1_59_0
+  BOOST_LIBRARYDIR: C:\Libraries\boost_1_59_0\lib64-msvc-14.0
+  BH_OPENMP_PROF: true
+  BH_OPENMP_VOLATILE: true
+  HOME: c:\\
+
+platform: x64
+
+configuration: Debug
+
+build: off
+
+cache:
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+
+init:
+  - cmd: cmake --version
+
+install:
+  # Set PATH
+  - cmd: SET PATH="C:\Program Files (x86)\Mono\bin";%PATH%
+  # Install zlib
+  - cmd: cd \
+  - cmd: appveyor DownloadFile https://github.com/madler/zlib/archive/v1.2.11.tar.gz
+  - cmd: 7z x v1.2.11.tar.gz -so | 7z x -si -ttar > nul
+  - cmd: cd zlib-1.2.11
+  - cmd: cmake -G "Visual Studio 14 2015 Win64" .
+  - cmd: cmake --build . --config release
+  # Install numpy
+  - cmd: cd \
+  - cmd: python.exe -m pip install wheel
+  - cmd: python.exe -m pip install numpy
+  - cmd: python.exe -m pip install cheetah
+  # Install swig
+  - choco install -y swig
+  # Install cython
+  - cmd: python.exe -m pip install cython
+
+build_script:
+  - cmd: cd c:\projects\bohrium
+  - cmd: md build
+  - cmd: cd build
+  - cmd: cmake .. -G "Visual Studio 14 2015 Win64" -DCMAKE_CXX_FLAGS="/Ze /EHsc" -DCMAKE_PROGRAM_PATH="C:\Program Files (x86)\Mono\bin" -DZLIB_INCLUDE_DIR=C:\zlib-1.2.11 -DZLIB_LIBRARY=C:\zlib-1.2.11\release\zlibstatic.lib -DCMAKE_BUILD_TYPE=Debug -DEXT_VISUALIZER=OFF -DUSE_WERROR=ON -DBOOST_ROOT="%BOOST_ROOT%" -DBOOST_LIBRARYDIR="%BOOST_LIBRARYDIR%" -DFORCE_CONFIG_PATH="c:\config.ini"
+  - cmd: cmake --build . --config debug --target install
+
+test_script:
+  - python.exe test/python/run.py test/python/tests/test_*.py
+  # - python.exe test/python/numpytest.py --file test_benchmarks.py

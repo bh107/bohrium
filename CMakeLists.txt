@@ -112,6 +112,14 @@ set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries"
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
 
+if(WIN32)
+  include_directories (${CMAKE_SOURCE_DIR}/include/win32)
+  add_library (mman core/win32/sys/mman.c)
+  install (TARGETS mman RUNTIME DESTINATION bin
+                        LIBRARY DESTINATION lib${LIB_SUFFIX}
+                        ARCHIVE DESTINATION lib${LIB_SUFFIX})
+endif()
+
 #####################
 # Bohrium components
 set(OPENMP_LIBS "")

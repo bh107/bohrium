@@ -25,7 +25,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <boost/functional/hash.hpp>
 #include <iomanip>
-#include <dlfcn.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+    #include <dlfcn-win32.h>
+#else
+    #include <dlfcn.h>
+#endif
 
 #include "store.hpp"
 

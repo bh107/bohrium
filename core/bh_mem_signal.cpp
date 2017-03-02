@@ -18,9 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <pthread.h>
-#include <unistd.h>
-#include <stdint.h>
+#include "bh_win.h"
+
 #include <stdint.h>
 #include <sys/mman.h>
 #include <signal.h>
