@@ -61,7 +61,8 @@ for _name, _f in UFUNCS.items():
 
 # Aliases
 _aliases = [
-    ('abs', 'absolute')
+    ('abs', 'absolute'),
+    ('round', 'round_')
 ]
 for _f, _t in _aliases:
     exec("%s = %s" % (_f, _t))
