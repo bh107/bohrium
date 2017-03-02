@@ -7,6 +7,9 @@ class test_negative:
             yield "a = M.arange(-11, -1, 1, dtype=%s); b = M.arange(1, 11, dtype=%s);" % (dtype, dtype)
             yield "b = M.arange(-11, -1, 1, dtype=%s); a = M.arange(1, 11, dtype=%s);" % (dtype, dtype)
 
+    def test_division(self, cmd):
+        return cmd + "res = a / b"
+
     def test_remainder(self, cmd):
         return cmd + "res = M.remainder(a, b)"
 

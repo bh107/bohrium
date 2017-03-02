@@ -196,7 +196,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
                 */
                 out << operands[0] << " = ((" << operands[1] << " > 0) == (" << operands[2] << " > 0) || "
                                           "(" << operands[1] <<  " % " << operands[2] << ") == 0)?"
-                                          "(" << operands[1] <<  " % " << operands[2] << ") :"
+                                          "(" << operands[1] <<  " % " << operands[2] << "):"
                                           "(" << operands[1] <<  " % " << operands[2] << ") + " << operands[2] << ";" << endl;
             }
             break;
@@ -367,6 +367,23 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
                     << operands[0] << ", " << operands[1] << ", " << operands[2] << ");" << endl;
+            } else if (bh_type_is_signed_integer(instr.operand[0].base->type)) {
+                /* Python/NumPy signed integer division
+                    if (in2 == 0 || (in1 == NPY_MIN_@TYPE@ && in2 == -1)) {
+                        npy_set_floatstatus_divbyzero();
+                        *((@type@ *)op1) = 0;
+                    }
+                    else if (((in1 > 0) != (in2 > 0)) && (in1 % in2 != 0)) {
+                        *((@type@ *)op1) = in1/in2 - 1;
+                    }
+                    else {
+                        *((@type@ *)op1) = in1/in2;
+                    }
+                */
+                out << operands[0] << " = ((" << operands[1] << " > 0) != (" << operands[2] << " > 0) && "
+                                          "(" << operands[1] <<  " % " << operands[2] << ") != 0)?"
+                                          "(" << operands[1] <<  " / " << operands[2] << " - 1):"
+                                          "(" << operands[1] <<  " / " << operands[2] << ");" << endl;
             } else {
                 out << operands[0] << " = " << operands[1] << " / " << operands[2] << ";" << endl;
             }
