@@ -1198,7 +1198,7 @@
 },
 {
     "opcode": "BH_MOD",
-    "doc":  "Return the element-wise remainder of division.",
+    "doc":  "Return the element-wise modulo, which is `x1 % x2` in Python and has the same sign as the divisor x2.",
     "code": "op1 = op2 - floor(op2 / op3) * op3",
     "id":   "50",
     "nop":   3,
@@ -2066,6 +2066,35 @@
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": true
+},
+{
+  "opcode": "BH_REMAINDER",
+  "doc":  "Return the element-wise remainder of division, which is `x1 % x2` in C99 and has the same sign as the divided x1.",
+  "code": "op1 = op2 % op3",
+  "id":   "82",
+  "nop":   3,
+  "types": [
+    [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
+    [ "BH_FLOAT64", "BH_FLOAT64", "BH_FLOAT64" ],
+    [ "BH_INT16", "BH_INT16", "BH_INT16" ],
+    [ "BH_INT32", "BH_INT32", "BH_INT32" ],
+    [ "BH_INT64", "BH_INT64", "BH_INT64" ],
+    [ "BH_INT8", "BH_INT8", "BH_INT8" ],
+    [ "BH_UINT16", "BH_UINT16", "BH_UINT16" ],
+    [ "BH_UINT32", "BH_UINT32", "BH_UINT32" ],
+    [ "BH_UINT64", "BH_UINT64", "BH_UINT64" ],
+    [ "BH_UINT8", "BH_UINT8", "BH_UINT8" ]
+  ],
+  "layout": [
+    [ "A", "A", "A" ],
+    [ "A", "A", "K" ],
+    [ "A", "K", "A" ]
+  ],
+  "elementwise":   true,
+  "composite":     false,
+  "reduction":     false,
+  "accumulate":    false,
+  "system_opcode": false
 }
 
 ]

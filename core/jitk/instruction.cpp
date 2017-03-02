@@ -179,6 +179,27 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
             else
                 out << operands[0] << " = " << operands[1] << " % " << operands[2] << ";" << endl;
             break;
+        case BH_REMAINDER:
+            if (bh_type_is_float(instr.operand[0].base->type)) {
+                out << operands[0] << " = " << operands[1] << " - floor(" << operands[1] <<  " / " << operands[2] << ") * " << operands[2] << ";" << endl;
+            } else if (bh_type_is_unsigned_integer(instr.operand[0].base->type)) {
+                out << operands[0] << " = " << operands[1] << " % " << operands[2] << ";" << endl;
+            } else {
+                /* The Python/NumPy implementation of remainder on signed integers
+                    const @type@ rem = in1 % in2;
+                    if ((in1 > 0) == (in2 > 0) || rem == 0) {
+                        *((@type@ *)op1) = rem;
+                    }
+                    else {
+                        *((@type@ *)op1) = rem + in2;
+                    }
+                */
+                out << operands[0] << " = ((" << operands[1] << " > 0) == (" << operands[2] << " > 0) || "
+                                          "(" << operands[1] <<  " % " << operands[2] << ") == 0)?"
+                                          "(" << operands[1] <<  " % " << operands[2] << ") :"
+                                          "(" << operands[1] <<  " % " << operands[2] << ") + " << operands[2] << ";" << endl;
+            }
+            break;
         case BH_RINT:
             out << operands[0] << " = rint(" << operands[1] << ");" << endl;
             break;
@@ -420,12 +441,10 @@ void write_operation(const bh_instruction &instr, const vector<string> &operands
 
                     // Complex sign always have Im(x) = 0
                     out << operands[0] << ".s1 = 0.0;" << endl;
-
                     out << operands[0] << ".s0 ";
                 } else {
                     out << ctype << " real = creal(" << operands[1] << "); " << endl;
                     out << ctype << " imag = cimag(" << operands[1] << "); " << endl;
-
                     out << operands[0] << " ";
                 }
 

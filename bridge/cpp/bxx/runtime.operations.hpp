@@ -181,6 +181,33 @@ void bh_mod (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
     Runtime::instance().enqueue((bh_opcode)BH_MOD, res, lhs, rhs);
 }
 
+// bh_remainder - BH_REMAINDER - runtime.nops3 - 3 (A,A,A)
+template <typename TO, typename TL, typename TR>
+inline
+void bh_remainder (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
+{
+    Runtime::instance().typecheck<BH_REMAINDER, TO, TL, TR>();
+    Runtime::instance().enqueue((bh_opcode)BH_REMAINDER, res, lhs, rhs);
+}
+
+// bh_remainder - BH_REMAINDER - runtime.nops3 - 3 (A,A,K)
+template <typename TO, typename TL, typename TR>
+inline
+void bh_remainder (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
+{
+    Runtime::instance().typecheck<BH_REMAINDER, TO, TL, TR>();
+    Runtime::instance().enqueue((bh_opcode)BH_REMAINDER, res, lhs, rhs);
+}
+
+// bh_remainder - BH_REMAINDER - runtime.nops3 - 3 (A,K,A)
+template <typename TO, typename TL, typename TR>
+inline
+void bh_remainder (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
+{
+    Runtime::instance().typecheck<BH_REMAINDER, TO, TL, TR>();
+    Runtime::instance().enqueue((bh_opcode)BH_REMAINDER, res, lhs, rhs);
+}
+
 // bh_bitwise_and - BH_BITWISE_AND - runtime.nops3 - 3 (A,A,A)
 template <typename TO, typename TL, typename TR>
 inline

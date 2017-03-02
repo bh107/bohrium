@@ -2933,6 +2933,56 @@ void Runtime::typecheck<BH_REAL, float, std::complex<float> >(void) { }
 
 template <>
 inline
+void Runtime::typecheck<BH_REMAINDER, float, float, float>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, double, double, double>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, int16_t, int16_t, int16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, int32_t, int32_t, int32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, int64_t, int64_t, int64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, int8_t, int8_t, int8_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, uint16_t, uint16_t, uint16_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, uint32_t, uint32_t, uint32_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, uint64_t, uint64_t, uint64_t>(void) { }
+
+
+template <>
+inline
+void Runtime::typecheck<BH_REMAINDER, uint8_t, uint8_t, uint8_t>(void) { }
+
+
+template <>
+inline
 void Runtime::typecheck<BH_REPEAT, uint64_t, uint64_t>(void) { }
 
 
