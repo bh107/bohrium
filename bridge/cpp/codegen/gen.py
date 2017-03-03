@@ -3,19 +3,37 @@ import json
 import os
 from os.path import join, exists
 from pprint import pprint
-from Cheetah.Template import Template
 import stat
 
+import sys
+sys.path.append(os.path.abspath('../../thirdparty'))
+from pyratemp import Template
+
 def render(gens, tmpl_dir, output_dir, mtime):
+    license = open("%s%s" % (tmpl_dir, 'license.txt')).read()
+    warn    = open("%s%s" % (tmpl_dir, 'warn.txt')).read()
+
     prev_output_fn = gens[0][1]
     prev_output    = ""
 
     count = (len(gens)-1)
     for c, (tmpl_fn, output_fn, data) in enumerate(gens):   # Concat the rendered template into output_fn
-        t_tmpl  = Template(file= "%s%s" % (tmpl_dir, tmpl_fn), searchList=[{
-            'data': data,
-            'tmpl_dir': tmpl_dir
-        }])
+        const_file = Template(open("%s%s" % (tmpl_dir, "traits.const.tpl")).read(), escape=None)
+        const_file = const_file(data=data)
+
+        array_file = Template(open("%s%s" % (tmpl_dir, "traits.array.tpl")).read(), escape=None)
+        array_file = array_file(data=data)
+
+        t_tmpl = Template(open("%s%s" % (tmpl_dir, tmpl_fn)).read(), escape=None)
+        t_tmpl = t_tmpl(
+            tmpl_dir=tmpl_dir,
+            license=license,
+            warn=warn,
+            const_file=const_file,
+            array_file=array_file,
+            data=data
+        )
+
         last = count == c
 
         if (output_fn != prev_output_fn ):
@@ -134,30 +152,27 @@ def main():
             enums.add(enum)
 
     gens = [
-        ('traits.ctpl',     'traits.hpp',    types),
+        ('traits.tpl',              'traits.hpp',              types),
 
-        ('sugar.header.ctpl',       'operators.hpp', datasets['sugar.nops2']),
+        ('sugar.header.tpl',        'operators.hpp',           datasets['sugar.nops2']),
+        ('sugar.nops2.tpl',         'operators.hpp',           datasets['sugar.nops2']),
+        ('sugar.nops2.bool.tpl',    'operators.hpp',           datasets['sugar.nops2.bool']),
+        ('sugar.nops3.tpl',         'operators.hpp',           datasets['sugar.nops3']),
+        ('sugar.nops3.bool.tpl',    'operators.hpp',           datasets['sugar.nops3.bool']),
+        ('sugar.nops3.intern.tpl',  'operators.hpp',           datasets['sugar.nops3.intern']),
+        ('sugar.footer.tpl',        'operators.hpp',           datasets['sugar.nops2']),
 
-        ('sugar.nops2.ctpl',        'operators.hpp', datasets['sugar.nops2']),
-        ('sugar.nops2.bool.ctpl',   'operators.hpp', datasets['sugar.nops2.bool']),
+        ('runtime.typechecker.tpl', 'runtime.typechecker.hpp', checker),
 
-        ('sugar.nops3.ctpl',        'operators.hpp', datasets['sugar.nops3']),
-        ('sugar.nops3.bool.ctpl',   'operators.hpp', datasets['sugar.nops3.bool']),
-        ('sugar.nops3.intern.ctpl', 'operators.hpp', datasets['sugar.nops3.intern']),
-
-        ('sugar.footer.ctpl',       'operators.hpp', datasets['sugar.nops2']),
-
-        ('runtime.typechecker.ctpl', 'runtime.typechecker.hpp', checker),
-
-        ('runtime.header.ctpl',     'runtime.operations.hpp', datasets['runtime.nops3']),
-        ('runtime.nops0.ctpl',      'runtime.operations.hpp', datasets['runtime.nops0']),
-        ('runtime.nops3.ctpl',      'runtime.operations.hpp', datasets['runtime.nops3']),
-        ('runtime.nops2.ctpl',      'runtime.operations.hpp', datasets['runtime.nops2']),
-        ('runtime.nops1.ctpl',      'runtime.operations.hpp', datasets['runtime.nops1']),
-        ('runtime.random.ctpl',     'runtime.operations.hpp', datasets['runtime.random']),
-        ('runtime.accumulate.ctpl', 'runtime.operations.hpp', datasets['runtime.accumulate']),
-        ('runtime.reduce.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
-        ('runtime.footer.ctpl',     'runtime.operations.hpp', datasets['runtime.reduce']),
+        ('runtime.header.tpl',      'runtime.operations.hpp',  datasets['runtime.nops3']),
+        ('runtime.nops0.tpl',       'runtime.operations.hpp',  datasets['runtime.nops0']),
+        ('runtime.nops3.tpl',       'runtime.operations.hpp',  datasets['runtime.nops3']),
+        ('runtime.nops2.tpl',       'runtime.operations.hpp',  datasets['runtime.nops2']),
+        ('runtime.nops1.tpl',       'runtime.operations.hpp',  datasets['runtime.nops1']),
+        ('runtime.random.tpl',      'runtime.operations.hpp',  datasets['runtime.random']),
+        ('runtime.accumulate.tpl',  'runtime.operations.hpp',  datasets['runtime.accumulate']),
+        ('runtime.reduce.tpl',      'runtime.operations.hpp',  datasets['runtime.reduce']),
+        ('runtime.footer.tpl',      'runtime.operations.hpp',  datasets['runtime.reduce']),
     ]
 
     render(gens, tmpl_dir, output_dir, mtime)

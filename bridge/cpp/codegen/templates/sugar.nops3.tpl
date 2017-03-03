@@ -1,18 +1,11 @@
-#slurp
-#compiler-settings
-directiveStartToken = %
-#end compiler-settings
-%slurp
-
-%for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
-
+<!--(for op, opcode, _optype, _opcount, _typesigs, _layouts, broadcast in data)-->
 template <typename TL, typename TR>
-inline multi_array<TL>& $op (multi_array<TL>& lhs, multi_array<TR>& rhs)
+inline multi_array<TL>& @!op!@ (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {
     multi_array<TL>* left    = &lhs;
     multi_array<TR>* right   = &rhs;
-    
-    %if $broadcast 
+
+    <!--(if broadcast)-->
     if (!same_shape(*left, *right)) {           // Broadcast
         left    = &Runtime::instance().temp_view(lhs);
         right   = &Runtime::instance().temp_view(rhs);
@@ -27,33 +20,32 @@ inline multi_array<TL>& $op (multi_array<TL>& lhs, multi_array<TR>& rhs)
             }
         }
     }
-    %end if
-    
+    <!--(end)-->
+
     multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(*left); // Construct result
-    $opcode.lower() (*res, *left, *right); // Encode and enqueue
+    @!opcode.lower()!@ (*res, *left, *right); // Encode and enqueue
     res->setTemp(true); // Mark res as temp
 
     return *res;
 }
 
 template <typename TL, typename TR>
-inline multi_array<TL>& $op (multi_array<TL>& lhs, const TR rhs)
+inline multi_array<TL>& @!op!@ (multi_array<TL>& lhs, const TR rhs)
 {
     multi_array<TL>* res = &Runtime::instance().create_base<TL, TL>(lhs); // Construct result
-    $opcode.lower() (*res, lhs, rhs); // Encode and enqueue
+    @!opcode.lower()!@ (*res, lhs, rhs); // Encode and enqueue
     res->setTemp(true); // Mark result as temp
 
     return *res;
 }
 
 template <typename TL, typename TR>
-inline multi_array<TL>& $op (const TL lhs, multi_array<TR>& rhs)
+inline multi_array<TL>& @!op!@ (const TL lhs, multi_array<TR>& rhs)
 {
     multi_array<TL>* res = &Runtime::instance().create_base<TL, TR>(rhs); // Construct result
-    $opcode.lower() (*res, lhs, rhs); // Encode and enqueue
+    @!opcode.lower()!@ (*res, lhs, rhs); // Encode and enqueue
     res->setTemp(true); // Mark result as temp
 
     return *res;
 }
-%end for
-
+<!--(end)-->

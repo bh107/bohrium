@@ -1,4 +1,4 @@
-Installation as non-priviliged user on a system with a dated software-stack 
+Installation as non-priviliged user on a system with a dated software-stack
 ===========================================================================
 
 In case you wanne experiment with Bohrium in a restricted environment such as on a native mode on a Xeon Phi or on a cluster
