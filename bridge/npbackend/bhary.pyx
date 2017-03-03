@@ -25,7 +25,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 """
-from ._util import dtype_equal, dtype_support
+from ._util import dtype_equal, dtype_support, dtype_in
 from . import target
 import operator
 import functools
@@ -211,7 +211,25 @@ def get_bhc(ary):
     if not ary.flags['BEHAVED']:
         raise ValueError("Bohrium arrays must be aligned, writeable, and in machine byte-order")
     if not dtype_equal(ary, base):
-        raise ValueError("Bohrium base and view must have same data type")
+        # If 'ary' is real or imag view of 'base', we will convert the view into a real base array
+        if dtype_in(ary.dtype, [numpy.float32, numpy.float64]) and \
+                    dtype_in(base.dtype, [numpy.complex64, numpy.complex128]):
+
+            # All this is simply a hack to reinterpret 'ary' as a complex view of the 'base'
+            offset = (ary.ctypes.data - base.ctypes.data) // base.itemsize
+            cary = numpy.frombuffer(base, dtype=base.dtype, offset=offset * base.itemsize)
+            cary = numpy.lib.stride_tricks.as_strided(cary, ary.shape, ary.strides, subok=True)
+
+            # if the view/base offset is aligned with the complex dtype, we know that the
+            # 'ary' is a view of the real part of 'base'
+            from . import ufuncs
+            if (ary.ctypes.data - base.ctypes.data) % base.itemsize == 0:
+                ary = ufuncs.real(cary)
+            else:
+                ary = ufuncs.imag(cary)
+            base = ary # 'ary' is now itself a base array
+        else:
+            raise ValueError("Bohrium base and view must have same data type")
     if not dtype_support(ary.dtype):
         raise ValueError("Bohrium does not support the data type: %s" % ary.dtype)
 
