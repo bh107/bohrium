@@ -4,6 +4,10 @@ if(NOT BRIDGE_BXX)
     return()
 endif()
 
+find_package(Cheetah REQUIRED COMPONENTS bohrium)                                   # Used for autogen
+set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
+set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required by bxx to build Bohrium")
+
 #
 # Autogeneration - begin
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/bxx/traits.hpp PROPERTIES GENERATED TRUE)
