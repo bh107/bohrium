@@ -17,7 +17,6 @@ requirements:
     - python >=2.7
     - numpy >=1.8
     - cmake >=2.8
-    - cheetah
     - cython
     - swig
     - gcc

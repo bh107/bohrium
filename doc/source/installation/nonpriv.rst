@@ -16,7 +16,7 @@ This will install:
  * clang 3.5.0 with OpenMP (optional)
  * swig 3.0.6
  * pcre 8.37
- * Python packages via pip: `cheetah`, `cython`, and `numpy`
+ * Python packages via pip: `cython`, and `numpy`
  * Benchpress via git
  * Bohrium via git
 
@@ -27,32 +27,32 @@ Create some folder for all prerequisites, this will probably be fastest to use s
 
 Set environment vars, you probably want to persist it (.profile, .bashrc, or .bash_aliases)::
 
-  export CPLUS_INCLUDE_PATH=$HOME/tools/boost-1.58.0/include:$CPLUS_INCLUDE_PATH   
-  export CPLUS_INCLUDE_PATH=$HOME/tools/pcre-8.37/include:$CPLUS_INCLUDE_PATH      
-  export CPLUS_INCLUDE_PATH=$HOME/tools/gcc-4.9.3/include:$CPLUS_INCLUDE_PATH      
-  export CPLUS_INCLUDE_PATH=$HOME/tools/binutils-2.25/include:$CPLUS_INCLUDE_PATH  
-  export LD_LIBRARY_PATH=$HOME/tools/boost-1.58.0/lib:$LD_LIBRARY_PATH             
-  export LD_LIBRARY_PATH=$HOME/tools/pcre-8.37/lib:$LD_LIBRARY_PATH                
-  export LD_LIBRARY_PATH=$HOME/tools/gcc-4.9.3/lib:$LD_LIBRARY_PATH                
-  export LD_LIBRARY_PATH=$HOME/tools/gcc-4.9.3/lib64:$LD_LIBRARY_PATH              
-  export LD_LIBRARY_PATH=$HOME/tools/binutils-2.25/lib:$LD_LIBRARY_PATH            
-  export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH                         
-  export PATH=$HOME/tools/htop-1.0.3/bin:$PATH                                     
-  export PATH=$HOME/tools/cmake-3.3.0/bin:$PATH                                    
-  export PATH=$HOME/tools/python-2.7.10/bin:$PATH                                  
-  export PATH=$HOME/tools/gcc-4.9.3/bin:$PATH                                      
-  export PATH=$HOME/tools/benchpress/bin:$PATH                                     
-  export PATH=$HOME/tools/bash-4.3/bin:$PATH                                       
-  export PATH=$HOME/tools/pcre-8.37/bin:$PATH                                      
-  export PATH=$HOME/tools/swig-3.0.6/bin:$PATH                                     
-  export PATH=$HOME/tools/binutils-2.25/bin:$PATH                                  
-  export PYTHONPATH=$HOME/tools/benchpress/module:$PYTHONPATH                      
+  export CPLUS_INCLUDE_PATH=$HOME/tools/boost-1.58.0/include:$CPLUS_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$HOME/tools/pcre-8.37/include:$CPLUS_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$HOME/tools/gcc-4.9.3/include:$CPLUS_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$HOME/tools/binutils-2.25/include:$CPLUS_INCLUDE_PATH
+  export LD_LIBRARY_PATH=$HOME/tools/boost-1.58.0/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/tools/pcre-8.37/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/tools/gcc-4.9.3/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/tools/gcc-4.9.3/lib64:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/tools/binutils-2.25/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH
+  export PATH=$HOME/tools/htop-1.0.3/bin:$PATH
+  export PATH=$HOME/tools/cmake-3.3.0/bin:$PATH
+  export PATH=$HOME/tools/python-2.7.10/bin:$PATH
+  export PATH=$HOME/tools/gcc-4.9.3/bin:$PATH
+  export PATH=$HOME/tools/benchpress/bin:$PATH
+  export PATH=$HOME/tools/bash-4.3/bin:$PATH
+  export PATH=$HOME/tools/pcre-8.37/bin:$PATH
+  export PATH=$HOME/tools/swig-3.0.6/bin:$PATH
+  export PATH=$HOME/tools/binutils-2.25/bin:$PATH
+  export PYTHONPATH=$HOME/tools/benchpress/module:$PYTHONPATH
 
 Be warned, this is a fairly time-consuming task. Expect 3-4 hours.
 The most time consuming are compiling `gcc` and `boost`.
 
-.. note:: 
-  
+.. note::
+
   The order that you perform the following is quite important,
   you want to get a recent `gcc` before compiling anything else since anything else
   would othervise be compiled with an older `gcc`. Also installing binutils before
@@ -232,7 +232,7 @@ Python Packages
 
 These should now be installable via `pip`::
 
-  pip install cheetah cython 'numpy==1.8.2'
+  pip install cython 'numpy==1.8.2'
 
 clang 3.5 with OMP
 ------------------
