@@ -46,8 +46,8 @@ class _test_netCDF4:
         cmd = "import netCDF4; res = M.ones(10)"
         return cmd
 
-    def test_pyplot(self, arg):
-        cmd = "import netCDF4.Dataset; res = M.ones(10);"
+    def test_Dataset(self, arg):
+        cmd = "from netCDF4 import Dataset; res = M.ones(10);"
         return cmd
 
 try:
@@ -55,3 +55,4 @@ try:
     test_netCDF4 = _test_netCDF4
 except ImportError:
     print("netCDF4 not found, ignoring some tests")
+
