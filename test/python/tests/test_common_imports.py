@@ -27,7 +27,8 @@ class _test_matplotlib:
         return cmd
 
     def test_pyplot(self, arg):
-        cmd = "import matplotlib.pyplot as plt; res = M.ones(10).reshape((2,5)); plt.imshow(res)"
+        cmd = "import matplotlib as mpl; mpl.use('Agg'); import matplotlib.pyplot as plt; " \
+              "res = M.ones(10).reshape((2,5)); plt.imshow(res)"
         return cmd
 
 try:
