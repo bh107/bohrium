@@ -1,27 +1,5 @@
-#slurp
-#compiler-settings
-directiveStartToken = %
-#end compiler-settings
-%slurp
-/*
-This file is part of Bohrium and copyright (c) 2012 the Bohrium team:
-http://bohrium.bitbucket.org
+@!license!@
 
-Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as
-published by the Free Software Foundation, either version 3
-of the License, or (at your option) any later version.
-
-Bohrium is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the
-GNU Lesser General Public License along with Bohrium.
-
-If not, see <http://www.gnu.org/licenses/>.
-*/
 #ifndef __BOHRIUM_BRIDGE_CPP_RUNTIME_TYPECHECKER
 #define __BOHRIUM_BRIDGE_CPP_RUNTIME_TYPECHECKER
 #include <iostream>
@@ -104,28 +82,23 @@ void Runtime::typecheck(void)
 //
 //  Allowed types.
 //
-%for $op, $opcode, $optype, $opcount, $typesigs, $layouts, $broadcast in $data
-%for $typesig in $typesigs
-
-%if $opcount == 3
-
-template <>
-inline
-void Runtime::typecheck<$opcode, $typesig[0], $typesig[1], $typesig[2]>(void) { }
-%else if $opcount == 2
-
-template <>
-inline
-void Runtime::typecheck<$opcode, $typesig[0], $typesig[1]>(void) { }
-%else if $opcount == 1
-
-template <>
-inline
-void Runtime::typecheck<$opcode, $typesig[0]>(void) { }
-%end if
-%end for
-%end for
+<!--(for _op, opcode, _optype, opcount, typesigs, _layouts, _broadcast in data)-->
+    <!--(for typesig in typesigs)-->
+        <!--(if opcount == 3)-->
+        template <>
+        inline
+        void Runtime::typecheck<@!opcode!@, @!typesig[0]!@, @!typesig[1]!@, @!typesig[2]!@>(void) { }
+        <!--(elif opcount == 2)-->
+        template <>
+        inline
+        void Runtime::typecheck<@!opcode!@, @!typesig[0]!@, @!typesig[1]!@>(void) { }
+        <!--(elif opcount == 1)-->
+        template <>
+        inline
+        void Runtime::typecheck<@!opcode!@, @!typesig[0]!@>(void) { }
+        <!--(end)-->
+    <!--(end)-->
+<!--(end)-->
 
 }
 #endif
-

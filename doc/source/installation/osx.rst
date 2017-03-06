@@ -19,7 +19,7 @@ Then install Bohrium::
 You may be asked to install various Python items, this is the easy way to get them::
 
   sudo easy_install pip
-  sudo pip install cheetah cython
+  sudo pip install cython
 
 On some installs the NumPy package is not picked up by Homebrew, you can get it installed with::
 
@@ -36,7 +36,7 @@ Manual install with other package systems
 Start with installing pip and then the required Python packages::
 
   sudo easy_install pip
-  sudo pip install cheetah cython numpy
+  sudo pip install cython numpy
 
 Then install the required pacakages using your favorite package manager.
 

@@ -4,10 +4,6 @@ if(NOT BRIDGE_BXX)
     return()
 endif()
 
-find_package(Cheetah REQUIRED COMPONENTS bohrium)                                   # Used for autogen
-set_package_properties(Cheetah PROPERTIES DESCRIPTION "Cheetah is a template module for Python" URL "www.cheetahtemplate.org")
-set_package_properties(Cheetah PROPERTIES TYPE REQUIRED PURPOSE "Cheetah is required by bxx to build Bohrium")
-
 #
 # Autogeneration - begin
 set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/bxx/traits.hpp PROPERTIES GENERATED TRUE)
@@ -26,33 +22,33 @@ set(CODEGEN_DEF "${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen.py")
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/element_types.json")
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/operators.json")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.array.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.const.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.array.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/traits.const.tpl")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.footer.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.header.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.footer.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.header.tpl")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops0.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops1.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops2.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops3.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops0.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops1.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops2.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.nops3.tpl")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.random.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.reduce.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.accumulate.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.typechecker.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.random.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.reduce.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.accumulate.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/runtime.typechecker.tpl")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.footer.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.header.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.footer.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.header.tpl")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.bool.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.intern.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.bool.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops2.intern.tpl")
 
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.bool.ctpl")
-set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.intern.ctpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.bool.tpl")
+set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.intern.tpl")
 
 add_custom_command(OUTPUT ${CODEGEN_SRC}
     COMMAND ./codegen/gen.py

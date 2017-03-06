@@ -1,12 +1,12 @@
-struct ${uname}Impl : public ExtmethodImpl {
+struct @!uname!@Impl : public ExtmethodImpl {
 private:
     cl_event event = NULL;
 public:
-    ${uname}Impl(void) {
+    @!uname!@Impl(void) {
         clblasSetup();
     };
 
-    ~${uname}Impl(void) {
+    ~@!uname!@Impl(void) {
         clWaitForEvents(1, &event);
         clblasTeardown();
     };
@@ -23,14 +23,14 @@ public:
         bh_view* A = &instr->operand[1];
         cl_mem bufA = engine->getCBuffer(A->base);
 
-        ${if_B}
+        <!--(if if_B)-->
         // B is a k*n matrix
         bh_view* B = &instr->operand[2];
         assert(A->base->type == B->base->type);
         cl_mem bufB = engine->getCBuffer(B->base);
-        ${endif_B}
+        <!--(end)-->
 
-        ${if_C}
+        <!--(if if_C)-->
         // C is a m*n matrix
         bh_view* C = &instr->operand[0];
 
@@ -39,24 +39,26 @@ public:
 
         assert(A->base->type == C->base->type);
         cl_mem bufC = engine->getCBuffer(C->base);
-        ${endif_C}
+        <!--(end)-->
 
         int k = A->shape[1];
-        ${if_m} int m = A->shape[0]; ${endif_m}
-        ${if_n}
-        int n;
-        ${if_C} n = C->shape[1]; ${endif_C}
-        ${if_B} n = B->shape[1]; ${endif_B}
-        ${endif_n}
+        <!--(if if_m)-->
+        int m = A->shape[0];
+        <!--(end)-->
+        <!--(if if_n)-->
+            int n;
+            <!--(if if_C)--> n = C->shape[1]; <!--(end)-->
+            <!--(if if_B)--> n = B->shape[1]; <!--(end)-->
+        <!--(end)-->
 
         // Make sure that everything is copied to device, before executing clBlas method
         clFinish(queue);
 
         switch(A->base->type) {
-            ${func}
+            @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by clBLAS for '${name}'.";
+                ss << bh_type_text(A->base->type) << " not supported by clBLAS for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     }; /* end execute method */

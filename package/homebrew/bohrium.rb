@@ -15,7 +15,6 @@ class Bohrium < Formula
   depends_on "boost" => [:build,  "universal"]
   depends_on "numpy" => :build
   depends_on "cython" => [:python, "cython", :build]
-  depends_on "cheetah" => [:python, "Cheetah.Template", :build]
 
   head do
     url "https://github.com/bh107/bohrium.git"

@@ -61,7 +61,6 @@ Download and install the following prerequisites, in order:
  * Boost - Prebuilt windows binaries v1.57 msvc-12-64 - http://sourceforge.net/projects/boost/files/boost-binaries/1.57.0/boost_1_57_0-msvc-12.0-64.exe/download
  * SWIG - swigwin v3.0.5 - http://www.swig.org/download.html
  * HWLOC - Win64 build v1.10.1 - http://www.open-mpi.org/software/hwloc/v1.10/
- * Cheetah
  * Cython
  * NumPy
 
@@ -69,7 +68,7 @@ Download and install the following prerequisites, in order:
 
 `Boost`, `SWIG`, and `HWLOC` require a couple of manual steps.
 
-`Cheetah`, `Cython`, and `NumPy` should be installed via ``pip`` after installing everything else.
+`Cython`, and `NumPy` should be installed via ``pip`` after installing everything else.
 
 `Boost`, download and install boost to ``C:\boost``, it is around 200MB and consumes about 3GB once installed. After the installation-wizard has run, set the following env-var::
 
@@ -87,9 +86,9 @@ To verify that it is available.
 
 `HWLOC`, currently Visual Studio does not have sufficient support for OpenMP so getting HWLOC installed is not relevant until the OpenMP issue is resolved.
 
-`Cheetah`, `Cython`, and `NumPy` install these via pip::
+`Cython`, and `NumPy` install these via pip::
 
-  pip install cython cheetah numpy
+  pip install cython numpy
 
 With these things in place it is possible to start the Build of Bohrium.
 However, as noted, it does not build due to various portability issues.

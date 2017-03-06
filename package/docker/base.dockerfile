@@ -15,7 +15,7 @@ ENV LC_ALL en_US.UTF-8
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 RUN apt-get install -qq wget unzip build-essential
-RUN apt-get install -qq cmake swig python python-numpy python-cheetah python-dev cython
+RUN apt-get install -qq cmake swig python python-numpy python-dev cython
 RUN apt-get install -qq libboost-serialization-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-regex-dev
 RUN apt-get install -qq mono-mcs mono-xbuild libmono-system-numerics4.0-cil libmono-microsoft-build-tasks-v4.0-4.0-cil
 RUN apt-get install -qq libblas-dev liblapack-dev libclblas-dev

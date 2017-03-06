@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import json
-from string import Template
 import time
 
 import argparse
 from argparse_utils import *
+
+import sys
+sys.path.append(os.path.abspath('../../../thirdparty'))
+from pyratemp import Template
 
 def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):
     # Create substitute dictionary
@@ -12,7 +15,7 @@ def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):
     substitutes = {}
     for m in json["methods"]:
         for o in m["options"]:
-            substitutes["if_%s" % o], substitutes["endif_%s" % o] = "/*", "*/"
+            substitutes["if_%s" % o] = False
 
     # Create body
     body = ""
@@ -20,7 +23,7 @@ def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):
         # Everything in the actual method should be present in the template
         subs = substitutes.copy()
         for m in method["options"]:
-            subs["if_%s" % m], subs["endif_%s" % m] = "", ""
+            subs["if_%s" % m] = True
 
         # Grab general options
         options = json["options"].copy()
@@ -33,13 +36,13 @@ def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):
         # Create each inner function body
         body_func = ""
         for t in method["types"]:
-            body_func += func_tpl.substitute(
+            body_func += func_tpl(
                 utype=options[t]["type"].upper(),
                 t=t,
                 **(dict(subs, **dict(options[t], **method)))
             )
 
-        body += body_tpl.substitute(
+        body += body_tpl(
             uname=method["name"].capitalize(),
             func=body_func,
             **(dict(subs, **method))
@@ -48,13 +51,13 @@ def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):
     # Create the footer
     footer = ""
     for method in json["methods"]:
-        footer += footer_tpl.substitute(
+        footer += footer_tpl(
             uname=method["name"].capitalize(),
             **method
         )
 
     # Replace 'body' and 'footer' in the 'header' template
-    return header_tpl.substitute(
+    return header_tpl(
         timestamp=time.strftime("%d/%m/%Y %H:%M"),
         body=body,
         footer=footer
@@ -64,10 +67,10 @@ def main(args):
     data      = open(args.template_directory + "/methods.json").read()
     json_data = json.loads(data)
 
-    header    = Template(open(args.template_directory + "/header.tpl").read())
-    body      = Template(open(args.template_directory + "/body.tpl").read())
-    body_func = Template(open(args.template_directory + "/body_func.tpl").read())
-    footer    = Template(open(args.template_directory + "/footer.tpl").read())
+    header    = Template(open(args.template_directory + "/header.tpl").read(), escape=None)
+    body      = Template(open(args.template_directory + "/body.tpl").read(), escape=None)
+    body_func = Template(open(args.template_directory + "/body_func.tpl").read(), escape=None)
+    footer    = Template(open(args.template_directory + "/footer.tpl").read(), escape=None)
 
     source = gen_extmethod(json_data, header, body, body_func, footer)
     args.cpp.write(source)
