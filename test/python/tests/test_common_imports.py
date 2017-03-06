@@ -35,3 +35,22 @@ try:
     test_matplotlib = _test_matplotlib
 except ImportError:
     print("Matplotlib not found, ignoring some tests")
+
+
+class _test_netCDF4:
+    def init(self):
+        yield ("")
+
+    def test_netCDF4(self, arg):
+        cmd = "import netCDF4; res = M.ones(10)"
+        return cmd
+
+    def test_pyplot(self, arg):
+        cmd = "import netCDF4.Dataset; res = M.ones(10);"
+        return cmd
+
+try:
+    import netCDF4
+    test_netCDF4 = _test_netCDF4
+except ImportError:
+    print("netCDF4 not found, ignoring some tests")
