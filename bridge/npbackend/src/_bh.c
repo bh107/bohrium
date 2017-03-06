@@ -545,7 +545,6 @@ static PyObject *
 BhArray_copy2numpy(PyObject *self, PyObject *args)
 {
     assert(args == NULL);
-
     PyObject *ret = PyArray_NewLikeArray((PyArrayObject*)self, NPY_ANYORDER, NULL, 0);
     if(ret == NULL)
         return NULL;
