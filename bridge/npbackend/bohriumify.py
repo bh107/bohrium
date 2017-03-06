@@ -18,19 +18,18 @@ def _target_modules(targets):
 
     return ret
 
-# Typically, we shouldn't bohriumify functions that accesses global variables
-IGNORE_MODULES = ['arrayprint']
+# We will ignore the numpy.core module
+IGNORE_MODULES = '[numpy|numpy_force]\.core'
 
 pattern_return_ndarray = re.compile("Return.*ndarray", re.DOTALL)
-def modules(targets=["numpy", "numpy_force"], ignore_modules=IGNORE_MODULES):
+def modules(targets=["numpy", "numpy_force"], regex_to_exclude=IGNORE_MODULES):
     for m_name in _target_modules(targets):
         if m_name == "numpy":
             # At this point 'numpy' refers to Bohrium and we don't need to bohriumfy Bohrium
             continue
 
-        for ignore in ignore_modules:
-            if ignore in m_name:
-                continue
+        if re.search(regex_to_exclude, m_name) is not None:
+            continue
 
         try:
             m_obj = importlib.import_module(m_name)
