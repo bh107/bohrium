@@ -144,7 +144,7 @@ if os.path.realpath(buildpath('random123.pyx')) != os.path.realpath(srcpath('ran
   shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
 
 setup(name='Bohrium',
-      version='0.5',
+      version='0.6',
       description='Bohrium NumPy',
       long_description='Bohrium NumPy',
       author='The Bohrium Team',
