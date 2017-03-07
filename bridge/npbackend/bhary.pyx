@@ -25,6 +25,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 from ._util import dtype_equal, dtype_support, dtype_in
 from . import target
 import operator
@@ -65,6 +66,9 @@ def fix_biclass(ary):
     Makes sure that when 'ary' or its base is a Bohrium array, both of them are.
     """
 
+    if not isinstance(ary, numpy.ndarray):
+        return ary
+
     if check_biclass_np_over_bh(ary):
         return ary.view(type(get_base(ary)))
     elif check_biclass_bh_over_np(ary):
@@ -79,18 +83,24 @@ def fix_biclass_wrapper(func):
     Function decorator that makes sure that the function doesn't reads or writes biclass arrays
     """
 
-    if hasattr(func, "_fixed_returned_biclass"):
+    if hasattr(func, "_wrapped_fix_biclass"):
         return func
 
     def inner(*args, **kwargs):
         """Invokes 'func' and strips "biclass" from the result."""
-        args = [fix_biclass(a) for a in args]
+
+        # Normally, we checks all arguments for biclass arrays, but this can be disabled individually
+        # by setting the function keyword argument 'fix_biclass' to False
+        if kwargs.get("fix_biclass", True) and sys.version_info[0] < 3:
+            args = [fix_biclass(a) for a in args]
+        if "fix_biclass" in kwargs:
+            del kwargs["fix_biclass"]
         ret = func(*args, **kwargs)
         return fix_biclass(ret)
 
     try:
         #Flag that this function has been handled
-        setattr(inner, "_fixed_returned_biclass", True)
+        setattr(inner, "_wrapped_fix_biclass", True)
     except:#In older versions of cython, this is not possible
         pass
     return inner

@@ -235,6 +235,9 @@ array_nonzero(PyArrayObject *mp)
     n = PyArray_SIZE(mp);
     if (n == 1) {
         PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)mp, NULL);
+        if (np_ary == NULL) {
+            return -1;
+        }
         ret = PyArray_DESCR(np_ary)->f->nonzero(PyArray_DATA(np_ary), np_ary);
         Py_DECREF(np_ary);
         return ret;
@@ -261,6 +264,9 @@ array_float(PyArrayObject *v)
 
     PyObject *pv, *pv2;
     PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)v, NULL);
+    if (np_ary == NULL) {
+        return NULL;
+    }
     pv = PyArray_DESCR(np_ary)->f->getitem(PyArray_DATA(np_ary), np_ary);
 
     if (pv == NULL) {
@@ -304,6 +310,9 @@ array_int(PyArrayObject *v)
 
     PyObject *pv, *pv2;
     PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)v, NULL);
+    if (np_ary == NULL) {
+        return NULL;
+    }
     pv = PyArray_DESCR(np_ary)->f->getitem(PyArray_DATA(np_ary), np_ary);
 
     if (pv == NULL) {
@@ -348,6 +357,9 @@ array_long(PyArrayObject *v)
 
     PyObject *pv, *pv2;
     PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)v, NULL);
+    if (np_ary == NULL) {
+        return NULL;
+    }
     pv = PyArray_DESCR(np_ary)->f->getitem(PyArray_DATA(np_ary), np_ary);
 
     if (pv == NULL) {
@@ -391,6 +403,9 @@ array_oct(PyArrayObject *v)
 
     PyObject *pv, *pv2;
     PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)v, NULL);
+    if (np_ary == NULL) {
+        return NULL;
+    }
     pv = PyArray_DESCR(np_ary)->f->getitem(PyArray_DATA(np_ary), np_ary);
 
     if (pv == NULL) {
@@ -434,6 +449,9 @@ array_hex(PyArrayObject *v)
 
     PyObject *pv, *pv2;
     PyArrayObject *np_ary = (PyArrayObject*) BhArray_copy2numpy((PyObject*)v, NULL);
+    if (np_ary == NULL) {
+        return NULL;
+    }
     pv = PyArray_DESCR(np_ary)->f->getitem(PyArray_DATA(np_ary), np_ary);
 
     if (pv == NULL) {

@@ -17,7 +17,9 @@ def _warn_dtype(dtype, stacklevel):
                   % dtype, UserWarning, stacklevel)
 
 
-# Notice, array() is not decorated with @fix_biclass_wrapper() since @fix_biclass_wrapper() calls array()
+# Notice, array() is not decorated with @fix_biclass_wrapper() since @fix_biclass_wrapper() calls bohrium.array(), which
+# would result in an infinite recursion. Similarly, when calling numpy.array() we set the 'fix_biclass=False'
+# argument, which prevent any further calls to bohrium.array().
 def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium=True):
     """
     Create an array -- Bohrium or NumPy ndarray.
@@ -135,14 +137,14 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             # NB: "setting an array element with a sequence" is usually illegal unless the sequence consist
             #     of 1-element Bohrium arrays, in which case we should convert them to NumPy scalars and try again
             try:
-                ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+                ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
             except ValueError as msg:
                 if str(msg).find("setting an array element with a sequence.") != -1:
                     for i in range(len(ary)): # Converting 1-element Bohrium arrays to NumPy scalars
                         if bhary.check(ary[i]) and ary[i].size == 1:
                             ary[i] = ary[i].copy2numpy()
 
-                    ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+                    ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
 
             # In any case, the array must meet some requirements
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
@@ -159,9 +161,9 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
     else:
         if bhary.check(ary):
             ret = ary.copy2numpy()
-            return numpy.array(ret, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+            return numpy.array(ret, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
         else:
-            return numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin)
+            return numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
 
 
 @fix_biclass_wrapper
