@@ -25,6 +25,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 from ._util import dtype_equal, dtype_support, dtype_in
 from . import target
 import operator
@@ -90,7 +91,7 @@ def fix_biclass_wrapper(func):
 
         # Normally, we checks all arguments for biclass arrays, but this can be disabled individually
         # by setting the function keyword argument 'fix_biclass' to False
-        if kwargs.get("fix_biclass", True):
+        if kwargs.get("fix_biclass", True) and sys.version_info[0] < 3:
             args = [fix_biclass(a) for a in args]
         if "fix_biclass" in kwargs:
             del kwargs["fix_biclass"]
