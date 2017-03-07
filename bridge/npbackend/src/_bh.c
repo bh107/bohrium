@@ -319,10 +319,13 @@ BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
                 if(descr == NULL)//Get default dtype
                     descr = PyArray_DescrFromType(NPY_DEFAULT_TYPE);
                 ret = _simply_new_array(type, descr, nelem * descr->elsize, shape);
+                if (ret == NULL) {
+                    return NULL;
+                }
                 if(shape.len > 0)
                 {
                     assert(shape.ptr != NULL);
-                    free(shape.ptr);
+                    PyDimMem_FREE(shape.ptr);
                 }
                 return ret;
             }
