@@ -100,6 +100,5 @@ if sys.version_info[0] < 3:
         return numpy.core.arrayprint.get_printoptions()
 
 # Let's bohriumify the exposed API
-if sys.version_info[0] < 3:
-    from . import bohriumify
-    bohriumify.modules() # Python3 crash at this point
+from . import bohriumify
+bohriumify.modules()
