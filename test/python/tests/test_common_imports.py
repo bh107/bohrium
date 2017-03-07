@@ -1,3 +1,4 @@
+import sys
 
 class _test_scipy:
     def init(self):
@@ -12,8 +13,11 @@ class _test_scipy:
         return cmd
 
 try:
-    import scipy
-    test_scipy = _test_scipy
+    if sys.version_info[0] >= 3:
+        print("SciPy not supported in Python 3")
+    else :
+        import scipy
+        test_scipy = _test_scipy
 except ImportError:
     print("SciPy not found, ignoring some tests")
 
@@ -32,8 +36,11 @@ class _test_matplotlib:
         return cmd
 
 try:
-    import matplotlib
-    test_matplotlib = _test_matplotlib
+    if sys.version_info[0] >= 3:
+        print("Matplotlib not supported in Python 3")
+    else :
+        import matplotlib
+        test_matplotlib = _test_matplotlib
 except ImportError:
     print("Matplotlib not found, ignoring some tests")
 
@@ -51,8 +58,11 @@ class _test_netCDF4:
         return cmd
 
 try:
-    import netCDF4
-    test_netCDF4 = _test_netCDF4
+    if sys.version_info[0] >= 3:
+        print("netCDF4 not supported in Python 3")
+    else :
+        import netCDF4
+        test_netCDF4 = _test_netCDF4
 except ImportError:
     print("netCDF4 not found, ignoring some tests")
 
