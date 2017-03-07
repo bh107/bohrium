@@ -61,6 +61,7 @@ typedef struct
     PyObject *bhc_view;
     PyObject *bhc_view_version;
     int mmap_allocated;
+    void *npy_data; // NumPy allocated array data
 }BhArray;
 
 //Help function that returns number of bytes in 'ary'
@@ -260,8 +261,8 @@ static int _protected_malloc(BhArray *ary)
     if(addr == NULL)
         return -1;
 
-    //Lets free the NumPy allocated memory and use the mprotect'ed memory instead
-    free(ary->base.data);
+    //Let's save the pointer to the NumPy allocated memory and use the mprotect'ed memory instead
+    ary->npy_data = ary->base.data;
     ary->base.data = addr;
 
     bh_mem_signal_attach(ary, ary->base.data,
@@ -379,15 +380,16 @@ static PyObject *
 BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems)
 {
     PyObject *obj;
-    obj = (PyObject *)malloc(type->tp_basicsize);
+    obj = (PyObject *)PyObject_Malloc(type->tp_basicsize);
     PyObject_Init(obj, type);
 
     // Flag the array as uninitialized
-    ((BhArray*)obj)->mmap_allocated = 0;
     ((BhArray*)obj)->bhc_ary = NULL;
     ((BhArray*)obj)->bhc_ary_version = NULL;
     ((BhArray*)obj)->bhc_view = NULL;
     ((BhArray*)obj)->bhc_view_version = NULL;
+    ((BhArray*)obj)->mmap_allocated = 0;
+    ((BhArray*)obj)->npy_data = NULL;
     return obj;
 }
 
@@ -401,7 +403,7 @@ BhArray_dealloc(BhArray* self)
     Py_XDECREF(self->bhc_ary_version);
     Py_XDECREF(self->bhc_ary);
 
-    if(!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
+    if (!PyArray_CHKFLAGS((PyArrayObject*)self, NPY_ARRAY_OWNDATA))
     {
         BhArrayType.tp_base->tp_dealloc((PyObject*)self);
         return;//The array doesn't own the array data
@@ -409,7 +411,7 @@ BhArray_dealloc(BhArray* self)
 
     assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*)self), NPY_ITEM_REFCOUNT));
 
-    if(self->mmap_allocated)
+    if (self->mmap_allocated)
     {
         if(_munmap(PyArray_DATA((PyArrayObject*)self), ary_nbytes(self)) == -1)
             PyErr_Print();
@@ -417,8 +419,21 @@ BhArray_dealloc(BhArray* self)
         bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)self));
         self->base.data = NULL;
     }
+    if (self->npy_data != NULL) {
+        self->base.data = self->npy_data;
+    }
+
+    // Notice, we have to call the 'tp_dealloc' of the base class (<http://legacy.python.org/dev/peps/pep-0253/>).
+    // In our case, the base class is ndarray, which will call 'tp_free', which in turn calls 'BhArray_free()'
     BhArrayType.tp_base->tp_dealloc((PyObject*)self);
 }
+
+static void
+BhArray_free(PyObject * v)
+{
+    PyObject_Free(v);
+}
+
 
 static PyObject *
 BhArray_data_bhc2np(PyObject *self, PyObject *args)
@@ -1021,7 +1036,7 @@ static PyTypeObject BhArrayType = {
     0,                       /* tp_init */
     BhArray_alloc,           /* tp_alloc */
     BhArray_new,             /* tp_new */
-    0,                                          /* tp_free */
+    (freefunc)BhArray_free,                     /* tp_free */
     0,                                          /* tp_is_gc */
     0,                                          /* tp_bases */
     0,                                          /* tp_mro */
