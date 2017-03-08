@@ -1,15 +1,21 @@
 import sys
 
+NP_AS_BH = "import sys; sys.modules['numpy'] = bh; "
+
 class _test_scipy:
     def init(self):
-        yield ("")
+        yield (NP_AS_BH)
 
-    def test_scpy(self, arg):
-        cmd = "import scipy; res = M.ones(10)"
+    def test_scpy(self, cmd):
+        cmd += "import scipy; res = M.ones(10)"
         return cmd
 
-    def test_sparse(self, arg):
-        cmd = "import scipy.sparse; res = M.ones(10)"
+    def test_sparse(self, cmd):
+        cmd += "import scipy.sparse; res = M.ones(10)"
+        return cmd
+
+    def test_io(self, cmd):
+        cmd += "import scipy.io; res = M.ones(10)"
         return cmd
 
 try:
@@ -24,14 +30,14 @@ except ImportError:
 
 class _test_matplotlib:
     def init(self):
-        yield ("")
+        yield (NP_AS_BH)
 
-    def test_matplotlib(self, arg):
-        cmd = "import matplotlib; res = M.ones(10)"
+    def test_matplotlib(self, cmd):
+        cmd += "import matplotlib; res = M.ones(10)"
         return cmd
 
-    def test_pyplot(self, arg):
-        cmd = "import matplotlib as mpl; mpl.use('Agg'); import matplotlib.pyplot as plt; " \
+    def test_pyplot(self, cmd):
+        cmd += "import matplotlib as mpl; mpl.use('Agg'); import matplotlib.pyplot as plt; " \
               "res = M.ones(10).reshape((2,5)); plt.imshow(res)"
         return cmd
 
@@ -47,14 +53,14 @@ except ImportError:
 
 class _test_netCDF4:
     def init(self):
-        yield ("")
+        yield (NP_AS_BH)
 
-    def test_netCDF4(self, arg):
-        cmd = "import netCDF4; res = M.ones(10)"
+    def test_netCDF4(self, cmd):
+        cmd += "import netCDF4; res = M.ones(10)"
         return cmd
 
-    def test_Dataset(self, arg):
-        cmd = "from netCDF4 import Dataset; res = M.ones(10);"
+    def test_Dataset(self, cmd):
+        cmd += "from netCDF4 import Dataset; res = M.ones(10);"
         return cmd
 
 try:
