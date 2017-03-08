@@ -149,7 +149,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             # In any case, the array must meet some requirements
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
 
-            if not dtype_support(ary.dtype):
+            if bohrium and not dtype_support(ary.dtype):
                 _warn_dtype(ary.dtype, 3)
                 return ary
 
@@ -203,12 +203,12 @@ def empty(shape, dtype=float, bohrium=True):
 
     """
 
-    if not dtype_support(dtype):
+    if bohrium and not dtype_support(dtype):
         _warn_dtype(dtype, 3)
         bohrium = False
 
     if not bohrium:
-        return numpy.empty(shape, dtype=dtype)
+        return numpy.ndarray(shape, dtype=dtype)
 
     return bhary.new(shape, dtype)
 
@@ -256,6 +256,11 @@ def ones(shape, dtype=float, bohrium=True):
     matrix([[ 1.,  1.]])
 
     """
+
+    if bohrium and not dtype_support(dtype):
+        _warn_dtype(dtype, 3)
+        return numpy.ones(shape, dtype=dtype)
+
     A = empty(shape, dtype=dtype, bohrium=bohrium)
     A[...] = A.dtype.type(1)
     return A
@@ -303,9 +308,13 @@ def zeros(shape, dtype=float, bohrium=True):
     matrix([[ 0.,  0.]])
 
     """
-    A = empty(shape, dtype=dtype, bohrium=bohrium)
-    A[...] = A.dtype.type(0)
-    return A
+    if bohrium and not dtype_support(dtype):
+        _warn_dtype(dtype, 3)
+        return numpy.zeros(shape, dtype=dtype)
+
+    a = empty(shape, dtype=dtype, bohrium=bohrium)
+    a[...] = a.dtype.type(0)
+    return a
 
 
 @fix_biclass_wrapper
@@ -358,6 +367,10 @@ def empty_like(a, dtype=None, bohrium=None):
     """
     if dtype is None:
         dtype = a.dtype
+
+    if bohrium and not dtype_support(dtype):
+        _warn_dtype(dtype, 3)
+        return numpy.empty_like(a, dtype=dtype)
 
     if bohrium is None:
         bohrium = bhary.check(a)
@@ -423,6 +436,10 @@ def zeros_like(a, dtype=None, bohrium=None):
     if bohrium is None:
         bohrium = bhary.check(a)
 
+    if bohrium and not dtype_support(dtype):
+        _warn_dtype(dtype, 3)
+        return numpy.zeros_like(a, dtype=dtype)
+
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[...] = b.dtype.type(0)
 
@@ -486,6 +503,10 @@ def ones_like(a, dtype=None, bohrium=None):
 
     if bohrium is None:
         bohrium = bhary.check(a)
+
+    if bohrium and not dtype_support(dtype):
+        _warn_dtype(dtype, 3)
+        return numpy.ones_like(a, dtype=dtype)
 
     b = empty_like(a, dtype=dtype, bohrium=bohrium)
     b[...] = b.dtype.type(1)
