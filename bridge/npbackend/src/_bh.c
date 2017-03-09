@@ -53,6 +53,8 @@ PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
 int bh_sync_warn = 0; // Boolean: should we warn when copying from Bohrium to NumPy
 
+#define bhc_exist(x) (((BhArray*)x)->bhc_ary != Py_None)
+
 typedef struct
 {
     BH_PyArrayObject base;
@@ -455,6 +457,11 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError,"The base array doesn't own its data");
     }
 
+    // Nothing to do when the data isn't in the Bohrium address spaces
+    if(!bhc_exist(base)) {
+        goto finished;
+    }
+
     // Let's detach the signal
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
 
@@ -462,7 +469,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     void *d = NULL;
     get_bhc_data_pointer(base, 0, 1, &d);
     if(d != NULL) {
-        _mremap_data(PyArray_DATA((PyArrayObject*)base), d, ary_nbytes((BhArray*)base));    
+        _mremap_data(PyArray_DATA((PyArrayObject*)base), d, ary_nbytes((BhArray*)base));
     }
     else {
         _munprotect(PyArray_DATA((PyArrayObject*)base), ary_nbytes((BhArray*)base));
@@ -472,6 +479,7 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
     //Let's delete the current bhc_ary
     PyObject_CallMethod(bhary, "del_bhc", "O", self);
 
+finished:
     // Finally, we can return NULL on error (but not before!)
     if (PyErr_Occurred() != NULL)
         return NULL;
