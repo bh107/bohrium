@@ -204,6 +204,12 @@ void mem_access_callback(void *id, void *addr)
         PyErr_Print();
     }
     PyErr_Clear();
+    
+    if(!bhc_exist(ary)) {
+        printf("BhArray_data_bhc2np - base %p has no bhc object!\n", ary);
+        bh_mem_signal_pprint_db();
+    }
+
     if(BhArray_data_bhc2np(ary, NULL) == NULL)
         PyErr_Print();
     PyGILState_Release(GIL);
