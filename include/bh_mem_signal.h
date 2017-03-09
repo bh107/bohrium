@@ -56,6 +56,17 @@ void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
  */
 void bh_mem_signal_detach(const void *addr);
 
+/** Check if signal exist
+ *
+ * @param addr - Start address of memory segment.
+ */
+int bh_mem_signal_exist(const void *addr);
+
+/** Pretty print the segment data base
+ *
+ */
+void bh_mem_signal_pprint_db(void);
+
 #ifdef __cplusplus
 }
 #endif
