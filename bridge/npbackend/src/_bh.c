@@ -212,8 +212,9 @@ void mem_access_callback(void *id, void *addr)
 static int _mprotect_np_part(BhArray *ary)
 {
     assert(((BhArray*)ary)->mmap_allocated);
+    assert(PyArray_CHKFLAGS((PyArrayObject*)ary, NPY_ARRAY_OWNDATA));
 
-    //Finally we memory protect the NumPy data
+    //Finally, we memory protect the NumPy data
     if(mprotect(ary->base.data, ary_nbytes(ary), PROT_NONE) == -1)
     {
         int errsv = errno;//mprotect() sets the errno.
@@ -434,7 +435,8 @@ BhArray_free(PyObject * v)
     PyObject_Free(v);
 }
 
-
+// Making the Bohrium memory available for NumPy.
+// NB: this function should not fail before unprotecting the NumPy data
 static PyObject *
 BhArray_data_bhc2np(PyObject *self, PyObject *args)
 {
@@ -443,49 +445,35 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
 
     //We move the whole array (i.e. the base array) from Bohrium to NumPy
     PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
-
-    //Note that we always detach the signal before returning
-    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
-
-    if(base == NULL)
-        return NULL;
+    if(base == NULL) {
+        base = self; // We have to keep going!
+        Py_INCREF(base); // We call Py_DECREF(base) later
+    }
     assert(BhArray_CheckExact(base));
 
-/* TODO: handle the case where bhc_ary is None by unprotecting the memory.
-    //Check if we need to do anything
-    if(((BhArray*)base)->bhc_ary == Py_None)
-    {
-        Py_DECREF(base);
-        Py_RETURN_NONE;
-    }
-*/
-    if(!PyArray_CHKFLAGS((PyArrayObject*)base, NPY_ARRAY_OWNDATA))
-    {
+    if(!PyArray_CHKFLAGS((PyArrayObject*)base, NPY_ARRAY_OWNDATA)) {
         PyErr_Format(PyExc_ValueError,"The base array doesn't own its data");
-        return NULL;
     }
+
+    // Let's detach the signal
+    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
 
     //Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
     void *d = NULL;
-    if(get_bhc_data_pointer(base, 0, 1, &d) == -1)
-        return NULL;
-    if(d != NULL)
-    {
-        if(_mremap_data(PyArray_DATA((PyArrayObject*)base), d,
-                        ary_nbytes((BhArray*)base)) != 0)
-            return NULL;
-            Py_DECREF(base);
+    get_bhc_data_pointer(base, 0, 1, &d);
+    if(d != NULL) {
+        _mremap_data(PyArray_DATA((PyArrayObject*)base), d, ary_nbytes((BhArray*)base));    
     }
-    else
-    {
-        if(_munprotect(PyArray_DATA((PyArrayObject*)base),
-                       ary_nbytes((BhArray*)base)) != 0)
-            return NULL;
-            Py_DECREF(base);
+    else {
+        _munprotect(PyArray_DATA((PyArrayObject*)base), ary_nbytes((BhArray*)base));
     }
+    Py_DECREF(base);
 
-    //Lets delete the current bhc_ary
-    if(PyObject_CallMethod(bhary, "del_bhc", "O", self) == NULL)
+    //Let's delete the current bhc_ary
+    PyObject_CallMethod(bhary, "del_bhc", "O", self);
+
+    // Finally, we can return NULL on error (but not before!)
+    if (PyErr_Occurred() != NULL)
         return NULL;
     Py_RETURN_NONE;
 }
