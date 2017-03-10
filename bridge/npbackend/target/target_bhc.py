@@ -3,12 +3,40 @@ Bohrium C-backend as target for npbackend.
 """
 import ctypes
 import numpy
-from .. import bhc
-from .._util import dtype_name
-from . import interface
 import functools
 import operator
 import atexit
+import os
+import sys
+
+from .._util import dtype_name
+from . import interface
+
+
+# NB: when Base.__del__() and View.__del__() is called, all other modules including 'bhc' and '_util' might already
+#     have been deallocated! Thus, initially we will manually load all 'bhc' functions in order to make this script
+#     completely self-contained.
+
+def get_bhc_api():
+    bhc_py_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "bhc.py")
+    # We need to import '_bhc' manually into bhc_api since SWIG does know about the 'bohrium' package
+    from .. import _bhc
+    sys.modules['_bhc'] = _bhc
+    try:
+        bhc_api = {"__file__": bhc_py_path, "sys": sys}
+        execfile(bhc_py_path, bhc_api) # execfile updates 'bhc_api'
+        return bhc_api
+    except NameError:
+        import runpy
+        # run_path() returns the globals() from the run
+        return runpy.run_path(bhc_py_path, init_globals={"sys": sys}, run_name="__main__")
+
+
+# Load the bhc API
+for key, val in get_bhc_api().items():
+    if key.startswith("bhc_"):
+        exec("%s = val" % key)
+
 
 class Base(interface.Base):
     """ Base array handle """
@@ -19,7 +47,7 @@ class Base(interface.Base):
             return
 
         if bhc_obj is None:
-            func = eval("bhc.bhc_new_A%s" % dtype_name(dtype))
+            func = eval("bhc_new_A%s" % self.dtype_name)
             bhc_obj = _bhc_exec(func, size)
 
         self.bhc_obj = bhc_obj
@@ -29,7 +57,7 @@ class Base(interface.Base):
         if self.size == 0:
             return
 
-        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" % self.dtype_name)
+        exec("bhc_destroy_A%s(self.bhc_obj)" % self.dtype_name)
 
 
 class View(interface.View):
@@ -42,7 +70,7 @@ class View(interface.View):
         if self.size == 0:
             return
 
-        func = eval("bhc.bhc_view_A%s" % self.dtype_name)
+        func = eval("bhc_view_A%s" % self.dtype_name)
         self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
 
 
@@ -50,7 +78,7 @@ class View(interface.View):
         if self.size == 0:
             return
 
-        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" % self.dtype_name)
+        exec("bhc_destroy_A%s(self.bhc_obj)" % self.dtype_name)
 
 
 def _bhc_exec(func, *args):
@@ -70,7 +98,7 @@ def _bhc_exec(func, *args):
 
 def runtime_flush():
     """ Flush the runtime system """
-    bhc.bhc_flush()
+    bhc_flush()
 
 
 def tally():
@@ -78,7 +106,7 @@ def tally():
     System instruction that informs the child component
     to tally operations.
     """
-    bhc.bhc_tally()
+    bhc_tally()
 
 
 def get_data_pointer(ary, allocate=False, nullify=False):
@@ -89,10 +117,10 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
     ary = ary.bhc_obj
 
-    exec("bhc.bhc_sync_A%s(ary)" % dtype)
-    exec("bhc.bhc_flush()")
+    exec("bhc_sync_A%s(ary)" % dtype)
+    exec("bhc_flush()")
 
-    bhc_data_get = eval("bhc.bhc_data_get_A%s" % dtype)
+    bhc_data_get = eval("bhc_data_get_A%s" % dtype)
     data = bhc_data_get(ary, allocate, nullify)
 
     if data is None:
@@ -142,7 +170,7 @@ def ufunc(op, *args, **kwd):
         else:
             scalar_type = dtype_name(args[1])
 
-    fname  = "bhc.bhc_%s"%op
+    fname  = "bhc_%s"%op
     for arg, dtype in zip(args, dtypes):
         if numpy.isscalar(arg):
             if dtype is None:
@@ -199,7 +227,7 @@ def extmethod(name, out, in1, in2):
     if out.size == 0 or out.base.size == 0:
         return
 
-    func = eval("bhc.bhc_extmethod_A%s_A%s_A%s" % (
+    func = eval("bhc_extmethod_A%s_A%s_A%s" % (
         dtype_name(out),
         dtype_name(in1),
         dtype_name(in2)

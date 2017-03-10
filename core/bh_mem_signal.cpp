@@ -146,6 +146,7 @@ void bh_mem_signal_shutdown(void)
 {
     pthread_mutex_lock(&signal_mutex);
     if(segments.size() > 0) {
+        bh_mem_signal_pprint_db();
         stringstream ss;
         ss << "mem_signal: not all attached memory segments are detached!" << endl;
         throw runtime_error(ss.str());
