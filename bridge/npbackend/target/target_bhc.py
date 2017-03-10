@@ -29,7 +29,7 @@ class Base(interface.Base):
         if self.size == 0:
             return
 
-        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" % dtype_name(self.dtype))
+        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" % self.dtype_name)
 
 
 class View(interface.View):
@@ -42,8 +42,7 @@ class View(interface.View):
         if self.size == 0:
             return
 
-        dtype = dtype_name(self.dtype)
-        func = eval("bhc.bhc_view_A%s" % dtype)
+        func = eval("bhc.bhc_view_A%s" % self.dtype_name)
         self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
 
 
@@ -51,7 +50,7 @@ class View(interface.View):
         if self.size == 0:
             return
 
-        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" % dtype_name(self.dtype))
+        exec("bhc.bhc_destroy_A%s(self.bhc_obj)" % self.dtype_name)
 
 
 def _bhc_exec(func, *args):
