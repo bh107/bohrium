@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
+set(CMAKE_MACOSX_RPATH 1) # suppress warning about MACOSX_RPATH
 
 # We need this before 'project(BOHRIUM)' since cmake defines CMAKE_BUILD_TYPE at project()
 if(DEFINED CMAKE_BUILD_TYPE)
@@ -130,6 +131,7 @@ add_subdirectory(extmethods/blas)
 add_subdirectory(extmethods/clblas)
 add_subdirectory(extmethods/visualizer)
 add_subdirectory(extmethods/tdma)
+add_subdirectory(extmethods/lapack)
 
 add_subdirectory(bridge/cpp)
 add_subdirectory(bridge/c)

@@ -1,0 +1,79 @@
+{
+  "methods": [
+    {
+      "name":    "gesv",
+      "types":   [ "s", "d" ],
+      "options": [ "A", "lda", "ipiv" ]
+    },
+    {
+      "name":    "gbsv",
+      "types":   [ "s", "d" ],
+      "options": [ "klku", "AB", "lda", "ipiv" ]
+    },
+    {
+      "name":    "gtsv",
+      "types":   [ "s", "d" ],
+      "options": [ "DLDDU" ]
+    },
+    {
+      "name":    "posv",
+      "types":   [ "s", "d" ],
+      "options": [ "uplo", "A", "lda" ]
+    },
+    {
+      "name":    "ppsv",
+      "types":   [ "s", "d" ],
+      "options": [ "uplo", "AP" ]
+    },
+    {
+      "name":    "spsv",
+      "types":   [ "s", "d" ],
+      "options": [ "uplo", "AP", "ipiv" ]
+    }
+  ],
+  "unimplemneted_methods": [
+    {
+      "name":    "pbsv",
+      "types":   [ "s", "d" ],
+      "options": [ "uplo", "KD", "AB" ]
+    },
+    {
+      "name":    "ptsv",
+      "types":   [ "s", "d" ],
+      "options": [ "D", "E" ]
+    },
+    {
+      "name":    "sysv",
+      "types":   [ "s", "d" ],
+      "options": [ "uplo", "A", "ipiv", "work", "lwork" ]
+    },
+    {
+      "name":    "hesv",
+      "types":   [ ],
+      "options": [ "uplo", "A", "ipiv", "work", "lwork" ]
+    },
+    {
+      "name":    "hpsv",
+      "types":   [ "s", "d" ],
+      "options": [ "uplo", "AP", "ipiv" ]
+    }
+  ],
+  "options": {
+    "s": {
+      "type":        "bh_float32",
+      "scalar_type": "bh_float32"
+    },
+    "d": {
+      "type":        "bh_float64",
+      "scalar_type": "bh_float64"
+    },
+    "c": {
+      "type":        "bh_complex64",
+      "scalar_type": "bh_complex64"
+    },
+    "z": {
+      "type":        "bh_complex128",
+      "scalar_type": "bh_complex128"
+    }
+  }
+}

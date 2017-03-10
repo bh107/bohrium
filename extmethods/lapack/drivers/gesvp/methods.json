@@ -1,0 +1,23 @@
+{
+  "methods": [
+
+  ],
+  "options": {
+    "s": {
+      "type":        "bh_float32",
+      "scalar_type": "bh_float32"
+    },
+    "d": {
+      "type":        "bh_float64",
+      "scalar_type": "bh_float64"
+    },
+    "c": {
+      "type":        "bh_complex64",
+      "scalar_type": "bh_complex64"
+    },
+    "z": {
+      "type":        "bh_complex128",
+      "scalar_type": "bh_complex128"
+    }
+  }
+}
