@@ -8,6 +8,7 @@ from .._util import dtype_name
 from . import interface
 import functools
 import operator
+import atexit
 
 class Base(interface.Base):
     """ Base array handle """
@@ -260,3 +261,9 @@ def gather(out, ary, indexes):
     """
 
     ufunc("gather", out, ary, indexes)
+
+@atexit.register
+def shutdown():
+    """Actions to invoke when shutting down."""
+
+    runtime_flush()
