@@ -80,3 +80,26 @@ class test_ext_lapack_p:
         (cmd_np, cmd_bh) = args
         cmd_bh += "res = bh.lapack.spsv(a, b);"
         return cmd_np, cmd_bh
+
+
+try:
+    class test_ext_scipy:
+        def init(self):
+            if not has_ext():
+                return
+
+            for t in util.TYPES.FLOAT:
+                for i in range(4, 10):
+                    cmd  = "R = bh.random.RandomState(42);"
+                    cmd += "a = R.random(%d, dtype=%s, bohrium=BH).reshape(%d, %d);" % (i*i, t, i, i)
+                    cmd += "rhs = R.random(%d, dtype=%s, bohrium=BH);" % (i, t)
+                    yield cmd
+
+        def test_scipy(self, cmd):
+            cmd_np = "import scipy.linalg.lapack;" + cmd + "res = scipy.linalg.lapack.dgesv(a[1:, 1:], rhs[1:])[2];"
+            cmd_bh = cmd + "a = bh.array(a); rhs = bh.array(rhs); res = bh.lapack.gesv(a[1:, 1:], rhs[1:]);"
+
+            return (cmd_np, cmd_bh)
+except Exception as e:
+    print("\n\033[31m[ext] Cannot test LAPACK extension methods against scipy.\033[0m")
+    print(e)
