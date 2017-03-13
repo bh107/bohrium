@@ -12,15 +12,15 @@ case @!utype!@: {
         <!--(if if_n)-->      n,             <!--(end)-->
         <!--(if if_k)-->      k,             <!--(end)-->
         @!alpha_arg!@,
-        (@!type!@*) A_data,
+        ((@!type!@*) A_data) + A->start,
         k,
         <!--(if if_B)-->
-        (@!type!@*) B_data,
+        ((@!type!@*) B_data) + B->start,
         n<!--(if if_C)-->,<!--(end)-->
         <!--(end)-->
         <!--(if if_C)-->
         @!beta_arg!@,
-        (@!type!@*) C_data,
+        ((@!type!@*) C_data) + C->start,
         n
         <!--(end)-->
     );
