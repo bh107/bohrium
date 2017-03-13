@@ -1,6 +1,7 @@
 import util
 import bohrium as bh
 import bohrium.blas
+import bohrium.cg
 
 import platform
 from os import environ
@@ -144,4 +145,21 @@ class test_ext_blas_unit_triangular:
         cmd, _ = args
         cmd_np = cmd + "from numpy.linalg import inv; res = np.dot(inv(a), b);"
         cmd_bh = cmd + "a = bh.array(a); res = bh.blas.trsm(a, b);"
+        return cmd_np, cmd_bh
+
+
+class test_ext_cg:
+    def init(self):
+        if not has_ext():
+            return
+
+        for t in float_types:
+            yield t
+
+    def test_cg(self, t):
+        cmd_np = "res = np.array([[0.09090915], [0.63636363]], dtype=%s)" % t
+        cmd_bh  = "a = bh.array([[4, 1], [1, 3]], dtype=%s);" % t
+        cmd_bh += "b = bh.array([[1], [2]], dtype=%s);" % t
+        cmd_bh += "x = bh.array([[2], [1]], dtype=%s);" % t
+        cmd_bh += "res = bh.cg.cg(a, b, x);"
         return cmd_np, cmd_bh
