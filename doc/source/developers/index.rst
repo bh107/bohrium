@@ -12,29 +12,12 @@ If you just want read-access then simply clone the repos::
 
 Continue by taking a look at :ref:`installation` on how to build / install Bohrium.
 
-The rest of the developer guide contains an :ref:`developer_overview` of the Bohrium system. A documentation on :ref:`developer_extending` and notes on the setup/use of various :ref:`developer_tools` as well as a :ref:`developer_reference` for the Bohrium backend-system.
-
-.. note::
-
-   The developer guide is very much work-in-progress. Currently only this and the :ref:`developer_tools` section contains useful and maintained information.
-
-.. toctree::
-   :maxdepth: 2
-
-   overview
-
-.. toctree::
-   :maxdepth: 2
-
-   extending
+Further information
+~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 2
 
    tools
 
-.. toctree::
-   :maxdepth: 2
-
-   reference
 
