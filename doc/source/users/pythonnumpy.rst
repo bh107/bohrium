@@ -44,18 +44,3 @@ Copy a bohrium array into a new NumPy array::
 
     npy2 = bh_ary.copy2numpy()
 
-
-Library Reference
-~~~~~~~~~~~~~~~~~
-
-.. autosummary::
-   :toctree: pythonnumpygen
-
-   bohrium.core
-   bohrium.linalg
-   bohrium.examples
-
-Glossary
-~~~~~~~~
-
-* :ref:`genindex`
