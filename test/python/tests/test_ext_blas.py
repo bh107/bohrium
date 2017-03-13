@@ -41,6 +41,15 @@ class test_ext_blas_identical:
         cmd_bh = cmd + "res = bh.blas.gemm(a, b);"
         return cmd_np, cmd_bh
 
+    def test_gemmt(self, args):
+        cmd, t = args
+        if t in util.TYPES.COMPLEX:
+            return "res = 0"
+
+        cmd_np = cmd + "res = np.dot(a.T, b);"
+        cmd_bh = cmd + "res = bh.blas.gemmt(a, b);"
+        return cmd_np, cmd_bh
+
     def test_syr2k(self, args):
         cmd, _ = args
         cmd_np = cmd + "res = np.triu(np.dot(a, b.transpose()) + np.dot(b, a.transpose()));"
