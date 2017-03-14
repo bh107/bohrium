@@ -20,6 +20,7 @@ from .array_manipulation import broadcast_arrays, flatten
 
 @fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
+    # We need this, or else we need every combination of types in the opcodes.json
     assert in1.dtype == in2.dtype
     target.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
