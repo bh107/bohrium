@@ -25,6 +25,15 @@ RUN apt-get -qq install python2.7-scipy python3-scipy > /dev/null
 RUN apt-get -qq install python-matplotlib python3-matplotlib > /dev/null
 RUN apt-get -qq install python-netcdf4 python3-netcdf4 > /dev/null
 
+# Install OpenCV 3
+ADD https://github.com/opencv/opencv/archive/3.2.0.zip .
+RUN unzip 3.2.0.zip
+RUN mkdir -p opencv-3.2.0/build
+WORKDIR opencv-3.2.0/build
+RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
+RUN make install -j4
+RUN ldconfig
+
 # Install AMD SDK for OpenCL
 # RUN wget -nv http://jenkins.choderalab.org/userContent/AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2; exit 0;
 RUN mkdir -p /opt/amd_src
