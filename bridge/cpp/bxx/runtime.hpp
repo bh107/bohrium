@@ -42,7 +42,7 @@ inline Runtime::Runtime() : global_random_seed_(0),
 
 inline Runtime::~Runtime()
 {
-    if (ref_count.size()) {
+    if (ref_count.size() && getenv("BH_MEM_WARN") != NULL) {
         std::cout << "There are " << ref_count.size() << " dangling refs." << std::endl;
         for (std::map<bh_base*, size_t>::iterator it=ref_count.begin();
             it!=ref_count.end();

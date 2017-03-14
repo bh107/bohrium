@@ -16,6 +16,7 @@ Implementing a ``npbackend`` target, starts with fleshing out::
 And then implementing each of the methods described in ``interface.py``,
 documented below:
 """
+from .._util import dtype_name
 
 class Base(object):
     """
@@ -30,7 +31,8 @@ class Base(object):
         self.size = size
         # Data type
         self.dtype = dtype
-
+        # Data type name
+        self.dtype_name = dtype_name(dtype)
 
 class View(object):
     """
@@ -50,6 +52,8 @@ class View(object):
         self.shape = shape
         # The base array this view refers to
         self.base = base
+        # Data type name
+        self.dtype_name = base.dtype_name
         # Data type
         self.dtype = base.dtype
         # Offset from base (in bytes)

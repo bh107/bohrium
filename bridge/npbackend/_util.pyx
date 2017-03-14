@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy_force as np
 from . import _info
-import atexit
 
 def flush(ary=None):
     """Flush the delayed operations for Bohrium execution."""
@@ -100,9 +99,3 @@ def dtype_support(dtype):
         return True
     else:
         return False
-
-@atexit.register
-def shutdown():
-    """Actions to invoke when shutting down."""
-
-    flush()

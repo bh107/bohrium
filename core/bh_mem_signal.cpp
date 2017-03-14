@@ -36,7 +36,8 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 static pthread_mutex_t signal_mutex = PTHREAD_MUTEX_INITIALIZER;
-static bool initialized=false;
+static bool initialized = false;
+static bool mem_warn = false;
 
 struct Segment
 {
@@ -126,12 +127,10 @@ static void sighandler(int signal_number, siginfo_t *info, void *context)
     }
 }
 
-/** Init arrays and signal handler
- *
- * @param void
- */
 void bh_mem_signal_init(void)
 {
+    mem_warn = getenv("BH_MEM_WARN") != NULL;
+
     pthread_mutex_lock(&signal_mutex);
     if(!initialized)
     {
@@ -146,29 +145,20 @@ void bh_mem_signal_init(void)
     pthread_mutex_unlock(&signal_mutex);
 }
 
-/** Shutdown of this library */
 void bh_mem_signal_shutdown(void)
 {
     pthread_mutex_lock(&signal_mutex);
     if(segments.size() > 0) {
-        stringstream ss;
-        ss << "mem_signal: not all attached memory segments are detached!" << endl;
-        throw runtime_error(ss.str());
+        if (mem_warn) {
+            cout << "MEM_WARN: bh_mem_signal_shutdown() - not all attached memory segments are detached!" << endl;
+            bh_mem_signal_pprint_db();
+        }
     }
     pthread_mutex_unlock(&signal_mutex);
 }
 
-/** Attach continues memory segment to signal handler
- *
- * @param idx - Id to identify the memory segment when executing the callback function.
- * @param addr - Start address of memory segment.
- * @param size - Size of memory segment in bytes
- * @param callback - Callback function which is executed when segfault hits in the memory
- *                   segment. The function is called with the memory idx and the address pointer
- * @return - error code
- */
 void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
-                         void (*callback)(void*, void*))
+                          void (*callback)(void*, void*))
 {
     pthread_mutex_lock(&signal_mutex);
 
@@ -193,13 +183,23 @@ void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
     pthread_mutex_unlock(&signal_mutex);
 }
 
-/** Detach signal
- *
- * @param addr - Start address of memory segment.
- */
 void bh_mem_signal_detach(const void *addr)
 {
     pthread_mutex_lock(&signal_mutex);
     segments.erase(addr);
     pthread_mutex_unlock(&signal_mutex);
+}
+
+int bh_mem_signal_exist(const void *addr)
+{
+    int ret;
+    pthread_mutex_lock(&signal_mutex);
+    ret = segments.find(addr) != segments.end();
+    pthread_mutex_unlock(&signal_mutex);
+    return ret;
+}
+
+void bh_mem_signal_pprint_db(void)
+{
+    cout << segments << endl;
 }

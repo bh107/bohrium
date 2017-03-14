@@ -28,12 +28,16 @@ using namespace std;
 namespace {
 class Impl : public ComponentImplWithChild {
   private:
-    //Allocated base arrays
+    // Allocated base arrays
     set<bh_base*> _allocated_bases;
-    //Inspect one instruction and throws exception on error
+    // Inspect one instruction and throws exception on error
     void inspect(bh_instruction *instr);
+    // Show memory warnings
+    bool mem_warn;
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level) {
+        mem_warn = getenv("BH_MEM_WARN") != NULL;
+    }
     ~Impl(); // NB: a destructor implementation must exist
     void execute(bh_ir *bhir);
 };
@@ -88,7 +92,9 @@ void Impl::inspect(bh_instruction *instr) {
 }
 
 void Impl::execute(bh_ir *bhir) {
-    for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
-        inspect(&bhir->instr_list[i]);
+    if (mem_warn) {
+        for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
+            inspect(&bhir->instr_list[i]);
+    }
     child.execute(bhir);
 }
