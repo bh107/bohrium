@@ -36,7 +36,8 @@ If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 static pthread_mutex_t signal_mutex = PTHREAD_MUTEX_INITIALIZER;
-static bool initialized=false;
+static bool initialized = false;
+static bool mem_warn = false;
 
 struct Segment
 {
@@ -128,6 +129,8 @@ static void sighandler(int signal_number, siginfo_t *info, void *context)
 
 void bh_mem_signal_init(void)
 {
+    mem_warn = getenv("BH_MEM_WARN") != NULL;
+
     pthread_mutex_lock(&signal_mutex);
     if(!initialized)
     {
@@ -146,10 +149,10 @@ void bh_mem_signal_shutdown(void)
 {
     pthread_mutex_lock(&signal_mutex);
     if(segments.size() > 0) {
-        bh_mem_signal_pprint_db();
-        stringstream ss;
-        ss << "mem_signal: not all attached memory segments are detached!" << endl;
-        throw runtime_error(ss.str());
+        if (mem_warn) {
+            cout << "MEM_WARN: bh_mem_signal_shutdown() - not all attached memory segments are detached!" << endl;
+            bh_mem_signal_pprint_db();
+        }
     }
     pthread_mutex_unlock(&signal_mutex);
 }

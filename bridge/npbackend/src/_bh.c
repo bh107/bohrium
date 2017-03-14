@@ -52,6 +52,7 @@ PyObject *ufuncs = NULL; //The ufuncs Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
 int bh_sync_warn = 0; // Boolean: should we warn when copying from Bohrium to NumPy
+int bh_mem_warn = 0;  // Boolean: should we warn when about memory problems
 
 #define bhc_exist(x) (((BhArray*)x)->bhc_ary != Py_None)
 
@@ -205,8 +206,8 @@ void mem_access_callback(void *id, void *addr)
     }
     PyErr_Clear();
 
-    if(!bhc_exist(ary)) {
-        printf("mem_access_callback() - base %p has no bhc object!\n", ary);
+    if(bh_mem_warn && !bhc_exist(ary)) {
+        printf("MEM_WARN: mem_access_callback() - base %p has no bhc object!\n", ary);
     }
 
     if(BhArray_data_bhc2np(ary, NULL) == NULL)
@@ -1135,9 +1136,14 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
 
     //Check the 'BH_SYNC_WARN' flag
-    const char *value = getenv("BH_SYNC_WARN");
+    char *value = getenv("BH_SYNC_WARN");
     if (value != NULL) {
         bh_sync_warn = 1;
+    }
+    //Check the 'BH_MEM_WARN' flag
+    value = getenv("BH_MEM_WARN");
+    if (value != NULL) {
+        bh_mem_warn = 1;
     }
 
     //Initialize the signal handler
