@@ -19,11 +19,8 @@ class _test_scipy:
         return cmd
 
 try:
-    if sys.version_info[0] >= 3:
-        print("SciPy not supported in Python 3")
-    else :
-        import scipy
-        test_scipy = _test_scipy
+    import scipy
+    test_scipy = _test_scipy
 except ImportError:
     print("SciPy not found, ignoring some tests")
 
@@ -64,11 +61,8 @@ class _test_netCDF4:
         return cmd
 
 try:
-    if sys.version_info[0] >= 3:
-        print("netCDF4 not supported in Python 3")
-    else :
-        import netCDF4
-        test_netCDF4 = _test_netCDF4
+    import netCDF4
+    test_netCDF4 = _test_netCDF4
 except ImportError:
     print("netCDF4 not found, ignoring some tests")
 
