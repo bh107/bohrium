@@ -207,7 +207,6 @@ void mem_access_callback(void *id, void *addr)
 
     if(!bhc_exist(ary)) {
         printf("mem_access_callback() - base %p has no bhc object!\n", ary);
-        bh_mem_signal_pprint_db();
     }
 
     if(BhArray_data_bhc2np(ary, NULL) == NULL)
@@ -463,13 +462,15 @@ BhArray_data_bhc2np(PyObject *self, PyObject *args)
         PyErr_Format(PyExc_ValueError,"The base array doesn't own its data");
     }
 
-    // Nothing to do when the data isn't in the Bohrium address spaces
-    if(!bhc_exist(base)) {
-        goto finished;
-    }
-
     // Let's detach the signal
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*)base));
+
+    // Nothing to do when the data isn't in the Bohrium address spaces
+    if(!bhc_exist(base)) {
+        // Let's make sure that the NumPy data isn't protected
+        _munprotect(PyArray_DATA((PyArrayObject*)base), ary_nbytes((BhArray*)base));
+        goto finished;
+    }
 
     //Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
     void *d = NULL;
