@@ -2,15 +2,16 @@ case @!utype!@: {
     @!alpha!@
     @!beta!@
     clblas@!t!@@!name!@(
-        <!--(if if_layout)--> clblasRowMajor, <!--(end)-->
-        <!--(if if_side)-->   clblasLeft,     <!--(end)-->
-        <!--(if if_uplo)-->   clblasUpper,    <!--(end)-->
-        <!--(if if_transA)--> clblasNoTrans,  <!--(end)-->
-        <!--(if if_transB)--> clblasNoTrans,  <!--(end)-->
-        <!--(if if_diag)-->   clblasUnit,     <!--(end)-->
-        <!--(if if_m)-->      m,              <!--(end)-->
-        <!--(if if_n)-->      n,              <!--(end)-->
-        <!--(if if_k)-->      k,              <!--(end)-->
+        <!--(if if_layout)-->   clblasRowMajor, <!--(end)-->
+        <!--(if if_side)-->     clblasLeft,     <!--(end)-->
+        <!--(if if_uplo)-->     clblasUpper,    <!--(end)-->
+        <!--(if if_notransA)--> clblasNoTrans,  <!--(end)-->
+        <!--(if if_transA)-->   clblasTrans,    <!--(end)-->
+        <!--(if if_notransB)--> clblasNoTrans,  <!--(end)-->
+        <!--(if if_diag)-->     clblasUnit,     <!--(end)-->
+        <!--(if if_m)-->        m,              <!--(end)-->
+        <!--(if if_n)-->        n,              <!--(end)-->
+        <!--(if if_k)-->        k,              <!--(end)-->
         @!alpha_arg!@,
         bufA,
         0,

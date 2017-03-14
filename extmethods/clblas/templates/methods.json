@@ -3,7 +3,12 @@
     {
       "name":    "gemm",
       "types":   [ "S", "D", "C", "Z" ],
-      "options": [ "layout", "transA", "transB", "m", "n", "k", "A", "B", "C" ]
+      "options": [ "layout", "notransA", "notransB", "m", "n", "k", "A", "B", "C" ]
+    },
+    {
+      "name":    "gemmt",
+      "types":   [ "S", "D", "C", "Z" ],
+      "options": [ "layout", "transA", "notransB", "m", "n", "k", "A", "B", "C" ]
     },
     {
       "name":    "symm",
@@ -18,12 +23,12 @@
     {
       "name":    "syrk",
       "types":   [ "S", "D", "C", "Z" ],
-      "options": [ "layout", "uplo", "transA", "n", "k", "A", "C" ]
+      "options": [ "layout", "uplo", "notransA", "n", "k", "A", "C" ]
     },
     {
       "name":     "herk",
       "types":    [ "C", "Z" ],
-      "options":  [ "layout", "uplo", "transA", "n", "k", "A", "C" ],
+      "options":  [ "layout", "uplo", "notransA", "n", "k", "A", "C" ],
       "overrides": {
         "C": {
           "alpha":     "",
@@ -42,12 +47,12 @@
     {
       "name":    "syr2k",
       "types":   [ "S", "D", "C", "Z" ],
-      "options": [ "layout", "uplo", "transA", "n", "k", "A", "B", "C" ]
+      "options": [ "layout", "uplo", "notransA", "n", "k", "A", "B", "C" ]
     },
     {
       "name":     "her2k",
       "types":    [ "C", "Z" ],
-      "options":  [ "layout", "uplo", "transA", "n", "k", "A", "B", "C" ],
+      "options":  [ "layout", "uplo", "notransA", "n", "k", "A", "B", "C" ],
       "overrides": {
         "C": {
           "beta":      "",
@@ -62,7 +67,7 @@
     {
       "name":    "trmm",
       "types":   [ "S", "D", "C", "Z" ],
-      "options": [ "layout", "side", "uplo", "transA", "diag", "m", "n", "A", "B" ],
+      "options": [ "layout", "side", "uplo", "notransA", "diag", "m", "n", "A", "B" ],
       "overrides": {
         "C": {
           "beta": ""
@@ -75,7 +80,7 @@
     {
       "name":    "trsm",
       "types":   [ "S", "D", "C", "Z" ],
-      "options": [ "layout", "side", "uplo", "transA", "diag", "m", "n", "A", "B" ],
+      "options": [ "layout", "side", "uplo", "notransA", "diag", "m", "n", "A", "B" ],
       "overrides": {
         "C": {
           "beta": ""

@@ -8,13 +8,13 @@ import bohrium as np
 from sys import stderr
 from . import ufuncs
 
-def __blas(name, a, b, alpha=1.0, c=None, beta=0.0):
+def __blas(name, a, b, alpha=1.0, c=None, beta=0.0, shape_matters=True):
     if not b is None:
         if not (a.ndim == 2 and b.ndim == 2):
             stderr.write("[ext] Matrices need to be two-dimensional.\n")
             return None
 
-        if a.shape[1] != b.shape[0]:
+        if a.shape[1] != b.shape[0] and shape_matters:
             stderr.write("[ext] Wrong shape of matrices: first argument has shape {} and second has shape {}.\n".format(a.shape, b.shape))
             return None
 
@@ -44,6 +44,10 @@ def __blas(name, a, b, alpha=1.0, c=None, beta=0.0):
 def gemm(a, b, alpha=1.0, c=None, beta=0.0):
     """ C := alpha * A * B + beta * C """
     return __blas("blas_gemm", a, b, alpha, c, beta)
+
+def gemmt(a, b, alpha=1.0, c=None, beta=0.0):
+    """ C := alpha * A^T * B + beta * C """
+    return __blas("blas_gemmt", a, b, alpha, c, beta, shape_matters=False)
 
 def symm(a, b, alpha=1.0, c=None, beta=0.0):
     """ C := alpha * A * B + beta * C """
