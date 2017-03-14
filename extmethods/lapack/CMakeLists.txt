@@ -6,22 +6,22 @@ if(NOT EXT_LAPACK)
 endif()
 
 #External dependencies
-find_package(LAPACK)
-set_package_properties(LAPACK PROPERTIES DESCRIPTION "Linear Algebra PACKage" URL "www.netlib.org/lapack")
-set_package_properties(LAPACK PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the LAPACK extended method")
+find_package(LAPACKE)
+set_package_properties(LAPACKE PROPERTIES DESCRIPTION "Linear Algebra PACKage" URL "www.netlib.org/lapack/lapacke.html")
+set_package_properties(LAPACKE PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the LAPACK extended method")
 
 find_path(CLAPACK_INCLUDE_DIR NAMES clapack.h PATHS /usr/include/atlas)
 if(CLAPACK_INCLUDE_DIR)
   include_directories(${CLAPACK_INCLUDE_DIR})
 endif()
 
-if(LAPACK_FOUND)
+if(LAPACKE_FOUND)
     set(EXTMETHOD_DIR ${CMAKE_BINARY_DIR}/extmethods/lapack)
     file(MAKE_DIRECTORY ${EXTMETHOD_DIR})
 
     include_directories(${CMAKE_SOURCE_DIR}/include)
     include_directories(${CMAKE_BINARY_DIR}/include)
-    include_directories(${LAPACK_INCLUDES})
+    include_directories(${LAPACKE_INCLUDE_DIR})
 
     set(GEN_EXTMETHOD ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_extmethod.py)
 
@@ -48,7 +48,7 @@ if(LAPACK_FOUND)
           target_link_libraries(bh_lapack_${DRIVER} "-framework Accelerate")
         else()
           target_link_libraries(bh_lapack_${DRIVER} "-llapacke -lblas")
-          target_link_libraries(bh_lapack_${DRIVER} ${LAPACK_LIBRARIES})
+          target_link_libraries(bh_lapack_${DRIVER} ${LAPACKE_LIBRARIES})
         endif()
 
         install(TARGETS bh_lapack_${DRIVER} DESTINATION ${LIBDIR} COMPONENT bohrium)
@@ -57,8 +57,4 @@ if(LAPACK_FOUND)
     endforeach(DRIVER)
 
     set(OPENMP_LIBS ${OPENMP_LIBS} ${LAPACK_DRIVER_LIBS} PARENT_SCOPE)
-else()
-    if (LAPACK_INCLUDES_PRE)
-        set_package_properties(LAPACK PROPERTIES TYPE RECOMMENDED PURPOSE "LAPACK was found, but not enabled. \n   Manually enable LAPACK with LAPACK_INCLUDES.")
-    endif()
 endif()
