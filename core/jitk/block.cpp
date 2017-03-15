@@ -42,11 +42,11 @@ bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
     assert(instr_list.size() > 0);
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->max_ndim();
+    int64_t rank = instr_list[0]->ndim();
     for (InstrPtr instr: instr_list) {
         if (not instr->reshapable())
             return false;
-        if (instr->max_ndim() != rank)
+        if (instr->ndim() != rank)
             return false;
     }
     return true;
@@ -54,21 +54,21 @@ bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
 
 // Append 'instr' to the loop block 'block'
 void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_rank_dim) {
-    if (instr->max_ndim() <= rank)
-        throw runtime_error("add_instr_to_block() was given an instruction with max_ndim <= 'rank'");
+    if (instr->ndim() <= rank)
+        throw runtime_error("add_instr_to_block() was given an instruction with ndim <= 'rank'");
 
     // Let's reshape the instruction to match 'size_of_rank_dim'
     if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
         instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
-    vector<int64_t> shape = instr->dominating_shape();
+    vector<int64_t> shape = instr->shape();
 
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
     if (shape[rank] != size_of_rank_dim)
         throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
-    const int64_t max_ndim = instr->max_ndim();
+    const int64_t max_ndim = instr->ndim();
     assert(max_ndim > rank);
 
     // Create the rest of the dimension as a singleton block
@@ -258,11 +258,11 @@ bool LoopB::validation() const {
     for (const InstrPtr instr: allInstr) {
         if (bh_opcode_is_system(instr->opcode))
             continue;
-        if (instr->max_ndim() <= rank) {
+        if (instr->ndim() <= rank) {
             assert(1 == 2);
             return false;
         }
-        if (instr->dominating_shape()[rank] != size) {
+        if (instr->shape()[rank] != size) {
             assert(1 == 2);
             return false;
         }
@@ -300,7 +300,7 @@ void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
         assert(block != NULL);
     }
     bh_instruction instr_reshaped(*instr);
-    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->dominating_shape());
+    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->shape());
     Block instr_block(instr_reshaped, block->rank+1);
     block->_block_list.insert(block->_block_list.begin()+index+1, instr_block);
 
@@ -451,8 +451,8 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
     if (bh_opcode_is_system(instr_list[0]->opcode)) {
         throw runtime_error("create_nested_block: first instruction is a sysop!");
     }
-    const int ndim = (int) instr_list[0]->max_ndim();
-    const vector<int64_t> shape = instr_list[0]->dominating_shape();
+    const int ndim = (int) instr_list[0]->ndim();
+    const vector<int64_t> shape = instr_list[0]->shape();
     assert(ndim > rank);
 
     LoopB ret_loop;
@@ -469,7 +469,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
             } else {
                 ret_loop._block_list.emplace_back(*instr, ndim);
             }
-            assert(ret_loop._block_list.back().getInstr()->dominating_shape() == shape);
+            assert(ret_loop._block_list.back().getInstr()->shape() == shape);
         }
     } else {
         ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1));

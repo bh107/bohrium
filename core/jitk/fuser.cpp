@@ -39,7 +39,7 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
     {
-        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        const vector<int64_t> dominating_shape = instr.shape();
         const int sa = instr.sweep_axis();
         size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
         for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
@@ -51,8 +51,8 @@ void simplify_instr(bh_instruction &instr) {
     }
 
     // Let's try to simplify the shape of the instruction
-    if (instr.max_ndim() >  1 and instr.reshapable()) {
-        const vector<int64_t> dominating_shape = instr.dominating_shape();
+    if (instr.ndim() >  1 and instr.reshapable()) {
+        const vector<int64_t> dominating_shape = instr.shape();
         assert(dominating_shape.size() > 0);
 
         const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
@@ -123,12 +123,12 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
         return true;
     }
 
-    const auto dshape = instr->dominating_shape();
+    const auto dshape = instr->shape();
     for (const InstrPtr &i: instr_list) {
         if (bh_opcode_is_system(i->opcode)) {
             continue;
         }
-        if (i->dominating_shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
+        if (i->shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
             return false;
         }
     }
@@ -246,7 +246,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr->dominating_shape();
+        const vector<int64_t> dominating_shape = instr->shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
         vector<InstrPtr> single_instr = {instr};
