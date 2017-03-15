@@ -237,21 +237,6 @@ DLLEXPORT bh_intp bh_set_contiguous_stride(bh_view *view);
  */
 DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
 
-/* Set the data pointer for the view.
- * Can only set to non-NULL if the data ptr is already NULL
- *
- * @view   The view in question
- * @data   The new data pointer
- */
-DLLEXPORT void bh_data_set(bh_view* view, bh_data_ptr data);
-
-/* Get the data pointer for the view.
- *
- * @view    The view in question
- * @result  Output data pointer
- */
-DLLEXPORT void bh_data_get(bh_view* view, bh_data_ptr* result);
-
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *
  * @view The view

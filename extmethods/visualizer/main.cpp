@@ -33,11 +33,9 @@ private:
 
 public:
     void execute(bh_instruction *instr, void* arg) {
-
         bh_view *subject = &instr->operand[0];
 
-        bh_float32 *args;
-        bh_data_get(&(instr->operand[1]), (void**) &args);
+        bh_float32 *args = (bh_float32*) &instr->operand[1].base->data;
 
         assert(args != NULL);
         assert(instr->operand[1].base->nelem == 5);

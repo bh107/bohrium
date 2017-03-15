@@ -386,52 +386,6 @@ void bh_assign_complete_base(bh_view *view, bh_base *base)
     view->stride[0] = 1;
 }
 
-/* Set the data pointer for the view.
- * Can only set to non-NULL if the data ptr is already NULL
- *
- * @view   The view in question
- * @data   The new data pointer
- */
-void bh_data_set(bh_view* view, bh_data_ptr data)
-{
-    bh_base* base;
-
-    if(view == NULL) {
-        stringstream ss;
-        ss << "Attempt to set data pointer for a null view" << endl;
-        throw runtime_error(ss.str());
-    }
-
-    base = bh_base_array(view);
-
-    if(base->data != NULL && data != NULL) {
-        stringstream ss;
-        ss << "Attempt to set data pointer an array with existing data pointer" << endl;
-        throw runtime_error(ss.str());
-    }
-
-    base->data = data;
-}
-
-/* Get the data pointer for the view.
- *
- * @view    The view in question
- * @result  Output data pointer
- */
-void bh_data_get(bh_view* view, bh_data_ptr* result)
-{
-    bh_base* base;
-
-    if(view == NULL) {
-        stringstream ss;
-        ss << "Attempt to get data pointer for a null view" << endl;
-        throw runtime_error(ss.str());
-    }
-
-    base = bh_base_array(view);
-    *result = base->data;
-}
-
 /* Determines whether the base array is a scalar.
  *
  * @view The view
