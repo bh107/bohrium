@@ -2,19 +2,18 @@ import bohrium as np
 from sys import stderr
 from . import ufuncs
 
-def __lapack(name, a, b, transpose=False):
+def __lapack(name, a, b):
     if not b.flags['C_CONTIGUOUS']:
-        b = b.copy()
+        b = b.copy(order='C')
 
-    if transpose:
-        a = a.T.copy()
+    if not a.flags['C_CONTIGUOUS']:
+        a = a.copy(order='C')
 
     ufuncs.extmethod(name, b, a, b) # modifies 'b' unless copy is True
-
     return b
 
 def gesv(a, b):
-    return __lapack("lapack_gesv", a, b, transpose=True)
+    return __lapack("lapack_gesv", a.T.copy(order='C'), b)
 
 def gbsv(a, b):
     return __lapack("lapack_gbsv", a, b)
