@@ -8,8 +8,7 @@ public:
         bh_view* A = &instr->operand[1];
         // We allocate the A data, if not already present
         bh_data_malloc(A->base);
-        void *A_data;
-        bh_data_get(A, (bh_data_ptr*) &A_data);
+        void *A_data = A->base->data;
 
         <!--(if if_B)-->
         // B is a k*n matrix
@@ -18,8 +17,7 @@ public:
         bh_data_malloc(B->base);
 
         assert(A->base->type == B->base->type);
-        void *B_data;
-        bh_data_get(B, (bh_data_ptr*) &B_data);
+        void *B_data = B->base->data;
         <!--(end)-->
 
         <!--(if if_C)-->
@@ -30,8 +28,7 @@ public:
         bh_data_malloc(C->base);
 
         assert(A->base->type == C->base->type);
-        void *C_data;
-        bh_data_get(C, (bh_data_ptr*) &C_data);
+        void *C_data = C->base->data;
         <!--(end)-->
 
         int k = A->shape[1];

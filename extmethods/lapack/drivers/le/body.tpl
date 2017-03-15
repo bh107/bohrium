@@ -9,8 +9,7 @@ public:
         // We allocate the B data, if not already present
         bh_data_malloc(B->base);
 
-        void *B_data;
-        bh_data_get(B, (bh_data_ptr*) &B_data);
+        void *B_data = B->base->data;
 
         int n    = B->shape[0];
         int nrhs = B->ndim == 1 ? 1 : B->shape[1];
@@ -22,8 +21,7 @@ public:
             // We allocate the A data, if not already present
             bh_data_malloc(A->base);
             // Grab pointer to data
-            void *A_data;
-            bh_data_get(A, (bh_data_ptr*) &A_data);
+            void *A_data = A->base->data;
 
             int lda = n;
 
@@ -33,8 +31,7 @@ public:
         <!--(if if_AB)-->
             bh_view* AB = &instr->operand[1];
             bh_data_malloc(AB->base);
-            void *AB_data;
-            bh_data_get(AB, (bh_data_ptr*) &AB_data);
+            void *AB_data = AB->base->data;
 
             <!--(if if_klku)-->
                 // kl is the number of non-zero elements in the first column of A minus 1
@@ -97,8 +94,7 @@ public:
             // We allocate the A data, if not already present
             bh_data_malloc(A->base);
             // Grab pointer to data
-            void *A_data;
-            bh_data_get(A, (bh_data_ptr*) &A_data);
+            void *A_data = A->base->data;
             assert(A->base->type == B->base->type);
 
             // DL is the elements of the n-1 sub-diagonal of A
@@ -139,8 +135,7 @@ public:
             // We allocate the AP data, if not already present
             bh_data_malloc(AP->base);
             // Grab pointer to data
-            void *AP_data;
-            bh_data_get(AP, (bh_data_ptr*) &AP_data);
+            void *AP_data = AP->base->data;
 
             assert(AP->base->type == B->base->type);
 
