@@ -114,7 +114,7 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     return true;
 }
 
-// Check if all instructions in 'instr_list' is fully fusible with 'instr'
+// Check if all instructions in 'instr_list' is fully fusible with 'instr' (in that order)
 bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 
     if (instr_list.size() == 0)
@@ -128,7 +128,7 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
         if (bh_opcode_is_system(i->opcode)) {
             continue;
         }
-        if (i->shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
+        if (i->shape() != dshape or not fully_data_parallel_compatible(i, instr)) {
             return false;
         }
     }
