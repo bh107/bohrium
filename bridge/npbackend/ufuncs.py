@@ -16,7 +16,7 @@ from ._util import dtype_equal
 from .bhary import get_bhc, get_base, fix_biclass_wrapper
 from . import bhary
 from . import target
-from .array_manipulation import broadcast_arrays
+from .array_manipulation import broadcast_arrays, flatten
 
 @fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
@@ -45,10 +45,15 @@ def gather(ary, indexes):
         The gathered array freshly-allocated.
     """
 
-    ary = array_create.array(ary)
+    ary = flatten(array_create.array(ary))
+
     indexes = array_create.array(indexes, dtype=np.uint64, bohrium=True)
     ret = array_create.empty(indexes.shape, dtype=ary.dtype, bohrium=True)
-    target.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes));
+
+    if ary.size == 0 or indexes.size == 0:
+        return array_create.empty([])
+
+    target.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes))
     return ret
 
 
