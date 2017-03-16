@@ -1,0 +1,52 @@
+{
+  "methods": [
+    {
+      "name":           "threshold_b",
+      "threshold_type": "THRESH_BINARY",
+      "options":        [],
+      "types":          ["uint8", "uint16", "float32", "float64"]
+    },
+    {
+      "name":           "threshold_bi",
+      "threshold_type": "THRESH_BINARY_INV",
+      "options":        [],
+      "types":          ["uint8", "uint16", "float32", "float64"]
+    },
+    {
+      "name":           "threshold_t",
+      "threshold_type": "THRESH_TRUNC",
+      "options":        [],
+      "types":          ["uint8", "uint16", "float32", "float64"]
+    },
+    {
+      "name":           "threshold_tz",
+      "threshold_type": "THRESH_TOZERO",
+      "options":        [],
+      "types":          ["uint8", "uint16", "float32", "float64"]
+    },
+    {
+      "name":           "threshold_tzi",
+      "threshold_type": "THRESH_TOZERO_INV",
+      "options":        [],
+      "types":          ["uint8", "uint16", "float32", "float64"]
+    }
+  ],
+  "options": {
+    "uint8": {
+      "type":        "bh_uint8",
+      "opencv_type": "CV_8UC1"
+    },
+    "uint16": {
+      "type":        "bh_uint16",
+      "opencv_type": "CV_16UC1"
+    },
+    "float32": {
+      "type":        "bh_float32",
+      "opencv_type": "CV_32FC1"
+    },
+    "float64": {
+      "type":        "bh_float64",
+      "opencv_type": "CV_64FC1"
+    }
+  }
+}

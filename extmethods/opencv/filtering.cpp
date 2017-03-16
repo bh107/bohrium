@@ -55,8 +55,7 @@ public:
         int B_size = B->shape[0] * B->shape[1];
         bh_int8* B_intdata = new bh_int8[B_size];
 
-        cv::Mat src;
-        cv::Mat dst;
+        cv::Mat src, dst;
 
         switch(A->base->type) {
             case BH_FLOAT32: {
