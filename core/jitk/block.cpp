@@ -559,6 +559,13 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
+    // Gather reads its first input in arbitrary order
+    if (b->opcode == BH_GATHER) {
+        if (a->operand[0].base == b->operand[1].base) {
+            return false;
+        }
+    }
+
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
         const int b_nop = bh_noperands(b->opcode);

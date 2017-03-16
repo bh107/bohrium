@@ -174,7 +174,10 @@ void bh_instruction::remove_axis(int64_t axis) {
         // In the input we can simply remove the axis
         for(int o=1; o<nop; ++o) {
             if (not bh_is_constant(&operand[o])) {
-                operand[o].remove_axis(axis);
+                // We should ignore gather's first input operand
+                if (o != 1 or opcode != BH_GATHER) {
+                    operand[o].remove_axis(axis);
+                }
             }
         }
         // We might have to correct the sweep axis
