@@ -39,11 +39,11 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
     {
-        const vector<int64_t> dominating_shape = instr.shape();
+        const vector<int64_t> shape = instr.shape();
         const int sa = instr.sweep_axis();
-        size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
-        for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
-            if (sa != i and dominating_shape[i] == 1) {
+        size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?shape.size()-1:shape.size();
+        for (int64_t i=shape.size()-1; i >= 0 and ndim_left > 1; --i) {
+            if (sa != i and shape[i] == 1) {
                 instr.remove_axis(i);
                 --ndim_left;
             }
