@@ -1,6 +1,5 @@
 """
 Conjugate Gradient (CG) solver
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
 import bohrium as np

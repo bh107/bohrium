@@ -1,3 +1,7 @@
+"""
+Linear Algebra PACKage (LAPACK)
+"""
+
 import bohrium as np
 from sys import stderr
 from . import ufuncs
