@@ -867,10 +867,16 @@ BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
+    assert(BhArray_CheckExact(o));
 
-    //We do not support indexing with arrays
+    // Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k))
     {
+        // But when indexing a vector, it corresponds to np.take()
+        if (PyArray_NDIM((PyArrayObject*)o) == 1) {
+            return PyObject_CallMethod(reorganization, "take", "OO", o, k);
+        }
+        // Else we let's NumPy handle it
         PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
                           "Bohrium will return a NumPy copy of the indexed array.",1);
 

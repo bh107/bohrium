@@ -15,3 +15,6 @@ class test_gather:
 
     def test_take_ary_mth(self, cmd):
         return cmd + "res = a.take(a % a.shape[0])"
+
+    def test_indexing(self, cmd):
+        return cmd + "a = a.flatten(); res = a[a % a.shape[0]]"
