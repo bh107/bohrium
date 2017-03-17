@@ -7,6 +7,7 @@ endif()
 
 #External dependencies
 find_package(LAPACKE)
+find_package(CBLAS)
 set_package_properties(LAPACKE PROPERTIES DESCRIPTION "Linear Algebra PACKage" URL "www.netlib.org/lapack/lapacke.html")
 set_package_properties(LAPACKE PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the LAPACK extended method")
 
@@ -15,13 +16,14 @@ if(CLAPACK_INCLUDE_DIR)
   include_directories(${CLAPACK_INCLUDE_DIR})
 endif()
 
-if(LAPACKE_FOUND)
+if(LAPACKE_FOUND AND CBLAS_FOUND)
     set(EXTMETHOD_DIR ${CMAKE_BINARY_DIR}/extmethods/lapack)
     file(MAKE_DIRECTORY ${EXTMETHOD_DIR})
 
     include_directories(${CMAKE_SOURCE_DIR}/include)
     include_directories(${CMAKE_BINARY_DIR}/include)
     include_directories(${LAPACKE_INCLUDE_DIR})
+    include_directories(${CBLAS_INCLUDES})
 
     set(GEN_EXTMETHOD ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_extmethod.py)
 
@@ -47,8 +49,9 @@ if(LAPACKE_FOUND)
         if(APPLE)
           target_link_libraries(bh_lapack_${DRIVER} "-framework Accelerate")
         else()
-          target_link_libraries(bh_lapack_${DRIVER} "-llapacke -lblas")
+          target_link_libraries(bh_lapack_${DRIVER} "-llapack -llapacke -lblas")
           target_link_libraries(bh_lapack_${DRIVER} ${LAPACKE_LIBRARIES})
+          target_link_libraries(bh_lapack_${DRIVER} ${CBLAS_LIBRARIES})
         endif()
 
         install(TARGETS bh_lapack_${DRIVER} DESTINATION ${LIBDIR} COMPONENT bohrium)
