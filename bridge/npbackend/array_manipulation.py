@@ -10,14 +10,16 @@ from . import bhary
 from .bhary import fix_biclass_wrapper
 
 @fix_biclass_wrapper
-def flatten(ary):
+def flatten(ary, always_copy=True):
     """
     Return a copy of the array collapsed into one dimension.
 
     Parameters
     ----------
-    a : array_like
+    ary : array_like
         Array from which to retrieve the flattened data from.
+    always_copy : boolean
+        When False, a copy is only made when necessary
 
     Returns
     -------
@@ -34,8 +36,11 @@ def flatten(ary):
     >>> np.flatten(a)
     array([1, 2, 3, 4])
     """
-
-    return ary.reshape(functools.reduce(operator.mul, ary.shape)).copy()
+    ret = ary.reshape(functools.reduce(operator.mul, ary.shape))
+    if always_copy:
+        return ret.copy()
+    else:
+        return ret
 
 
 @fix_biclass_wrapper
