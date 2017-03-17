@@ -98,16 +98,3 @@ class test_fill:
     def test_view(self, cmd):
         cmd += "res[...] = 42"
         return cmd
-
-
-class test_gather:
-    def init(self):
-        for cmd, shape in util.gen_random_arrays("R", 3, min_ndim=1, dtype="np.uint32"):
-            if functools.reduce(operator.mul, shape) > 0:
-                cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
-                yield cmd
-
-    def test_gather(self, cmd):
-        bh_cmd = cmd + "res = bh.gather(a, a % a.shape[0])"
-        np_cmd = cmd + "res = np.take(a, a % a.shape[0])"
-        return np_cmd, bh_cmd

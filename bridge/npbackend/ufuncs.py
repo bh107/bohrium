@@ -24,39 +24,6 @@ def extmethod(name, out, in1, in2):
     target.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 
-@fix_biclass_wrapper
-def gather(ary, indexes):
-    """
-    gather(ary, indexes)
-
-    Gather elements from 'ary' selected by 'indexes'.
-    The shape of the returned array equals indexes.shape.
-
-    Parameters
-    ----------
-    array : array_like
-        The array to gather elements from.
-    indexes : array_like
-        Array or list of indexes that will be gather from 'array'
-
-    Returns
-    -------
-    r : ndarray
-        The gathered array freshly-allocated.
-    """
-
-    ary = flatten(array_create.array(ary))
-
-    indexes = array_create.array(indexes, dtype=np.uint64, bohrium=True)
-    ret = array_create.empty(indexes.shape, dtype=ary.dtype, bohrium=True)
-
-    if ary.size == 0 or indexes.size == 0:
-        return array_create.empty([])
-
-    target.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes))
-    return ret
-
-
 def setitem(ary, loc, value):
     """
     Set the 'value' into 'ary' at the location specified through 'loc'.

@@ -354,7 +354,7 @@ def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
 
     Parameters
     ----------
-    a : array_like
+    ary : array_like
         Input array, from which the diagonals are taken.
     offset : int, optional
         Offset of the diagonal from the main diagonal. Can be both positive
@@ -474,6 +474,8 @@ def fill(a, value):
 
     Parameters
     ----------
+        a : array_like
+        Array to fill
     value : scalar
         All elements of `a` will be assigned this value.
 
