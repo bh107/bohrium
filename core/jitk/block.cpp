@@ -550,8 +550,9 @@ bool data_parallel_compatible(const bh_view &writer,
         return std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);
     }
 
-    // Finally, two contiguous arrays are also parallel compatible
-    return bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
+    // Finally, two equally sized contiguous arrays are also parallel compatible
+    return bh_nelements(writer) == bh_nelements(reader) and \
+           bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
 }
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
