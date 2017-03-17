@@ -568,6 +568,16 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
         }
     }
 
+    // Scatter writes in arbitrary order
+    if (a->opcode == BH_SCATTER) {
+        const int b_nop = bh_noperands(b->opcode);
+        for(int i=0; i<b_nop; ++i) {
+            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+                return false;
+            }
+        }
+    }
+
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
         const int b_nop = bh_noperands(b->opcode);

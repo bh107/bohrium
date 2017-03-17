@@ -28,3 +28,12 @@ class test_general:
         return cmd + "res = a.flatten()[ind.flatten()]"
 
 
+class test_scatter:
+    def init(self):
+        for cmd, shape in util.gen_random_arrays("R", 3, min_ndim=1, dtype="np.uint32"):
+            if functools.reduce(operator.mul, shape) > 0:
+                cmd = "R = bh.random.RandomState(42); res = %s; " % cmd
+                yield cmd
+
+    def test_put(self, cmd):
+        return cmd + "M.put(res, res % res.shape[0], res)"

@@ -173,10 +173,22 @@ def random123(size, start_index, key):
 def gather(out, ary, indexes):
     """
     Gather elements from 'ary' selected by 'indexes'.
+    out.shape == indexes.shape.
+
+    :param Mixed out: The array to write results to.
+    :param Mixed ary: Input array.
+    :param Mixed indexes: Array of absolute indexes (uint64).
+    """
+    raise NotImplementedError()
+
+
+def scatter(out, ary, indexes):
+    """
+    Scatter elements from 'ary' into 'out' at locations specified by 'indexes'.
     ary.shape == indexes.shape.
 
     :param Mixed out: The array to write results to.
     :param Mixed ary: Input array.
-    :param Mixed indexes: Array of indexes (uint64).
+    :param Mixed indexes: Array of absolute indexes (uint64).
     """
     raise NotImplementedError()

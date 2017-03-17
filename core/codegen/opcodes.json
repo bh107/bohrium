@@ -2021,7 +2021,7 @@
 },
 {
     "opcode": "BH_SCATTER",
-    "doc":  "Scatter all elements of IN into OUT selected by INDEX. OUT.shape == INDEX.shape.",
+    "doc":  "Scatter all elements of IN into OUT selected by INDEX. NB: IN.shape == INDEX.shape and OUT can have any shape but must be contiguous.",
     "code": "scatter(OUT, IN, INDEX)",
     "id":   "80",
     "nop":   3,

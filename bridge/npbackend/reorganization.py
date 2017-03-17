@@ -25,7 +25,7 @@ def gather(ary, indexes):
     ----------
     ary  : array_like
         The array to gather elements from.
-    indexes : array_like
+    indexes : array_like, interpreted as integers
         Array or list of indexes that will be gather from 'array'
 
     Returns
@@ -59,7 +59,7 @@ def take(a, indices, axis=None, out=None, mode='raise'):
     ----------
     a : array_like
         The source array.
-    indices : array_like
+    indices : array_like, interpreted as integers
         The indices of the values to extract.
 
         .. versionadded:: 1.8.0
@@ -131,3 +131,102 @@ def take(a, indices, axis=None, out=None, mode='raise'):
         return out
     else:
         return ret
+
+
+@fix_biclass_wrapper
+def scatter(ary, indexes, values):
+    """
+    scatter(ary, indexes)
+
+    Scatter 'values' into 'ary' selected by 'indexes'.
+    The values of 'indexes' are absolute indexed into a flatten 'ary'
+    The shape of 'indexes' and 'value' must be equal.
+
+    Parameters
+    ----------
+    ary  : array_like
+        The target array to write the values to.
+    indexes : array_like, interpreted as integers
+        Array or list of indexes that will be written to in 'ary'
+    values : array_like
+        Values to write into 'ary"
+    """
+
+    ary = array_create.array(ary)
+    indexes = array_create.array(indexes, dtype=numpy.uint64)
+    values = array_create.array(values, dtype=ary.dtype)
+
+    assert indexes.shape == values.shape
+    if ary.size == 0 or indexes.size == 0:
+        return
+
+    # In order to ensure a contiguous array, we do the scatter on a flatten copy
+    flat = array_manipulation.flatten(ary)
+    target.scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes))
+    ary[...] = flat
+
+
+@fix_biclass_wrapper
+def put(a, ind, v, mode='raise'):
+    """
+    Replaces specified elements of an array with given values.
+
+    The indexing works on the flattened target array. `put` is roughly
+    equivalent to:
+
+    ::
+
+        a.flat[ind] = v
+
+    Parameters
+    ----------
+    a : ndarray
+        Target array.
+    ind : array_like
+        Target indices, interpreted as integers.
+    v : array_like
+        Values to place in `a` at target indices. If `v` is shorter than
+        `ind` it will be repeated as necessary.
+    mode : {'raise', 'wrap', 'clip'}, optional
+        Specifies how out-of-bounds indices will behave.
+
+        * 'raise' -- raise an error (default)
+        * 'wrap' -- wrap around
+        * 'clip' -- clip to the range
+
+        'clip' mode means that all indices that are too large are replaced
+        by the index that addresses the last element along that axis. Note
+        that this disables indexing with negative numbers.
+
+    See Also
+    --------
+    putmask, place, take
+
+    Examples
+    --------
+    >>> a = np.arange(5)
+    >>> np.put(a, [0, 2], [-44, -55])
+    >>> a
+    array([-44,   1, -55,   3,   4])
+
+    >>> a = np.arange(5)
+    >>> np.put(a, 22, -5, mode='clip')
+    >>> a
+    array([ 0,  1,  2,  3, -5])
+
+    """
+
+    if not bhary.check(a):
+        numpy.put(a, ind, v, mode=mode)
+
+    if mode != "raise":
+        warnings.warn("Bohrium only supports the 'raise' mode not '%s', "
+                      "it will be handled by the original NumPy." % mode, UserWarning, 2)
+        numpy.put(a, ind, v, mode=mode)
+
+    if len(ind) != len(v):
+        warnings.warn("Bohrium only supports 'ind' and 'v' having the same length, "
+                      "it will be handled by the original NumPy.", UserWarning, 2)
+        numpy.put(a, ind, v, mode=mode)
+
+    scatter(a, ind, v)

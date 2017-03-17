@@ -114,6 +114,9 @@ public:
                     _array_always.insert(instr->operand[1].base);
                 }
             }
+            if (instr->opcode == BH_SCATTER) {
+                _array_always.insert(instr->operand[0].base);
+            }
         }
     };
     // Get the ID of 'base', throws exception if 'base' doesn't exist

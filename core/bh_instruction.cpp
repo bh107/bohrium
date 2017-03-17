@@ -110,6 +110,13 @@ vector<int64_t> bh_instruction::shape() const {
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
         return vector<int64_t>(view.shape, view.shape + view.ndim);
+    } else if (opcode == BH_SCATTER) {
+        // The principal shape of a scatter is the shape of the index and input array, which are equal.
+        assert(bh_noperands(opcode) == 3);
+        assert(not bh_is_constant(&operand[1]));
+        assert(not bh_is_constant(&operand[2]));
+        const bh_view &view = operand[2];
+        return vector<int64_t>(view.shape, view.shape + view.ndim);
     } else if (bh_noperands(opcode) == 0) {
         // The principal shape of an instruction with no operands is the empty list
         return vector<int64_t>();
@@ -173,11 +180,11 @@ void bh_instruction::remove_axis(int64_t axis) {
     if (nop > 0) {
         // In the input we can simply remove the axis
         for(int o=1; o<nop; ++o) {
-            if (not bh_is_constant(&operand[o])) {
-                // We should ignore gather's first input operand
-                if (o != 1 or opcode != BH_GATHER) {
-                    operand[o].remove_axis(axis);
-                }
+            if (not (bh_is_constant(&operand[o]) or     // Ignore constants
+                    (o == 1 and opcode == BH_GATHER) or // Ignore gather's first input operand
+                    (o == 0 and opcode == BH_SCATTER)   // Ignore scatter's output operand
+                    )) {
+                operand[o].remove_axis(axis);
             }
         }
         // We might have to correct the sweep axis

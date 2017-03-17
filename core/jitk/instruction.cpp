@@ -481,6 +481,9 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_GATHER:
             out << ops[0] << " = " << ops[1] << ";\n";
             break;
+        case BH_SCATTER:
+            out << ops[0] << " = " << ops[1] << ";\n";
+            break;
         default:
             cerr << "Instruction \"" << instr << "\" not supported\n";
             throw runtime_error("Instruction not supported.");
@@ -605,8 +608,8 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         return;
     }
     if (instr.opcode == BH_GATHER) {
+        // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
         vector<string> ops;
-        // Write output operand
         {
             stringstream ss;
             scope.getName(instr.operand[0], ss);
@@ -617,7 +620,6 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         }
         {
             assert(not bh_is_constant(&instr.operand[1]));
-            // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
             stringstream ss;
             scope.getName(instr.operand[1], ss);
             ss << "[" << instr.operand[1].start << " + ";
@@ -631,6 +633,32 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         write_operation(instr, ops, out, opencl);
         return;
     }
+    if (instr.opcode == BH_SCATTER) {
+        // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
+        vector<string> ops;
+        {
+            stringstream ss;
+            scope.getName(instr.operand[0], ss);
+            ss << "[" << instr.operand[0].start << " + ";
+            scope.getName(instr.operand[2], ss);
+            if (scope.isArray(instr.operand[2])) {
+                write_array_subscription(scope, instr.operand[2], ss);
+            }
+            ss << "]";
+            ops.push_back(ss.str());
+        }
+        {
+            stringstream ss;
+            scope.getName(instr.operand[1], ss);
+            if (scope.isArray(instr.operand[1])) {
+                write_array_subscription(scope, instr.operand[1], ss);
+            }
+            ops.push_back(ss.str());
+        }
+        write_operation(instr, ops, out, opencl);
+        return;
+    }
+
 
     vector<string> ops;
     for (int o = 0; o < bh_noperands(instr.opcode); ++o) {
