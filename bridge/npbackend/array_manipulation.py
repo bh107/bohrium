@@ -2,6 +2,8 @@
 Array manipulation routines
 ===========================
 """
+import functools
+import operator
 from . import array_create
 import numpy_force as numpy
 from . import bhary
@@ -15,7 +17,7 @@ def flatten(ary):
     Parameters
     ----------
     a : array_like
-        Array from which to retrive the flattened data from.
+        Array from which to retrieve the flattened data from.
 
     Returns
     -------
@@ -32,7 +34,8 @@ def flatten(ary):
     >>> np.flatten(a)
     array([1, 2, 3, 4])
     """
-    return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
+
+    return ary.reshape(functools.reduce(operator.mul, ary.shape)).copy()
 
 
 @fix_biclass_wrapper

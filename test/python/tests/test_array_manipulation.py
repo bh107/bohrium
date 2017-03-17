@@ -1,7 +1,4 @@
 import util
-import numpy
-import functools
-import operator
 
 class test_flatten:
     def init(self):
