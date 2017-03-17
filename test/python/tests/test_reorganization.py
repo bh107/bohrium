@@ -12,3 +12,6 @@ class test_gather:
 
     def test_take(self, cmd):
         return cmd + "res = M.take(a, a % a.shape[0])"
+
+    def test_take_ary_mth(self, cmd):
+        return cmd + "res = a.take(a % a.shape[0])"
