@@ -16,7 +16,7 @@ class test_gather:
             if shape[0] > 2:
                 yield cmd + "ind = ind[1:]; "
             if len(shape) > 1 and shape[1] > 5:
-                yield cmd + "ind = a[3:]; "
+                yield cmd + "ind = ind[3:]; "
 
     def test_take(self, cmd):
         return cmd + "res = M.take(a, ind)"
