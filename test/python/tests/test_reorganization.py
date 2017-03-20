@@ -50,3 +50,6 @@ class test_scatter:
 
     def test_put_ary_mth(self, cmd):
         return cmd + "res.put(ind, val)"
+
+    def test_indexing(self, cmd):
+        return cmd + "res = res.flatten(); res[ind] = val"

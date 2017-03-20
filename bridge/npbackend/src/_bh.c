@@ -803,8 +803,7 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     // Let's handle assignments to a boolean masked array
     if (obj_is_a_bool_mask_ass_scalar(o, k, v)) {
         PyObject *err = PyObject_CallMethod(ufuncs, "set_scalar_in_masked_item", "OOO", o, k, v);
-        if(err == NULL)
-        {
+        if(err == NULL) {
             return -1;
         }
         Py_XDECREF(err);
@@ -814,6 +813,17 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     //We do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k) == 1)
     {
+        // Generally, but when indexing a vector, it corresponds to np.put()
+        if (PyArray_NDIM((PyArrayObject*)o) == 1) {
+            PyObject *err = PyObject_CallMethod(reorganization, "put", "OOO", o, k, v);
+            if(err == NULL) {
+                return -1;
+            }
+            Py_XDECREF(err);
+            return 0;
+        }
+
+        // Else we let's NumPy handle it
         PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
                           "It will be handled by the original NumPy.",1);
 
