@@ -543,11 +543,12 @@ bool data_parallel_compatible(const bh_view &writer,
         return false;
     }
 
-    // Same dimensionally requires same shape
+    // Same dimensionally requires same shape and strides
     if (writer.ndim == reader.ndim) {
         // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
         //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
-        return std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);
+        return std::equal(writer.shape, writer.shape + writer.ndim, reader.shape) and \
+               std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);;
     }
 
     // Finally, two equally sized contiguous arrays are also parallel compatible
