@@ -662,15 +662,8 @@ bool mergeable(const Block &b1, const Block &b2) {
     }
     const LoopB &l1 = b1.getLoop();
     const LoopB &l2 = b2.getLoop();
-    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
-    // thus we can simply append system instructions without further checks.
+    // System-only blocks are very flexible because they array sizes does not have to match when reshaping.
     if (l2.isSystemOnly()) {
-        LoopB block(l1);
-        for (const InstrPtr instr: l2.getAllInstr()) {
-            if (bh_noperands(instr->opcode) > 0) {
-                block.insert_system_after(instr, instr->operand[0].base);
-            }
-        }
         return true;
     }
     // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
