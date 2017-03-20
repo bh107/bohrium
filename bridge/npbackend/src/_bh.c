@@ -51,6 +51,7 @@ PyObject *bhary = NULL; //The bhary Python module
 PyObject *ufuncs = NULL; //The ufuncs Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
+PyObject *reorganization = NULL; //The array_create Python module
 int bh_sync_warn = 0; // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn = 0;  // Boolean: should we warn when about memory problems
 
@@ -664,6 +665,18 @@ BhArray_print_to_file(PyObject *self, PyObject *args, PyObject *kwds)
     return method2function("print_to_file", self, args, kwds);
 }
 
+static PyObject *
+BhArray_take(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("take", self, args, kwds);
+}
+
+static PyObject *
+BhArray_put(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("put", self, args, kwds);
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,    METH_VARARGS,  NULL},
     {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
@@ -681,6 +694,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"fill",       (PyCFunction) BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
     {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
     {"tofile",     (PyCFunction) BhArray_print_to_file, METH_VARARGS | METH_KEYWORDS, "a.tofile(fid, sep=\"\", format=\"%s\")\n\nWrite array to a file as text or binary (default)."},
+    {"take",       (PyCFunction) BhArray_take, METH_VARARGS | METH_KEYWORDS, "a.take(indices, axis=None, out=None, mode='raise')."},
+    {"put",        (PyCFunction) BhArray_put,  METH_VARARGS | METH_KEYWORDS, "a.put(indices, values, mode='raise')\n\nSet a.flat[n] = values[n] for all n in indices."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -788,8 +803,7 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     // Let's handle assignments to a boolean masked array
     if (obj_is_a_bool_mask_ass_scalar(o, k, v)) {
         PyObject *err = PyObject_CallMethod(ufuncs, "set_scalar_in_masked_item", "OOO", o, k, v);
-        if(err == NULL)
-        {
+        if(err == NULL) {
             return -1;
         }
         Py_XDECREF(err);
@@ -799,6 +813,17 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     //We do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k) == 1)
     {
+        // Generally, but when indexing a vector, it corresponds to np.put()
+        if (PyArray_NDIM((PyArrayObject*)o) == 1) {
+            PyObject *err = PyObject_CallMethod(reorganization, "put", "OOO", o, k, v);
+            if(err == NULL) {
+                return -1;
+            }
+            Py_XDECREF(err);
+            return 0;
+        }
+
+        // Else we let's NumPy handle it
         PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
                           "It will be handled by the original NumPy.",1);
 
@@ -859,10 +884,16 @@ BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
+    assert(BhArray_CheckExact(o));
 
-    //We do not support indexing with arrays
+    // Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k))
     {
+        // But when indexing a vector, it corresponds to np.take()
+        if (PyArray_NDIM((PyArrayObject*)o) == 1) {
+            return PyObject_CallMethod(reorganization, "take", "OO", o, k);
+        }
+        // Else we let's NumPy handle it
         PyErr_WarnEx(NULL,"Bohrium does not support indexing with arrays. "
                           "Bohrium will return a NumPy copy of the indexed array.",1);
 
@@ -1133,6 +1164,9 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
     array_create = PyImport_ImportModule("bohrium.array_create");
     if(array_create == NULL)
+        return RETVAL;
+    reorganization = PyImport_ImportModule("bohrium.reorganization");
+    if(reorganization == NULL)
         return RETVAL;
 
     //Check the 'BH_SYNC_WARN' flag

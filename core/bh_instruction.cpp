@@ -95,38 +95,40 @@ bool bh_instruction::reshapable() const {
     return all_same_shape() and is_contiguous() and not bh_opcode_is_sweep(opcode);
 }
 
-int64_t bh_instruction::max_ndim() const {
-    // Let's find the view with the greatest number of dimension and returns its 'ndim'
-    int64_t ret = 0;
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        const bh_view &view = operand[o];
-        if (not bh_is_constant(&view)) {
-            if (view.ndim > ret)
-                ret = view.ndim;
-        }
+vector<int64_t> bh_instruction::shape() const {
+    if (bh_opcode_is_sweep(opcode)) {
+        // The principal shape of a sweep is the shape of the array array that is sweeped over
+        assert(bh_noperands(opcode) == 3);
+        assert(bh_is_constant(&operand[2]));
+        assert(not bh_is_constant(&operand[1]));
+        const bh_view &view = operand[1];
+        return vector<int64_t>(view.shape, view.shape + view.ndim);
+    } else if (opcode == BH_GATHER) {
+        // The principal shape of a gather is the shape of the index and output array, which are equal.
+        assert(bh_noperands(opcode) == 3);
+        assert(not bh_is_constant(&operand[1]));
+        assert(not bh_is_constant(&operand[2]));
+        const bh_view &view = operand[2];
+        return vector<int64_t>(view.shape, view.shape + view.ndim);
+    } else if (opcode == BH_SCATTER) {
+        // The principal shape of a scatter is the shape of the index and input array, which are equal.
+        assert(bh_noperands(opcode) == 3);
+        assert(not bh_is_constant(&operand[1]));
+        assert(not bh_is_constant(&operand[2]));
+        const bh_view &view = operand[2];
+        return vector<int64_t>(view.shape, view.shape + view.ndim);
+    } else if (bh_noperands(opcode) == 0) {
+        // The principal shape of an instruction with no operands is the empty list
+        return vector<int64_t>();
+    } else {
+        // The principal shape of a default instruction is the shape of the output
+        const bh_view &view = operand[0];
+        return vector<int64_t>(view.shape, view.shape + view.ndim);
     }
-    return ret;
 }
 
-vector<int64_t> bh_instruction::dominating_shape() const {
-    int64_t ndim = max_ndim();
-    vector<int64_t > shape;
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        const bh_view &view = operand[o];
-        if ((not bh_is_constant(&view)) and view.ndim == ndim) {
-            for (int64_t j=0; j < view.ndim; ++j) {
-                if (shape.size() > (size_t)j) {
-                    if (shape[j] < view.shape[j])
-                        shape[j] = view.shape[j];
-                } else {
-                    shape.push_back(view.shape[j]);
-                }
-            }
-        }
-    }
-    return shape;
+int64_t bh_instruction::ndim() const {
+    return shape().size();
 }
 
 int bh_instruction::sweep_axis() const {
@@ -173,12 +175,15 @@ void bh_instruction::reshape_force(const vector<int64_t> &shape) {
 }
 
 void bh_instruction::remove_axis(int64_t axis) {
-    assert(0 <= axis and axis < max_ndim());
+    assert(0 <= axis and axis < ndim());
     int nop = bh_noperands(opcode);
     if (nop > 0) {
         // In the input we can simply remove the axis
         for(int o=1; o<nop; ++o) {
-            if (not bh_is_constant(&operand[o])) {
+            if (not (bh_is_constant(&operand[o]) or     // Ignore constants
+                    (o == 1 and opcode == BH_GATHER) or // Ignore gather's first input operand
+                    (o == 0 and opcode == BH_SCATTER)   // Ignore scatter's output operand
+                    )) {
                 operand[o].remove_axis(axis);
             }
         }
@@ -201,8 +206,8 @@ void bh_instruction::remove_axis(int64_t axis) {
 }
 
 void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
-    assert(0 <= axis1 and axis1 < max_ndim());
-    assert(0 <= axis2 and axis2 < max_ndim());
+    assert(0 <= axis1 and axis1 < ndim());
+    assert(0 <= axis2 and axis2 < ndim());
     assert(axis1 != axis2);
     int nop = bh_noperands(opcode);
     if (nop > 0) {

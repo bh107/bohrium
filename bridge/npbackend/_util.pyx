@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 """
+import collections
 import numpy_force as np
 from . import _info
 
@@ -95,7 +96,18 @@ def type_sig(op_name, inputs):
 
 def dtype_support(dtype):
     """Returns True when Bohrium supports 'dtype' """
+
     if dtype_in(dtype, _info.numpy_types):
         return True
     else:
         return False
+
+def totalsize(array_like):
+    """Return the total size of an like object such as a bharray, ndarray, list, etc."""
+
+    if hasattr(array_like, "size"):
+        return array_like.size
+    elif isinstance(array_like, collections.Iterable) and not isinstance(array_like, basestring):
+        return sum(totalsize(item) for item in array_like)
+    else:
+        return 1

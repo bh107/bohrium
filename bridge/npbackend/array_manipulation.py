@@ -2,20 +2,24 @@
 Array manipulation routines
 ===========================
 """
+import functools
+import operator
 from . import array_create
 import numpy_force as numpy
 from . import bhary
 from .bhary import fix_biclass_wrapper
 
 @fix_biclass_wrapper
-def flatten(ary):
+def flatten(ary, always_copy=True):
     """
     Return a copy of the array collapsed into one dimension.
 
     Parameters
     ----------
-    a : array_like
-        Array from which to retrive the flattened data from.
+    ary : array_like
+        Array from which to retrieve the flattened data from.
+    always_copy : boolean
+        When False, a copy is only made when necessary
 
     Returns
     -------
@@ -32,7 +36,11 @@ def flatten(ary):
     >>> np.flatten(a)
     array([1, 2, 3, 4])
     """
-    return ary.reshape(numpy.multiply.reduce(numpy.asarray(ary.shape)))
+    ret = ary.reshape(functools.reduce(operator.mul, ary.shape))
+    if always_copy:
+        return ret.copy()
+    else:
+        return ret
 
 
 @fix_biclass_wrapper
@@ -354,7 +362,7 @@ def trace(ary, offset=0, axis1=0, axis2=1, dtype=None):
 
     Parameters
     ----------
-    a : array_like
+    ary : array_like
         Input array, from which the diagonals are taken.
     offset : int, optional
         Offset of the diagonal from the main diagonal. Can be both positive
@@ -474,6 +482,8 @@ def fill(a, value):
 
     Parameters
     ----------
+        a : array_like
+        Array to fill
     value : scalar
         All elements of `a` will be assigned this value.
 

@@ -13,7 +13,8 @@ from numpy_force import *
 
 from .array_create import *
 from .array_manipulation import *
-from .ufuncs import UFUNCS, gather
+from .reorganization import *
+from .ufuncs import UFUNCS
 from .masking import *
 from .bhary import check, fix_biclass, in_bhmem
 from ._info import numpy_types

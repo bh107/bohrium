@@ -84,11 +84,12 @@ struct Constant_less {
 
 class SymbolTable {
 private:
-    std::map<bh_base*, size_t> _base_map; // Mapping a base to its ID
+    std::map<const bh_base*, size_t> _base_map; // Mapping a base to its ID
     std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::set<InstrPtr, Constant_less> _constant_set; // Sets of instructions to a constant ID
+    std::set<const bh_base*> _array_always; // Sets of base arrays that should always be arrays
 
 public:
     SymbolTable(const std::vector<InstrPtr> &instr_list, bool const_as_var) {
@@ -108,10 +109,18 @@ public:
                     _constant_set.insert(instr);
                 }
             }
+            if (instr->opcode == BH_GATHER) {
+                if (not bh_is_constant(&instr->operand[1])) {
+                    _array_always.insert(instr->operand[1].base);
+                }
+            }
+            if (instr->opcode == BH_SCATTER) {
+                _array_always.insert(instr->operand[0].base);
+            }
         }
     };
     // Get the ID of 'base', throws exception if 'base' doesn't exist
-    size_t baseID(bh_base *base) const {
+    size_t baseID(const bh_base *base) const {
         return _base_map.at(base);
     }
     // Get the ID of 'view', throws exception if 'view' doesn't exist
@@ -150,6 +159,10 @@ public:
         }
         return -1;
     }
+    // Return true when 'base' should always be an array
+    bool isAlwaysArray(const bh_base *base) const {
+        return util::exist(_array_always, base);
+    }
 };
 
 class Scope {
@@ -157,8 +170,8 @@ public:
     const SymbolTable &symbols;
     const Scope * const parent;
 private:
-    std::set<bh_base*> _tmps; // Set of temporary arrays
-    std::set<bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
+    std::set<const bh_base*> _tmps; // Set of temporary arrays
+    std::set<const bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
     std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
     std::set<bh_view> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
     std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
@@ -177,14 +190,20 @@ public:
           const std::set<bh_base *> &tmps,
           const T1 &scalar_replacements_rw,
           const T2 &scalar_replacements_r,
-          const ConfigParser &config) : symbols(symbols), parent(parent), _tmps(tmps),
+          const ConfigParser &config) : symbols(symbols), parent(parent),
                                         use_volatile(config.defaultGet<bool>("volatile", false)),
                                         strides_as_variables(config.defaultGet<bool>("strides_as_variables", true)) {
+        for(const bh_base* base: tmps) {
+            if (not symbols.isAlwaysArray(base))
+                _tmps.insert(base);
+        }
         for(const bh_view* view: scalar_replacements_rw) {
-            _scalar_replacements_rw.insert(view->base);
+            if (not symbols.isAlwaysArray(view->base))
+                _scalar_replacements_rw.insert(view->base);
         }
         for(const bh_view* view: scalar_replacements_r) {
-            _scalar_replacements_r.insert(*view);
+            if (not symbols.isAlwaysArray(view->base))
+                _scalar_replacements_r.insert(*view);
         }
 
         // No overlap between '_tmps', '_scalar_replacements_rw', and '_scalar_replacements_r' is allowed
@@ -194,12 +213,12 @@ public:
             assert(_scalar_replacements_rw.find(view.base) == _scalar_replacements_rw.end());
             assert(symbols.viewID(view) >= 0);
         }
-        for (bh_base* base: _scalar_replacements_rw) {
+        for (const bh_base* base: _scalar_replacements_rw) {
             assert(_tmps.find(base) == _tmps.end());
 //            assert(_scalar_replacements_r.find(view) == _scalar_replacements_r.end());
             assert(symbols.baseID(base) >= 0);
         }
-        for (bh_base* base: _tmps) {
+        for (const bh_base* base: _tmps) {
 //            assert(_scalar_replacements_r.find(base) == _scalar_replacements_r.end());
             assert(_scalar_replacements_rw.find(base) == _scalar_replacements_rw.end());
             assert(symbols.baseID(base) >= 0);
@@ -209,7 +228,7 @@ public:
 
     // Check if 'base' is temporary
     bool isTmp(const bh_base *base) const {
-        if (util::exist_nconst(_tmps, base)) {
+        if (util::exist(_tmps, base)) {
             return true;
         } else if (parent != NULL) {
             return parent->isTmp(base);
@@ -229,7 +248,7 @@ public:
         }
     }
     bool isScalarReplaced_RW(const bh_base *base) const {
-        if (util::exist_nconst(_scalar_replacements_rw, base)) {
+        if (util::exist(_scalar_replacements_rw, base)) {
             return true;
         } else if (parent != NULL) {
             return parent->isScalarReplaced_RW(base);

@@ -39,11 +39,11 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
     {
-        const vector<int64_t> dominating_shape = instr.dominating_shape();
+        const vector<int64_t> shape = instr.shape();
         const int sa = instr.sweep_axis();
-        size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?dominating_shape.size()-1:dominating_shape.size();
-        for (int64_t i=dominating_shape.size()-1; i >= 0 and ndim_left > 1; --i) {
-            if (sa != i and dominating_shape[i] == 1) {
+        size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?shape.size()-1:shape.size();
+        for (int64_t i=shape.size()-1; i >= 0 and ndim_left > 1; --i) {
+            if (sa != i and shape[i] == 1) {
                 instr.remove_axis(i);
                 --ndim_left;
             }
@@ -51,8 +51,8 @@ void simplify_instr(bh_instruction &instr) {
     }
 
     // Let's try to simplify the shape of the instruction
-    if (instr.max_ndim() >  1 and instr.reshapable()) {
-        const vector<int64_t> dominating_shape = instr.dominating_shape();
+    if (instr.ndim() >  1 and instr.reshapable()) {
+        const vector<int64_t> dominating_shape = instr.shape();
         assert(dominating_shape.size() > 0);
 
         const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
@@ -93,6 +93,30 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     if (bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
+    // Gather reads its first input in arbitrary order
+    if (b->opcode == BH_GATHER) {
+        if (a->operand[0].base == b->operand[1].base) {
+            return false;
+        }
+    }
+
+    // Scatter writes in arbitrary order
+    if (a->opcode == BH_SCATTER) {
+        const int b_nop = bh_noperands(b->opcode);
+        for(int i=0; i<b_nop; ++i) {
+            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+                return false;
+            }
+        }
+    } else if (b->opcode == BH_SCATTER) {
+        const int a_nop = bh_noperands(a->opcode);
+        for(int i=0; i<a_nop; ++i) {
+            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+                return false;
+            }
+        }
+    }
+
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
         const int b_nop = bh_noperands(b->opcode);
@@ -114,7 +138,7 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     return true;
 }
 
-// Check if all instructions in 'instr_list' is fully fusible with 'instr'
+// Check if all instructions in 'instr_list' is fully fusible with 'instr' (in that order)
 bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 
     if (instr_list.size() == 0)
@@ -123,12 +147,12 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
         return true;
     }
 
-    const auto dshape = instr->dominating_shape();
+    const auto dshape = instr->shape();
     for (const InstrPtr &i: instr_list) {
         if (bh_opcode_is_system(i->opcode)) {
             continue;
         }
-        if (i->dominating_shape() != dshape or not fully_data_parallel_compatible(instr, i)) {
+        if (i->shape() != dshape or not fully_data_parallel_compatible(i, instr)) {
             return false;
         }
     }
@@ -246,7 +270,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr->dominating_shape();
+        const vector<int64_t> dominating_shape = instr->shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
         vector<InstrPtr> single_instr = {instr};

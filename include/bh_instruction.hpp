@@ -69,12 +69,13 @@ struct bh_instruction
     // Is this instruction (and all its views) reshapable?
     bool reshapable() const;
 
-    // The maximum number of dimensions of a view in this instruction
-    int64_t max_ndim() const;
+    // Returns the principal shape of this instructions, which is the shape of the computation that constitute
+    // this instruction. E.g. in reduce, this function returns the shape of the reduced array
+    std::vector<int64_t> shape() const;
 
-    // Returns the shape of the view with the greatest number of dimensions
-    // if equal, the combined maximum is returned
-    std::vector<int64_t> dominating_shape() const;
+    // Returns the principal number of dimension of this instruction, which is the number of dimension of the
+    // computation that constitute this instruction
+    int64_t ndim() const;
 
     // Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
     int sweep_axis() const;

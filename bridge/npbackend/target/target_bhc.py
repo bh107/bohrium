@@ -289,6 +289,18 @@ def gather(out, ary, indexes):
 
     ufunc("gather", out, ary, indexes)
 
+def scatter(out, ary, indexes):
+    """
+    Scatter elements from 'ary' into 'out' at locations specified by 'indexes'.
+    ary.shape == indexes.shape.
+
+    :param Mixed out: The array to write results to.
+    :param Mixed ary: Input array.
+    :param Mixed indexes: Array of absolute indexes (uint64).
+    """
+    ufunc("scatter", out, ary, indexes)
+
+
 @atexit.register
 def shutdown():
     """Actions to invoke when shutting down."""

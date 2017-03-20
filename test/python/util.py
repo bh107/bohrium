@@ -72,6 +72,7 @@ class ViewOfDim:
                 ret += 1
                 i += self.step
         else:
+            i += self.step
             while i > self.end:
                 ret += 1
                 i += self.step

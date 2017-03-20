@@ -197,9 +197,9 @@ static bool collapse_instr_axes(LoopB &loop, const int axis) {
 static bool collapse_loop_with_child(LoopB &loop) {
     // In order to be collapsable, 'loop' can only have one child, that child must be a loop, and both 'loop'
     // and the child cannot be sweeped
-    if (loop._sweeps.empty() and loop._block_list.size() == 1) {
+    if (loop._sweeps.empty() and loop._block_list.size() == 1 and loop._reshapable) {
         Block &child = loop._block_list[0];
-        if ((not child.isInstr()) and child.getLoop()._sweeps.empty()) {
+        if ((not child.isInstr()) and child.getLoop()._sweeps.empty() and child.getLoop()._reshapable) {
             // Let's collapse with our single child
             loop.size *= loop._block_list[0].getLoop().size;
             // NB: we need the temporary step in order to avoid copying deleted data

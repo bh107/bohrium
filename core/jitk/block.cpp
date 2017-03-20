@@ -42,11 +42,11 @@ bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
     assert(instr_list.size() > 0);
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->max_ndim();
+    int64_t rank = instr_list[0]->ndim();
     for (InstrPtr instr: instr_list) {
         if (not instr->reshapable())
             return false;
-        if (instr->max_ndim() != rank)
+        if (instr->ndim() != rank)
             return false;
     }
     return true;
@@ -54,21 +54,21 @@ bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
 
 // Append 'instr' to the loop block 'block'
 void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_rank_dim) {
-    if (instr->max_ndim() <= rank)
-        throw runtime_error("add_instr_to_block() was given an instruction with max_ndim <= 'rank'");
+    if (instr->ndim() <= rank)
+        throw runtime_error("add_instr_to_block() was given an instruction with ndim <= 'rank'");
 
     // Let's reshape the instruction to match 'size_of_rank_dim'
     if (instr->reshapable() and instr->operand[0].shape[rank] != size_of_rank_dim) {
         instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
-    vector<int64_t> shape = instr->dominating_shape();
+    vector<int64_t> shape = instr->shape();
 
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
     if (shape[rank] != size_of_rank_dim)
         throw runtime_error("create_nested_block() was given an instruction where shape[rank] != size_of_rank_dim");
-    const int64_t max_ndim = instr->max_ndim();
+    const int64_t max_ndim = instr->ndim();
     assert(max_ndim > rank);
 
     // Create the rest of the dimension as a singleton block
@@ -258,11 +258,11 @@ bool LoopB::validation() const {
     for (const InstrPtr instr: allInstr) {
         if (bh_opcode_is_system(instr->opcode))
             continue;
-        if (instr->max_ndim() <= rank) {
+        if (instr->ndim() <= rank) {
             assert(1 == 2);
             return false;
         }
-        if (instr->dominating_shape()[rank] != size) {
+        if (instr->shape()[rank] != size) {
             assert(1 == 2);
             return false;
         }
@@ -300,7 +300,7 @@ void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
         assert(block != NULL);
     }
     bh_instruction instr_reshaped(*instr);
-    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->dominating_shape());
+    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->shape());
     Block instr_block(instr_reshaped, block->rank+1);
     block->_block_list.insert(block->_block_list.begin()+index+1, instr_block);
 
@@ -451,8 +451,8 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
     if (bh_opcode_is_system(instr_list[0]->opcode)) {
         throw runtime_error("create_nested_block: first instruction is a sysop!");
     }
-    const int ndim = (int) instr_list[0]->max_ndim();
-    const vector<int64_t> shape = instr_list[0]->dominating_shape();
+    const int ndim = (int) instr_list[0]->ndim();
+    const vector<int64_t> shape = instr_list[0]->shape();
     assert(ndim > rank);
 
     LoopB ret_loop;
@@ -469,7 +469,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
             } else {
                 ret_loop._block_list.emplace_back(*instr, ndim);
             }
-            assert(ret_loop._block_list.back().getInstr()->dominating_shape() == shape);
+            assert(ret_loop._block_list.back().getInstr()->shape() == shape);
         }
     } else {
         ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1));
@@ -543,21 +543,47 @@ bool data_parallel_compatible(const bh_view &writer,
         return false;
     }
 
-    // Same dimensionally requires same shape
+    // Same dimensionally requires same shape and strides
     if (writer.ndim == reader.ndim) {
         // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
         //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
-        return std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);
+        return std::equal(writer.shape, writer.shape + writer.ndim, reader.shape) and \
+               std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);;
     }
 
-    // Finally, two contiguous arrays are also parallel compatible
-    return bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
+    // Finally, two equally sized contiguous arrays are also parallel compatible
+    return bh_nelements(writer) == bh_nelements(reader) and \
+           bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
 }
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
 bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
+
+    // Gather reads its first input in arbitrary order
+    if (b->opcode == BH_GATHER) {
+        if (a->operand[0].base == b->operand[1].base) {
+            return false;
+        }
+    }
+
+    // Scatter writes in arbitrary order
+    if (a->opcode == BH_SCATTER) {
+        const int b_nop = bh_noperands(b->opcode);
+        for(int i=0; i<b_nop; ++i) {
+            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+                return false;
+            }
+        }
+    } else if (b->opcode == BH_SCATTER) {
+        const int a_nop = bh_noperands(a->opcode);
+        for(int i=0; i<a_nop; ++i) {
+            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+                return false;
+            }
+        }
+    }
 
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
@@ -653,15 +679,8 @@ bool mergeable(const Block &b1, const Block &b2) {
     }
     const LoopB &l1 = b1.getLoop();
     const LoopB &l2 = b2.getLoop();
-    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
-    // thus we can simply append system instructions without further checks.
+    // System-only blocks are very flexible because they array sizes does not have to match when reshaping.
     if (l2.isSystemOnly()) {
-        LoopB block(l1);
-        for (const InstrPtr instr: l2.getAllInstr()) {
-            if (bh_noperands(instr->opcode) > 0) {
-                block.insert_system_after(instr, instr->operand[0].base);
-            }
-        }
         return true;
     }
     // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them

@@ -1991,7 +1991,7 @@
 },
 {
     "opcode": "BH_GATHER",
-    "doc":  "Gather elements from IN selected by INDEX into OUT. IN.shape == INDEX.shape.",
+    "doc":  "Gather elements from IN selected by INDEX into OUT. NB: OUT.shape == INDEX.shape and IN can have any shape but must be contiguous.",
     "code": "gather(OUT, IN, INDEX)",
     "id":   "79",
     "nop":   3,
@@ -2021,7 +2021,7 @@
 },
 {
     "opcode": "BH_SCATTER",
-    "doc":  "Scatter all elements of IN into OUT selected by INDEX. OUT.shape == INDEX.shape.",
+    "doc":  "Scatter all elements of IN into OUT selected by INDEX. NB: IN.shape == INDEX.shape and OUT can have any shape but must be contiguous.",
     "code": "scatter(OUT, IN, INDEX)",
     "id":   "80",
     "nop":   3,
