@@ -5,8 +5,8 @@ Reorganization of Array Elements Routines
 import warnings
 import numpy_force as numpy
 from . import bhary
+from . import _util
 from .bhary import fix_biclass_wrapper, get_bhc
-from . import ufuncs
 from . import target
 from . import array_create
 from . import array_manipulation
@@ -153,17 +153,17 @@ def scatter(ary, indexes, values):
     """
 
     ary = array_create.array(ary)
-    indexes = array_create.array(indexes, dtype=numpy.uint64)
-    values = array_create.array(values, dtype=ary.dtype)
+    indexes = array_manipulation.flatten(array_create.array(indexes, dtype=numpy.uint64), always_copy=False)
+    values = array_manipulation.flatten(array_create.array(values, dtype=ary.dtype), always_copy=False)
 
     assert indexes.shape == values.shape
     if ary.size == 0 or indexes.size == 0:
         return
 
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
-    flat = array_manipulation.flatten(ary)
+    flat = array_manipulation.flatten(ary, always_copy=True)
     target.scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes))
-    ary[...] = flat
+    ary[...] = flat.reshape(ary.shape)
 
 
 @fix_biclass_wrapper
@@ -217,16 +217,16 @@ def put(a, ind, v, mode='raise'):
     """
 
     if not bhary.check(a):
-        numpy.put(a, ind, v, mode=mode)
+        return numpy.put(a, ind, v, mode=mode)
 
     if mode != "raise":
         warnings.warn("Bohrium only supports the 'raise' mode not '%s', "
                       "it will be handled by the original NumPy." % mode, UserWarning, 2)
-        numpy.put(a, ind, v, mode=mode)
+        return numpy.put(a, ind, v, mode=mode)
 
-    if len(ind) != len(v):
+    if _util.totalsize(ind) != _util.totalsize(v):
         warnings.warn("Bohrium only supports 'ind' and 'v' having the same length, "
                       "it will be handled by the original NumPy.", UserWarning, 2)
-        numpy.put(a, ind, v, mode=mode)
+        return numpy.put(a, ind, v, mode=mode)
 
     scatter(a, ind, v)
