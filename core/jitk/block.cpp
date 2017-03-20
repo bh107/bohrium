@@ -576,6 +576,13 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
                 return false;
             }
         }
+    } else if (b->opcode == BH_SCATTER) {
+        const int a_nop = bh_noperands(a->opcode);
+        for(int i=0; i<a_nop; ++i) {
+            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+                return false;
+            }
+        }
     }
 
     {// The output of 'a' cannot conflict with the input and output of 'b'
