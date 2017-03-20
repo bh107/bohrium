@@ -671,6 +671,12 @@ BhArray_take(PyObject *self, PyObject *args, PyObject *kwds)
     return method2function("take", self, args, kwds);
 }
 
+static PyObject *
+BhArray_put(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("put", self, args, kwds);
+}
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,    METH_VARARGS,  NULL},
     {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
@@ -689,6 +695,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
     {"tofile",     (PyCFunction) BhArray_print_to_file, METH_VARARGS | METH_KEYWORDS, "a.tofile(fid, sep=\"\", format=\"%s\")\n\nWrite array to a file as text or binary (default)."},
     {"take",       (PyCFunction) BhArray_take, METH_VARARGS | METH_KEYWORDS, "a.take(indices, axis=None, out=None, mode='raise')."},
+    {"put",        (PyCFunction) BhArray_put,  METH_VARARGS | METH_KEYWORDS, "a.put(indices, values, mode='raise')\n\nSet a.flat[n] = values[n] for all n in indices."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
