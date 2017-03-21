@@ -24,8 +24,8 @@ if [ "$(uname)" == "Darwin" ]; then
 
     ./bootstrap.sh \
         --prefix="${INSTALL_PREFIX}" \
-        --with-python="${PYTHON}" \
-        --with-python-root="${PREFIX} : ${PREFIX}/include/python${PY_VER}m ${PREFIX}/include/python${PY_VER}" \
+        --without-libraries=python \
+        --without-libraries=mpi \
         --with-icu="${PREFIX}" \
         | tee bootstrap.log 2>&1
 
@@ -49,8 +49,8 @@ if [ "$(uname)" == "Linux" ]; then
 
     ./bootstrap.sh \
         --prefix="${INSTALL_PREFIX}" \
-        --with-python="${PYTHON}" \
-        --with-python-root="${PREFIX} : ${PREFIX}/include/python${PY_VER}m ${PREFIX}/include/python${PY_VER}" \
+        --without-libraries=python \
+        --without-libraries=mpi \
         --with-icu="${PREFIX}" \
         | tee bootstrap.log 2>&1
 
@@ -63,7 +63,6 @@ if [ "$(uname)" == "Linux" ]; then
         runtime-link=shared \
         link=static,shared \
         toolset=gcc \
-        python="${PY_VER}" \
         include="${INCLUDE_PATH}" \
         cxxflags="${CXXFLAGS}" \
         linkflags="-L${LIBRARY_PATH}" \

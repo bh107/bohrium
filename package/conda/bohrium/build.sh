@@ -31,6 +31,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 	 -DCORE_LINK_FLAGS="-static-libgcc -static-libstdc++" \
 	 -DFORCE_CONFIG_PATH=$PREFIX/etc/bohrium \
          -DLIBDIR=lib \
+         -DPYTHON_EXECUTABLE="$(which python2.7)" \
 	 -DCMAKE_INSTALL_PREFIX=$PREFIX
 
 make VERBOSE=1
