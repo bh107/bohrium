@@ -27,30 +27,34 @@ asarray = array
 asanyarray = array
 
 
-def replace_numpy(function):
-    def wrapper(*args, **kwargs):
+class BohriumContext():
+    def __init__(self):
+        self.__numpy        = sys.modules['numpy']
+        self.__numpy_random = sys.modules['numpy.random']
+        self.__numpy_linalg = sys.modules['numpy.linalg']
+
+    def __enter__(self):
         import numpy
         import bohrium
-
-        __numpy = sys.modules['numpy']
-        __numpy_random = sys.modules['numpy.random']
-        __numpy_linalg = sys.modules['numpy.linalg']
-
-        # Overwrite Bohrium
+        # Overwrite with Bohrium
         sys.modules['numpy_force']  = numpy
         sys.modules['numpy']        = bohrium
         sys.modules['numpy.random'] = bohrium.random
         sys.modules['numpy.linalg'] = bohrium.linalg
 
-        # Run your function/program
-        result = function(*args, **kwargs)
-
+    def __exit__(self, *args):
         # Put NumPy back together
         sys.modules.pop('numpy_force', None)
-        sys.modules['numpy']        = __numpy
-        sys.modules['numpy.random'] = __numpy_random
-        sys.modules['numpy.linalg'] = __numpy_linalg
+        sys.modules['numpy']        = self.__numpy
+        sys.modules['numpy.random'] = self.__numpy_random
+        sys.modules['numpy.linalg'] = self.__numpy_linalg
 
+
+def replace_numpy(function):
+    def wrapper(*args, **kwargs):
+        with BohriumContext():
+            # Run your function/program
+            result = function(*args, **kwargs)
         return result
     return wrapper
 
