@@ -18,7 +18,7 @@ if(CBLAS_FOUND)
     set(GEN_EXTMETHOD ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_extmethod.py)
     add_custom_command(
       OUTPUT ${BLAS_LVL3}
-      COMMAND ${GEN_EXTMETHOD} ${BLAS_TEMPLATE_DIR} ${BLAS_LVL3}
+      COMMAND ${PYTHON_EXECUTABLE} ${GEN_EXTMETHOD} ${BLAS_TEMPLATE_DIR} ${BLAS_LVL3}
       DEPENDS ${GEN_EXTMETHOD}
     )
 
