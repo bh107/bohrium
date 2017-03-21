@@ -51,7 +51,7 @@ set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/su
 set(CODEGEN_DEF "${CODEGEN_DEF};${CMAKE_CURRENT_SOURCE_DIR}/codegen/templates/sugar.nops3.intern.tpl")
 
 add_custom_command(OUTPUT ${CODEGEN_SRC}
-    COMMAND ./codegen/gen.py
+    COMMAND ${PYTHON_EXECUTABLE} ./codegen/gen.py
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/traits.hpp ${CMAKE_CURRENT_SOURCE_DIR}/bxx/
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/codegen/output/operators.hpp ${CMAKE_CURRENT_SOURCE_DIR}/bxx/
 
