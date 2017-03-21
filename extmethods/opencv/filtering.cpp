@@ -58,6 +58,12 @@ public:
         cv::Mat src, dst;
 
         switch(A->base->type) {
+            case BH_UINT8: {
+                std::copy((bh_uint8*) B_data, ((bh_uint8*) B_data) + B_size, B_intdata);
+                src = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
+                dst = cv::Mat(C->shape[0], C->shape[1], CV_8UC1, (bh_uint8*) C_data);
+                break;
+            }
             case BH_FLOAT32: {
                 std::copy((bh_float32*) B_data, ((bh_float32*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_32FC1, (bh_float32*) A_data);
@@ -117,6 +123,12 @@ public:
         cv::Mat dst;
 
         switch(A->base->type) {
+            case BH_UINT8: {
+                std::copy((bh_uint8*) B_data, ((bh_uint8*) B_data) + B_size, B_intdata);
+                src = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
+                dst = cv::Mat(C->shape[0], C->shape[1], CV_8UC1, (bh_uint8*) C_data);
+                break;
+            }
             case BH_FLOAT32: {
                 std::copy((bh_float32*) B_data, ((bh_float32*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_32FC1, (bh_float32*) A_data);
