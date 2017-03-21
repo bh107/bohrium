@@ -39,7 +39,10 @@ def connected_components(a, connectivity=8):
     ufuncs.extmethod("opencv_connected_components", c, a, b)
     return c
 
-def erode(a, b, c=None):
+def erode(a, b=None, c=None):
+    if b is None:
+        b = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=a.dtype)
+
     if c is None:
         c = np.empty_like(a)
 
@@ -47,7 +50,10 @@ def erode(a, b, c=None):
     return c
 
 
-def dilate(a, b, c=None):
+def dilate(a, b=None, c=None):
+    if b is None:
+        b = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=a.dtype)
+
     if c is None:
         c = np.empty_like(a)
 
