@@ -642,6 +642,18 @@ BhArray_prod(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+BhArray_any(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("any", self, args, kwds);
+}
+
+static PyObject *
+BhArray_all(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("all", self, args, kwds);
+}
+
+static PyObject *
 BhArray_astype(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return method2function("array", self, args, kwds);
@@ -690,6 +702,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"ravel",      (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
     {"sum",        (PyCFunction) BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
     {"prod",       (PyCFunction) BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"any",        (PyCFunction) BhArray_any,         METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
+    {"all",        (PyCFunction) BhArray_all,         METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
     {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
     {"fill",       (PyCFunction) BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
     {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},

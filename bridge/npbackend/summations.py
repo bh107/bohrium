@@ -321,3 +321,19 @@ def min(a, axis=None, out=None):
         return numpy.min(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
     else:
         return ufuncs.minimum.reduce(a, axis=axis, out=out)
+
+
+@bhary.fix_biclass_wrapper
+def any(a, axis=None, out=None, keepdims=None):
+    if not bhary.check(a) and not bhary.check(out):
+        return numpy.any(a, axis=axis, out=out)
+    else:
+        return ufuncs.logical_or.reduce(a.astype(bool), axis=axis, out=out)
+
+
+@bhary.fix_biclass_wrapper
+def all(a, axis=None, out=None, keepdims=None):
+    if not bhary.check(a) and not bhary.check(out):
+        return numpy.all(a, axis=axis, out=out)
+    else:
+        return ufuncs.logical_and.reduce(a.astype(bool), axis=axis, out=out)

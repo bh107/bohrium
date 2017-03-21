@@ -21,7 +21,7 @@ from ._info import numpy_types
 from ._util import flush
 from . import linalg
 from .linalg import matmul, dot, tensordot
-from .summations import sum, prod, max, min
+from .summations import *
 from .disk_io import *
 from numpy_force import dtype
 asarray = array
