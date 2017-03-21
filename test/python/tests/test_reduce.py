@@ -17,11 +17,11 @@ class test_reduce_views:
 
 
 class test_reduce_sum:
-    """ Test reduction of sum() and prod()"""
+    """ Test reduction of sum(), prod(), any(), and all()"""
     def init(self):
         for cmd, shape in util.gen_random_arrays("R", 3, dtype="np.float32"):
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
-            for op in ["sum", "prod"]:
+            for op in ["sum", "prod", "all", "any"]:
                 for axis in range(len(shape)):
                     yield (cmd, op, axis)
 
