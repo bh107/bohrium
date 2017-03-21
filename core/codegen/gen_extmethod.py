@@ -3,12 +3,15 @@ import json
 import time
 import re
 import subprocess
+from os.path import join
 
 import argparse
 from argparse_utils import *
 
 import sys
-sys.path.append(os.path.abspath('../../../thirdparty'))
+script_dir = os.path.dirname(os.path.realpath(__file__))
+pyratemp_dir = join(script_dir, "..", "..", "thirdparty")
+sys.path.append(pyratemp_dir)
 from pyratemp import Template
 
 def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):

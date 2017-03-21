@@ -6,7 +6,9 @@ from pprint import pprint
 import stat
 
 import sys
-sys.path.append(os.path.abspath('../../thirdparty'))
+script_dir = os.path.dirname(os.path.realpath(__file__))
+pyratemp_dir = join(script_dir, "..", "..", "..", "thirdparty")
+sys.path.append(pyratemp_dir)
 from pyratemp import Template
 
 def render(gens, tmpl_dir, output_dir, mtime):
