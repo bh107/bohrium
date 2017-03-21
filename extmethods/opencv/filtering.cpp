@@ -144,6 +144,45 @@ public:
     }
 };
 
+class ConnectedComponentsImpl : public ExtmethodImpl {
+public:
+    void execute(bh_instruction *instr, void* arg) {
+        // All matrices must be contigous
+        assert(instr->is_contiguous());
+
+        // A is our image
+        bh_view* A = &instr->operand[1];
+        bh_data_malloc(A->base);
+        void *A_data = A->base->data;
+
+        if(A->base->type != BH_UINT8) {
+            throw std::runtime_error("Connected components by OpenCV only works for uint8 images.");
+        }
+
+        // B is a scalar of our connectivity
+        bh_view* B = &instr->operand[2];
+        bh_data_malloc(B->base);
+        void* B_data = B->base->data;
+        assert(B->base->nelem == 1);
+
+        // C is our output labels
+        bh_view* C = &instr->operand[0];
+        bh_data_malloc(C->base);
+        void *C_data = C->base->data;
+
+        int connectivity = static_cast<int>(((bh_uint8*) B_data)[0]);
+
+        cv::Mat img = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
+        cv::Mat labelImage = cv::Mat(C->shape[0], C->shape[1], CV_8UC1, (bh_uint8*) C_data);
+
+        connectedComponents(img, labelImage, connectivity);
+
+        for(int i = 0; i < img.rows * img.cols; ++i) {
+            ((bh_uint8*) C_data)[i] = labelImage.at<int>(i);
+        }
+    }
+};
+
 } // Unnamed namespace
 
 extern "C" ExtmethodImpl* opencv_erode_create() {
@@ -159,5 +198,13 @@ extern "C" ExtmethodImpl* opencv_dilate_create() {
 }
 
 extern "C" void opencv_dilate_destroy(ExtmethodImpl* self) {
+    delete self;
+}
+
+extern "C" ExtmethodImpl* opencv_connected_components_create() {
+    return new ConnectedComponentsImpl();
+}
+
+extern "C" void opencv_connected_components_destroy(ExtmethodImpl* self) {
     delete self;
 }

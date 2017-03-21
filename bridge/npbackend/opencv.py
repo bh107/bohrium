@@ -33,6 +33,12 @@ def threshold_tzi(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_tzi", a, thresh, maxval)
 
 
+def connected_components(a, connectivity=8):
+    b = np.array([connectivity], dtype=a.dtype)
+    c = np.zeros_like(a)
+    ufuncs.extmethod("opencv_connected_components", c, a, b)
+    return c
+
 def erode(a, b, c=None):
     if c is None:
         c = np.empty_like(a)
