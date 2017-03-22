@@ -106,17 +106,17 @@
       "type":        "bh_complex64",
       "scalar_type": "bh_complex64",
       "alpha":       "bh_complex64 alpha; alpha.real = 1.0; alpha.imag = 0.0;",
-      "alpha_arg":   "(void*) &alpha",
+      "alpha_arg":   "(bh_float32*) &alpha",
       "beta":        "bh_complex64 beta; beta.real = 0.0; beta.imag = 0.0;",
-      "beta_arg":    "(void*) &beta"
+      "beta_arg":    "(bh_float32*) &beta"
     },
     "z": {
       "type":        "bh_complex128",
       "scalar_type": "bh_complex128",
       "alpha":       "bh_complex128 alpha; alpha.real = 1.0; alpha.imag = 0.0;",
-      "alpha_arg":   "(void*) &alpha",
+      "alpha_arg":   "(bh_float64*) &alpha",
       "beta":        "bh_complex128 beta; beta.real = 0.0; beta.imag = 0.0;",
-      "beta_arg":    "(void*) &beta"
+      "beta_arg":    "(bh_float64*) &beta"
     }
   }
 }
