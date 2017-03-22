@@ -48,7 +48,12 @@ def main(args):
 
     # Build the conda package
     ret = bash_cmd('conda build --croot /tmp/conda_build_tmp %s'%recipe)
-    tarball = re.search("anaconda upload (.*)", ret).group(1)
+    res = re.search("anaconda upload (.*)", ret)
+    if res is None:
+         print "anaconda upload not found in output:"
+         print ret
+         raise ValueError("anaconda upload not found in output")
+    tarball = res.group(1)
     print "tarball: '%s'" % tarball
 
     if args.auth_token is not None:
