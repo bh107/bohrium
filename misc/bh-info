@@ -52,7 +52,7 @@ def parse_config(verbose=True):
             confparser.read(guess)
             return confparser
 
-    raise RuntimeError("Config file now found")
+    raise RuntimeError("Config file not found")
 
 
 def get_stack(config, verbose=True):
