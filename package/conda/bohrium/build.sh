@@ -5,6 +5,7 @@ cd build
 export
 ls $CONDA_PREFIX
 ls $CONDA_PREFIX/lib
+ls $CONDA_PREFIX/include
 ls $PREFIX
 ls $PREFIX/lib
 ls $CONDA_PREFIX
@@ -21,7 +22,6 @@ cmake --version
 cmake .. -DCMAKE_BUILD_TYPE=Release \
 	 -DBRIDGE_CIL=OFF \
 	 -DVEM_PROXY=OFF \
-	 -DEXT_BLAS=OFF \
  	 -DEXT_CLBLAS=OFF \
 	 -DVE_OPENCL=OFF \
 	 -DEXT_VISUALIZER=OFF \
@@ -31,7 +31,9 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 	 -DCORE_LINK_FLAGS="-static-libgcc -static-libstdc++" \
 	 -DFORCE_CONFIG_PATH=$PREFIX/etc/bohrium \
          -DLIBDIR=lib \
-         -DPYTHON_EXECUTABLE="$(which python2.7)" \
+         -DPYTHON_EXECUTABLE=$PYTHON \
+         -DCMAKE_LIBRARY_PATH=$CONDA_PREFIX/lib \
+         -DCMAKE_INCLUDE_PATH=$CONDA_PREFIX/include \
 	 -DCMAKE_INSTALL_PREFIX=$PREFIX
 
 make VERBOSE=1
