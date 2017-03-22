@@ -4,7 +4,6 @@ package:
 
 build:
   number: {{ GIT_DESCRIBE_NUMBER }}
-  string: {{ GIT_BUILD_STR }}
 
 source:
   git_url: https://github.com/bh107/bohrium.git
@@ -14,17 +13,21 @@ requirements:
     - icu 54.*
     - bzip2
     - zlib
-    - python >=2.7
+    - python
     - numpy >=1.8
     - cmake >=2.8
     - cython
     - swig
     - gcc
+    - openblas
+    - lapack
 
   run:
-    - python >=2.7
+    - python
     - numpy >=1.8
     - gcc
+    - openblas
+    - lapack
 
 about:
   home: http://bh107.org
