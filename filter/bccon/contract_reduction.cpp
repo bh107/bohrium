@@ -69,12 +69,12 @@ void Contracter::contract_reduction(bh_ir &bhir)
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
                 bool other_use = false;
-                for(int oidx = 0; oidx < bh_noperands(other_instr.opcode); ++oidx) {
-                    if (bh_is_constant(&other_instr.operand[oidx])) {
+                for(bh_view &other_view: other_instr.operand) {
+                    if (bh_is_constant(&other_view)) {
                         continue;
                     }
 
-                    if (bases.find(other_instr.operand[oidx].base) != bases.end()) {
+                    if (bases.find(other_view.base) != bases.end()) {
                         other_use = true;
                         break;
                     }

@@ -661,7 +661,7 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
 
 
     vector<string> ops;
-    for (int o = 0; o < bh_noperands(instr.opcode); ++o) {
+    for (size_t o = 0; o < instr.operand.size(); ++o) {
         const bh_view &view = instr.operand[o];
         stringstream ss;
         if (bh_is_constant(&view)) {

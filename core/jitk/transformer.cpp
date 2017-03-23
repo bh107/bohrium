@@ -104,7 +104,7 @@ vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_
         const LoopB &loop = block.getLoop();
         uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
         for (const InstrPtr instr: loop.getAllInstr()) {
-            if (bh_noperands(instr->opcode) > 0) {
+            if (instr->operand.size() > 0) {
                 const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
                 if (nelem > max_nelem)
                     max_nelem = nelem;
@@ -163,8 +163,7 @@ static bool collapse_instr_axes(LoopB &loop, const int axis) {
             if (sa == axis or sa == axis+1) {
                 return false;
             }
-            const int nop = bh_noperands(instr.opcode);
-            for (int i=0; i<nop; ++i) {
+            for (size_t i=0; i<instr.operand.size(); ++i) {
                 bh_view &view = instr.operand[i];
                 if (not bh_is_constant(&view)) {
                     int _axis = axis;

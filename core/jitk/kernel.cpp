@@ -41,9 +41,7 @@ Kernel::Kernel(const LoopB &block) : block(block) {
             _syncs.insert(instr->operand[0].base);
         }
         // Find non-temporary arrays
-        const int nop = bh_noperands(instr->opcode);
-        for (int i = 0; i < nop; ++i) {
-            const bh_view &v = instr->operand[i];
+        for(const bh_view &v: instr->operand) {
             if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
                 if (std::find(_non_temps.begin(), _non_temps.end(), v.base) == _non_temps.end()) {
                     _non_temps.push_back(v.base);

@@ -54,8 +54,8 @@ struct bh_instruction
 
     // Returns true when one of the operands of 'instr' is a constant
     bool has_constant() const {
-        for(int i = 0; i < bh_noperands(this->opcode); ++i) {
-            if (bh_is_constant(&(this->operand[i]))) {
+        for (const bh_view &v: operand) {
+            if (bh_is_constant(&v)) {
                 return true;
             }
         }
@@ -107,8 +107,7 @@ struct bh_instruction
         if (opcode != other.opcode) {
             return false;
         }
-        const bh_intp nop = bh_noperands(opcode);
-        for (bh_intp i = 0; i < nop; ++i) {
+        for (size_t i = 0; i < operand.size(); ++i) {
             if (bh_is_constant(&operand[i]) xor bh_is_constant(&other.operand[i])) {
                 return false;
             } else if (bh_is_constant(&operand[i])) { // Both are constant
@@ -135,9 +134,8 @@ struct bh_instruction
         ar & opcode;
         //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
         ar & boost::serialization::make_array(&constant, 1);
-        const size_t nop = bh_noperands(opcode);
-        for(size_t i=0; i<nop; ++i)
-            ar & operand[i];
+        for(bh_view &view: operand)
+            ar & view;
     }
 };
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)

@@ -69,20 +69,17 @@ Impl::~Impl() {
 }
 
 void Impl::inspect(bh_instruction *instr) {
-    int nop = bh_noperands(instr->opcode);
-    bh_view *operands = bh_inst_operands(instr);
-
     //Save all new base arrays
-    for(bh_intp o=0; o<nop; ++o)
-    {
-        if(!bh_is_constant(&operands[o]))
-            _allocated_bases.insert(operands[o].base);
+    for(const bh_view &op: instr->operand) {
+        if(!bh_is_constant(&op)) {
+            _allocated_bases.insert(op.base);
+        }
     }
 
     //And remove freed arrays
     if(instr->opcode == BH_FREE)
     {
-        bh_base *base = operands[0].base;
+        bh_base *base = instr->operand[0].base;
         if(_allocated_bases.erase(base) != 1)
         {
             cerr << "[NODE-VEM] freeing unknown base array: " << *base << endl;
