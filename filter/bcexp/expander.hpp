@@ -97,11 +97,7 @@ private:
 
 void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
 {
-    bh_instruction instr;
-    instr.opcode = opcode;
-    instr.operand[0] = out;
-    instr.operand[1] = in1;
-    instr.operand[2] = in2;
+    bh_instruction instr(opcode, {out, in1, in2});
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 
@@ -113,10 +109,8 @@ inline void Expander::inject(bh_ir& bhir, int pc, bh_instruction instr)
 template <typename T>
 inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type)
 {
-    bh_instruction instr;
-    instr.opcode = opcode;
-    instr.operand[0] = out;
-    instr.operand[1] = in1;
+    bh_instruction instr(opcode, {out, in1});
+    instr.operand.resize(3); // Make room for the constant
     bh_set_constant(instr, 2, const_type, in2);
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
@@ -130,9 +124,8 @@ inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out
 template <typename T>
 inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type)
 {
-    bh_instruction instr;
-    instr.opcode = opcode;
-    instr.operand[0] = out;
+    bh_instruction instr(opcode, {out});
+    instr.operand.resize(2); // Make room for the constant
     bh_set_constant(instr, 1, const_type, in1);
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }

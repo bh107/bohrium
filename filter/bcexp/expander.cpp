@@ -151,18 +151,13 @@ bh_view Expander::make_temp(bh_type type, bh_index nelem)
 
 void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out)
 {
-    bh_instruction instr;
-    instr.opcode = opcode;
-    instr.operand[0] = out;
+    bh_instruction instr(opcode, {out});
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 
 void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1)
 {
-    bh_instruction instr;
-    instr.opcode = opcode;
-    instr.operand[0] = out;
-    instr.operand[1] = in1;
+    bh_instruction instr(opcode, {out, in1});
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 

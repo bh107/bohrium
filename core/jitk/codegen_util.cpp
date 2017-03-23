@@ -179,10 +179,9 @@ void write_loop_block(const SymbolTable &symbols,
         Scope peeled_scope(scope);
         LoopB peeled_block(block);
         for (const InstrPtr instr: block._sweeps) {
-            bh_instruction sweep_instr;
-            sweep_instr.opcode = BH_IDENTITY;
-            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
-            sweep_instr.operand[0] = instr->operand[0];
+            // The input is the same as in the sweep
+            bh_instruction sweep_instr(BH_IDENTITY, {instr->operand[0], instr->operand[1]});
+
             // But the output needs an extra dimension when we are reducing to a non-scalar
             if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
                 sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);

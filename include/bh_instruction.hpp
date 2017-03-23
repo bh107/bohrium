@@ -3,6 +3,7 @@
 
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/serialization/array.hpp>
+#include <vector>
 #include <set>
 
 #include "bh_opcode.h"
@@ -20,7 +21,7 @@ struct bh_instruction
     // Opcode: Identifies the operation
     bh_opcode  opcode;
     // Id of each operand
-    bh_view  operand[BH_MAX_NO_OPERANDS];
+    std::vector<bh_view> operand;
     // Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
     // Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
@@ -31,15 +32,16 @@ struct bh_instruction
     // For now, this flag is only used by the code generators.
     int64_t origin_id = -1; // -1 indicates: unset
 
-    // Default and copy constructor
+    // Constructors
     bh_instruction(){}
+    bh_instruction(bh_opcode opcode, const std::vector<bh_view> &operands) : opcode(opcode), operand(operands) {}
     bh_instruction(const bh_instruction& instr)
     {
         opcode      = instr.opcode;
         constant    = instr.constant;
         constructor = instr.constructor;
         origin_id   = instr.origin_id;
-        std::memcpy(operand, instr.operand, bh_noperands(opcode) * sizeof(bh_view));
+        operand     = instr.operand;
     }
 
     // Return a set of all bases used by the instruction
