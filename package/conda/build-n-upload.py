@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-import subprocess
-from subprocess import check_output, check_call, Popen, PIPE, STDOUT
-from datetime import datetime
-import os
+from subprocess import Popen, PIPE, STDOUT
 from os import path
 import argparse
-import tempfile
 import re
 import traceback
 
-log = ""#The output of this build and/or testing
+log = ""  # The output of this build and/or testing
 
 def bash_cmd(cmd, cwd=None):
     global log
@@ -36,30 +32,32 @@ def main(args):
     global log
     bh_dir = args.bohrium_root
     recipe = path.join(bh_dir, "package", "conda", "bohrium")
-    print "bh_dir: %s" %bh_dir
-    print "recipe: %s" %recipe
+    print ("bh_dir: %s" % bh_dir)
+    print ("recipe: %s" % recipe)
 
     # Update the repos
     ret = bash_cmd('git pull', cwd=bh_dir)
     if args.only_on_changes and 'Already up-to-date' in ret:
         log += "No changes to the git repos, exiting."
         return
-    bash_cmd('git checkout %s'%args.branch, cwd=bh_dir)
+    bash_cmd('git checkout %s' % args.branch, cwd=bh_dir)
 
     # Build the conda package
-    ret = bash_cmd('conda build --croot /tmp/conda_build_tmp %s'%recipe)
-    res = re.search("anaconda upload (.*)", ret)
-    if res is None:
-         print "anaconda upload not found in output:"
-         print ret
-         raise ValueError("anaconda upload not found in output")
-    tarball = res.group(1)
-    print "tarball: '%s'" % tarball
+    for py_version in ['2.7', '3.6']:
+        ret = bash_cmd('conda build --python %s -c http://conda.anaconda.org/bohrium '
+                       '--croot /tmp/conda_build_tmp %s' % (py_version, recipe))
+        res = re.search("anaconda upload (.*)", ret)
+        if res is None:
+            print ("anaconda upload not found in output:")
+            print (ret)
+            raise ValueError("anaconda upload not found in output")
+        tarball = res.group(1)
+        print ("tarball: '%s'" % tarball)
 
-    if args.auth_token is not None:
-        bash_cmd('anaconda -t %s upload -u bohrium %s'%(args.auth_token, tarball))
-    else:
-        print "No anaconda access token specified thus no upload"
+        if args.auth_token is not None:
+            bash_cmd('anaconda -t %s upload -u bohrium %s' % (args.auth_token, tarball))
+        else:
+            print ("No anaconda access token specified thus no upload")
 
 
 if __name__ == "__main__":
@@ -70,7 +68,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         '--bohrium-root',
-        default=str(path.join(path.dirname(path.abspath(__file__)),"..","..")),
+        default=str(path.join(path.dirname(path.abspath(__file__)), "..", "..")),
         type=str,
         help='Path to the root of Bohrium.'
     )
@@ -119,8 +117,8 @@ if __name__ == "__main__":
     print
     print log
     if args.email:
-        print "send status email to '%s'"%args.email
-        p = Popen(['mail','-s','"[Bohrium PPA Build] The result of build was a %s"'%status, args.email],
+        print ("send status email to '%s'" % args.email)
+        p = Popen(['mail','-s','"[Bohrium PPA Build] The result of build was a %s"' % status, args.email],
                   stdin=PIPE)
         p.communicate(input=log)
 
