@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 import json
 import os
-from os.path import join, exists
-from pprint import pprint
+from os.path import join
 import stat
-
 import sys
 script_dir = os.path.dirname(os.path.realpath(__file__))
-pyratemp_dir = join(script_dir, "..", "..", "..", "thirdparty")
-sys.path.append(pyratemp_dir)
+sys.path.append(join(script_dir, "..", "..", "..", "thirdparty", "pyratemp"))
 from pyratemp import Template
+
 
 def render(gens, tmpl_dir, output_dir, mtime):
     license = open("%s%s" % (tmpl_dir, 'license.txt')).read()
@@ -85,9 +83,9 @@ def main():
     opcodes     = json.loads(open(paths['opcodes']).read())
     operators   = json.loads(open(paths['operators']).read())
 
-    #Find the latest modification time
+    # Find the latest modification time
     mtime = 0
-    for _,p in paths.iteritems():
+    for _,p in paths.items():
         t = get_timestamp(p)
         if t[1] > mtime:
             mtime = t[1]
@@ -98,7 +96,7 @@ def main():
     for name, opcode, mapper, mapped in (x for x in operators if x[3]):
         bytecode = [x for x in opcodes if x['opcode'] == opcode]
         if not bytecode:
-            print "skipping %s" % opcode
+            print ("skipping %s" % opcode)
             continue
 
         bytecode = bytecode[0]
@@ -122,7 +120,7 @@ def main():
         elif bytecode:
             nop = bytecode["nop"]
         else:
-            print "The Bohrium opcodes no longer include [ %s ]." % opcode
+            print ("The Bohrium opcodes no longer include [ %s ]." % opcode)
             continue
 
         if mapper not in datasets:
