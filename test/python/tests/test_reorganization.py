@@ -44,7 +44,6 @@ class test_scatter:
             if len(shape) > 1 and shape[1] > 5:
                 yield cmd + "ind = ind[3:];" + VAL
 
-
     def test_put(self, cmd):
         return cmd + "M.put(res, ind, val)"
 
@@ -53,3 +52,9 @@ class test_scatter:
 
     def test_indexing(self, cmd):
         return cmd + "res = res.flatten(); res[ind] = val"
+
+    def test_cond(self, cmd):
+        cmd += cmd + "mask = R.random(val.size, np.bool, bohrium=BH).reshape(val.shape); "
+        np_cmd = cmd + "np.put(res, ind[mask], val[mask])"
+        bh_cmd = cmd + "M.cond_scatter(res, ind, val, mask)"
+        return (np_cmd, bh_cmd)

@@ -136,7 +136,7 @@ def take(a, indices, axis=None, out=None, mode='raise'):
 @fix_biclass_wrapper
 def scatter(ary, indexes, values):
     """
-    scatter(ary, indexes)
+    scatter(ary, indexes, values)
 
     Scatter 'values' into 'ary' selected by 'indexes'.
     The values of 'indexes' are absolute indexed into a flatten 'ary'
@@ -230,3 +230,40 @@ def put(a, ind, v, mode='raise'):
         return numpy.put(a, ind, v, mode=mode)
 
     scatter(a, ind, v)
+
+
+@fix_biclass_wrapper
+def cond_scatter(ary, indexes, values, mask):
+    """
+    scatter(ary, indexes, values, mask)
+
+    Scatter 'values' into 'ary' selected by 'indexes' where 'mask' is true.
+    The values of 'indexes' are absolute indexed into a flatten 'ary'
+    The shape of 'indexes', 'value', and 'mask' must be equal.
+
+
+    Parameters
+    ----------
+    ary  : array_like
+        The target array to write the values to.
+    indexes : array_like, interpreted as integers
+        Array or list of indexes that will be written to in 'ary'
+    values : array_like
+        Values to write into 'ary'
+    mask : array_like, interpreted as booleans
+        A mask that specifies which indexes and values to include and exclude
+    """
+
+    ary = array_create.array(ary)
+    indexes = array_manipulation.flatten(array_create.array(indexes, dtype=numpy.uint64), always_copy=False)
+    values = array_manipulation.flatten(array_create.array(values, dtype=ary.dtype), always_copy=False)
+    mask = array_manipulation.flatten(array_create.array(mask, dtype=numpy.bool), always_copy=False)
+
+    assert (indexes.shape == values.shape and values.shape == mask.shape)
+    if ary.size == 0 or indexes.size == 0:
+        return
+
+    # In order to ensure a contiguous array, we do the scatter on a flatten copy
+    flat = array_manipulation.flatten(ary, always_copy=True)
+    target.cond_scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes), get_bhc(mask))
+    ary[...] = flat.reshape(ary.shape)

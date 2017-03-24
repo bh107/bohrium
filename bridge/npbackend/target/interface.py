@@ -192,3 +192,16 @@ def scatter(out, ary, indexes):
     :param Mixed indexes: Array of absolute indexes (uint64).
     """
     raise NotImplementedError()
+
+
+def cond_scatter(out, ary, indexes, mask):
+    """
+    Scatter elements from 'ary' into 'out' at locations specified by 'indexes' where 'mask' is true.
+    ary.shape == indexes.shape.
+
+    :param Mixed out: The array to write results to.
+    :param Mixed ary: Input array.
+    :param Mixed indexes: Array of absolute indexes (uint64).
+    :param Mixed ary: A boolean mask that specifies which indexes and values to include and exclude
+    """
+    raise NotImplementedError()
