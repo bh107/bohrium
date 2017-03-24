@@ -43,6 +43,17 @@ void bh_tally (void)
 {
     Runtime::instance().enqueue((bh_opcode)BH_TALLY);
 }
+    // bh_cond_scatter - BH_COND_SCATTER - runtime.nops4 - 4 (A,A,A,A)
+    template <typename TO, typename T1, typename T2, typename T3>
+    inline
+    void bh_cond_scatter (multi_array<TO>& res, multi_array<T1>& in1, multi_array<T2>& in2, multi_array<T3>& in3)
+    {
+        Runtime::instance().typecheck<BH_COND_SCATTER, TO, T1, T2, T3>();
+        Runtime::instance().enqueue((bh_opcode)BH_COND_SCATTER, res, in1, in2, in3);
+    }
+
+
+
     // bh_add - BH_ADD - runtime.nops3 - 3 (A,A,A)
     template <typename TO, typename TL, typename TR>
     inline

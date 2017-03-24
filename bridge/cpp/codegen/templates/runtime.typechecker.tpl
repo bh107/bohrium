@@ -61,6 +61,12 @@ void Runtime::typecheck(void)
 template <size_t Opcode>
 struct dependent_false { enum { value = false }; };
 
+template <size_t Opcode, typename Out, typename In1, typename In2, typename In3>
+void Runtime::typecheck(void)
+{
+    static_assert(dependent_false<Opcode>::value, "ArrayOperation has unsupported type-signature.");
+}
+
 template <size_t Opcode, typename Out, typename In1, typename In2>
 void Runtime::typecheck(void)
 {
@@ -84,7 +90,11 @@ void Runtime::typecheck(void)
 //
 <!--(for _op, opcode, _optype, opcount, typesigs, _layouts, _broadcast in data)-->
     <!--(for typesig in typesigs)-->
-        <!--(if opcount == 3)-->
+        <!--(if opcount == 4)-->
+        template <>
+        inline
+        void Runtime::typecheck<@!opcode!@, @!typesig[0]!@, @!typesig[1]!@, @!typesig[2]!@, @!typesig[3]!@>(void) { }
+        <!--(elif opcount == 3)-->
         template <>
         inline
         void Runtime::typecheck<@!opcode!@, @!typesig[0]!@, @!typesig[1]!@, @!typesig[2]!@>(void) { }

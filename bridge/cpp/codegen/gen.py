@@ -166,6 +166,7 @@ def main():
 
         ('runtime.header.tpl',      'runtime.operations.hpp',  datasets['runtime.nops3']),
         ('runtime.nops0.tpl',       'runtime.operations.hpp',  datasets['runtime.nops0']),
+        ('runtime.nops4.tpl',       'runtime.operations.hpp',  datasets['runtime.nops4']),
         ('runtime.nops3.tpl',       'runtime.operations.hpp',  datasets['runtime.nops3']),
         ('runtime.nops2.tpl',       'runtime.operations.hpp',  datasets['runtime.nops2']),
         ('runtime.nops1.tpl',       'runtime.operations.hpp',  datasets['runtime.nops1']),
