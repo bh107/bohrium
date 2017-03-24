@@ -14,6 +14,10 @@ class test_flatten:
         cmd += "res = a.flatten()"
         return cmd
 
+    def test_flatten_forder(self, cmd):
+        cmd += "res = a.flatten(order='F')"
+        return cmd
+
     def test_ravel(self, cmd):
         cmd += "res = a.ravel()"
         return cmd

@@ -10,7 +10,7 @@ from . import bhary
 from .bhary import fix_biclass_wrapper
 
 @fix_biclass_wrapper
-def flatten(ary, always_copy=True):
+def flatten(ary, order='C', always_copy=True):
     """
     Return a copy of the array collapsed into one dimension.
 
@@ -18,6 +18,14 @@ def flatten(ary, always_copy=True):
     ----------
     ary : array_like
         Array from which to retrieve the flattened data from.
+    order : {'C', 'F', 'A', 'K'}, optional
+        'C' means to flatten in row-major (C-style) order.
+        'F' means to flatten in column-major (Fortran-
+        style) order. 'A' means to flatten in column-major
+        order if `a` is Fortran *contiguous* in memory,
+        row-major order otherwise. 'K' means to flatten
+        `a` in the order the elements occur in memory.
+        The default is 'C'.
     always_copy : boolean
         When False, a copy is only made when necessary
 
@@ -36,6 +44,10 @@ def flatten(ary, always_copy=True):
     >>> np.flatten(a)
     array([1, 2, 3, 4])
     """
+
+    if order == 'F' or (order == 'A' and not ary.flags['F_CONTIGUOUS']):
+        ary = numpy.transpose(ary)
+            
     ret = ary.reshape(functools.reduce(operator.mul, ary.shape))
     if always_copy:
         return ret.copy()
