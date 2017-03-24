@@ -48,13 +48,6 @@ __OPCODES__
     BH_MAX_OPCODE_ID = __MAX_OP__   // The extension method offset
 };
 
-/* Number of operands for operation
- *
- * @opcode Opcode for operation
- * @return Number of operands
- */
-int bh_noperands(bh_opcode opcode);
-
 /* Text string for operation
  *
  * @opcode Opcode for operation
@@ -126,22 +119,6 @@ def gen_cfile(opcodes):
 #include <bh_opcode.h>
 #include <bh_instruction.hpp>
 #include <stdbool.h>
-
-/* Number of operands for operation
- *
- * @opcode Opcode for operation
- * @return Number of operands
- */
-int bh_noperands(bh_opcode opcode)
-{
-    switch(opcode)
-    {
-__NOPS__
-
-    default:
-        return 3;//Extension methods have 3 operands always
-    }
-}
 
 /* Text descriptions for a given operation */
 const char* _opcode_text[BH_NONE+1];
@@ -242,7 +219,6 @@ bool bh_opcode_is_sweep(bh_opcode opcode)
 }
 
 """.replace('__TIMESTAMP__', stamp)\
-   .replace('__NOPS__', '\n'.join(nops))\
    .replace('__TEXT__', '\n'.join(text))\
    .replace('__SYS_OP__', '\n'.join(sys_op))\
    .replace('__ELEM_OP__', '\n'.join(elem_op))\

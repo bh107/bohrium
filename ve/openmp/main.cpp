@@ -101,7 +101,7 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
         ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
         for (const InstrPtr instr: block._sweeps) {
-            assert(bh_noperands(instr->opcode) == 3);
+            assert(instr->operand.size() == 3);
             const bh_view &view = instr->operand[0];
             if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
                 openmp_reductions.push_back(instr);
@@ -125,7 +125,7 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
 
     //Let's write the OpenMP reductions
     for (const InstrPtr instr: openmp_reductions) {
-        assert(bh_noperands(instr->opcode) == 3);
+        assert(instr->operand.size() == 3);
         ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
         scope.getName(instr->operand[0], ss);
         ss << ")";
@@ -267,8 +267,7 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list) {
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
     for(bh_instruction *instr: instr_list) {
         instr->constructor = false;
-        int nop = bh_noperands(instr->opcode);
-        for (bh_intp o = 0; o < nop; ++o) {
+        for (size_t o = 0; o < instr->operand.size(); ++o) {
             const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);

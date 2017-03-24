@@ -222,6 +222,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& o
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(3);
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
     instr->operand[2] = op2.meta;
@@ -241,6 +242,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& o
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(3);
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
     instr->operand[2].base = NULL;
@@ -260,6 +262,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const TL op1, mult
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(3);
     instr->operand[0] = op0.meta;
     instr->operand[1].base = NULL;
     instr->operand[2] = op2.meta;
@@ -279,9 +282,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TI>& o
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(2);
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
-    instr->operand[2].base = NULL;
 
     if ((!identical(op0, op1)) && op0.getTemp()) { delete &op0; }
     if (op1.getTemp()) { delete &op1; }
@@ -297,9 +300,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const TI op1)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(2);
     instr->operand[0] = op0.meta;
     instr->operand[1].base = NULL;
-    instr->operand[2].base = NULL;
     assign_const_type(&instr->constant, op1);
 
     if (op0.getTemp()) { delete &op0; }
@@ -315,9 +318,8 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(1);
     instr->operand[0] = op0.meta;
-    instr->operand[1].base = NULL;
-    instr->operand[2].base = NULL;
 
     if (op0.getTemp()) { delete &op0; }
 }
@@ -334,9 +336,7 @@ void Runtime::enqueue(bh_opcode opcode)
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
-    instr->operand[0].base = NULL;
-    instr->operand[1].base = NULL;
-    instr->operand[2].base = NULL;
+    instr->operand.resize(0);
 }
 
 //
@@ -352,9 +352,9 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const uint64_t op1
 
     instr = &queue[queue_size++];
     instr->opcode = opcode;
+    instr->operand.resize(2);
     instr->operand[0] = op0.meta;
     instr->operand[1].base = NULL;
-    instr->operand[2].base = NULL;
 
     instr->constant.type = BH_R123;
     instr->constant.value.r123.start = op1;
@@ -386,6 +386,7 @@ void Runtime::enqueue_extension(const std::string& name,
     // Construct and enqueue the instructions
     instr = &queue[queue_size++];
     instr->opcode = extensions[name];
+    instr->operand.resize(3);
     instr->operand[0] = op0.meta;
     instr->operand[1] = op1.meta;
     instr->operand[2] = op2.meta;

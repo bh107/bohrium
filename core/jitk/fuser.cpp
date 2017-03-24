@@ -33,7 +33,7 @@ namespace bohrium {
 namespace jitk {
 
 void simplify_instr(bh_instruction &instr) {
-    if (bh_noperands(instr.opcode) == 0) {
+    if (instr.operand.empty()) {
         return;
     }
 
@@ -102,15 +102,13 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 
     // Scatter writes in arbitrary order
     if (a->opcode == BH_SCATTER) {
-        const int b_nop = bh_noperands(b->opcode);
-        for(int i=0; i<b_nop; ++i) {
+        for(size_t i=0; i<b->operand.size(); ++i) {
             if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER) {
-        const int a_nop = bh_noperands(a->opcode);
-        for(int i=0; i<a_nop; ++i) {
+        for(size_t i=0; i<a->operand.size(); ++i) {
             if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
@@ -119,18 +117,16 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
-        const int b_nop = bh_noperands(b->opcode);
-        for (int i = 0; i < b_nop; ++i) {
-            if (not fully_data_parallel_compatible(src, b->operand[i])) {
+        for (const bh_view &b_op: b->operand) {
+            if (not fully_data_parallel_compatible(src, b_op)) {
                 return false;
             }
         }
     }
     {// The output of 'b' cannot conflict with the input and output of 'a'
         const bh_view &src = b->operand[0];
-        const int a_nop = bh_noperands(a->opcode);
-        for (int i = 0; i < a_nop; ++i) {
-            if (not fully_data_parallel_compatible(src, a->operand[i])) {
+        for (const bh_view &a_op: a->operand) {
+            if (not fully_data_parallel_compatible(src, a_op)) {
                 return false;
             }
         }
@@ -162,9 +158,7 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 // Returns a set of bases that the instruction accesses and is in 'container'
 set<bh_base*> instr_accessing(const bh_instruction *instr, const set<bh_base*> &container) {
     set<bh_base*> ret;
-    const int nop = bh_noperands(instr->opcode);
-    for (int i=0; i<nop; ++i) {
-        const bh_view &v = instr->operand[i];
+    for (const bh_view &v: instr->operand) {
         if (not bh_is_constant(&v)) {
             if (util::exist(container, v.base)) {
                 ret.insert(v.base);
@@ -265,8 +259,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
     vector<Block> block_list;
     for (auto it=instr_list_simply.begin(); it != instr_list_simply.end(); ++it) {
         const InstrPtr &instr = *it;
-        const int nop = bh_noperands(instr->opcode);
-        if (nop == 0)
+        if (instr->operand.empty())
             continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
 
         // Let's create the block

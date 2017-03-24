@@ -51,12 +51,11 @@ static inline bool is_subtracting_zero(const bh_instruction& instr)
 
 static inline bool is_entire_view(const bh_instruction& instr)
 {
-    for(int i = 0; i < bh_noperands(instr.opcode); ++i) {
-        if (bh_is_contiguous(&(instr.operand[i]))) {
+    for(const bh_view &view: instr.operand) {
+        if (bh_is_contiguous(&view)) {
             return true;
         }
     }
-
     return false;
 }
 
@@ -146,10 +145,10 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
                     other_instr.opcode = BH_NONE; // Remove instruction
                 } else {
                     // Rewrite all uses of A to B
-                    for (int idx = 0; idx < bh_noperands(other_instr.opcode); ++idx) {
-                        if (bh_view_same(&(other_instr.operand[idx]), A)) {
+                    for(bh_view &other_view: other_instr.operand) {
+                        if (bh_view_same(&other_view, A)) {
                             verbose_print("[Stupid math] \tRewriting A to B.");
-                            other_instr.operand[idx] = *B;
+                            other_view = *B;
                         }
                     }
                 }

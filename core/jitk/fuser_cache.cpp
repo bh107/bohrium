@@ -62,9 +62,8 @@ void hash_view(const bh_view &view, seqset<bh_view> &views, std::stringstream &s
  */
 void hash_instr(const bh_instruction &instr, seqset<bh_view> &views, std::stringstream &ss) {
     ss << instr.opcode; // <opcode>
-    const int nop = bh_noperands(instr.opcode);
-    for (int i = 0; i < nop; ++i) {
-        hash_view(instr.operand[i], views, ss);
+    for(const bh_view &op: instr.operand) {
+        hash_view(op, views, ss);
     }
     ss << instr.sweep_axis();
     ss << SEP_INSTR;
@@ -87,8 +86,8 @@ void updateWithOrigin(bh_view &view, const bh_view &origin) {
 void updateWithOrigin(bh_instruction &instr, const bh_instruction *origin) {
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
-    int nop = bh_noperands(instr.opcode);
-    for (int i = 0; i < nop; ++i) {
+
+    for (size_t i = 0; i < instr.operand.size(); ++i) {
         if (bh_is_constant(&instr.operand[i]) and not bh_opcode_is_sweep(instr.opcode)) {
             // NB: sweeped axis values shouldn't be updated
             instr.constant = origin->constant;

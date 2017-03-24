@@ -570,15 +570,14 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 
     // Scatter writes in arbitrary order
     if (a->opcode == BH_SCATTER) {
-        const int b_nop = bh_noperands(b->opcode);
-        for(int i=0; i<b_nop; ++i) {
+
+        for(size_t i=0; i<b->operand.size(); ++i) {
             if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER) {
-        const int a_nop = bh_noperands(a->opcode);
-        for(int i=0; i<a_nop; ++i) {
+        for(size_t i=0; i<a->operand.size(); ++i) {
             if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
@@ -587,8 +586,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
-        const int b_nop = bh_noperands(b->opcode);
-        for(int i=0; i<b_nop; ++i) {
+        for(size_t i=0; i<b->operand.size(); ++i) {
             if (not data_parallel_compatible(src, b->operand[i])) {
                 return false;
             }
@@ -596,9 +594,8 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     }
     {// The output of 'b' cannot conflict with the input and output of 'a'
         const bh_view &src = b->operand[0];
-        const int a_nop = bh_noperands(a->opcode);
-        for(int i=0; i<a_nop; ++i) {
-            if (not data_parallel_compatible(src, a->operand[i])) {
+        for(const bh_view &a_op: a->operand) {
+            if (not data_parallel_compatible(src, a_op)) {
                 return false;
             }
         }
@@ -624,7 +621,7 @@ bool data_parallel_compatible(const LoopB &b1, const LoopB &b2) {
 // Check if 'block' accesses the output of a sweep in 'sweeps'
 bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_block) {
     for (InstrPtr instr: sweeps) {
-        assert(bh_noperands(instr->opcode) > 0);
+        assert(instr->operand.size() > 0);
         auto bases = loop_block.getAllBases();
         if (bases.find(instr->operand[0].base) != bases.end())
             return true;
@@ -708,7 +705,7 @@ pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2, uint64_t m
     if (l2.isSystemOnly()) {
         LoopB block(l1);
         for (const InstrPtr instr: l2.getAllInstr()) {
-            if (bh_noperands(instr->opcode) > 0) {
+            if (instr->operand.size() > 0) {
                 block.insert_system_after(instr, instr->operand[0].base);
             }
         }

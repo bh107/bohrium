@@ -34,7 +34,7 @@ namespace jitk {
 bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
-    assert(bh_noperands(instr->opcode) == 3);
+    assert(instr->operand.size() == 3);
     return instr->sweep_axis() == instr->operand[1].ndim-1;
 }
 
@@ -81,7 +81,7 @@ void write_loop_block(const SymbolTable &symbols,
         // We have to ignore output arrays and arrays that are accumulated
         set<bh_base *> ignore_bases;
         for (const InstrPtr &instr: block_instr_list) {
-            if (bh_noperands(instr->opcode) > 0) {
+            if (instr->operand.size() > 0) {
                 ignore_bases.insert(instr->operand[0].base);
             }
             if (bh_opcode_is_accumulate(instr->opcode)) {
@@ -92,8 +92,7 @@ void write_loop_block(const SymbolTable &symbols,
         // we add it to the 'scalar_replaced_input_only'
         set<bh_view> candidates;
         for (const InstrPtr &instr: block_instr_list) {
-            const int nop = bh_noperands(instr->opcode);
-            for(int i=1; i < nop; ++i) {
+            for(size_t i=1; i < instr->operand.size(); ++i) {
                 const bh_view &input = instr->operand[i];
                 if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
                     if (local_tmps.find(input.base) == local_tmps.end() and
@@ -179,10 +178,9 @@ void write_loop_block(const SymbolTable &symbols,
         Scope peeled_scope(scope);
         LoopB peeled_block(block);
         for (const InstrPtr instr: block._sweeps) {
-            bh_instruction sweep_instr;
-            sweep_instr.opcode = BH_IDENTITY;
-            sweep_instr.operand[1] = instr->operand[1]; // The input is the same as in the sweep
-            sweep_instr.operand[0] = instr->operand[0];
+            // The input is the same as in the sweep
+            bh_instruction sweep_instr(BH_IDENTITY, {instr->operand[0], instr->operand[1]});
+
             // But the output needs an extra dimension when we are reducing to a non-scalar
             if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
                 sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
@@ -286,7 +284,7 @@ void write_loop_block(const SymbolTable &symbols,
         for (const Block &b: block._block_list) {
             if (b.isInstr()) { // Finally, let's write the instruction
                 const InstrPtr instr = b.getInstr();
-                if (bh_noperands(instr->opcode) > 0 and not bh_opcode_is_system(instr->opcode)) {
+                if (instr->operand.size() > 0 and not bh_opcode_is_system(instr->opcode)) {
                     if (scope.isOpenmpAtomic(instr->operand[0])) {
                         spaces(out, 4 + b.rank()*4);
                         out << "#pragma omp atomic\n";

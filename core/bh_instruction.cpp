@@ -32,9 +32,7 @@ using namespace std;
 
 set<const bh_base *> bh_instruction::get_bases_const() const {
     set<const bh_base*> ret;
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        const bh_view &view = operand[o];
+    for(const bh_view &view: operand) {
         if (not bh_is_constant(&view))
             ret.insert(view.base);
     }
@@ -43,9 +41,7 @@ set<const bh_base *> bh_instruction::get_bases_const() const {
 
 set<bh_base *> bh_instruction::get_bases() {
     set<bh_base*> ret;
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        const bh_view &view = operand[o];
+    for(const bh_view &view: operand) {
         if (not bh_is_constant(&view))
             ret.insert(view.base);
     }
@@ -54,9 +50,7 @@ set<bh_base *> bh_instruction::get_bases() {
 
 vector<const bh_view*> bh_instruction::get_views() const {
     vector<const bh_view*> ret;
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        const bh_view &view = operand[o];
+    for(const bh_view &view: operand) {
         if (not bh_is_constant(&view))
             ret.push_back(&view);
     }
@@ -64,9 +58,7 @@ vector<const bh_view*> bh_instruction::get_views() const {
 }
 
 bool bh_instruction::is_contiguous() const {
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        const bh_view &view = operand[o];
+    for(const bh_view &view: operand) {
         if ((not bh_is_constant(&view)) and (not bh_is_contiguous(&view)))
             return false;
     }
@@ -74,11 +66,10 @@ bool bh_instruction::is_contiguous() const {
 }
 
 bool bh_instruction::all_same_shape() const {
-    const int nop = bh_noperands(opcode);
-    if (nop > 0) {
+    if (operand.size() > 0) {
         assert(not bh_is_constant(&operand[0]));
         const bh_view &first = operand[0];
-        for(int o=1; o<nop; ++o) {
+        for(size_t o=1; o<operand.size(); ++o) {
             const bh_view &view = operand[o];
             if (not bh_is_constant(&view)) {
                 if (not bh_view_same_shape(&first, &view))
@@ -98,26 +89,26 @@ bool bh_instruction::reshapable() const {
 vector<int64_t> bh_instruction::shape() const {
     if (bh_opcode_is_sweep(opcode)) {
         // The principal shape of a sweep is the shape of the array array that is sweeped over
-        assert(bh_noperands(opcode) == 3);
+        assert(operand.size() == 3);
         assert(bh_is_constant(&operand[2]));
         assert(not bh_is_constant(&operand[1]));
         const bh_view &view = operand[1];
         return vector<int64_t>(view.shape, view.shape + view.ndim);
     } else if (opcode == BH_GATHER) {
         // The principal shape of a gather is the shape of the index and output array, which are equal.
-        assert(bh_noperands(opcode) == 3);
+        assert(operand.size() == 3);
         assert(not bh_is_constant(&operand[1]));
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
         return vector<int64_t>(view.shape, view.shape + view.ndim);
     } else if (opcode == BH_SCATTER) {
         // The principal shape of a scatter is the shape of the index and input array, which are equal.
-        assert(bh_noperands(opcode) == 3);
+        assert(operand.size() == 3);
         assert(not bh_is_constant(&operand[1]));
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
         return vector<int64_t>(view.shape, view.shape + view.ndim);
-    } else if (bh_noperands(opcode) == 0) {
+    } else if (operand.empty()) {
         // The principal shape of an instruction with no operands is the empty list
         return vector<int64_t>();
     } else {
@@ -133,7 +124,7 @@ int64_t bh_instruction::ndim() const {
 
 int bh_instruction::sweep_axis() const {
     if (bh_opcode_is_sweep(opcode)) {
-        assert(bh_noperands(opcode) == 3);
+        assert(operand.size() == 3);
         assert(bh_is_constant(&operand[2]));
         return static_cast<int>(constant.get_int64());
     }
@@ -145,9 +136,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
         throw runtime_error("Reshape: instruction not reshapable!");
     }
     const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), int64_t{1}, std::multiplies<int64_t>());
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        bh_view &view = operand[o];
+    for(bh_view &view: operand) {
         if (bh_is_constant(&view))
             continue;
         if (totalsize != bh_nelements(view)) {
@@ -162,9 +151,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
 }
 
 void bh_instruction::reshape_force(const vector<int64_t> &shape) {
-    int nop = bh_noperands(opcode);
-    for(int o=0; o<nop; ++o) {
-        bh_view &view = operand[o];
+    for(bh_view &view: operand) {
         if (bh_is_constant(&view))
             continue;
         // Let's assign the new shape and stride
@@ -176,10 +163,9 @@ void bh_instruction::reshape_force(const vector<int64_t> &shape) {
 
 void bh_instruction::remove_axis(int64_t axis) {
     assert(0 <= axis and axis < ndim());
-    int nop = bh_noperands(opcode);
-    if (nop > 0) {
+    if (operand.size() > 0) {
         // In the input we can simply remove the axis
-        for(int o=1; o<nop; ++o) {
+        for(size_t o=1; o<operand.size(); ++o) {
             if (not (bh_is_constant(&operand[o]) or     // Ignore constants
                     (o == 1 and opcode == BH_GATHER) or // Ignore gather's first input operand
                     (o == 0 and opcode == BH_SCATTER)   // Ignore scatter's output operand
@@ -209,10 +195,9 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
     assert(0 <= axis1 and axis1 < ndim());
     assert(0 <= axis2 and axis2 < ndim());
     assert(axis1 != axis2);
-    int nop = bh_noperands(opcode);
-    if (nop > 0) {
+    if (operand.size() > 0) {
         // The input we can simply transpose
-        for(int o=1; o<nop; ++o) {
+        for(size_t o=1; o<operand.size(); ++o) {
             bh_view &view = operand[o];
             if (not bh_is_constant(&view)) {
                 view.transpose(axis1, axis2);
@@ -244,7 +229,7 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
 }
 
 bh_type bh_instruction::operand_type(int operand_index) const {
-    assert(bh_noperands(opcode) > operand_index);
+    assert(((int)operand.size()) > operand_index);
     const bh_view &view = operand[operand_index];
     if (bh_is_constant(&view)) {
         return constant.type;
@@ -260,9 +245,7 @@ string bh_instruction::pprint(bool python_notation) const {
     else//Regular instruction
         ss << bh_opcode_text(opcode);
 
-    for(int i=0; i < bh_noperands(opcode); i++)
-    {
-        const bh_view &v = operand[i];
+    for(const bh_view &v: operand) {
         ss << " ";
         if(bh_is_constant(&v)) {
             ss << constant;
@@ -302,16 +285,16 @@ bh_view *bh_inst_operands(bh_instruction *instruction)
  */
 bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b)
 {
-    const int a_nop = bh_noperands(a->opcode);
-    const int b_nop = bh_noperands(b->opcode);
+    const size_t a_nop = a->operand.size();
+    const size_t b_nop = b->operand.size();
     if(a_nop == 0 or b_nop == 0)
         return false;
-    for(int i=0; i<a_nop; ++i)
+    for(size_t i=0; i<a_nop; ++i)
     {
         if(not bh_view_disjoint(&b->operand[0], &a->operand[i]))
             return true;
     }
-    for(int i=0; i<b_nop; ++i)
+    for(size_t i=0; i<b_nop; ++i)
     {
         if(not bh_view_disjoint(&a->operand[0], &b->operand[i]))
             return true;

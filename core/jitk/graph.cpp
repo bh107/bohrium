@@ -140,9 +140,7 @@ uint64_t block_cost(const Block &block) {
     const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getLoop().getAllTemps();
     for (const InstrPtr instr: block.getAllInstr()) {
         // Find non-temporary arrays
-        const int nop = bh_noperands(instr->opcode);
-        for (int i = 0; i < nop; ++i) {
-            const bh_view &v = instr->operand[i];
+        for(const bh_view &v: instr->operand) {
             if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
                 if (std::find(non_temps.begin(), non_temps.end(), v.base) == non_temps.end()) {
                     non_temps.push_back(v.base);

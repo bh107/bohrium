@@ -100,7 +100,7 @@ Impl::~Impl() {
 bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
-    assert(bh_noperands(instr->opcode) == 3);
+    assert(instr->operand.size() == 3);
     return instr->sweep_axis() == instr->operand[1].ndim-1;
 }
 
@@ -190,8 +190,7 @@ void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base
     set<bh_base*> initiated; // Arrays initiated in 'instr_list'
     for(bh_instruction *instr: instr_list) {
         instr->constructor = false;
-        int nop = bh_noperands(instr->opcode);
-        for (bh_intp o = 0; o < nop; ++o) {
+        for (size_t o = 0; o < instr->operand.size(); ++o) {
             const bh_view &v = instr->operand[o];
             if (not bh_is_constant(&v)) {
                 assert(v.base != NULL);

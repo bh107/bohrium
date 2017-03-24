@@ -95,10 +95,7 @@ void ExecuteFrontend::serialize(const bh_ir &bhir, vector<char> &buffer, vector<
     vector<bh_base> new_bases;//New base arrays in the order they appear in the instruction list
     for(const bh_instruction &instr: bhir.instr_list)
     {
-        const int nop = bh_noperands(instr.opcode);
-        for(int i=0; i<nop; ++i)
-        {
-            const bh_view &v = instr.operand[i];
+        for(const bh_view &v: instr.operand) {
             if(bh_is_constant(&v))
                 continue;
             if(known_base_arrays.find(v.base) == known_base_arrays.end())
@@ -179,10 +176,7 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
     size_t new_base_count = 0;
     for(const bh_instruction &instr: bhir.instr_list)
     {
-        const int nop = bh_noperands(instr.opcode);
-        for(int i=0; i<nop; ++i)
-        {
-            const bh_view &v = instr.operand[i];
+        for(const bh_view &v: instr.operand) {
             if(bh_is_constant(&v))
                 continue;
             if(remote2local.find(v.base) == remote2local.end())
@@ -199,10 +193,7 @@ bh_ir ExecuteBackend::deserialize(vector<char> &buffer, vector<bh_base*> &data_s
     //Update all base pointers to point to the local bases
     for(bh_instruction &instr: bhir.instr_list)
     {
-        const int nop = bh_noperands(instr.opcode);
-        for(int i=0; i<nop; ++i)
-        {
-            bh_view &v = instr.operand[i];
+        for(bh_view &v: instr.operand) {
             if(bh_is_constant(&v))
                 continue;
             v.base = &remote2local[v.base];
