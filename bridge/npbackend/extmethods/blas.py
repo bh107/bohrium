@@ -1,7 +1,5 @@
 """
 Basic Linear Algebra Subprograms (BLAS)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Utilize BLAS directly from Python
 """
 
 import bohrium as np
