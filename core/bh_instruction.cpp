@@ -101,9 +101,9 @@ vector<int64_t> bh_instruction::shape() const {
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
         return vector<int64_t>(view.shape, view.shape + view.ndim);
-    } else if (opcode == BH_SCATTER) {
+    } else if (opcode == BH_SCATTER or opcode == BH_COND_SCATTER) {
         // The principal shape of a scatter is the shape of the index and input array, which are equal.
-        assert(operand.size() == 3);
+        assert(operand.size() >= 3);
         assert(not bh_is_constant(&operand[1]));
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
@@ -168,7 +168,7 @@ void bh_instruction::remove_axis(int64_t axis) {
         for(size_t o=1; o<operand.size(); ++o) {
             if (not (bh_is_constant(&operand[o]) or     // Ignore constants
                     (o == 1 and opcode == BH_GATHER) or // Ignore gather's first input operand
-                    (o == 0 and opcode == BH_SCATTER)   // Ignore scatter's output operand
+                    (o == 0 and (opcode == BH_SCATTER or opcode == BH_COND_SCATTER)) // Ignore scatter's output operand
                     )) {
                 operand[o].remove_axis(axis);
             }

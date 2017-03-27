@@ -114,7 +114,7 @@ public:
                     _array_always.insert(instr->operand[1].base);
                 }
             }
-            if (instr->opcode == BH_SCATTER) {
+            if (instr->opcode == BH_SCATTER or instr->opcode == BH_COND_SCATTER) {
                 _array_always.insert(instr->operand[0].base);
             }
         }

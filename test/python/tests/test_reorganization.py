@@ -36,7 +36,7 @@ class test_scatter:
                 continue
             cmd = "R = bh.random.RandomState(42); res = %s; " % ary
             cmd += "ind = M.arange(%d, dtype=np.int64).reshape(%s); " % (nelem, shape)
-            VAL = "val = R.random(ind.size, np.float64, bohrium=BH); "
+            VAL = "val = R.random(ind.shape, np.float64, bohrium=BH); "
             yield cmd + VAL
             yield cmd + "ind = ind[::2]; " + VAL
             if shape[0] > 2:
@@ -54,7 +54,7 @@ class test_scatter:
         return cmd + "res = res.flatten(); res[ind] = val"
 
     def test_cond(self, cmd):
-        cmd += cmd + "mask = R.random(val.size, np.bool, bohrium=BH).reshape(val.shape); "
+        cmd += cmd + "mask = R.random(ind.size, np.bool, bohrium=BH).reshape(ind.shape); "
         np_cmd = cmd + "np.put(res, ind[mask], val[mask])"
         bh_cmd = cmd + "M.cond_scatter(res, ind, val, mask)"
         return (np_cmd, bh_cmd)
