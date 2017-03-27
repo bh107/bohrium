@@ -15,10 +15,30 @@ class test_accumulate_views:
         cmd += "res = M.add.accumulate(a, axis=%d)" % axis
         return cmd
 
+class test_accumulate_sum:
+    """ Test reduction of sum(), prod(), any(), and all()"""
+    def init(self):
+        for cmd, shape in util.gen_random_arrays("R", 3, dtype="np.float32"):
+            cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
+            for op in ["cumsum", "cumprod"]:
+                for axis in range(len(shape)):
+                    yield (cmd, op, axis)
+
+    def test_func(self, arg):
+        (cmd, op, axis) = arg
+        cmd += "res = M.%s(a, axis=%d)" % (op, axis)
+        return cmd
+
+    def test_method(self, arg):
+        (cmd, op, axis) = arg
+        cmd += "res = a.%s(axis=%d)" % (op, axis)
+        return cmd
+
 class test_accumulate_primitives:
     def init(self):
         for op in ["add", "multiply"]:
             yield (op, "np.float64")
+            yield (op, "np.bool")
 
     def test_vector(self, arg):
         (op, dtype) = arg

@@ -481,6 +481,10 @@ class Ufunc(object):
             func = eval("np.%s.accumulate" % self.info['name'])
             return func(ary, axis=axis, out=out)
 
+        # When reducing booleans numerically, we count the number of True values
+        if dtype_equal(ary, np.bool):
+            ary = array_create.array(ary, dtype=np.uint64)
+
         if out is None:
             out = array_create.empty(ary.shape, dtype=ary.dtype)
 
