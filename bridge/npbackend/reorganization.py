@@ -10,6 +10,7 @@ from .bhary import fix_biclass_wrapper, get_bhc
 from . import target
 from . import array_create
 from . import array_manipulation
+from . import ufuncs
 
 
 @fix_biclass_wrapper
@@ -267,3 +268,71 @@ def cond_scatter(ary, indexes, values, mask):
     flat = array_manipulation.flatten(ary, always_copy=True)
     target.cond_scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes), get_bhc(mask))
     ary[...] = flat.reshape(ary.shape)
+
+@fix_biclass_wrapper
+def pack(ary, mask):
+
+    """
+    pack(ary, mask)
+
+    Packing the elements of 'ary' specified by 'mask' into new array that are contiguous
+    The values of 'indexes' are absolute indexed into a flatten 'ary'
+    The shape of 'mask' and 'ary' must be equal.
+
+
+    Parameters
+    ----------
+    ary  : array_like, read flatten
+        The array to read from.
+    mask : array_like, interpreted as a flatten boolean array
+        A mask that specifies which indexes of 'ary' to read
+    """
+
+    ary = array_manipulation.flatten(array_create.array(ary), always_copy=False)
+    mask = array_manipulation.flatten(array_create.array(mask, dtype=numpy.bool), always_copy=False)
+    assert (ary.shape == mask.shape)
+    if ary.size == 0 or mask.size == 0:
+        return
+
+    true_indexes = ufuncs.add.accumulate(mask) - 1
+    true_count = int(true_indexes[-1]) + 1
+    ret = array_create.empty(true_count, dtype=ary.dtype)
+    cond_scatter(ret, true_indexes, ary, mask)
+    return ret
+
+
+@fix_biclass_wrapper
+def flatnonzero(a):
+    """
+    Return indices that are non-zero in the flattened version of a.
+    This is equivalent to a.ravel().nonzero()[0].
+    Parameters
+    ----------
+    a : ndarray
+        Input array.
+    Returns
+    -------
+    res : ndarray
+        Output array, containing the indices of the elements of `a.ravel()`
+        that are non-zero.
+    See Also
+    --------
+    nonzero : Return the indices of the non-zero elements of the input array.
+    ravel : Return a 1-D array containing the elements of the input array.
+    Examples
+    --------
+    >>> x = np.arange(-2, 3)
+    >>> x
+    array([-2, -1,  0,  1,  2])
+    >>> np.flatnonzero(x)
+    array([0, 1, 3, 4])
+    Use the indices of the non-zero elements as an index array to extract
+    these elements:
+    >>> x.ravel()[np.flatnonzero(x)]
+    array([-2, -1,  1,  2])
+    """
+
+    if a.dtype is not numpy.bool:
+        mask = a != 0
+    new_indexes = array_create.arange(a.size, dtype=numpy.uint64)
+    return pack(new_indexes, mask)

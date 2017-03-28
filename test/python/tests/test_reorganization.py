@@ -58,3 +58,16 @@ class test_scatter:
         np_cmd = cmd + "np.put(res, ind[mask], val[mask])"
         bh_cmd = cmd + "M.cond_scatter(res, ind, val, mask)"
         return (np_cmd, bh_cmd)
+
+
+class test_nonzero:
+    def init(self):
+        for ary, shape in util.gen_random_arrays("R", 3, max_dim=50, dtype="np.float64"):
+            nelem = functools.reduce(operator.mul, shape)
+            if nelem == 0:
+                continue
+            cmd = "R = bh.random.RandomState(42); a = %s; " % ary
+            yield cmd
+
+    def test_flatnonzero(self, cmd):
+        return cmd + "res = M.flatnonzero(a)"
