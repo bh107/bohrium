@@ -642,6 +642,18 @@ BhArray_prod(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+BhArray_cumsum(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("cumsum", self, args, kwds);
+}
+
+static PyObject *
+BhArray_cumprod(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("cumprod", self, args, kwds);
+}
+
+static PyObject *
 BhArray_any(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return method2function("any", self, args, kwds);
@@ -702,6 +714,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"ravel",      (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
     {"sum",        (PyCFunction) BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
     {"prod",       (PyCFunction) BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"cumsum",     (PyCFunction) BhArray_cumsum,      METH_VARARGS | METH_KEYWORDS, "a.cumsum(axis=None, dtype=None, out=None)\n\nReturn the cumulative sum of the array elements over the given axis.\n\nRefer to `bohrium.cumsum` for full documentation."},
+    {"cumprod",    (PyCFunction) BhArray_cumprod,     METH_VARARGS | METH_KEYWORDS, "a.cumprod(axis=None, dtype=None, out=None)\n\nReturn the cumulative product of the array elements over the given axis\n\nRefer to `numpy.cumprod` for full documentation."},
     {"any",        (PyCFunction) BhArray_any,         METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
     {"all",        (PyCFunction) BhArray_all,         METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
     {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
