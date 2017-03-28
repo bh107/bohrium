@@ -99,3 +99,15 @@ class test_fill:
     def test_view(self, cmd):
         cmd += "res[...] = 42"
         return cmd
+
+
+class test_concatenate:
+    def init(self):
+        for rand_cmd, shape in util.gen_random_arrays("R", 4, min_ndim=1, dtype="np.float32"):
+            for axis in range(len(shape)):
+                cmd = "R = bh.random.RandomState(42); a = %s; b = %s; " % (rand_cmd, rand_cmd)
+                yield (cmd, axis)
+
+    def test_same_shape(self, args):
+        (cmd, axis) = args
+        return cmd + "res = M.concatenate([a, b], axis=%d)" % axis
