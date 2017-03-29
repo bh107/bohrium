@@ -71,3 +71,6 @@ class test_nonzero:
 
     def test_flatnonzero(self, cmd):
         return cmd + "res = M.flatnonzero(a)"
+
+    def test_nonzero(self, cmd):
+        return cmd + "res = M.concatenate(M.nonzero(a))"

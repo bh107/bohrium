@@ -336,3 +336,81 @@ def flatnonzero(a):
         mask = a != 0
     new_indexes = array_create.arange(a.size, dtype=numpy.uint64)
     return pack(new_indexes, mask)
+
+@fix_biclass_wrapper
+def nonzero(a):
+    """
+    Return the indices of the elements that are non-zero.
+    Returns a tuple of arrays, one for each dimension of `a`,
+    containing the indices of the non-zero elements in that
+    dimension. The values in `a` are always tested and returned in
+    row-major, C-style order. The corresponding non-zero
+    values can be obtained with::
+        a[nonzero(a)]
+    To group the indices by element, rather than dimension, use::
+        transpose(nonzero(a))
+    The result of this is always a 2-D array, with a row for
+    each non-zero element.
+    Parameters
+    ----------
+    a : array_like
+        Input array.
+    Returns
+    -------
+    tuple_of_arrays : tuple
+        Indices of elements that are non-zero.
+    See Also
+    --------
+    flatnonzero :
+        Return indices that are non-zero in the flattened version of the input
+        array.
+    ndarray.nonzero :
+        Equivalent ndarray method.
+    count_nonzero :
+        Counts the number of non-zero elements in the input array.
+    Examples
+    --------
+    >>> x = np.eye(3)
+    >>> x
+    array([[ 1.,  0.,  0.],
+           [ 0.,  1.,  0.],
+           [ 0.,  0.,  1.]])
+    >>> np.nonzero(x)
+    (array([0, 1, 2]), array([0, 1, 2]))
+    >>> x[np.nonzero(x)]
+    array([ 1.,  1.,  1.])
+    >>> np.transpose(np.nonzero(x))
+    array([[0, 0],
+           [1, 1],
+           [2, 2]])
+    A common use for ``nonzero`` is to find the indices of an array, where
+    a condition is True.  Given an array `a`, the condition `a` > 3 is a
+    boolean array and since False is interpreted as 0, np.nonzero(a > 3)
+    yields the indices of the `a` where the condition is true.
+    >>> a = np.array([[1,2,3],[4,5,6],[7,8,9]])
+    >>> a > 3
+    array([[False, False, False],
+           [ True,  True,  True],
+           [ True,  True,  True]], dtype=bool)
+    >>> np.nonzero(a > 3)
+    (array([1, 1, 1, 2, 2, 2]), array([0, 1, 2, 0, 1, 2]))
+    The ``nonzero`` method of the boolean array can also be called.
+    >>> (a > 3).nonzero()
+    (array([1, 1, 1, 2, 2, 2]), array([0, 1, 2, 0, 1, 2]))
+    """
+
+    if a.ndim == 1:
+        return (flatnonzero(a),)
+
+    if not a.flags['C_CONTIGUOUS']:
+        a = a.copy(order='C')
+
+    nz = flatnonzero(a)
+    ret = []
+    for stride_in_bytes in a.strides:
+        stride = stride_in_bytes // a.itemsize
+        assert stride_in_bytes % a.itemsize == 0
+        tmp = nz // stride
+        ret.append(tmp)
+        nz -= tmp * stride
+    return ret
