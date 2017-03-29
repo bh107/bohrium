@@ -91,3 +91,6 @@ class test_fancy_indexing:
 
     def test_take_using_index_tuple(self, cmd):
         return cmd + "res = bh.take_using_index_tuple(a, ind)"
+
+    def test_indexing(self, cmd):
+        return cmd + "res = a[ind]"

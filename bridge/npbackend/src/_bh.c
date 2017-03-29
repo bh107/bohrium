@@ -915,9 +915,13 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     assert(BhArray_CheckExact(o));
 
     // Generally, we do not support indexing with arrays
-    if(obj_contains_a_list_or_ary(k))
-    {
-        // But when indexing a vector, it corresponds to np.take()
+    if(obj_contains_a_list_or_ary(k)) {
+
+        // But when indexing array with an index array for each dimension in the array
+        if (PySequence_Check(k) && PySequence_Size(k) == PyArray_NDIM((PyArrayObject*)o)) {
+            return PyObject_CallMethod(reorganization, "take_using_index_tuple", "OO", o, k);
+        }
+        // And when indexing a vector, it corresponds to np.take()
         if (PyArray_NDIM((PyArrayObject*)o) == 1) {
             return PyObject_CallMethod(reorganization, "take", "OO", o, k);
         }

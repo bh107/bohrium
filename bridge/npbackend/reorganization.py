@@ -161,9 +161,17 @@ def take_using_index_tuple(a, index_tuple, out=None):
     """
 
     if not bhary.check(a):
-        return a[index_tuple]
+        ret = a[index_tuple]
+        if out is not None:
+            out[...] = ret
+            return out
+        else:
+            return ret
 
     assert len(index_tuple) == a.ndim
+
+    if a.ndim == 1:
+        return take(a, index_tuple[0], out=out)
 
     # Make sure that all index arrays are uint64 bohrium arrays
     index_list = []
