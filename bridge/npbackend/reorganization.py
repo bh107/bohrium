@@ -135,6 +135,61 @@ def take(a, indices, axis=None, out=None, mode='raise'):
 
 
 @fix_biclass_wrapper
+def take_using_index_tuple(a, index_tuple, out=None):
+    """
+    Take elements from the array 'a' specified by 'index_tuple'
+    This function is very similar to take(), but takes a tuple of index arrays rather than a single index array
+    
+    Parameters
+    ----------
+    a : array_like
+        The source array.
+    index_tuple : tuple of array_like, interpreted as integers
+        Each array in the tuple specified the indices of the values to extract for that axis. 
+        The number of arrays in 'index_tuple' must equal the number of dimension in 'a'
+
+    out : ndarray, optional
+        If provided, the result will be placed in this array. It should
+        be of the appropriate shape and dtype.
+
+
+    Returns
+    -------
+    subarray : ndarray
+        The returned array has the same type as `a`.
+
+    """
+
+    if not bhary.check(a):
+        return a[index_tuple]
+
+    assert len(index_tuple) == a.ndim
+
+    # Make sure that all index arrays are uint64 bohrium arrays
+    index_list = []
+    for index in index_tuple:
+        index_list.append(array_create.array(index, dtype=numpy.uint64, bohrium=True))
+
+    # And then broadcast them into the same shape
+    index_list = array_manipulation.broadcast_arrays(*index_list)
+
+    # Let's find the absolute index
+    abs_index = index_list[-1].copy()
+    stride = a.shape[-1]
+    for i in range(len(index_list)-2, -1, -1): # Iterate backwards from index_list[-2]
+        abs_index += index_list[i] * stride
+        stride *= a.shape[i]
+
+    # take() support absolute indices
+    ret = take(a, abs_index).reshape(index_list[0].shape)
+    if out is not None:
+        out[...] = ret
+        return out
+    else:
+        return ret
+
+
+@fix_biclass_wrapper
 def scatter(ary, indexes, values):
     """
     scatter(ary, indexes, values)

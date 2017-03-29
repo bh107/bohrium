@@ -74,3 +74,20 @@ class test_nonzero:
 
     def test_nonzero(self, cmd):
         return cmd + "res = M.concatenate(M.nonzero(a))"
+
+
+class test_fancy_indexing:
+    def init(self):
+        for ary, shape in util.gen_random_arrays("R", 3, max_dim=50, dtype="np.float64"):
+            nelem = functools.reduce(operator.mul, shape)
+            if nelem == 0:
+                continue
+            cmd = "R = bh.random.RandomState(42); a = %s; " % ary
+            ind = "ind = ("
+            for dim in shape:
+                ind += "R.random(10, np.uint64, bohrium=BH) %% %d, " % dim
+            ind += "); "
+            yield cmd + ind
+
+    def test_take_using_index_tuple(self, cmd):
+        return cmd + "res = bh.take_using_index_tuple(a, ind)"
