@@ -1,6 +1,7 @@
 import util
 import functools
 import operator
+import random
 
 
 class test_gather:
@@ -82,7 +83,7 @@ class test_nonzero:
         return cmd + "res = M.concatenate(M.nonzero(a))"
 
 
-class test_fancy_indexing:
+class test_fancy_indexing_get:
     def init(self):
         for ary, shape in util.gen_random_arrays("R", 3, max_dim=50, dtype="np.float64"):
             nelem = functools.reduce(operator.mul, shape)
@@ -100,3 +101,20 @@ class test_fancy_indexing:
 
     def test_indexing(self, cmd):
         return cmd + "res = a[ind]"
+
+
+class test_fancy_indexing_set:
+    def init(self):
+        for ary, shape in util.gen_random_arrays("R", 3, max_dim=50, dtype="np.float64"):
+            nelem = functools.reduce(operator.mul, shape)
+            if nelem == 0:
+                continue
+            cmd = "R = bh.random.RandomState(42); res = %s; " % ary
+            ind = "ind = ("
+            for dim in shape:
+                ind += "R.random(10, np.uint64, bohrium=BH) %% %d, " % dim
+            ind += "); "
+            yield cmd + ind
+
+    def test_put_using_index_tuple(self, cmd):
+        return cmd + "bh.put_using_index_tuple(res, ind, 42)"
