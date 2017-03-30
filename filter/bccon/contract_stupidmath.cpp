@@ -74,9 +74,7 @@ static inline bool is_doing_stupid_math(const bh_instruction& instr)
 
 void Contracter::contract_stupidmath(bh_ir &bhir)
 {
-    for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
-        bh_instruction& instr = bhir.instr_list[pc];
-
+    for(bh_instruction& instr: bhir.instr_list) {
         if (is_doing_stupid_math(instr)) {
             verbose_print("[Stupid math] Is doing stupid math with a " + std::string(bh_opcode_text(instr.opcode)));
 
@@ -84,79 +82,15 @@ void Contracter::contract_stupidmath(bh_ir &bhir)
             //   BH_ADD B A 0
             //   BH_FREE A
             //   BH_SYNC B
-            // We want to find the add and replace A in all above with B, if A is created in this flush.
-            // Then remove the free of A.
+            // We want to find the add and replace it with BH_IDENTITY
+            instr.opcode = BH_IDENTITY;
 
-            // Output operand
-            bh_view* B = &(instr.operand[0]);
-
-            // The one operand, that isn't constant
-            bh_view* A;
+            // We need to figure out which operand is the constant, and remove it
             if (bh_is_constant(&(instr.operand[1]))) {
-                A = &(instr.operand[2]);
+                instr.operand.erase(instr.operand.begin() + 1);
             } else {
-                A = &(instr.operand[1]);
+                instr.operand.erase(instr.operand.begin() + 2);
             }
-
-            if (bh_view_same(A, B)) continue;
-
-            bool freed = false;
-            for (size_t pc_chain = 0; pc_chain < bhir.instr_list.size(); ++pc_chain) {
-                bh_instruction& other_instr = bhir.instr_list[pc_chain];
-
-                // Look for matching FREE for B
-                if (other_instr.opcode == BH_FREE and bh_view_same(&(other_instr.operand[0]), B)) {
-                    freed = true;
-                    break;
-                }
-            }
-
-            if (!freed) {
-                verbose_print("[Stupid math] \tCan't rectify as it isn't freeing in same flush.");
-                continue;
-            }
-
-            // Check that A is created by us.
-            bool created_before = false;
-
-            for (size_t pc_chain = 0; pc_chain < pc; ++pc_chain) {
-                bh_instruction& other_instr = bhir.instr_list[pc_chain];
-
-                if (bh_view_same(&(other_instr.operand[0]), A)) {
-                    created_before = true;
-                    break;
-                }
-            }
-
-            // Only if we have created A in this flush, are we allowed to change it.
-            if (!created_before) {
-                verbose_print("[Stupid math] \tCan't rectify as other view isn't created in same flush.");
-                continue;
-            }
-
-            for (size_t pc_chain = 0; pc_chain < bhir.instr_list.size(); ++pc_chain) {
-                if (pc == pc_chain) continue;
-
-                bh_instruction& other_instr = bhir.instr_list[pc_chain];
-
-                // Look for matching FREE for A
-                if (other_instr.opcode == BH_FREE and bh_view_same(&(other_instr.operand[0]), A)) {
-                    verbose_print("[Stupid math] \tFound and removed FREE.");
-                    other_instr.opcode = BH_NONE; // Remove instruction
-                } else {
-                    // Rewrite all uses of A to B
-                    for(bh_view &other_view: other_instr.operand) {
-                        if (bh_view_same(&other_view, A)) {
-                            verbose_print("[Stupid math] \tRewriting A to B.");
-                            other_view = *B;
-                        }
-                    }
-                }
-            }
-
-            // Remove self
-            verbose_print("[Stupid math] \tRemoving " + std::string(bh_opcode_text(instr.opcode)));
-            instr.opcode = BH_NONE;
         }
     }
 }
