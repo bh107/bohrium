@@ -122,3 +122,15 @@ def masked_get(ary, bool_mask):
     """
 
     return ary[reorganization.nonzero(bool_mask)]
+
+
+def masked_set(ary, bool_mask, value):
+    """
+    Set the 'value' into 'ary' at the location specified through 'bool_mask'.
+    """
+
+    if numpy.isscalar(value):
+        ary *= ~bool_mask
+        ary += bool_mask * value
+    else:
+        ary[reorganization.nonzero(bool_mask)] = value

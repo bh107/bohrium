@@ -3,7 +3,7 @@ import util
 import functools
 import operator
 
-class test_set_bool_mask:
+class test_set_bool_mask_scalar:
     def init(self):
         for dtype in bohrium._info.numpy_types:
             dtype = "np.%s"%dtype.name
@@ -16,6 +16,21 @@ class test_set_bool_mask:
     def test_set_scalar(self, arg):
         (cmd, dtype) = arg
         cmd += "res[m] = %s(42)" % dtype
+        return cmd
+
+
+class test_set_bool_mask:
+    def init(self):
+        for cmd, shape in util.gen_random_arrays("R", 3, max_dim=50, dtype="np.float64"):
+            nelem = functools.reduce(operator.mul, shape)
+            if nelem == 0:
+                continue
+            cmd = "R = bh.random.RandomState(42); res=%s; " \
+                  "m = R.random_integers(0, 1, size=res.shape, dtype=np.bool, bohrium=BH); " % cmd
+            yield (cmd)
+
+    def test_set(self, cmd):
+        cmd += "res[m] = res.copy()[m] * 42"
         return cmd
 
 
