@@ -314,6 +314,9 @@ public:
     //
     //  Lazy evaluation through instruction queue
     //
+    template <typename TO, typename T1, typename T2, typename T3>
+    void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<T1>& op1, multi_array<T2>& op2, multi_array<T3>& op3);
+
     template <typename TO, typename TL, typename TR>
     void enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, multi_array<TR>& op2);
 
@@ -346,6 +349,9 @@ public:
     //
     //  Typechecker
     //
+    template <size_t Opcode, typename TO, typename T1, typename T2, typename T3>
+    void typecheck(void);
+
     template <size_t Opcode, typename Out, typename In1, typename In2>
     void typecheck(void);
 

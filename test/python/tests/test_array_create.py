@@ -1,5 +1,18 @@
 import util
 
+class test_array:
+    def init(self):
+        for t in util.TYPES.ALL:
+            yield t
+
+    def test_list(self, dtype):
+        cmd = "res = M.array([1,2,3], dtype=%s)" % dtype
+        return cmd
+
+    def test_scalar(self, dtype):
+        cmd = "res = M.array(42, dtype=%s)" % dtype
+        return cmd
+
 class test_array_create:
     def init(self):
         for t in util.TYPES.ALL:

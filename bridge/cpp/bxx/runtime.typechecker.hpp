@@ -80,6 +80,12 @@ void Runtime::typecheck(void)
 template <size_t Opcode>
 struct dependent_false { enum { value = false }; };
 
+template <size_t Opcode, typename Out, typename In1, typename In2, typename In3>
+void Runtime::typecheck(void)
+{
+    static_assert(dependent_false<Opcode>::value, "ArrayOperation has unsupported type-signature.");
+}
+
 template <size_t Opcode, typename Out, typename In1, typename In2>
 void Runtime::typecheck(void)
 {
@@ -524,6 +530,45 @@ void Runtime::typecheck(void)
         template <>
         inline
         void Runtime::typecheck<BH_CEIL, double, double>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, bool, bool, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, std::complex<double> , std::complex<double> , uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, std::complex<float> , std::complex<float> , uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, float, float, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, double, double, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, int16_t, int16_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, int32_t, int32_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, int64_t, int64_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, int8_t, int8_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, uint16_t, uint16_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, uint32_t, uint32_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, uint64_t, uint64_t, uint64_t, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_COND_SCATTER, uint8_t, uint8_t, uint64_t, bool>(void) { }
         template <>
         inline
         void Runtime::typecheck<BH_COS, std::complex<double> , std::complex<double> >(void) { }

@@ -642,6 +642,18 @@ BhArray_prod(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+BhArray_cumsum(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("cumsum", self, args, kwds);
+}
+
+static PyObject *
+BhArray_cumprod(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("cumprod", self, args, kwds);
+}
+
+static PyObject *
 BhArray_any(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return method2function("any", self, args, kwds);
@@ -702,6 +714,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"ravel",      (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
     {"sum",        (PyCFunction) BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
     {"prod",       (PyCFunction) BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"cumsum",     (PyCFunction) BhArray_cumsum,      METH_VARARGS | METH_KEYWORDS, "a.cumsum(axis=None, dtype=None, out=None)\n\nReturn the cumulative sum of the array elements over the given axis.\n\nRefer to `bohrium.cumsum` for full documentation."},
+    {"cumprod",    (PyCFunction) BhArray_cumprod,     METH_VARARGS | METH_KEYWORDS, "a.cumprod(axis=None, dtype=None, out=None)\n\nReturn the cumulative product of the array elements over the given axis\n\nRefer to `numpy.cumprod` for full documentation."},
     {"any",        (PyCFunction) BhArray_any,         METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
     {"all",        (PyCFunction) BhArray_all,         METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
     {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
@@ -824,10 +838,20 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
         return 0;
     }
 
-    //We do not support indexing with arrays
+    //Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k) == 1)
     {
-        // Generally, but when indexing a vector, it corresponds to np.put()
+        // But when indexing array with an index array for each dimension in the array,
+        // it corresponds to put_using_index_tuple()
+        if (PySequence_Check(k) && PySequence_Size(k) == PyArray_NDIM((PyArrayObject*)o)) {
+            PyObject *err = PyObject_CallMethod(reorganization, "put_using_index_tuple", "OOO", o, k, v);
+            if(err == NULL) {
+                return -1;
+            }
+            Py_XDECREF(err);
+            return 0;
+        }
+        // And when indexing a vector, it corresponds to np.put()
         if (PyArray_NDIM((PyArrayObject*)o) == 1) {
             PyObject *err = PyObject_CallMethod(reorganization, "put", "OOO", o, k, v);
             if(err == NULL) {
@@ -901,9 +925,14 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     assert(BhArray_CheckExact(o));
 
     // Generally, we do not support indexing with arrays
-    if(obj_contains_a_list_or_ary(k))
-    {
-        // But when indexing a vector, it corresponds to np.take()
+    if(obj_contains_a_list_or_ary(k)) {
+
+        // But when indexing array with an index array for each dimension in the array,
+        // it corresponds to take_using_index_tuple()
+        if (PySequence_Check(k) && PySequence_Size(k) == PyArray_NDIM((PyArrayObject*)o)) {
+            return PyObject_CallMethod(reorganization, "take_using_index_tuple", "OO", o, k);
+        }
+        // And when indexing a vector, it corresponds to np.take()
         if (PyArray_NDIM((PyArrayObject*)o) == 1) {
             return PyObject_CallMethod(reorganization, "take", "OO", o, k);
         }

@@ -72,6 +72,7 @@ _aliases = [
 for _f, _t in _aliases:
     exec("%s = %s" % (_f, _t))
 cumsum = add.accumulate
+cumprod = multiply.accumulate
 
 # Expose all data types
 for _t in numpy_types:

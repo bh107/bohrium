@@ -484,6 +484,9 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_SCATTER:
             out << ops[0] << " = " << ops[1] << ";\n";
             break;
+        case BH_COND_SCATTER:
+            out << "if (" << ops[2] << ") {" << ops[0] << " = " << ops[1] << ";}\n";
+            break;
         default:
             cerr << "Instruction \"" << instr << "\" not supported\n";
             throw runtime_error("Instruction not supported.");
@@ -633,7 +636,7 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         write_operation(instr, ops, out, opencl);
         return;
     }
-    if (instr.opcode == BH_SCATTER) {
+    if (instr.opcode == BH_SCATTER or instr.opcode == BH_COND_SCATTER) {
         // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
         vector<string> ops;
         {
@@ -652,6 +655,14 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
             scope.getName(instr.operand[1], ss);
             if (scope.isArray(instr.operand[1])) {
                 write_array_subscription(scope, instr.operand[1], ss);
+            }
+            ops.push_back(ss.str());
+        }
+        if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
+            stringstream ss;
+            scope.getName(instr.operand[3], ss);
+            if (scope.isArray(instr.operand[3])) {
+                write_array_subscription(scope, instr.operand[3], ss);
             }
             ops.push_back(ss.str());
         }

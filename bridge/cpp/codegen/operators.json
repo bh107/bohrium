@@ -208,6 +208,8 @@
 ["scatter",         "BH_SCATTER",   "sugar.nops3",     false],
 ["bh_gather",       "BH_GATHER",    "runtime.nops3",   true],
 ["gather",          "BH_GATHER",    "sugar.nops3",     false],
+["bh_cond_scatter",      "BH_COND_SCATTER",   "runtime.nops4",   true],
+["cond_scatter",         "BH_COND_SCATTER",   "sugar.nops4",     false],
 
 ["bh_add_reduce",           "BH_ADD_REDUCE",            "runtime.reduce", true],
 ["bh_multiply_reduce",      "BH_MULTIPLY_REDUCE",       "runtime.reduce", true],

@@ -212,6 +212,28 @@ multi_array<T>& Runtime::temp_view(multi_array<T>& base)
     return *operand;
 }
 
+template <typename TO, typename T1, typename T2, typename T3>
+inline
+void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<T1>& op1, multi_array<T2>& op2, multi_array<T3>& op3)
+{
+    bh_instruction* instr;
+
+    guard();
+
+    instr = &queue[queue_size++];
+    instr->opcode = opcode;
+    instr->operand.resize(4);
+    instr->operand[0] = op0.meta;
+    instr->operand[1] = op1.meta;
+    instr->operand[2] = op2.meta;
+    instr->operand[3] = op3.meta;
+
+    if ((!identical(op0, op1)) && op0.getTemp()) { delete &op0; }
+    if (op1.getTemp()) { delete &op1; }
+    if (op2.getTemp()) { delete &op2; }
+    if (op3.getTemp()) { delete &op3; }
+}
+
 template <typename TO, typename TL, typename TR>
 inline
 void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, multi_array<TL>& op1, multi_array<TR>& op2)

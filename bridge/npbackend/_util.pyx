@@ -103,9 +103,10 @@ def dtype_support(dtype):
         return False
 
 def totalsize(array_like):
-    """Return the total size of an like object such as a bharray, ndarray, list, etc."""
-
-    if hasattr(array_like, "size"):
+    """Return the total size of an list like object such as a bharray, ndarray, list, etc."""
+    if np.isscalar(array_like):
+        return 1
+    elif hasattr(array_like, "size"):
         return array_like.size
     elif isinstance(array_like, collections.Iterable) and not isinstance(array_like, basestring):
         return sum(totalsize(item) for item in array_like)
