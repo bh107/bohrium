@@ -181,6 +181,8 @@ def take_using_index_tuple(a, index_tuple, out=None):
     index_list = []
     for index in index_tuple:
         index_list.append(array_create.array(index, dtype=numpy.uint64, bohrium=True))
+        if index_list[-1].size == 0:
+            return array_create.empty((0,), dtype=a.dtype)
 
     # And then broadcast them into the same shape
     index_list = array_manipulation.broadcast_arrays(*index_list)
@@ -359,6 +361,8 @@ def put_using_index_tuple(a, index_tuple, v):
     index_list = []
     for index in index_tuple:
         index_list.append(array_create.array(index, dtype=numpy.uint64, bohrium=True))
+        if index_list[-1].size == 0:
+            return array_create.empty((0,), dtype=a.dtype)
 
     # And then broadcast them into the same shape
     index_list = array_manipulation.broadcast_arrays(*index_list)

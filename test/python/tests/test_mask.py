@@ -29,7 +29,7 @@ class test_get_bool_mask:
             cmd += "m = R.random_integers(0, 1, size=a.shape, dtype=np.bool, bohrium=BH); "
             yield (cmd)
 
-    def test_get_scalar(self, cmd):
+    def test_get(self, cmd):
         cmd += "res = a[m]"
         return cmd
 
