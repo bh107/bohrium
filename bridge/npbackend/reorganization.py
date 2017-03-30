@@ -4,6 +4,7 @@ Reorganization of Array Elements Routines
 """
 import warnings
 import numpy_force as numpy
+from numpy.lib.stride_tricks import as_strided
 from . import bhary
 from . import _util
 from .bhary import fix_biclass_wrapper, get_bhc
@@ -281,19 +282,36 @@ def put(a, ind, v, mode='raise'):
     """
 
     if not bhary.check(a):
-        return numpy.put(a, ind, v, mode=mode)
+        return numpy.put(a, ind.astype(numpy.int64), v, mode=mode)
 
     if mode != "raise":
         warnings.warn("Bohrium only supports the 'raise' mode not '%s', "
                       "it will be handled by the original NumPy." % mode, UserWarning, 2)
         return numpy.put(a, ind, v, mode=mode)
 
-    if _util.totalsize(ind) != _util.totalsize(v):
-        warnings.warn("Bohrium only supports 'ind' and 'v' having the same length, "
-                      "it will be handled by the original NumPy.", UserWarning, 2)
-        return numpy.put(a, ind, v, mode=mode)
+    ary = array_create.array(a)
+    indexes = array_manipulation.flatten(array_create.array(ind, dtype=numpy.uint64), always_copy=False)
+    values = array_manipulation.flatten(array_create.array(v, dtype=ary.dtype), always_copy=False)
 
-    scatter(a, ind, v)
+    # Now let's make the shape of 'indexes' and 'values' match
+    if indexes.size > values.size:
+        if values.size == 1:
+            # When 'values' is a scalar, we can broadcast it to match 'indexes'
+            values = as_strided(values, shape=indexes.shape, strides=(0,))
+        else:  # else we repeat 'values' enough times to be larger than 'indexes'
+            values = as_strided(values,
+                                shape=(indexes.size // values.size + 2, values.size),
+                                strides=(0, values.itemsize))
+            values = array_manipulation.flatten(values, always_copy=False)
+
+    # When 'values' is too large, we simple cut the end off
+    if values.size > indexes.size:
+        values = values[0:indexes.size]
+
+    # Now that 'indexes' and 'values' have the same shape, we can call 'scatter'
+    scatter(ary, indexes, values)
+
+
 
 
 @fix_biclass_wrapper
@@ -399,6 +417,7 @@ def flatnonzero(a):
         mask = a != 0
     new_indexes = array_create.arange(a.size, dtype=numpy.uint64)
     return pack(new_indexes, mask)
+
 
 @fix_biclass_wrapper
 def nonzero(a):

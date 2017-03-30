@@ -47,6 +47,12 @@ class test_scatter:
     def test_put(self, cmd):
         return cmd + "M.put(res, ind, val)"
 
+    def test_put_scalar(self, cmd):
+        return cmd + "M.put(res, ind, 42)"
+
+    def test_put_fixed_length_val(self, cmd):
+        return cmd + "M.put(res, ind, M.arange(10))"
+
     def test_put_ary_mth(self, cmd):
         return cmd + "res.put(ind, val)"
 
