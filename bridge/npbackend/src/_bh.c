@@ -667,6 +667,18 @@ BhArray_all(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+BhArray_min(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("min", self, args, kwds);
+}
+
+static PyObject *
+BhArray_max(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("max", self, args, kwds);
+}
+
+static PyObject *
 BhArray_astype(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return method2function("array", self, args, kwds);
@@ -719,6 +731,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"cumprod",    (PyCFunction) BhArray_cumprod,     METH_VARARGS | METH_KEYWORDS, "a.cumprod(axis=None, dtype=None, out=None)\n\nReturn the cumulative product of the array elements over the given axis\n\nRefer to `numpy.cumprod` for full documentation."},
     {"any",        (PyCFunction) BhArray_any,         METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
     {"all",        (PyCFunction) BhArray_all,         METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
+    {"min",        (PyCFunction) BhArray_min,         METH_VARARGS | METH_KEYWORDS, ""},
+    {"max",        (PyCFunction) BhArray_max,         METH_VARARGS | METH_KEYWORDS, ""},
     {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
     {"fill",       (PyCFunction) BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
     {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
