@@ -6,6 +6,7 @@ Masking routines
 import warnings
 from . import array_create
 from . import bhary
+from . import reorganization
 import numpy_force as numpy
 from .bhary import fix_biclass_wrapper
 
@@ -113,3 +114,11 @@ def where(condition, x=None, y=None):
     ret += condition * x
     ret += ~condition * y
     return ret
+
+
+def masked_get(ary, bool_mask):
+    """
+    Get the elements of 'ary' specified by 'bool_mask'.
+    """
+
+    return ary[reorganization.nonzero(bool_mask)]

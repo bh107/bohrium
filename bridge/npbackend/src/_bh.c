@@ -51,7 +51,8 @@ PyObject *bhary = NULL; //The bhary Python module
 PyObject *ufuncs = NULL; //The ufuncs Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
-PyObject *reorganization = NULL; //The array_create Python module
+PyObject *reorganization = NULL; //The reorganization Python module
+PyObject *masking = NULL; //The masking Python module
 int bh_sync_warn = 0; // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn = 0;  // Boolean: should we warn when about memory problems
 
@@ -917,12 +918,37 @@ static int is_scalar_key(PyObject *k) {
 #endif
 }
 
+//Help function that returns True when 'k' is a bool mask with the same shape as 'o'
+static int obj_is_a_bool_mask(PyObject *o, PyObject *k)
+{
+    Py_ssize_t i;
+    assert(o != NULL);
+    assert(k != NULL);
+    assert(PyArray_Check(o));
+
+    if (!PyArray_Check(k)) {
+        return 0;
+    }
+    if (PyArray_NDIM((PyArrayObject*)o) != PyArray_NDIM((PyArrayObject*)k)) {
+        return 0;
+    }
+    for(i=0; i<PyArray_NDIM((PyArrayObject*)o); ++i) {
+        if (PyArray_DIM((PyArrayObject*)o, i) != PyArray_DIM((PyArrayObject*)k, i))
+            return 0;
+    }
+    return 1;
+}
+
 static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
     assert(BhArray_CheckExact(o));
+
+    if (obj_is_a_bool_mask(o, k)) {
+        return PyObject_CallMethod(masking, "masked_get", "OO", o, k);
+    }
 
     // Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k)) {
@@ -1210,6 +1236,9 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
     reorganization = PyImport_ImportModule("bohrium.reorganization");
     if(reorganization == NULL)
+        return RETVAL;
+    masking = PyImport_ImportModule("bohrium.masking");
+    if(masking == NULL)
         return RETVAL;
 
     //Check the 'BH_SYNC_WARN' flag
