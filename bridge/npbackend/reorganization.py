@@ -171,6 +171,9 @@ def take_using_index_tuple(a, index_tuple, out=None):
 
     assert len(index_tuple) == a.ndim
 
+    if a.size == 0:
+        return array_create.empty((0,), dtype=a.dtype)
+
     if a.ndim == 1:
         return take(a, index_tuple[0], out=out)
 
@@ -178,6 +181,8 @@ def take_using_index_tuple(a, index_tuple, out=None):
     index_list = []
     for index in index_tuple:
         index_list.append(array_create.array(index, dtype=numpy.uint64, bohrium=True))
+        if index_list[-1].size == 0:
+            return array_create.empty((0,), dtype=a.dtype)
 
     # And then broadcast them into the same shape
     index_list = array_manipulation.broadcast_arrays(*index_list)
@@ -346,6 +351,9 @@ def put_using_index_tuple(a, index_tuple, v):
     v = array_create.array(v, bohrium=True)
     assert len(index_tuple) == a.ndim
 
+    if a.size == 0:
+        return
+
     if a.ndim == 1:
         return put(a, index_tuple[0], v)
 
@@ -353,6 +361,8 @@ def put_using_index_tuple(a, index_tuple, v):
     index_list = []
     for index in index_tuple:
         index_list.append(array_create.array(index, dtype=numpy.uint64, bohrium=True))
+        if index_list[-1].size == 0:
+            return array_create.empty((0,), dtype=a.dtype)
 
     # And then broadcast them into the same shape
     index_list = array_manipulation.broadcast_arrays(*index_list)
@@ -429,11 +439,14 @@ def pack(ary, mask):
     if ary.size == 0 or mask.size == 0:
         return
 
-    true_indexes = ufuncs.add.accumulate(mask) - 1
-    true_count = int(true_indexes[-1]) + 1
-    ret = array_create.empty(true_count, dtype=ary.dtype)
-    cond_scatter(ret, true_indexes, ary, mask)
-    return ret
+    true_indexes = ufuncs.add.accumulate(mask)
+    true_count = int(true_indexes[-1])
+    if true_count == 0:
+        return array_create.empty((0,), dtype=ary.dtype)
+    else:
+        ret = array_create.empty((true_count,), dtype=ary.dtype)
+        cond_scatter(ret, true_indexes - 1, ary, mask)
+        return ret
 
 
 @fix_biclass_wrapper
@@ -550,3 +563,4 @@ def nonzero(a):
         ret.append(tmp)
         nz -= tmp * stride
     return ret
+

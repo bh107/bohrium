@@ -1,7 +1,6 @@
 import util
 import functools
 import operator
-import random
 
 
 class test_gather:

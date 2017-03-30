@@ -51,7 +51,8 @@ PyObject *bhary = NULL; //The bhary Python module
 PyObject *ufuncs = NULL; //The ufuncs Python module
 PyObject *bohrium = NULL; //The Bohrium Python module
 PyObject *array_create = NULL; //The array_create Python module
-PyObject *reorganization = NULL; //The array_create Python module
+PyObject *reorganization = NULL; //The reorganization Python module
+PyObject *masking = NULL; //The masking Python module
 int bh_sync_warn = 0; // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn = 0;  // Boolean: should we warn when about memory problems
 
@@ -787,27 +788,23 @@ static int obj_contains_a_list_or_ary(PyObject *o)
     return 0;
 }
 
-//Help function that returns True when 'k' is a bool mask of 'o' and 'v' is a scalar
-static int obj_is_a_bool_mask_ass_scalar(PyObject *o, PyObject *k, PyObject *v)
+//Help function that returns True when 'k' is a bool mask with the same shape as 'o'
+static int obj_is_a_bool_mask(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(o != NULL);
     assert(k != NULL);
-    assert(v != NULL);
     assert(PyArray_Check(o));
 
-    if ((!PyArray_Check(k)) ||
-        (!PyArray_CheckAnyScalar(v)) ||
-        PyArray_TYPE((PyArrayObject*)k) != NPY_BOOL ||
-        PyArray_SIZE((PyArrayObject*)o) != PyArray_SIZE((PyArrayObject*)k) ||
-        PyArray_NDIM((PyArrayObject*)o) != PyArray_NDIM((PyArrayObject*)k))
-    {
+    if (!(PyArray_Check(k) && PyArray_TYPE((PyArrayObject*)k) == NPY_BOOL)) {
         return 0;
     }
-    for(i=0; i<PyArray_NDIM((PyArrayObject*)o); ++i)
-    {
+    if (PyArray_NDIM((PyArrayObject*)o) != PyArray_NDIM((PyArrayObject*)k)) {
+        return 0;
+    }
+    for(i=0; i<PyArray_NDIM((PyArrayObject*)o); ++i) {
         if (PyArray_DIM((PyArrayObject*)o, i) != PyArray_DIM((PyArrayObject*)k, i))
-            return 0;
+        return 0;
     }
     return 1;
 }
@@ -817,20 +814,18 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
 {
     Py_ssize_t i;
     assert(k != NULL);
-    if(v == NULL)
-    {
+    if(v == NULL) {
         PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
         return -1;
     }
-    if(!PyArray_ISWRITEABLE((PyArrayObject *)o))
-    {
+    if(!PyArray_ISWRITEABLE((PyArrayObject *)o)) {
         PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
         return -1;
     }
 
     // Let's handle assignments to a boolean masked array
-    if (obj_is_a_bool_mask_ass_scalar(o, k, v)) {
-        PyObject *err = PyObject_CallMethod(ufuncs, "set_scalar_in_masked_item", "OOO", o, k, v);
+    if (obj_is_a_bool_mask(o, k)) {
+        PyObject *err = PyObject_CallMethod(masking, "masked_set", "OOO", o, k, v);
         if(err == NULL) {
             return -1;
         }
@@ -839,8 +834,7 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
     }
 
     //Generally, we do not support indexing with arrays
-    if(obj_contains_a_list_or_ary(k) == 1)
-    {
+    if(obj_contains_a_list_or_ary(k) == 1) {
         // But when indexing array with an index array for each dimension in the array,
         // it corresponds to put_using_index_tuple()
         if (PySequence_Check(k) && PySequence_Size(k) == PyArray_NDIM((PyArrayObject*)o)) {
@@ -866,14 +860,12 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
                           "It will be handled by the original NumPy.",1);
 
         //Let's make sure that 'k' is a NumPy array
-        if(BhArray_CheckExact(k))
-        {
+        if(BhArray_CheckExact(k)) {
             k = BhArray_copy2numpy(k, NULL);
             if(k == NULL)
                 return -1;
         }
-        if(PyTuple_Check(k))
-        {
+        if(PyTuple_Check(k)) {
             for(i=0; i<PyTuple_GET_SIZE(k); ++i)
             {
                 PyObject *a = PyTuple_GET_ITEM(k, i);
@@ -889,8 +881,7 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
             }
         }
         //Let's make sure that 'v' is a NumPy array
-        if(BhArray_CheckExact(v))
-        {
+        if(BhArray_CheckExact(v)) {
             v = BhArray_copy2numpy(v, NULL);
             if(v == NULL)
                 return -1;
@@ -917,12 +908,17 @@ static int is_scalar_key(PyObject *k) {
 #endif
 }
 
+
 static PyObject *
 BhArray_GetItem(PyObject *o, PyObject *k)
 {
     Py_ssize_t i;
     assert(k != NULL);
     assert(BhArray_CheckExact(o));
+
+    if (obj_is_a_bool_mask(o, k)) {
+        return PyObject_CallMethod(masking, "masked_get", "OO", o, k);
+    }
 
     // Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k)) {
@@ -1210,6 +1206,9 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
     reorganization = PyImport_ImportModule("bohrium.reorganization");
     if(reorganization == NULL)
+        return RETVAL;
+    masking = PyImport_ImportModule("bohrium.masking");
+    if(masking == NULL)
         return RETVAL;
 
     //Check the 'BH_SYNC_WARN' flag
