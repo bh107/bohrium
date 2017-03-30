@@ -2,11 +2,10 @@
 Array manipulation routines
 ===========================
 """
-import functools
-import operator
 from . import array_create
 import numpy_force as numpy
 from . import bhary
+from . import _util
 from .bhary import fix_biclass_wrapper
 
 @fix_biclass_wrapper
@@ -47,8 +46,8 @@ def flatten(ary, order='C', always_copy=True):
 
     if order == 'F' or (order == 'A' and not ary.flags['F_CONTIGUOUS']):
         ary = numpy.transpose(ary)
-            
-    ret = ary.reshape(functools.reduce(operator.mul, ary.shape))
+
+    ret = ary.reshape(_util.totalsize(ary))
     if always_copy:
         return ret.copy()
     else:
