@@ -118,3 +118,6 @@ class test_fancy_indexing_set:
 
     def test_put_using_index_tuple(self, cmd):
         return cmd + "bh.put_using_index_tuple(res, ind, 42)"
+
+    def test_indexing(self, cmd):
+        return cmd + "res[ind] = 42"

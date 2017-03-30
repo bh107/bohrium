@@ -838,10 +838,20 @@ BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v)
         return 0;
     }
 
-    //We do not support indexing with arrays
+    //Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k) == 1)
     {
-        // Generally, but when indexing a vector, it corresponds to np.put()
+        // But when indexing array with an index array for each dimension in the array,
+        // it corresponds to put_using_index_tuple()
+        if (PySequence_Check(k) && PySequence_Size(k) == PyArray_NDIM((PyArrayObject*)o)) {
+            PyObject *err = PyObject_CallMethod(reorganization, "put_using_index_tuple", "OOO", o, k, v);
+            if(err == NULL) {
+                return -1;
+            }
+            Py_XDECREF(err);
+            return 0;
+        }
+        // And when indexing a vector, it corresponds to np.put()
         if (PyArray_NDIM((PyArrayObject*)o) == 1) {
             PyObject *err = PyObject_CallMethod(reorganization, "put", "OOO", o, k, v);
             if(err == NULL) {
@@ -917,7 +927,8 @@ BhArray_GetItem(PyObject *o, PyObject *k)
     // Generally, we do not support indexing with arrays
     if(obj_contains_a_list_or_ary(k)) {
 
-        // But when indexing array with an index array for each dimension in the array
+        // But when indexing array with an index array for each dimension in the array,
+        // it corresponds to take_using_index_tuple()
         if (PySequence_Check(k) && PySequence_Size(k) == PyArray_NDIM((PyArrayObject*)o)) {
             return PyObject_CallMethod(reorganization, "take_using_index_tuple", "OO", o, k);
         }
