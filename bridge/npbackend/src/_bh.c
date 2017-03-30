@@ -926,7 +926,7 @@ static int obj_is_a_bool_mask(PyObject *o, PyObject *k)
     assert(k != NULL);
     assert(PyArray_Check(o));
 
-    if (!PyArray_Check(k)) {
+    if (!(PyArray_Check(k) && PyArray_TYPE((PyArrayObject*)k) == NPY_BOOL)) {
         return 0;
     }
     if (PyArray_NDIM((PyArrayObject*)o) != PyArray_NDIM((PyArrayObject*)k)) {
