@@ -229,9 +229,6 @@ void Runtime::typecheck(void)
         void Runtime::typecheck<BH_ARCTANH, double, double>(void) { }
         template <>
         inline
-        void Runtime::typecheck<BH_ADD_ACCUMULATE, bool, bool, int64_t>(void) { }
-        template <>
-        inline
         void Runtime::typecheck<BH_ADD_ACCUMULATE, std::complex<double> , std::complex<double> , int64_t>(void) { }
         template <>
         inline
@@ -1318,6 +1315,12 @@ void Runtime::typecheck(void)
         void Runtime::typecheck<BH_INVERT, uint8_t, uint8_t>(void) { }
         template <>
         inline
+        void Runtime::typecheck<BH_ISFINITE, bool, float>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, double>(void) { }
+        template <>
+        inline
         void Runtime::typecheck<BH_ISINF, bool, float>(void) { }
         template <>
         inline
@@ -1678,9 +1681,6 @@ void Runtime::typecheck(void)
         void Runtime::typecheck<BH_MULTIPLY, uint8_t, uint8_t, uint8_t>(void) { }
         template <>
         inline
-        void Runtime::typecheck<BH_MULTIPLY_ACCUMULATE, bool, bool, int64_t>(void) { }
-        template <>
-        inline
         void Runtime::typecheck<BH_MULTIPLY_ACCUMULATE, std::complex<double> , std::complex<double> , int64_t>(void) { }
         template <>
         inline
@@ -1715,9 +1715,6 @@ void Runtime::typecheck(void)
         template <>
         inline
         void Runtime::typecheck<BH_MULTIPLY_ACCUMULATE, uint8_t, uint8_t, int64_t>(void) { }
-        template <>
-        inline
-        void Runtime::typecheck<BH_MULTIPLY_REDUCE, bool, bool, int64_t>(void) { }
         template <>
         inline
         void Runtime::typecheck<BH_MULTIPLY_REDUCE, std::complex<double> , std::complex<double> , int64_t>(void) { }

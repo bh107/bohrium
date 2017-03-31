@@ -177,6 +177,9 @@
 ["isinf",           "BH_ISINF", "sugar.nops2.bool",     true],
 ["bh_isinf",        "BH_ISINF", "runtime.nops2",   true],
 
+["isfinite",        "BH_ISFINITE", "sugar.nops2.bool", true],
+["bh_isfinite",     "BH_ISFINITE", "runtime.nops2",    true],
+
 ["log",             "BH_LOG",   "sugar.nops2",      true],
 ["bh_log",          "BH_LOG",   "runtime.nops2",    true],
 

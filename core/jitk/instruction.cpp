@@ -251,6 +251,9 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_ISINF:
             out << ops[0] << " = isinf(" << ops[1] << ");\n";
             break;
+        case BH_ISFINITE:
+            out << ops[0] << " = isfinite(" << ops[1] << ");\n";
+            break;
         case BH_RANGE:
             out << ops[0] << " = " << ops[1] << ";\n";
             break;
