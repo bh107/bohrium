@@ -667,6 +667,18 @@ BhArray_all(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+BhArray_min(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("min", self, args, kwds);
+}
+
+static PyObject *
+BhArray_max(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    return method2function("max", self, args, kwds);
+}
+
+static PyObject *
 BhArray_astype(PyObject *self, PyObject *args, PyObject *kwds)
 {
     return method2function("array", self, args, kwds);
@@ -703,28 +715,30 @@ BhArray_put(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyMethodDef BhArrayMethods[] = {
-    {"__array_finalize__", BhArray_finalize,    METH_VARARGS,  NULL},
-    {"_data_bhc2np",       BhArray_data_bhc2np, METH_NOARGS,   "Copy the Bohrium-C data to NumPy data"},
-    {"_data_np2bhc",       BhArray_data_np2bhc, METH_NOARGS,   "Copy the NumPy data to Bohrium-C data"},
-    {"_data_fill",         BhArray_data_fill,   METH_VARARGS,  "Fill the Bohrium-C data from a numpy NumPy"},
-    {"copy2numpy",         BhArray_copy2numpy,  METH_NOARGS,   "Copy the array in C-style memory layout to a regular NumPy array"},
-    {"resize",             BhArray_resize,      METH_VARARGS,  "Change shape and size of array in-place"},
-    {"copy",       (PyCFunction) BhArray_copy,        METH_VARARGS | METH_KEYWORDS, "a.copy(order='C')\n\nReturn a copy of the array."},
-    {"reshape",    (PyCFunction) BhArray_reshape,     METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
-    {"flatten",    (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"ravel",      (PyCFunction) BhArray_flatten,     METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
-    {"sum",        (PyCFunction) BhArray_sum,         METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
-    {"prod",       (PyCFunction) BhArray_prod,        METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
-    {"cumsum",     (PyCFunction) BhArray_cumsum,      METH_VARARGS | METH_KEYWORDS, "a.cumsum(axis=None, dtype=None, out=None)\n\nReturn the cumulative sum of the array elements over the given axis.\n\nRefer to `bohrium.cumsum` for full documentation."},
-    {"cumprod",    (PyCFunction) BhArray_cumprod,     METH_VARARGS | METH_KEYWORDS, "a.cumprod(axis=None, dtype=None, out=None)\n\nReturn the cumulative product of the array elements over the given axis\n\nRefer to `numpy.cumprod` for full documentation."},
-    {"any",        (PyCFunction) BhArray_any,         METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
-    {"all",        (PyCFunction) BhArray_all,         METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
-    {"astype",     (PyCFunction) BhArray_astype,      METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
-    {"fill",       (PyCFunction) BhArray_fill,        METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
-    {"trace",      (PyCFunction) BhArray_trace,       METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
-    {"tofile",     (PyCFunction) BhArray_print_to_file, METH_VARARGS | METH_KEYWORDS, "a.tofile(fid, sep=\"\", format=\"%s\")\n\nWrite array to a file as text or binary (default)."},
-    {"take",       (PyCFunction) BhArray_take, METH_VARARGS | METH_KEYWORDS, "a.take(indices, axis=None, out=None, mode='raise')."},
-    {"put",        (PyCFunction) BhArray_put,  METH_VARARGS | METH_KEYWORDS, "a.put(indices, values, mode='raise')\n\nSet a.flat[n] = values[n] for all n in indices."},
+    {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
+    {"_data_bhc2np",       BhArray_data_bhc2np,                 METH_NOARGS,                  "Copy the Bohrium-C data to NumPy data"},
+    {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
+    {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
+    {"copy2numpy",         BhArray_copy2numpy,                  METH_NOARGS,                  "Copy the array in C-style memory layout to a regular NumPy array"},
+    {"resize",             BhArray_resize,                      METH_VARARGS,                 "Change shape and size of array in-place"},
+    {"copy",               (PyCFunction) BhArray_copy,          METH_VARARGS | METH_KEYWORDS, "a.copy(order='C')\n\nReturn a copy of the array."},
+    {"reshape",            (PyCFunction) BhArray_reshape,       METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
+    {"flatten",            (PyCFunction) BhArray_flatten,       METH_VARARGS | METH_KEYWORDS, "a.flatten()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"ravel",              (PyCFunction) BhArray_flatten,       METH_VARARGS | METH_KEYWORDS, "a.ravel()\n\nReturn a copy of the array collapsed into one dimension."},
+    {"sum",                (PyCFunction) BhArray_sum,           METH_VARARGS | METH_KEYWORDS, "a.sum(axis=None, dtype=None, out=None)\n\nReturn the sum of the array elements over the given axis.\n\nRefer to `bohrium.sum` for full documentation."},
+    {"prod",               (PyCFunction) BhArray_prod,          METH_VARARGS | METH_KEYWORDS, "a.prod(axis=None, dtype=None, out=None)\n\nReturn the product of the array elements over the given axis\n\nRefer to `numpy.prod` for full documentation."},
+    {"cumsum",             (PyCFunction) BhArray_cumsum,        METH_VARARGS | METH_KEYWORDS, "a.cumsum(axis=None, dtype=None, out=None)\n\nReturn the cumulative sum of the array elements over the given axis.\n\nRefer to `bohrium.cumsum` for full documentation."},
+    {"cumprod",            (PyCFunction) BhArray_cumprod,       METH_VARARGS | METH_KEYWORDS, "a.cumprod(axis=None, dtype=None, out=None)\n\nReturn the cumulative product of the array elements over the given axis\n\nRefer to `numpy.cumprod` for full documentation."},
+    {"any",                (PyCFunction) BhArray_any,           METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
+    {"all",                (PyCFunction) BhArray_all,           METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
+    {"min",                (PyCFunction) BhArray_min,           METH_VARARGS | METH_KEYWORDS, "a.min(axis=None, out=None)\n\nReturn the minimum along a given axis.\n\nRefer to numpy.amin for full documentation."},
+    {"max",                (PyCFunction) BhArray_max,           METH_VARARGS | METH_KEYWORDS, "a.max(axis=None, out=None)\n\nReturn the maximum along a given axis.\n\nRefer to numpy.amax for full documentation."},
+    {"astype",             (PyCFunction) BhArray_astype,        METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
+    {"fill",               (PyCFunction) BhArray_fill,          METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
+    {"trace",              (PyCFunction) BhArray_trace,         METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},
+    {"tofile",             (PyCFunction) BhArray_print_to_file, METH_VARARGS | METH_KEYWORDS, "a.tofile(fid, sep=\"\", format=\"%s\")\n\nWrite array to a file as text or binary (default)."},
+    {"take",               (PyCFunction) BhArray_take,          METH_VARARGS | METH_KEYWORDS, "a.take(indices, axis=None, out=None, mode='raise')."},
+    {"put",                (PyCFunction) BhArray_put,           METH_VARARGS | METH_KEYWORDS, "a.put(indices, values, mode='raise')\n\nSet a.flat[n] = values[n] for all n in indices."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
