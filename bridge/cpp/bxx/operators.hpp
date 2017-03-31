@@ -349,6 +349,16 @@ multi_array<bool>& isinf (multi_array<T>& rhs)
 
     return *res;
 }
+template <typename T>
+inline
+multi_array<bool>& isfinite (multi_array<T>& rhs)
+{
+    multi_array<bool>* res = &Runtime::instance().create_base<bool, T>(rhs); // Construct result
+    bh_isfinite (*res, rhs); // Enqueue
+    res->setTemp(true); // Mark result as temp
+
+    return *res;
+}
 template <typename TL, typename TR>
 inline multi_array<TL>& add (multi_array<TL>& lhs, multi_array<TR>& rhs)
 {

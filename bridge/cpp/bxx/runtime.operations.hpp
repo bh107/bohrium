@@ -1089,6 +1089,23 @@ void bh_tally (void)
         Runtime::instance().typecheck<BH_ISINF, OutT, InT>();
         Runtime::instance().enqueue((bh_opcode)BH_ISINF, res, rhs);
     }
+    // bh_isfinite - BH_ISFINITE - runtime.nops2 - 2 (A,A)
+    template <typename OutT, typename InT>
+    inline
+    void bh_isfinite (multi_array<OutT>& res, multi_array<InT> &rhs)
+    {
+        Runtime::instance().typecheck<BH_ISFINITE, OutT, InT>();
+        Runtime::instance().enqueue((bh_opcode)BH_ISFINITE, res, rhs);
+    }
+
+    // bh_isfinite - BH_ISFINITE - runtime.nops2 - 2 (A,K)
+    template <typename OutT, typename InT>
+    inline
+    void bh_isfinite (multi_array<OutT>& res, const InT rhs)
+    {
+        Runtime::instance().typecheck<BH_ISFINITE, OutT, InT>();
+        Runtime::instance().enqueue((bh_opcode)BH_ISFINITE, res, rhs);
+    }
     // bh_log - BH_LOG - runtime.nops2 - 2 (A,A)
     template <typename OutT, typename InT>
     inline
