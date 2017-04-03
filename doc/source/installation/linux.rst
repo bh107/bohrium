@@ -116,7 +116,7 @@ And some additional packages::
 
 And for python v3 support::
 
-  sudo apt-get python3-dev python3-numpy python3-dev cython3
+  sudo apt-get install python3-dev python3-numpy python3-dev cython3
 
 Packages for visualization::
 
