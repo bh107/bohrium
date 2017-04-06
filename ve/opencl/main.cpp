@@ -270,6 +270,10 @@ void Impl::execute(bh_ir *bhir) {
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
         set_constructor_flag(instr_list, engine.buffers);
+    } else {
+        for (bh_instruction *instr: instr_list) {
+            instr->constructor = false;
+        }
     }
 
     // The cache system
