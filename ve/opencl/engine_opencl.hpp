@@ -44,12 +44,12 @@ private:
     cl::Device device;
     cl::CommandQueue queue;
     // OpenCL work group sizes
-    cl_ulong work_group_size_1dx = 128;
-    cl_ulong work_group_size_2dx = 32;
-    cl_ulong work_group_size_2dy = 4;
-    cl_ulong work_group_size_3dx = 32;
-    cl_ulong work_group_size_3dy = 2;
-    cl_ulong work_group_size_3dz = 2;
+    const cl_ulong work_group_size_1dx;
+    const cl_ulong work_group_size_2dx;
+    const cl_ulong work_group_size_2dy;
+    const cl_ulong work_group_size_3dx;
+    const cl_ulong work_group_size_3dy;
+    const cl_ulong work_group_size_3dz;
     // OpenCL compile flags
     const std::string compile_flg;
     // Default device type
