@@ -102,7 +102,7 @@ class Statistics {
     void record(std::vector<bh_instruction> &instr_list) {
         if (enabled) {
             for (const bh_instruction &instr: instr_list) {
-                if (not bh_opcode_is_system(instr.opcode)) {
+                if (instr.opcode != BH_IDENTITY and not bh_opcode_is_system(instr.opcode)) {
                     const std::vector<bh_index> shape = instr.shape();
                     totalwork += bh_nelements(shape.size(), &shape[0]);
                 }
