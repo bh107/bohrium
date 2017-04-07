@@ -335,7 +335,9 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
-        const SymbolTable symbols(kernel.getAllInstr(), config.defaultGet("const_as_var", true));
+        const SymbolTable symbols(kernel.getAllInstr(),
+                                  config.defaultGet("index_as_var", true),
+                                  config.defaultGet("const_as_var", true));
 
         // Debug print
         if (verbose) {
