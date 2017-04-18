@@ -1,210 +1,60 @@
-# - Find CBLAS library
+# - Find cBLAS
+# Find the cBLAS includes and library
 #
-# This module finds an installed fortran library that implements the CBLAS 
-# linear-algebra interface (see http://www.netlib.org/blas/), with CBLAS
-# interface.
-#
-# This module sets the following variables:
-#  CBLAS_FOUND - set to true if a library implementing the CBLAS interface
-#    is found
-#  CBLAS_LINKER_FLAGS - uncached list of required linker flags (excluding -l
-#    and -L).
-#  CBLAS_LIBRARIES - uncached list of libraries (using full path name) to 
-#    link against to use CBLAS
-#  CBLAS_INCLUDE_DIR - path to includes
-#  CBLAS_INCLUDE_FILE - the file to be included to use CBLAS
-#
+#  CBLAS_INCLUDES    - where to find cblas.h/Accelerate.h
+#  CBLAS_LIBRARIES   - List of libraries when using CBLAS.
+#  CBLAS_FOUND       - True if CBLAS found.
 
-include(CheckFunctionExists)
-include(CheckIncludeFile)
 include(FindPackageHandleStandardArgs)
+include(CheckSymbolExists) 
 
-macro(CHECK_ALL_LIBRARIES LIBRARIES _prefix _name _flags _list _include _search_include)
-  # This macro checks for the existence of the combination of fortran libraries
-  # given by _list.  If the combination is found, this macro checks (using the 
-  # Check_Fortran_Function_Exists macro) whether can link against that library
-  # combination using the name of a routine given by _name using the linker
-  # flags given by _flags.  If the combination of libraries is found and passes
-  # the link test, LIBRARIES is set to the list of complete library paths that
-  # have been found.  Otherwise, LIBRARIES is set to FALSE.
-  
-  # N.B. _prefix is the prefix applied to the names of all cached variables that
-  # are generated internally and marked advanced by this macro.
 
-  set(__list)
-  foreach(_elem ${_list})
-    if(__list)
-      set(__list "${__list} - ${_elem}")
-    else(__list)
-      set(__list "${_elem}")
-    endif(__list)
-  endforeach(_elem)
-  message(STATUS "Checking for [${__list}]")
-  set(_libraries_work TRUE)
-  set(${LIBRARIES})
-  set(_combined_name)
-  set(_paths)
-  foreach(_library ${_list})
-    set(_combined_name ${_combined_name}_${_library})
+function(FIND_AND_CHECK_CBLAS _libname _includename _symbol)
+  find_path(_CBLAS_INCLUDES ${_includename})
+  find_library(_CBLAS_LIBRARIES NAMES ${_libname})
 
-    # did we find all the libraries in the _list until now?
-    # (we stop at the first unfound one)
-    if(_libraries_work)      
-      if(APPLE) 
-        find_library(${_prefix}_${_library}_LIBRARY
-          NAMES ${_library}
-          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV 
-          DYLD_LIBRARY_PATH 
-          )
-      else(APPLE)
-        find_library(${_prefix}_${_library}_LIBRARY
-          NAMES ${_library}
-          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV 
-          LD_LIBRARY_PATH 
-          )
-      endif(APPLE)
-      mark_as_advanced(${_prefix}_${_library}_LIBRARY)
-      if(${_prefix}_${_library}_LIBRARY)
-        get_filename_component(_path ${${_prefix}_${_library}_LIBRARY} PATH)
-        list(APPEND _paths ${_path}/../include ${_path}/../../include)
-      endif(${_prefix}_${_library}_LIBRARY)
-      set(${LIBRARIES} ${${LIBRARIES}} ${${_prefix}_${_library}_LIBRARY})
-      set(_libraries_work ${${_prefix}_${_library}_LIBRARY})
-    endif(_libraries_work)
-  endforeach(_library ${_list})
+  # check for if cblas symbol is present
+  if(_CBLAS_LIBRARIES AND _CBLAS_INCLUDES) 
+    set(CMAKE_REQUIRED_INCLUDES ${_CBLAS_INCLUDES})
+    set(CMAKE_REQUIRED_LIBRARIES ${_CBLAS_LIBRARIES})
+    check_symbol_exists(${_symbol} ${_includename} _HAVE_CBLAS_SYMBOL)
+    if(_HAVE_CBLAS_SYMBOL)
+      set(CBLAS_LIBRARIES ${_CBLAS_LIBRARIES} CACHE FILEPATH "Path to CBLAS library")
+      set(CBLAS_INCLUDES ${_CBLAS_INCLUDES} CACHE PATH "Path to CBLAS include directory")
+    endif(_HAVE_CBLAS_SYMBOL)
+  endif(_CBLAS_LIBRARIES AND _CBLAS_INCLUDES)
 
-  # Test include
-  set(_bug_search_include ${_search_include}) #CMAKE BUG!!! SHOULD NOT BE THAT
-  if(_bug_search_include)
-    find_path(${_prefix}${_combined_name}_INCLUDE ${_include} ${_paths})
-    mark_as_advanced(${_prefix}${_combined_name}_INCLUDE)
-    if(${_prefix}${_combined_name}_INCLUDE)
-      message(STATUS "Checking for [${__list}] -- includes found")
-      set(${_prefix}_INCLUDE_DIR ${${_prefix}${_combined_name}_INCLUDE})
-      set(${_prefix}_INCLUDE_FILE ${_include})
-    else(${_prefix}${_combined_name}_INCLUDE)
-      message(STATUS "Checking for [${__list}] -- includes not found")
-      set(_libraries_work FALSE)
-    endif(${_prefix}${_combined_name}_INCLUDE)
-  else(_bug_search_include)
-    set(${_prefix}_INCLUDE_DIR)
-    set(${_prefix}_INCLUDE_FILE ${_include})
-  endif(_bug_search_include)
+  # reset variables
+  unset(_CBLAS_INCLUDES CACHE)
+  unset(_CBLAS_LIBRARIES CACHE)
+endfunction(FIND_AND_CHECK_CBLAS) 
 
-  if(_libraries_work)
-    # Test this combination of libraries.
-    set(CMAKE_REQUIRED_LIBRARIES ${_flags} ${${LIBRARIES}})
-    CHECK_FUNCTION_EXISTS(${_name} ${_prefix}${_combined_name}_WORKS)
-    set(CMAKE_REQUIRED_LIBRARIES)
-    mark_as_advanced(${_prefix}${_combined_name}_WORKS)
-    set(_libraries_work ${${_prefix}${_combined_name}_WORKS})
 
-    if(_libraries_work)
-      message(STATUS "Checking for [${__list}] -- libraries found")
-    endif(_libraries_work)
-
-  endif(_libraries_work)
-  
-
-  if(NOT _libraries_work)
-    set(${LIBRARIES} FALSE)
-  endif(NOT _libraries_work)
-
-ENDMACRO(CHECK_ALL_LIBRARIES)
-
-set(CBLAS_LINKER_FLAGS)
-set(CBLAS_LIBRARIES)
-
-# CBLAS in intel mkl library? (shared)
+# check Apple CBLAS
 if(NOT CBLAS_LIBRARIES)
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_sgemm
-    ""
-    "mkl;guide;pthread"
-    "mkl_cblas.h"
-    TRUE
-    )
+  FIND_AND_CHECK_CBLAS("Accelerate" "Accelerate/Accelerate.h" cblas_sgemm)
 endif(NOT CBLAS_LIBRARIES)
 
-#CBLAS in intel mkl library? (static, 32bit)
+# OpenBLAS
 if(NOT CBLAS_LIBRARIES)
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_sgemm
-    ""
-    "mkl_ia32;guide;pthread"
-    "mkl_cblas.h"
-    TRUE
-    )
+  FIND_AND_CHECK_CBLAS("openblas" "cblas.h" cblas_sgemm)
 endif(NOT CBLAS_LIBRARIES)
 
-#CBLAS in intel mkl library? (static, em64t 64bit)
+# generic cblas / ATLAS
 if(NOT CBLAS_LIBRARIES)
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_sgemm
-    ""
-    "mkl_em64t;guide;pthread"
-    "mkl_cblas.h"
-    ON
-    )
+  FIND_AND_CHECK_CBLAS("cblas" "cblas.h" cblas_sgemm)
 endif(NOT CBLAS_LIBRARIES)
 
+# generic blas
 if(NOT CBLAS_LIBRARIES)
-  # CBLAS in ATLAS library? (http://math-atlas.sourceforge.net/)
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_dgemm
-    ""
-    "cblas;f77blas;atlas"
-    "cblas.h"
-    TRUE
-    )
+  FIND_AND_CHECK_CBLAS("blas" "cblas.h" cblas_sgemm)
 endif(NOT CBLAS_LIBRARIES)
 
-if(NOT CBLAS_LIBRARIES)
-  # CBLAS in OpenBLAS library?
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_dgemm
-    ""
-    "openblas"
-    "cblas.h"
-    TRUE
-    )
-endif(NOT CBLAS_LIBRARIES)
 
-# Apple CBLAS library?
-if(NOT CBLAS_LIBRARIES)
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_dgemm
-    ""
-    "Accelerate"
-    "Accelerate/Accelerate.h"
-    FALSE
-    )
-endif(NOT CBLAS_LIBRARIES)
+if (CBLAS_LIBRARIES)
+  set(CBLAS_FOUND TRUE CACHE INTERNAL "")
+endif(CBLAS_LIBRARIES)
 
-if(NOT CBLAS_LIBRARIES)
-  CHECK_ALL_LIBRARIES(
-    CBLAS_LIBRARIES
-    CBLAS
-    cblas_dgemm
-    ""
-    "vecLib"
-    "vecLib/vecLib.h"
-    FALSE
-    )
-endif(NOT CBLAS_LIBRARIES)
 
-find_package_handle_standard_args(CBLAS DEFAULT_MSG CBLAS_LIBRARIES CBLAS_INCLUDES)
-
-mark_as_advanced(CBLAS_LIBRARIES CBLAS_INCLUDES)
+find_package_handle_standard_args (CBLAS DEFAULT_MSG CBLAS_LIBRARIES CBLAS_INCLUDES)
+mark_as_advanced (CBLAS_LIBRARIES CBLAS_INCLUDES)
