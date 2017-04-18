@@ -28,7 +28,6 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
          -DBoost_NO_SYSTEM_PATHS=ON \
 	 -DBOOST_ROOT=$PWD/boost \
 	 -DBoost_USE_STATIC_LIBS=ON \
-	 -DCBLAS_LIBRARIES=$CONDA_PREFIX/lib/libopenblas.so \
 	 -DLAPACKE_LIBRARIES=$CONDA_PREFIX/lib/libopenblas.so \
 	 -DCORE_LINK_FLAGS="-static-libgcc -static-libstdc++" \
 	 -DFORCE_CONFIG_PATH=$PREFIX/etc/bohrium \
