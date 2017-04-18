@@ -20,14 +20,12 @@ requirements:
     - swig
     - gcc
     - openblas
-    - lapack
 
   run:
     - python
     - numpy >=1.8
     - gcc
     - openblas
-    - lapack
 
 about:
   home: http://bh107.org

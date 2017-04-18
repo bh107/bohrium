@@ -18,7 +18,9 @@ endif ()
 # handle the QUIETLY and REQUIRED arguments and set CBLAS_FOUND to TRUE if
 # all listed variables are TRUE
 
-set (CBLAS_LIBRARIES ${CBLAS_LIBRARIES_PRE})
+if (CBLAS_LIBRARIES_PRE)
+  set (CBLAS_LIBRARIES ${CBLAS_LIBRARIES_PRE})
+endif ()
 if (CBLAS_INCLUDES_PRE)
   set (CBLAS_INCLUDES ${CBLAS_INCLUDES_PRE})
   set (CBLAS_FOUND TRUE CACHE INTERNAL "")
