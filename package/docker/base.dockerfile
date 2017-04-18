@@ -3,7 +3,10 @@ MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
 
+RUN apt-get -qq update > /dev/null
+
 # Set the locale
+RUN apt-get -qq install locales > /dev/null
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
