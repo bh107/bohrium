@@ -73,6 +73,7 @@ compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
 libs = ${OPENMP_LIBS}
+index_as_var = true
 strides_as_variables = true
 const_as_var = true
 
@@ -89,5 +90,13 @@ device_type = auto
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${OPENCL_LIBS}
+index_as_var = true
 strides_as_variables = true
 const_as_var = true
+# OpenCL work group sizes
+work_group_size_1dx = 128
+work_group_size_2dx = 32
+work_group_size_2dy = 4
+work_group_size_3dx = 32
+work_group_size_3dy = 2
+work_group_size_3dz = 2

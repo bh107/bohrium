@@ -92,14 +92,16 @@ private:
     std::set<const bh_base*> _array_always; // Sets of base arrays that should always be arrays
 
 public:
-    SymbolTable(const std::vector<InstrPtr> &instr_list, bool const_as_var) {
+    SymbolTable(const std::vector<InstrPtr> &instr_list, bool index_as_var, bool const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
             for (const bh_view *view: instr->get_views()) {
                 _base_map.insert(std::make_pair(view->base, _base_map.size()));
                 _view_map.insert(std::make_pair(*view, _view_map.size()));
-                _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+                if (index_as_var) {
+                    _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+                }
                 _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
             }
             if (const_as_var) {

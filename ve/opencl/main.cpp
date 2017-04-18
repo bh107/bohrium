@@ -270,6 +270,10 @@ void Impl::execute(bh_ir *bhir) {
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
         set_constructor_flag(instr_list, engine.buffers);
+    } else {
+        for (bh_instruction *instr: instr_list) {
+            instr->constructor = false;
+        }
     }
 
     // The cache system
@@ -331,7 +335,9 @@ void Impl::execute(bh_ir *bhir) {
         stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
         stat.num_temp_arrays += kernel.getAllTemps().size();
 
-        const SymbolTable symbols(kernel.getAllInstr(), config.defaultGet("const_as_var", true));
+        const SymbolTable symbols(kernel.getAllInstr(),
+                                  config.defaultGet("index_as_var", true),
+                                  config.defaultGet("const_as_var", true));
 
         // Debug print
         if (verbose) {
