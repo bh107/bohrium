@@ -13,7 +13,7 @@ function(FIND_AND_CHECK_CBLAS _libname _includename _symbol)
   find_path(_CBLAS_INCLUDES ${_includename})
   find_library(_CBLAS_LIBRARIES NAMES ${_libname})
 
-  # check for if cblas symbol is present
+  # check if cblas symbol is present
   if(_CBLAS_LIBRARIES AND _CBLAS_INCLUDES) 
     set(CMAKE_REQUIRED_INCLUDES ${_CBLAS_INCLUDES})
     set(CMAKE_REQUIRED_LIBRARIES ${_CBLAS_LIBRARIES})
