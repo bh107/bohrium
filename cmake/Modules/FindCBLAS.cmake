@@ -30,7 +30,7 @@ endfunction(FIND_AND_CHECK_CBLAS)
 
 # check Apple CBLAS
 if(NOT CBLAS_LIBRARIES)
-  FIND_AND_CHECK_CBLAS("Accelerate" "Accelerate/Accelerate.h" cblas_sgemm)
+  FIND_AND_CHECK_CBLAS("Accelerate" "Accelerate.h" cblas_sgemm)
 endif(NOT CBLAS_LIBRARIES)
 
 # OpenBLAS
