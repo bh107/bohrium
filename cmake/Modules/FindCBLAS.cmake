@@ -6,18 +6,16 @@
 #  CBLAS_FOUND       - True if CBLAS found.
 
 include(FindPackageHandleStandardArgs)
-include(CheckSymbolExists) 
-
+include(CheckLibraryExists)
 
 function(FIND_AND_CHECK_CBLAS _libname _includename _symbol)
   find_path(_CBLAS_INCLUDES ${_includename})
   find_library(_CBLAS_LIBRARIES NAMES ${_libname})
 
   # check if cblas symbol is present
-  if(_CBLAS_LIBRARIES AND _CBLAS_INCLUDES) 
-    set(CMAKE_REQUIRED_INCLUDES ${_CBLAS_INCLUDES})
-    set(CMAKE_REQUIRED_LIBRARIES ${_CBLAS_LIBRARIES})
-    check_symbol_exists(${_symbol} ${_includename} _HAVE_CBLAS_SYMBOL)
+  if(_CBLAS_LIBRARIES AND _CBLAS_INCLUDES)
+    get_filename_component(_LIB_PATH ${_CBLAS_LIBRARIES} DIRECTORY)
+    check_library_exists(${_libname} ${_symbol} ${_LIB_PATH} _HAVE_CBLAS_SYMBOL)
     if(_HAVE_CBLAS_SYMBOL)
       set(CBLAS_LIBRARIES ${_CBLAS_LIBRARIES} CACHE FILEPATH "Path to CBLAS library")
       set(CBLAS_INCLUDES ${_CBLAS_INCLUDES} CACHE PATH "Path to CBLAS include directory")
@@ -27,7 +25,7 @@ function(FIND_AND_CHECK_CBLAS _libname _includename _symbol)
   # reset variables
   unset(_CBLAS_INCLUDES CACHE)
   unset(_CBLAS_LIBRARIES CACHE)
-endfunction(FIND_AND_CHECK_CBLAS) 
+endfunction(FIND_AND_CHECK_CBLAS)
 
 
 # check Apple CBLAS
