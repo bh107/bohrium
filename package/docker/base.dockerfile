@@ -3,7 +3,10 @@ MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
 
+RUN apt-get -qq update > /dev/null
+
 # Set the locale
+RUN apt-get -qq install locales > /dev/null
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -15,7 +18,7 @@ RUN apt-get -qq install wget unzip build-essential > /dev/null
 RUN apt-get -qq install cmake swig python python-numpy python-dev cython > /dev/null
 RUN apt-get -qq install libboost-serialization-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-regex-dev > /dev/null
 RUN apt-get -qq install mono-mcs mono-xbuild libmono-system-numerics4.0-cil libmono-microsoft-build-tasks-v4.0-4.0-cil > /dev/null
-RUN apt-get -qq install libblas-dev libclblas-dev liblapacke-dev > /dev/null
+RUN apt-get -qq install libopenblas-dev libclblas-dev liblapacke-dev > /dev/null
 RUN apt-get -qq install fftw3-dev libgl1-mesa-dev > /dev/null
 RUN apt-get -qq install python3 python3-numpy python3-dev cython3 > /dev/null
 RUN apt-get -qq install python2.7-scipy python3-scipy > /dev/null

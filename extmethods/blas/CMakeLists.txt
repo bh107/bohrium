@@ -38,8 +38,4 @@ if(CBLAS_FOUND)
     install(TARGETS bh_blas DESTINATION ${LIBDIR} COMPONENT bohrium)
 
     set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_blas${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
-else()
-    if (CBLAS_INCLUDES_PRE)
-        set_package_properties(BLAS PROPERTIES TYPE RECOMMENDED PURPOSE "CBLAS was found, but not enabled. \n   Manually enable BLAS with CBLAS_INCLUDES and CBLAS_LIBRARIES.")
-    endif()
 endif()
