@@ -75,3 +75,11 @@ class test_where:
         cmd += "res = M.where(m, a, b)"
         return cmd
 
+    def test_nanarray(self, arg):
+        (cmd, dtype) = arg
+        if dtype in util.TYPES.FLOAT:
+            cmd += "a[0] = M.nan;"
+            cmd += "res = M.where(M.isnan(a), M.ones_like(a), a)"
+            return cmd
+        else:
+            return "res = 0"
