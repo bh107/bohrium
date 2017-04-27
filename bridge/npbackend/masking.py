@@ -81,13 +81,12 @@ def where(condition, x=None, y=None):
     (array([1, 1, 2]), array([0, 1, 1]))
 
     """
-
-    if not (bhary.check(condition) or bhary.check(x) or bhary.check(y)):
-        return numpy.where(condition, x, y)
-
     if x is None or y is None:
         warnings.warn("Bohrium only supports where() when 'x' and 'y' are specified", stacklevel=2)
         return numpy.where(condition)
+
+    if not (bhary.check(condition) or bhary.check(x) or bhary.check(y)):
+        return numpy.where(condition, x, y)
 
     # Let's find a non-scalar and make sure that non-scalars are Bohrium arrays
     t = None
@@ -110,9 +109,25 @@ def where(condition, x=None, y=None):
         else:
             return y
 
-    ret = array_create.zeros_like(t)
-    ret += condition * x
-    ret += ~condition * y
+    # Find appropriate output type
+    array_types = []
+    scalar_types = []
+    for v in (x,y):
+        if numpy.isscalar(v):
+            scalar_types.append(type(v))
+        else:
+            array_types.append(v.dtype)
+    out_type = numpy.find_common_type(array_types, scalar_types)
+
+    ret = array_create.zeros(t.shape, dtype=out_type)
+    if numpy.isscalar(x):
+        ret[condition] = x
+    else:
+        ret[condition] = x[condition]
+    if numpy.isscalar(y):
+        ret[~condition] = y
+    else:
+        ret[~condition] = y[~condition]
     return ret
 
 
