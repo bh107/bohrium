@@ -11,10 +11,11 @@ ENV LC_ALL en_US.UTF-8
 RUN mkdir -p /benchpress
 WORKDIR /benchpress/
 ADD https://github.com/bh107/benchpress/archive/v2.0.zip ./benchpress.zip
-RUN ls
 RUN unzip -q benchpress.zip
-ENV PATH "/benchpress/benchpress-master/bin:$PATH"
-ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"
+RUN mv benchpress-* benchpress
+ENV PATH "/benchpress/benchpress/bin:$PATH"
+ENV PYTHONPATH "/benchpress/benchpress/module:$PYTHONPATH"
+RUN bp-info
 
 # Copy and build bohrium source files from "context"
 RUN mkdir -p /bohrium/build
