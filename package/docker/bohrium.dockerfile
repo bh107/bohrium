@@ -10,8 +10,8 @@ ENV LC_ALL en_US.UTF-8
 # Download benchpress
 RUN mkdir -p /benchpress
 WORKDIR /benchpress/
-ADD https://github.com/bh107/benchpress/archive/master.zip .
-RUN unzip -q master.zip
+ADD https://github.com/bh107/benchpress/archive/v2.0.zip .
+RUN unzip -q benchpress-2.0.zip
 ENV PATH "/benchpress/benchpress-master/bin:$PATH"
 ENV PYTHONPATH "/benchpress/benchpress-master/module:$PYTHONPATH"
 
