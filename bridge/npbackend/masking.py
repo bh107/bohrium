@@ -116,7 +116,9 @@ def where(condition, x=None, y=None):
         if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
             return condition * x + ~condition * y
     except TypeError: # ufuncs.isfinite does not support all dtypes
-        if numpy.isfinite(x).all() and numpy.isfinite(y).all():
+        xn = x if numpy.isscalar(x) else x.copy2numpy()
+        yn = y if numpy.isscalar(y) else y.copy2numpy()
+        if numpy.isfinite(xn).all() and numpy.isfinite(yn).all():
             return condition * x + ~condition * y
 
     # Find appropriate output type
