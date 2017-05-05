@@ -7,6 +7,8 @@ import warnings
 from . import array_create
 from . import bhary
 from . import reorganization
+from . import array_manipulation
+from . import ufuncs
 import numpy_force as numpy
 from .bhary import fix_biclass_wrapper
 
@@ -91,7 +93,7 @@ def where(condition, x=None, y=None):
     # Let's find a non-scalar and make sure that non-scalars are Bohrium arrays
     t = None
     if not numpy.isscalar(condition):
-        condition = array_create.array(condition)
+        condition = array_create.array(condition).astype("bool")
         t = condition
 
     if not numpy.isscalar(x):
@@ -109,6 +111,16 @@ def where(condition, x=None, y=None):
         else:
             return y
 
+    # Shortcut if input arrays are finite
+    try:
+        if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
+            return condition * x + ~condition * y
+    except TypeError: # ufuncs.isfinite does not support all dtypes
+        xn = x if numpy.isscalar(x) else x.copy2numpy()
+        yn = y if numpy.isscalar(y) else y.copy2numpy()
+        if numpy.isfinite(xn).all() and numpy.isfinite(yn).all():
+            return condition * x + ~condition * y
+
     # Find appropriate output type
     array_types = []
     scalar_types = []
@@ -119,15 +131,11 @@ def where(condition, x=None, y=None):
             array_types.append(v.dtype)
     out_type = numpy.find_common_type(array_types, scalar_types)
 
-    ret = array_create.zeros(t.shape, dtype=out_type)
-    if numpy.isscalar(x):
-        ret[condition] = x
-    else:
-        ret[condition] = x[condition]
-    if numpy.isscalar(y):
-        ret[~condition] = y
-    else:
-        ret[~condition] = y[~condition]
+    condition, x, y = array_manipulation.broadcast_arrays(condition, x, y)
+
+    ret = array_create.zeros(condition.shape, dtype=out_type)
+    ret[condition] = x[condition]
+    ret[~condition] = y[~condition]
     return ret
 
 
