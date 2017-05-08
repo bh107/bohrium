@@ -86,6 +86,8 @@ prof = false
 graph = false
 # Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
 device_type = auto
+# OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
+platform_no = -1
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods

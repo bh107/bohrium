@@ -92,6 +92,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
                                     compile_flg(config.defaultGet<string>("compiler_flg", "")),
                                     default_device_type(config.defaultGet<string>("device_type", "auto")),
+                                    platform_no(config.defaultGet<int>("platform_no", -1)),
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat) {
     vector<cl::Platform> platforms;
@@ -99,13 +100,42 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     if(platforms.size() == 0) {
         throw runtime_error("No OpenCL platforms found");
     }
-    cl::Platform default_platform=platforms[0];
-    if(verbose) {
-        cout << "Using platform: " << default_platform.getInfo<CL_PLATFORM_NAME>() << endl;
+
+    bool found = false;
+    cl::Platform platform;
+    if (platform_no == -1) {
+        for (auto pform : platforms) {
+            // Pick first valid platform
+            try {
+                // Get the device of the platform
+                platform = pform;
+                device = getDevice(platform, default_device_type);
+                found = true;
+            } catch(cl::Error err) {
+                // We try next platform
+            }
+        }
+    } else {
+        if (platform_no > ((int) platforms.size()-1)) {
+            std::stringstream ss;
+            ss << "No such OpenCL platform. Tried to fetch #";
+            ss << platform_no << " out of ";
+            ss << platforms.size()-1 << "." << endl;
+            throw std::runtime_error(ss.str());
+        }
+
+        platform = platforms[platform_no];
+        device = getDevice(platform, default_device_type);
+        found = true;
     }
 
-    //get the device of the default platform
-    device = getDevice(default_platform, default_device_type);
+    if (verbose) {
+        cout << "Using platform: " << platform.getInfo<CL_PLATFORM_NAME>() << endl;
+    }
+
+    if (!found) {
+        throw runtime_error("Invalid OpenCL device/platform");
+    }
 
     if(verbose) {
         cout << "Using device: " << device.getInfo<CL_DEVICE_NAME>() \
