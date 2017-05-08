@@ -245,15 +245,54 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_LOG2:
             out << ops[0] << " = log2(" << ops[1] << ");\n";
             break;
-        case BH_ISNAN:
-            out << ops[0] << " = isnan(" << ops[1] << ");\n";
+        case BH_ISNAN: {
+            const bh_type t0 = instr.operand_type(1);
+
+            if (bh_type_is_complex(t0)) {
+                if (opencl) {
+                    out << ops[0] << " = isnan(" << ops[1] << ".s0);\n";
+                } else {
+                    out << ops[0] << " = isnan(creal(" << ops[1] << "));\n";
+                }
+            } else if (bh_type_is_float(t0)) {
+                out << ops[0] << " = isnan(" << ops[1] << ");\n";
+            } else {
+                out << ops[0] << " = false;\n";
+            }
             break;
-        case BH_ISINF:
-            out << ops[0] << " = isinf(" << ops[1] << ");\n";
+        }
+        case BH_ISINF: {
+            const bh_type t0 = instr.operand_type(1);
+
+            if (bh_type_is_complex(t0)) {
+                if (opencl) {
+                    out << ops[0] << " = isinf(" << ops[1] << ".s0);\n";
+                } else {
+                    out << ops[0] << " = isinf(creal(" << ops[1] << "));\n";
+                }
+            } else if(bh_type_is_float(t0)) {
+                out << ops[0] << " = isinf(" << ops[1] << ");\n";
+            } else {
+                out << ops[0] << " = false;\n";
+            }
             break;
-        case BH_ISFINITE:
-            out << ops[0] << " = isfinite(" << ops[1] << ");\n";
+        }
+        case BH_ISFINITE: {
+            const bh_type t0 = instr.operand_type(1);
+
+            if (bh_type_is_complex(t0)) {
+                if (opencl) {
+                    out << ops[0] << " = isfinite(" << ops[1] << ".s0);\n";
+                } else {
+                    out << ops[0] << " = isfinite(creal(" << ops[1] << "));\n";
+                }
+            } else if (bh_type_is_float(t0)) {
+                out << ops[0] << " = isfinite(" << ops[1] << ");\n";
+            } else {
+                out << ops[0] << " = true;\n";
+            }
             break;
+        }
         case BH_RANGE:
             out << ops[0] << " = " << ops[1] << ";\n";
             break;
