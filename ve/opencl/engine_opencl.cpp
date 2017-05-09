@@ -142,8 +142,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
              << " ("<< device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")" << endl;
     }
 
-    vector<cl::Device> dev_list = {device};
-    context = cl::Context(dev_list);
+    context = cl::Context(device);
     queue = cl::CommandQueue(context, device);
 }
 
@@ -223,67 +222,68 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
 
     // Let's execute the OpenCL kernel
     cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
-    {
-        cl_uint i = 0;
-        for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
-            opencl_kernel.setArg(i++, *buffers.at(base));
-        }
-        for (const bh_view *view: offset_strides) {
-            uint64_t t1 = (uint64_t) view->start;
-            opencl_kernel.setArg(i++, t1);
-            for (int j=0; j<view->ndim; ++j) {
-                uint64_t t2 = (uint64_t) view->stride[j];
-                opencl_kernel.setArg(i++, t2);
-            }
-        }
-        for (const bh_instruction *instr: constants) {
-            switch (instr->constant.type)
-            {
-                case BH_BOOL:
-                    opencl_kernel.setArg(i++, instr->constant.value.bool8);
-                    break;
-                case BH_INT8:
-                    opencl_kernel.setArg(i++, instr->constant.value.int8);
-                    break;
-                case BH_INT16:
-                    opencl_kernel.setArg(i++, instr->constant.value.int16);
-                    break;
-                case BH_INT32:
-                    opencl_kernel.setArg(i++, instr->constant.value.int32);
-                    break;
-                case BH_INT64:
-                    opencl_kernel.setArg(i++, instr->constant.value.int64);
-                    break;
-                case BH_UINT8:
-                    opencl_kernel.setArg(i++, instr->constant.value.uint8);
-                    break;
-                case BH_UINT16:
-                    opencl_kernel.setArg(i++, instr->constant.value.uint16);
-                    break;
-                case BH_UINT32:
-                    opencl_kernel.setArg(i++, instr->constant.value.uint32);
-                    break;
-                case BH_UINT64:
-                    opencl_kernel.setArg(i++, instr->constant.value.uint64);
-                    break;
-                case BH_FLOAT32:
-                    opencl_kernel.setArg(i++, instr->constant.value.float32);
-                    break;
-                case BH_FLOAT64:
-                    opencl_kernel.setArg(i++, instr->constant.value.float64);
-                    break;
-                case BH_COMPLEX64:
-                    opencl_kernel.setArg(i++, instr->constant.value.complex64);
-                    break;
-                case BH_COMPLEX128:
-                    opencl_kernel.setArg(i++, instr->constant.value.complex128);
-                    break;
-                default:
-                    std::cerr << "Unknown OpenCL type: " << bh_type_text(instr->constant.type) << std::endl;
-                    throw std::runtime_error("Unknown OpenCL type");
-            }
+
+    cl_uint i = 0;
+    for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+        opencl_kernel.setArg(i++, *getBuffer(base));
+    }
+
+    for (const bh_view *view: offset_strides) {
+        uint64_t t1 = (uint64_t) view->start;
+        opencl_kernel.setArg(i++, t1);
+        for (int j=0; j<view->ndim; ++j) {
+            uint64_t t2 = (uint64_t) view->stride[j];
+            opencl_kernel.setArg(i++, t2);
         }
     }
+
+    for (const bh_instruction *instr: constants) {
+        switch (instr->constant.type) {
+            case BH_BOOL:
+                opencl_kernel.setArg(i++, instr->constant.value.bool8);
+                break;
+            case BH_INT8:
+                opencl_kernel.setArg(i++, instr->constant.value.int8);
+                break;
+            case BH_INT16:
+                opencl_kernel.setArg(i++, instr->constant.value.int16);
+                break;
+            case BH_INT32:
+                opencl_kernel.setArg(i++, instr->constant.value.int32);
+                break;
+            case BH_INT64:
+                opencl_kernel.setArg(i++, instr->constant.value.int64);
+                break;
+            case BH_UINT8:
+                opencl_kernel.setArg(i++, instr->constant.value.uint8);
+                break;
+            case BH_UINT16:
+                opencl_kernel.setArg(i++, instr->constant.value.uint16);
+                break;
+            case BH_UINT32:
+                opencl_kernel.setArg(i++, instr->constant.value.uint32);
+                break;
+            case BH_UINT64:
+                opencl_kernel.setArg(i++, instr->constant.value.uint64);
+                break;
+            case BH_FLOAT32:
+                opencl_kernel.setArg(i++, instr->constant.value.float32);
+                break;
+            case BH_FLOAT64:
+                opencl_kernel.setArg(i++, instr->constant.value.float64);
+                break;
+            case BH_COMPLEX64:
+                opencl_kernel.setArg(i++, instr->constant.value.complex64);
+                break;
+            case BH_COMPLEX128:
+                opencl_kernel.setArg(i++, instr->constant.value.complex128);
+                break;
+            default:
+                std::cerr << "Unknown OpenCL type: " << bh_type_text(instr->constant.type) << std::endl;
+                throw std::runtime_error("Unknown OpenCL type");
+        }
+    }
+
     const auto ranges = NDRanges(threaded_blocks);
     auto texec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
