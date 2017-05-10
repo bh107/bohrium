@@ -112,14 +112,8 @@ def where(condition, x=None, y=None):
             return y
 
     # Shortcut if input arrays are finite
-    try:
-        if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
-            return condition * x + ~condition * y
-    except TypeError: # ufuncs.isfinite does not support all dtypes
-        xn = x if numpy.isscalar(x) else x.copy2numpy()
-        yn = y if numpy.isscalar(y) else y.copy2numpy()
-        if numpy.isfinite(xn).all() and numpy.isfinite(yn).all():
-            return condition * x + ~condition * y
+    if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
+        return condition * x + ~condition * y
 
     # Find appropriate output type
     array_types = []
