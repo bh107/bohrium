@@ -96,7 +96,7 @@ def main():
     for name, opcode, mapper, mapped in (x for x in operators if x[3]):
         bytecode = [x for x in opcodes if x['opcode'] == opcode]
         if not bytecode:
-            print ("skipping %s" % opcode)
+            print ("skipping %s (\"%s\")" % (opcode, name))
             continue
 
         bytecode = bytecode[0]

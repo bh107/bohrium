@@ -26,11 +26,20 @@ class test_inf:
     def test_add_array(self, cmd):
         return cmd + "res = a + M.ones_like(a)"
 
+    def test_isnan(self, cmd):
+        return cmd + "res = M.isnan(a)"
 
-class test_is_nan_inf_finite:
+    def test_isinf(self, cmd):
+        return cmd + "res = M.isinf(a)"
+
+    def test_isfinte(self, cmd):
+        return cmd + "res = M.isfinite(a)"
+
+
+class test_isfinite:
     def init(self):
-        for dtype in util.TYPES.FLOAT:
-            yield "a = M.arange(10, dtype=%s); a[1] = M.inf; a[2] = -M.inf; " % dtype
+        for dtype in util.TYPES.ALL:
+            yield "a = M.arange(10, dtype=%s);" % dtype
 
     def test_isnan(self, cmd):
         return cmd + "res = M.isnan(a)"

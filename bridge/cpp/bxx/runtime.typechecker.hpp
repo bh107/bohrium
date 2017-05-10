@@ -1315,16 +1315,115 @@ void Runtime::typecheck(void)
         void Runtime::typecheck<BH_INVERT, uint8_t, uint8_t>(void) { }
         template <>
         inline
+        void Runtime::typecheck<BH_ISFINITE, bool, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, std::complex<float> >(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, std::complex<double> >(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, int8_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, int16_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, int32_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, int64_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, uint8_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, uint16_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, uint32_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISFINITE, bool, uint64_t>(void) { }
+        template <>
+        inline
         void Runtime::typecheck<BH_ISFINITE, bool, float>(void) { }
         template <>
         inline
         void Runtime::typecheck<BH_ISFINITE, bool, double>(void) { }
         template <>
         inline
+        void Runtime::typecheck<BH_ISINF, bool, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, std::complex<float> >(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, std::complex<double> >(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, int8_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, int16_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, int32_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, int64_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, uint8_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, uint16_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, uint32_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISINF, bool, uint64_t>(void) { }
+        template <>
+        inline
         void Runtime::typecheck<BH_ISINF, bool, float>(void) { }
         template <>
         inline
         void Runtime::typecheck<BH_ISINF, bool, double>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, bool>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, std::complex<float> >(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, std::complex<double> >(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, int8_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, int16_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, int32_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, int64_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, uint8_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, uint16_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, uint32_t>(void) { }
+        template <>
+        inline
+        void Runtime::typecheck<BH_ISNAN, bool, uint64_t>(void) { }
         template <>
         inline
         void Runtime::typecheck<BH_ISNAN, bool, float>(void) { }
