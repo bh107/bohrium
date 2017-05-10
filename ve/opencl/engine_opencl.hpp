@@ -54,6 +54,8 @@ private:
     const std::string compile_flg;
     // Default device type
     const std::string default_device_type;
+    // Default platform number
+    const int platform_no;
     // Verbose flag
     const bool verbose;
     // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
