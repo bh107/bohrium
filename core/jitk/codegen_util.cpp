@@ -265,7 +265,7 @@ void write_loop_block(const SymbolTable &symbols,
         out << "\n";
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
-                if (b.getInstr() != NULL) {
+                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
                     spaces(out, 4 + b.rank()*4);
                     write_instr(peeled_scope, *b.getInstr(), out, opencl);
                 }
@@ -314,7 +314,7 @@ void write_loop_block(const SymbolTable &symbols,
     if (opencl) {
         for (const Block &b: block._block_list) {
             if (b.isInstr()) { // Finally, let's write the instruction
-                if (b.getInstr() != NULL) {
+                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
                     spaces(out, 4 + b.rank()*4);
                     write_instr(scope, *b.getInstr(), out, true);
                 }
@@ -326,17 +326,19 @@ void write_loop_block(const SymbolTable &symbols,
         for (const Block &b: block._block_list) {
             if (b.isInstr()) { // Finally, let's write the instruction
                 const InstrPtr instr = b.getInstr();
-                if (instr->operand.size() > 0 and not bh_opcode_is_system(instr->opcode)) {
-                    if (scope.isOpenmpAtomic(instr->operand[0])) {
-                        spaces(out, 4 + b.rank()*4);
-                        out << "#pragma omp atomic\n";
-                    } else if (scope.isOpenmpCritical(instr->operand[0])) {
-                        spaces(out, 4 + b.rank()*4);
-                        out << "#pragma omp critical\n";
+                if (not bh_opcode_is_system(instr->opcode)) {
+                    if (instr->operand.size() > 0) {
+                        if (scope.isOpenmpAtomic(instr->operand[0])) {
+                            spaces(out, 4 + b.rank()*4);
+                            out << "#pragma omp atomic\n";
+                        } else if (scope.isOpenmpCritical(instr->operand[0])) {
+                            spaces(out, 4 + b.rank()*4);
+                            out << "#pragma omp critical\n";
+                        }
                     }
+                    spaces(out, 4 + b.rank()*4);
+                    write_instr(scope, *instr, out);
                 }
-                spaces(out, 4 + b.rank()*4);
-                write_instr(scope, *instr, out);
             } else {
                 write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
             }

@@ -33,33 +33,6 @@ namespace jitk {
 
 namespace { // We need some help functions
 
-// Write system operation
-void write_system_operation(const Scope &scope, const bh_instruction &instr, stringstream &out) {
-
-    switch (instr.opcode) {
-        case BH_FREE:
-//            out << "// FREE " << scope.getName(instr.operand[0]);
-            break;
-        case BH_SYNC:
-//            out << "// SYNC " << scope.getName(instr.operand[0]);
-            break;
-        case BH_NONE:
-//            out << "// NONE ";
-            break;
-        case BH_TALLY:
-//            out << "// TALLY";
-            break;
-        case BH_REPEAT:
-//            out << "// REPEAT";
-            break;
-        default:
-            std::cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
-                      ") not supported for non complex operations.\n";
-            throw std::runtime_error("Instruction not supported.");
-    }
-//    out << endl;
-}
-
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
 void write_sign_function(const string &operand, stringstream &out) {
     out << "((" << operand << " > 0) - (0 > " << operand << "))";
@@ -567,10 +540,8 @@ void dtype_min(bh_type dtype, stringstream &out) {
 } // Anon namespace
 
 void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    if (bh_opcode_is_system(instr.opcode)) {
-        write_system_operation(scope, instr, out);
+    if (bh_opcode_is_system(instr.opcode))
         return;
-    }
     if (instr.opcode == BH_RANGE) {
         vector<string> ops;
         // Write output operand
