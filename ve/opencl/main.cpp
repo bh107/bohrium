@@ -94,15 +94,6 @@ Impl::~Impl() {
     }
 }
 
-// Does 'instr' reduce over the innermost axis?
-// Notice, that such a reduction computes each output element completely before moving
-// to the next element.
-bool sweeping_innermost_axis(InstrPtr instr) {
-    if (not bh_opcode_is_sweep(instr->opcode))
-        return false;
-    assert(instr->operand.size() == 3);
-    return instr->sweep_axis() == instr->operand[1].ndim-1;
-}
 
 // Writes the OpenCL specific for-loop header
 void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config,
@@ -161,26 +152,6 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     ss << "}\n\n";
 }
 
-// Sets the constructor flag of each instruction in 'instr_list'
-void set_constructor_flag(vector<bh_instruction*> &instr_list, const map<bh_base*, unique_ptr<cl::Buffer> > &buffers) {
-    set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    for(bh_instruction *instr: instr_list) {
-        instr->constructor = false;
-        for (size_t o = 0; o < instr->operand.size(); ++o) {
-            const bh_view &v = instr->operand[o];
-            if (not bh_is_constant(&v)) {
-                assert(v.base != NULL);
-                if (v.base->data == NULL and not (util::exist_nconst(initiated, v.base)
-                                                  or util::exist_nconst(buffers, v.base))) {
-                    if (o == 0) { // It is only the output that is initiated
-                        initiated.insert(v.base);
-                        instr->constructor = true;
-                    }
-                }
-            }
-        }
-    }
-}
 
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
