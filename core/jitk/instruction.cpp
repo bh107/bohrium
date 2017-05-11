@@ -35,18 +35,29 @@ namespace { // We need some help functions
 
 // Write system operation
 void write_system_operation(const Scope &scope, const bh_instruction &instr, stringstream &out) {
+
     switch (instr.opcode) {
         case BH_FREE:
+//            out << "// FREE " << scope.getName(instr.operand[0]);
+            break;
         case BH_SYNC:
+//            out << "// SYNC " << scope.getName(instr.operand[0]);
+            break;
         case BH_NONE:
+//            out << "// NONE ";
+            break;
         case BH_TALLY:
+//            out << "// TALLY";
+            break;
         case BH_REPEAT:
+//            out << "// REPEAT";
             break;
         default:
-            cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
-                    ") not supported for non complex operations." << endl;
+            std::cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
+                      ") not supported for non complex operations.\n";
             throw std::runtime_error("Instruction not supported.");
     }
+//    out << endl;
 }
 
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
@@ -60,10 +71,10 @@ void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, cons
                                                const char *fname_complex) {
     const bh_type t0 = instr.operand_type(0);
     if (opencl and bh_type_is_complex(t0)) {
-        out << fname_complex << "(" << (t0 == BH_COMPLEX64 ? "float" : "double")
-            << ", " << ops[0] << ", " << ops[1] << ");" << endl;
+        out << fname_complex << "(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " << ops[0] \
+ << ", " << ops[1] << ");\n";
     } else {
-        out << ops[0] << " = " << fname << "(" << ops[1] << ");" << endl;
+        out << ops[0] << " = " << fname << "(" << ops[1] << ");\n";
     }
 }
 
@@ -72,174 +83,181 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
     switch (instr.opcode) {
         // Opcodes that are Complex/OpenCL agnostic
         case BH_ADD:
-            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
             break;
         case BH_ADD_REDUCE:
-            out << ops[0] << " += " << ops[1] << ";" << endl;
+            out << ops[0] << " += " << ops[1] << ";\n";
             break;
         case BH_ADD_ACCUMULATE:
-            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
             break;
         case BH_SUBTRACT:
-            out << ops[0] << " = " << ops[1] << " - " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " - " << ops[2] << ";\n";
             break;
         case BH_BITWISE_AND:
-            out << ops[0] << " = " << ops[1] << " & " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " & " << ops[2] << ";\n";
             break;
         case BH_BITWISE_AND_REDUCE:
-            out << ops[0] << " = " << ops[0] << " & " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[0] << " & " << ops[1] << ";\n";
             break;
         case BH_BITWISE_OR:
-            out << ops[0] << " = " << ops[1] << " | " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " | " << ops[2] << ";\n";
             break;
         case BH_BITWISE_OR_REDUCE:
-            out << ops[0] << " = " << ops[0] << " | " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[0] << " | " << ops[1] << ";\n";
             break;
         case BH_BITWISE_XOR:
-            out << ops[0] << " = " << ops[1] << " ^ " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " ^ " << ops[2] << ";\n";
             break;
         case BH_BITWISE_XOR_REDUCE:
-            out << ops[0] << " = " << ops[0] << " ^ " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[0] << " ^ " << ops[1] << ";\n";
             break;
         case BH_LOGICAL_NOT:
-            out << ops[0] << " = !" << ops[1] << ";" << endl;
+            out << ops[0] << " = !" << ops[1] << ";\n";
             break;
         case BH_LOGICAL_OR:
-            out << ops[0] << " = " << ops[1] << " || " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " || " << ops[2] << ";\n";
             break;
         case BH_LOGICAL_OR_REDUCE:
-            out << ops[0] << " = " << ops[0] << " || " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[0] << " || " << ops[1] << ";\n";
             break;
         case BH_LOGICAL_AND:
-            out << ops[0] << " = " << ops[1] << " && " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " && " << ops[2] << ";\n";
             break;
         case BH_LOGICAL_AND_REDUCE:
-            out << ops[0] << " = " << ops[0] << " && " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[0] << " && " << ops[1] << ";\n";
             break;
         case BH_LOGICAL_XOR:
-            out << ops[0] << " = !" << ops[1] << " != !" << ops[2] << ";" << endl;
+            out << ops[0] << " = !" << ops[1] << " != !" << ops[2] << ";\n";
             break;
         case BH_LOGICAL_XOR_REDUCE:
-            out << ops[0] << " = !" << ops[0] << " != !" << ops[1] << ";" << endl;
+            out << ops[0] << " = !" << ops[0] << " != !" << ops[1] << ";\n";
             break;
         case BH_LEFT_SHIFT:
-            out << ops[0] << " = " << ops[1] << " << " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " << " << ops[2] << ";\n";
             break;
         case BH_RIGHT_SHIFT:
-            out << ops[0] << " = " << ops[1] << " >> " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " >> " << ops[2] << ";\n";
             break;
         case BH_GREATER:
-            out << ops[0] << " = " << ops[1] << " > " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " > " << ops[2] << ";\n";
             break;
         case BH_GREATER_EQUAL:
-            out << ops[0] << " = " << ops[1] << " >= " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " >= " << ops[2] << ";\n";
             break;
         case BH_LESS:
-            out << ops[0] << " = " << ops[1] << " < " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " < " << ops[2] << ";\n";
             break;
         case BH_LESS_EQUAL:
-            out << ops[0] << " = " << ops[1] << " <= " << ops[2] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << " <= " << ops[2] << ";\n";
             break;
         case BH_MAXIMUM:
             out << ops[0] << " = " << ops[1] << " > " << ops[2] << " ? " << ops[1] << " : "
-                << ops[2] << ";" << endl;
+                << ops[2] << ";\n";
             break;
         case BH_MAXIMUM_REDUCE:
             out << ops[0] << " = " << ops[0] << " > " << ops[1] << " ? " << ops[0] << " : "
-                << ops[1] << ";" << endl;
+                << ops[1] << ";\n";
             break;
         case BH_MINIMUM:
             out << ops[0] << " = " << ops[1] << " < " << ops[2] << " ? " << ops[1] << " : "
-                << ops[2] << ";" << endl;
+                << ops[2] << ";\n";
             break;
         case BH_MINIMUM_REDUCE:
             out << ops[0] << " = " << ops[0] << " < " << ops[1] << " ? " << ops[0] << " : "
-                << ops[1] << ";" << endl;
+                << ops[1] << ";\n";
             break;
         case BH_INVERT:
-            if (instr.operand[0].base->type == BH_BOOL) {
-                out << ops[0] << " = !" << ops[1] << ";" << endl;
-            } else {
-                out << ops[0] << " = ~" << ops[1] << ";" << endl;
-            }
+            if (instr.operand[0].base->type == BH_BOOL)
+                out << ops[0] << " = !" << ops[1] << ";\n";
+            else
+                out << ops[0] << " = ~" << ops[1] << ";\n";
             break;
         case BH_MOD:
-            if (bh_type_is_float(instr.operand[0].base->type)) {
-                out << ops[0] << " = fmod(" << ops[1] << ", " << ops[2] << ");" << endl;
-            } else {
-                out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";" << endl;
-            }
+            if (bh_type_is_float(instr.operand[0].base->type))
+                out << ops[0] << " = fmod(" << ops[1] << ", " << ops[2] << ");\n";
+            else
+                out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";\n";
             break;
         case BH_REMAINDER:
             if (bh_type_is_float(instr.operand[0].base->type)) {
-                out << ops[0] << " = " << ops[1] << " - floor(" << ops[1] <<  " / " << ops[2] << ") * " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " - floor(" << ops[1] <<  " / " << ops[2] << ") * " << ops[2] << ";\n";
             } else if (bh_type_is_unsigned_integer(instr.operand[0].base->type)) {
-                out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";\n";
             } else {
+                /* The Python/NumPy implementation of remainder on signed integers
+                    const @type@ rem = in1 % in2;
+                    if ((in1 > 0) == (in2 > 0) || rem == 0) {
+                        *((@type@ *)op1) = rem;
+                    }
+                    else {
+                        *((@type@ *)op1) = rem + in2;
+                    }
+                */
                 out << ops[0] << " = ((" << ops[1] << " > 0) == (" << ops[2] << " > 0) || "
                                           "(" << ops[1] <<  " % " << ops[2] << ") == 0)?"
                                           "(" << ops[1] <<  " % " << ops[2] << "):"
-                                          "(" << ops[1] <<  " % " << ops[2] << ") + " << ops[2] << ";" << endl;
+                                          "(" << ops[1] <<  " % " << ops[2] << ") + " << ops[2] << ";\n";
             }
             break;
         case BH_RINT:
-            out << ops[0] << " = rint(" << ops[1] << ");" << endl;
+            out << ops[0] << " = rint(" << ops[1] << ");\n";
             break;
         case BH_EXP2:
-            out << ops[0] << " = exp2(" << ops[1] << ");" << endl;
+            out << ops[0] << " = exp2(" << ops[1] << ");\n";
             break;
         case BH_EXPM1:
-            out << ops[0] << " = expm1(" << ops[1] << ");" << endl;
+            out << ops[0] << " = expm1(" << ops[1] << ");\n";
             break;
         case BH_LOG1P:
-            out << ops[0] << " = log1p(" << ops[1] << ");" << endl;
+            out << ops[0] << " = log1p(" << ops[1] << ");\n";
             break;
         case BH_ARCSIN:
-            out << ops[0] << " = asin(" << ops[1] << ");" << endl;
+            out << ops[0] << " = asin(" << ops[1] << ");\n";
             break;
         case BH_ARCCOS:
-            out << ops[0] << " = acos(" << ops[1] << ");" << endl;
+            out << ops[0] << " = acos(" << ops[1] << ");\n";
             break;
         case BH_ARCTAN:
-            out << ops[0] << " = atan(" << ops[1] << ");" << endl;
+            out << ops[0] << " = atan(" << ops[1] << ");\n";
             break;
         case BH_ARCTAN2:
-            out << ops[0] << " = atan2(" << ops[1] << ", " << ops[2] << ");" << endl;
+            out << ops[0] << " = atan2(" << ops[1] << ", " << ops[2] << ");\n";
             break;
         case BH_ARCSINH:
-            out << ops[0] << " = asinh(" << ops[1] << ");" << endl;
+            out << ops[0] << " = asinh(" << ops[1] << ");\n";
             break;
         case BH_ARCCOSH:
-            out << ops[0] << " = acosh(" << ops[1] << ");" << endl;
+            out << ops[0] << " = acosh(" << ops[1] << ");\n";
             break;
         case BH_ARCTANH:
-            out << ops[0] << " = atanh(" << ops[1] << ");" << endl;
+            out << ops[0] << " = atanh(" << ops[1] << ");\n";
             break;
         case BH_FLOOR:
-            out << ops[0] << " = floor(" << ops[1] << ");" << endl;
+            out << ops[0] << " = floor(" << ops[1] << ");\n";
             break;
         case BH_CEIL:
-            out << ops[0] << " = ceil(" << ops[1] << ");" << endl;
+            out << ops[0] << " = ceil(" << ops[1] << ");\n";
             break;
         case BH_TRUNC:
-            out << ops[0] << " = trunc(" << ops[1] << ");" << endl;
+            out << ops[0] << " = trunc(" << ops[1] << ");\n";
             break;
         case BH_LOG2:
-            out << ops[0] << " = log2(" << ops[1] << ");" << endl;
+            out << ops[0] << " = log2(" << ops[1] << ");\n";
             break;
         case BH_ISNAN: {
             const bh_type t0 = instr.operand_type(1);
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isnan(" << ops[1] << ".s0);" << endl;
+                    out << ops[0] << " = isnan(" << ops[1] << ".s0);\n";
                 } else {
-                    out << ops[0] << " = isnan(creal(" << ops[1] << "));" << endl;
+                    out << ops[0] << " = isnan(creal(" << ops[1] << "));\n";
                 }
             } else if (bh_type_is_float(t0)) {
-                out << ops[0] << " = isnan(" << ops[1] << ");" << endl;
+                out << ops[0] << " = isnan(" << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = false;" << endl;
+                out << ops[0] << " = false;\n";
             }
             break;
         }
@@ -248,14 +266,14 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isinf(" << ops[1] << ".s0);" << endl;
+                    out << ops[0] << " = isinf(" << ops[1] << ".s0);\n";
                 } else {
-                    out << ops[0] << " = isinf(creal(" << ops[1] << "));" << endl;
+                    out << ops[0] << " = isinf(creal(" << ops[1] << "));\n";
                 }
             } else if(bh_type_is_float(t0)) {
-                out << ops[0] << " = isinf(" << ops[1] << ");" << endl;
+                out << ops[0] << " = isinf(" << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = false;" << endl;
+                out << ops[0] << " = false;\n";
             }
             break;
         }
@@ -264,22 +282,22 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isfinite(" << ops[1] << ".s0);" << endl;
+                    out << ops[0] << " = isfinite(" << ops[1] << ".s0);\n";
                 } else {
-                    out << ops[0] << " = isfinite(creal(" << ops[1] << "));" << endl;
+                    out << ops[0] << " = isfinite(creal(" << ops[1] << "));\n";
                 }
             } else if (bh_type_is_float(t0)) {
-                out << ops[0] << " = isfinite(" << ops[1] << ");" << endl;
+                out << ops[0] << " = isfinite(" << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = true;" << endl;
+                out << ops[0] << " = true;\n";
             }
             break;
         }
         case BH_RANGE:
-            out << ops[0] << " = " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << ";\n";
             break;
         case BH_RANDOM:
-            out << ops[0] << " = " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << ";\n";
             break;
 
         // Opcodes that uses a different function name in OpenCL
@@ -308,94 +326,108 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             const bh_type t0 = instr.operand_type(1);
 
             if (t0 == BH_BOOL) {
-                out << ops[0] << " = true;" << endl;
+                out << ops[0] << " = true;\n";
             } else if (bh_type_is_unsigned_integer(t0)) {
-                out << ops[0] << " = " << ops[1] << ";" << endl; // no-op
+                out << ops[0] << " = " << ops[1] << ";\n"; // no-op
             } else if (opencl and bh_type_is_complex(t0)) {
-                out << "CABS(" << ops[0] << ", " << ops[1] << ");" << endl;
+                out << "CABS(" << ops[0] << ", " << ops[1] << ");\n";
             } else if (bh_type_is_float(t0)) {
-                out << ops[0] << " = fabs(" << ops[1] << ");" << endl;
+                out << ops[0] << " = fabs(" << ops[1] << ");\n";
             } else if (!opencl and t0 == BH_INT64) {
-                out << ops[0] << " = llabs(" << ops[1] << ");" << endl;
+                out << ops[0] << " = llabs(" << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = abs(" << ops[1] << ");" << endl;
+                out << ops[0] << " = abs(" << ops[1] << ");\n";
             }
             break;
         }
         case BH_SQRT:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
-                out << "CSQRT(" << ops[0] << ", " << ops[1] << ");" << endl;
+                out << "CSQRT(" << ops[0] << ", " << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = sqrt(" << ops[1] << ");" << endl;
+                out << ops[0] << " = sqrt(" << ops[1] << ");\n";
             }
             break;
         case BH_LOG:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << ");" << endl;
+                out << "CLOG(" << ops[0] << ", " << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = log(" << ops[1] << ");" << endl;
+                out << ops[0] << " = log(" << ops[1] << ");\n";
             }
             break;
         case BH_NOT_EQUAL:
             if (opencl and bh_type_is_complex(instr.operand_type(1))) {
-                out << "CNEQ(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                out << "CNEQ(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else {
-                out << ops[0] << " = " << ops[1] << " != " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " != " << ops[2] << ";\n";
             }
             break;
         case BH_EQUAL:
             if (opencl and bh_type_is_complex(instr.operand_type(1))) {
-                out << "CEQ(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                out << "CEQ(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else {
-                out << ops[0] << " = " << ops[1] << " == " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " == " << ops[2] << ";\n";
             }
             break;
         case BH_POWER: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CPOW(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
-                    << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                    << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else if (opencl and bh_type_is_integer(t0)) {
-                out << "IPOW(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                out << "IPOW(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else {
-                out << ops[0] << " = pow(" << ops[1] << ", " << ops[2] << ");" << endl;
+                out << ops[0] << " = pow(" << ops[1] << ", " << ops[2] << ");\n";
             }
             break;
         }
+
+
+        // Multiplication and division are handled differently in OpenCL
         case BH_MULTIPLY:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
-                out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else {
-                out << ops[0] << " = " << ops[1] << " * " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " * " << ops[2] << ";\n";
             }
             break;
         case BH_MULTIPLY_REDUCE:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
-                out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[1] << ");" << endl;
+                out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[1] << ");\n";
             } else {
-                out << ops[0] << " *= " << ops[1] << ";" << endl;
+                out << ops[0] << " *= " << ops[1] << ";\n";
             }
             break;
         case BH_MULTIPLY_ACCUMULATE:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
-                out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else {
-                out << ops[0] << " = " << ops[1] << " * " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " * " << ops[2] << ";\n";
             }
             break;
-
         case BH_DIVIDE: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
-                    << ops[0] << ", " << ops[1] << ", " << ops[2] << ");" << endl;
+                    << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else if (bh_type_is_signed_integer(instr.operand[0].base->type)) {
+                /* Python/NumPy signed integer division
+                    if (in2 == 0 || (in1 == NPY_MIN_@TYPE@ && in2 == -1)) {
+                        npy_set_floatstatus_divbyzero();
+                        *((@type@ *)op1) = 0;
+                    }
+                    else if (((in1 > 0) != (in2 > 0)) && (in1 % in2 != 0)) {
+                        *((@type@ *)op1) = in1/in2 - 1;
+                    }
+                    else {
+                        *((@type@ *)op1) = in1/in2;
+                    }
+                */
                 out << ops[0] << " = ((" << ops[1] << " > 0) != (" << ops[2] << " > 0) && "
                                           "(" << ops[1] <<  " % " << ops[2] << ") != 0)?"
                                           "(" << ops[1] <<  " / " << ops[2] << " - 1):"
-                                          "(" << ops[1] <<  " / " << ops[2] << ");" << endl;
+                                          "(" << ops[1] <<  " / " << ops[2] << ");\n";
             } else {
-                out << ops[0] << " = " << ops[1] << " / " << ops[2] << ";" << endl;
+                out << ops[0] << " = " << ops[1] << " / " << ops[2] << ";\n";
             }
             break;
         }
@@ -417,7 +449,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             } else {
                 out << ops[1];
             }
-            out << ";" << endl;
+            out << ";\n";
             break;
         }
 
@@ -425,12 +457,12 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << ");"
-                    << ops[0] << " /= log(10.0f);" << endl;
+                out << "CLOG(" << ops[0] << ", " << ops[1] << "); " \
+                    << ops[0] << " /= log(10.0f);\n";
             } else if (bh_type_is_complex(t0)) {
-                out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);" << endl;
+                out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);\n";
             } else {
-                out << ops[0] << " = log10(" << ops[1] << ");" << endl;
+                out << ops[0] << " = log10(" << ops[1] << ");\n";
             }
             break;
         }
@@ -438,16 +470,16 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         // Extracting the real or imaginary part differ in OpenCL
         case BH_REAL:
             if (opencl) {
-                out << ops[0] << " = " << ops[1] << ".s0;" << endl;
+                out << ops[0] << " = " << ops[1] << ".s0;\n";
             } else {
-                out << ops[0] << " = creal(" << ops[1] << ");" << endl;
+                out << ops[0] << " = creal(" << ops[1] << ");\n";
             }
             break;
         case BH_IMAG:
             if (opencl) {
-                out << ops[0] << " = " << ops[1] << ".s1;" << endl;
+                out << ops[0] << " = " << ops[1] << ".s1;\n";
             } else {
-                out << ops[0] << " = cimag(" << ops[1] << ");" << endl;
+                out << ops[0] << " = cimag(" << ops[1] << ");\n";
             }
             break;
 
@@ -463,15 +495,15 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 //             sgn(Im(z)) if Re(z) = 0
                 const char *ctype = (t0 == BH_COMPLEX64 ? "float" : "double");
                 if (opencl) {
-                    out << ctype << " real = " << ops[1] << ".s0;" << endl;
-                    out << ctype << " imag = " << ops[1] << ".s1;" << endl;
+                    out << ctype << " real = " << ops[1] << ".s0; \n";
+                    out << ctype << " imag = " << ops[1] << ".s1; \n";
 
                     // Complex sign always have Im(x) = 0
-                    out << ops[0] << ".s1 = 0.0;" << endl;
+                    out << ops[0] << ".s1 = 0.0;\n";
                     out << ops[0] << ".s0 ";
                 } else {
-                    out << ctype << " real = creal(" << ops[1] << ");" << endl;
-                    out << ctype << " imag = cimag(" << ops[1] << ");" << endl;
+                    out << ctype << " real = creal(" << ops[1] << "); \n";
+                    out << ctype << " imag = cimag(" << ops[1] << "); \n";
                     out << ops[0] << " ";
                 }
 
@@ -480,25 +512,25 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 write_sign_function("imag", out);
                 out << " : ";
                 write_sign_function("real", out);
-                out << ");" << endl;
+                out << ");\n";
             } else {
                 out << ops[0] << " = ";
                 write_sign_function(ops[1], out);
-                out << ";" << endl;
+                out << ";\n";
             }
             break;
         }
         case BH_GATHER:
-            out << ops[0] << " = " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << ";\n";
             break;
         case BH_SCATTER:
-            out << ops[0] << " = " << ops[1] << ";" << endl;
+            out << ops[0] << " = " << ops[1] << ";\n";
             break;
         case BH_COND_SCATTER:
-            out << "if (" << ops[2] << ") { " << ops[0] << " = " << ops[1] << "; }" << endl;
+            out << "if (" << ops[2] << ") {" << ops[0] << " = " << ops[1] << ";}\n";
             break;
         default:
-            cerr << "Instruction \"" << instr << "\" not supported" << endl;
+            cerr << "Instruction \"" << instr << "\" not supported\n";
             throw runtime_error("Instruction not supported.");
     }
 }
@@ -538,7 +570,59 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
     if (bh_opcode_is_system(instr.opcode)) {
         write_system_operation(scope, instr, out);
         return;
-    } else if (bh_opcode_is_accumulate(instr.opcode)) {
+    }
+    if (instr.opcode == BH_RANGE) {
+        vector<string> ops;
+        // Write output operand
+        {
+            stringstream ss;
+            scope.getName(instr.operand[0], ss);
+            if (scope.isArray(instr.operand[0])) {
+                write_array_subscription(scope, instr.operand[0], ss);
+            }
+            ops.push_back(ss.str());
+        }
+        // Let's find the flatten index of the output view
+        {
+            stringstream ss;
+            ss << "(";
+            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+                ss << "+i" << i << "*" << instr.operand[0].stride[i];
+            }
+            ss << ")";
+            ops.push_back(ss.str());
+        }
+        write_operation(instr, ops, out, opencl);
+        return;
+    }
+    if (instr.opcode == BH_RANDOM) {
+        vector<string> ops;
+        // Write output operand
+        {
+            stringstream ss;
+            scope.getName(instr.operand[0], ss);
+            if (scope.isArray(instr.operand[0])) {
+                write_array_subscription(scope, instr.operand[0], ss);
+            }
+            ops.push_back(ss.str());
+        }
+        // Write the random generation
+        {
+            stringstream ss;
+            ss << "random123(" << instr.constant.value.r123.start \
+               << ", " << instr.constant.value.r123.key << ", ";
+
+            // Let's find the flatten index of the output view
+            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+                ss << "+i" << i << "*" << instr.operand[0].stride[i];
+            }
+            ss << ")";
+            ops.push_back(ss.str());
+        }
+        write_operation(instr, ops, out, opencl);
+        return;
+    }
+    if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> ops;
         // Write output operand
         {
@@ -568,151 +652,93 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         write_operation(instr, ops, out, opencl);
         return;
     }
-
-    switch(instr.opcode) {
-        case BH_RANGE: {
-            vector<string> ops;
-            // Write output operand
-            {
-                stringstream ss;
-                scope.getName(instr.operand[0], ss);
-                if (scope.isArray(instr.operand[0])) {
-                    write_array_subscription(scope, instr.operand[0], ss);
-                }
-                ops.push_back(ss.str());
+    if (instr.opcode == BH_GATHER) {
+        // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
+        vector<string> ops;
+        {
+            stringstream ss;
+            scope.getName(instr.operand[0], ss);
+            if (scope.isArray(instr.operand[0])) {
+                write_array_subscription(scope, instr.operand[0], ss);
             }
-            // Let's find the flatten index of the output view
-            {
-                stringstream ss;
-                ss << "(";
-                for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                    ss << "+i" << i << "*" << instr.operand[0].stride[i];
-                }
-                ss << ")";
-                ops.push_back(ss.str());
-            }
-            write_operation(instr, ops, out, opencl);
-            break;
+            ops.push_back(ss.str());
         }
-
-        case BH_RANDOM: {
-            vector<string> ops;
-            // Write output operand
-            {
-                stringstream ss;
-                scope.getName(instr.operand[0], ss);
-                if (scope.isArray(instr.operand[0])) {
-                    write_array_subscription(scope, instr.operand[0], ss);
-                }
-                ops.push_back(ss.str());
+        {
+            assert(not bh_is_constant(&instr.operand[1]));
+            stringstream ss;
+            scope.getName(instr.operand[1], ss);
+            ss << "[" << instr.operand[1].start << " + ";
+            scope.getName(instr.operand[2], ss);
+            if (scope.isArray(instr.operand[2])) {
+                write_array_subscription(scope, instr.operand[2], ss);
             }
-            // Write the random generation
-            {
-                stringstream ss;
-                ss << "random123(" << instr.constant.value.r123.start \
-                   << ", " << instr.constant.value.r123.key << ", ";
-
-                // Let's find the flatten index of the output view
-                for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                    ss << "+i" << i << "*" << instr.operand[0].stride[i];
-                }
-                ss << ")";
-                ops.push_back(ss.str());
-            }
-            write_operation(instr, ops, out, opencl);
-            break;
+            ss << "]";
+            ops.push_back(ss.str());
         }
-
-        case BH_GATHER: {
-            // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
-            vector<string> ops;
-            {
-                stringstream ss;
-                scope.getName(instr.operand[0], ss);
-                if (scope.isArray(instr.operand[0])) {
-                    write_array_subscription(scope, instr.operand[0], ss);
-                }
-                ops.push_back(ss.str());
-            }
-            {
-                assert(not bh_is_constant(&instr.operand[1]));
-                stringstream ss;
-                scope.getName(instr.operand[1], ss);
-                ss << "[" << instr.operand[1].start << " + ";
-                scope.getName(instr.operand[2], ss);
-                if (scope.isArray(instr.operand[2])) {
-                    write_array_subscription(scope, instr.operand[2], ss);
-                }
-                ss << "]";
-                ops.push_back(ss.str());
-            }
-            write_operation(instr, ops, out, opencl);
-            break;
-        }
-
-        case BH_SCATTER:
-        case BH_COND_SCATTER: {
-            // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
-            vector<string> ops;
-            {
-                stringstream ss;
-                scope.getName(instr.operand[0], ss);
-                ss << "[" << instr.operand[0].start << " + ";
-                scope.getName(instr.operand[2], ss);
-                if (scope.isArray(instr.operand[2])) {
-                    write_array_subscription(scope, instr.operand[2], ss);
-                }
-                ss << "]";
-                ops.push_back(ss.str());
-            }
-            {
-                stringstream ss;
-                scope.getName(instr.operand[1], ss);
-                if (scope.isArray(instr.operand[1])) {
-                    write_array_subscription(scope, instr.operand[1], ss);
-                }
-                ops.push_back(ss.str());
-            }
-            if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
-                stringstream ss;
-                scope.getName(instr.operand[3], ss);
-                if (scope.isArray(instr.operand[3])) {
-                    write_array_subscription(scope, instr.operand[3], ss);
-                }
-                ops.push_back(ss.str());
-            }
-            write_operation(instr, ops, out, opencl);
-            break;
-        }
-        default: {
-            vector<string> ops;
-            for (size_t o = 0; o < instr.operand.size(); ++o) {
-                const bh_view &view = instr.operand[o];
-                stringstream ss;
-                if (bh_is_constant(&view)) {
-                    const int64_t constID = scope.symbols.constID(instr);
-                    if (constID >= 0) {
-                        ss << "c" << scope.symbols.constID(instr);
-                    } else {
-                        instr.constant.pprint(ss, opencl);
-                    }
-                } else {
-                    scope.getName(view, ss);
-                    if (scope.isArray(view)) {
-                        if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
-                            // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
-                            // reducing to a non-scalar
-                            write_array_subscription(scope, view, ss, true, instr.sweep_axis());
-                        } else {
-                            write_array_subscription(scope, view, ss);
-                        }
-                    }
-                }
-                ops.push_back(ss.str());
-            }
-            write_operation(instr, ops, out, opencl);
-        }
+        write_operation(instr, ops, out, opencl);
+        return;
     }
+    if (instr.opcode == BH_SCATTER or instr.opcode == BH_COND_SCATTER) {
+        // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
+        vector<string> ops;
+        {
+            stringstream ss;
+            scope.getName(instr.operand[0], ss);
+            ss << "[" << instr.operand[0].start << " + ";
+            scope.getName(instr.operand[2], ss);
+            if (scope.isArray(instr.operand[2])) {
+                write_array_subscription(scope, instr.operand[2], ss);
+            }
+            ss << "]";
+            ops.push_back(ss.str());
+        }
+        {
+            stringstream ss;
+            scope.getName(instr.operand[1], ss);
+            if (scope.isArray(instr.operand[1])) {
+                write_array_subscription(scope, instr.operand[1], ss);
+            }
+            ops.push_back(ss.str());
+        }
+        if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
+            stringstream ss;
+            scope.getName(instr.operand[3], ss);
+            if (scope.isArray(instr.operand[3])) {
+                write_array_subscription(scope, instr.operand[3], ss);
+            }
+            ops.push_back(ss.str());
+        }
+        write_operation(instr, ops, out, opencl);
+        return;
+    }
+
+
+    vector<string> ops;
+    for (size_t o = 0; o < instr.operand.size(); ++o) {
+        const bh_view &view = instr.operand[o];
+        stringstream ss;
+        if (bh_is_constant(&view)) {
+            const int64_t constID = scope.symbols.constID(instr);
+            if (constID >= 0) {
+                ss << "c" << scope.symbols.constID(instr);
+            } else {
+                instr.constant.pprint(ss, opencl);
+            }
+        } else {
+            scope.getName(view, ss);
+            if (scope.isArray(view)) {
+                if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
+                    // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
+                    // reducing to a non-scalar
+                    write_array_subscription(scope, view, ss, true, instr.sweep_axis());
+                } else {
+                    write_array_subscription(scope, view, ss);
+                }
+            }
+        }
+        ops.push_back(ss.str());
+    }
+    write_operation(instr, ops, out, opencl);
 }
 
 bool has_reduce_identity(bh_opcode opcode) {
@@ -786,9 +812,8 @@ InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim)
     assert(size >= size_of_rank_dim);
     shape[rank] = size_of_rank_dim;
     if (size != size_of_rank_dim) { // We might have to add an extra dimension
-        if (size % size_of_rank_dim != 0) {
+        if (size % size_of_rank_dim != 0)
             throw runtime_error("reshape_rank(): shape is not divisible with 'size_of_rank_dim'");
-        }
         shape.push_back(size / size_of_rank_dim);
     }
     bh_instruction ret = bh_instruction(*instr);
