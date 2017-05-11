@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
+#include <jitk/kernel.hpp>
 
 using namespace std;
 
@@ -31,12 +32,53 @@ namespace jitk {
 // Does 'instr' reduce over the innermost axis?
 // Notice, that such a reduction computes each output element completely before moving
 // to the next element.
+namespace {
 bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
     assert(instr->operand.size() == 3);
-    return instr->sweep_axis() == instr->operand[1].ndim-1;
+    return instr->sweep_axis() == instr->operand[1].ndim - 1;
 }
+}
+
+
+void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
+                                     const vector<const bh_view*> &offset_strides,
+                                     std::function<const char *(bh_type type)> type_writer,
+                                     stringstream &ss,
+                                     const char *array_type_prefix) {
+    ss << "(";
+    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+        bh_base *b = kernel.getNonTemps()[i];
+        if(array_type_prefix != NULL) {
+            ss << array_type_prefix << " ";
+        }
+        ss << type_writer(b->type) << " *a" << symbols.baseID(b);
+        if (i+1 < kernel.getNonTemps().size()) {
+            ss << ", ";
+        }
+    }
+    for (const bh_view *view: offset_strides) {
+        ss << ", " << type_writer(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
+        for (int i=0; i<view->ndim; ++i) {
+            ss << ", " << type_writer(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+        }
+    }
+    if (symbols.constIDs().size() > 0) {
+        if (kernel.getNonTemps().size() > 0) {
+            ss << ", "; // If any args were written before us, we need a comma
+        }
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            const InstrPtr &instr = *it;
+            ss << "const " << type_writer(instr->constant.type) << " c" << symbols.constID(*instr);
+            if (++it != symbols.constIDs().end()) { // Not the last iteration
+                ss << ", ";
+            }
+        }
+    }
+    ss << ")";
+}
+
 
 void write_loop_block(const SymbolTable &symbols,
                       const Scope *parent_scope,

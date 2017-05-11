@@ -163,13 +163,9 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
+// Write the JIT kernel
 void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
                   const vector<const bh_view*> &offset_strides, stringstream &ss) {
-
-    // Make sure all arrays are allocated
-    for (bh_base *base: kernel.getNonTemps()) {
-        bh_data_malloc(base);
-    }
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -185,37 +181,12 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "void execute(";
-    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-        bh_base *b = kernel.getNonTemps()[i];
-        ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
-        if (i+1 < kernel.getNonTemps().size()) {
-            ss << ", ";
-        }
-    }
-    for (const bh_view *view: offset_strides) {
-        ss << ", const " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
-        for (int i=0; i<view->ndim; ++i) {
-            ss << ", const " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
-        }
-    }
-    if (symbols.constIDs().size() > 0) {
-        if (kernel.getNonTemps().size() > 0) {
-            ss << ", "; // If any args were written before us, we need a comma
-        }
-        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
-            const InstrPtr &instr = *it;
-            ss << "const " << write_c99_type(instr->constant.type) << " c" << symbols.constID(*instr);
-            if (++it != symbols.constIDs().end()) { // Not the last iteration
-                ss << ", ";
-            }
-        }
-    }
-    ss << ") {\n";
+    ss << "void execute";
+    write_kernel_function_arguments(kernel, symbols, offset_strides, write_c99_type, ss);
 
     // Write the block that makes up the body of 'execute()'
+    ss << "{\n";
     write_loop_block(symbols, NULL, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
-
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
@@ -397,6 +368,11 @@ void Impl::execute(bh_ir *bhir) {
         vector<const bh_view*> offset_strides;
         if (strides_as_variables) {
             offset_strides = kernel.getOffsetAndStrides();
+        }
+
+        // Make sure all arrays are allocated
+        for (bh_base *base: kernel.getNonTemps()) {
+            bh_data_malloc(base);
         }
 
         // Code generation

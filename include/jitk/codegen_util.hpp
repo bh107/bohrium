@@ -30,16 +30,29 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_type.h>
 #include <jitk/block.hpp>
 #include <jitk/base_db.hpp>
+#include <jitk/kernel.hpp>
 #include <bh_config_parser.hpp>
 
 namespace bohrium {
 namespace jitk {
 
+
+// Write 'num' of spaces to 'out'
 void spaces(std::stringstream &out, int num) {
     for (int i = 0; i < num; ++i) {
         out << " ";
     }
 }
+
+
+// Write the kernel function arguments.
+// The function 'type_writer' should write the backend specific data type names.
+// The string 'array_type_prefix' specifies the type prefix for array pointers (e.g. "__global" in OpenCL)
+void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
+                                     const std::vector<const bh_view*> &offset_strides,
+                                     std::function<const char *(bh_type type)> type_writer,
+                                     std::stringstream &ss, const char *array_type_prefix = NULL);
+
 
 // Writes a loop block, which corresponds to a parallel for-loop.
 // The two functions 'type_writer' and 'head_writer' should write the

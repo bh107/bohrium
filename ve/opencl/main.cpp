@@ -138,33 +138,9 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "__kernel void execute(";
-    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-        bh_base *b = kernel.getNonTemps()[i];
-        ss << "__global " << write_opencl_type(b->type) << " *a" << symbols.baseID(b);
-        if (i+1 < kernel.getNonTemps().size()) {
-            ss << ", ";
-        }
-    }
-    for (const bh_view *view: offset_strides) {
-        ss << ", " << write_opencl_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
-        for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << write_opencl_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
-        }
-    }
-    if (symbols.constIDs().size() > 0) {
-        if (kernel.getNonTemps().size() > 0) {
-            ss << ", "; // If any args were written before us, we need a comma
-        }
-        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
-            const InstrPtr &instr = *it;
-            ss << "const " << write_opencl_type(instr->constant.type) << " c" << symbols.constID(*instr);
-            if (++it != symbols.constIDs().end()) { // Not the last iteration
-                ss << ", ";
-            }
-        }
-    }
-    ss << ") {\n";
+    ss << "__kernel void execute";
+    write_kernel_function_arguments(kernel, symbols, offset_strides, write_opencl_type, ss, "__global");
+    ss << "{\n";
 
     // Write the IDs of the threaded blocks
     if (threaded_blocks.size() > 0) {
