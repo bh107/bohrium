@@ -185,6 +185,30 @@ class ConfigParser {
         return getList(_default_section, option);
     }
 
+    /* Get the value of the 'option' within the 'section' and convert the value,
+     * which must be a comma separated list, into a vector of strings.
+     * If it does not exist return 'default_value' instead.
+     *
+     * @section        The ini section e.g. [gpu]. If omitted, the
+     *                 default section is used.
+     * @option         The ini option e.g. timing = True
+     * @default_value  The default value
+     * @return         Vector of strings
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     */
+    std::vector<std::string> defaultGetList(const std::string &section, const std::string &option,
+                                            const std::vector<std::string> &default_value) const {
+        try {
+            return getList(section, option);
+        } catch (const ConfigKeyNotFound&) {
+            return default_value;
+        }
+    }
+    std::vector<std::string> defaultGetList(const std::string &option,
+                                            const std::vector<std::string> &default_value) const {
+        return defaultGetList(_default_section, option, default_value);
+    }
+
     /* Return the path to the library that implements
      * the calling component's child.
      *
