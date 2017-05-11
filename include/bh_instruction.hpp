@@ -107,17 +107,21 @@ struct bh_instruction
         if (opcode != other.opcode) {
             return false;
         }
+
         for (size_t i = 0; i < operand.size(); ++i) {
             if (bh_is_constant(&operand[i]) xor bh_is_constant(&other.operand[i])) {
                 return false;
             } else if (bh_is_constant(&operand[i])) { // Both are constant
-                if (constant != other.constant)
+                if (constant != other.constant) {
                     return false;
+                }
             } else {
-                if (operand[i] != other.operand[i])
+                if (operand[i] != other.operand[i]) {
                     return false;
+                }
             }
         }
+
         return true;
     }
 
@@ -134,8 +138,9 @@ struct bh_instruction
         ar & opcode;
         //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
         ar & boost::serialization::make_array(&constant, 1);
-        for(bh_view &view: operand)
+        for(bh_view &view: operand) {
             ar & view;
+        }
     }
 };
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
@@ -161,6 +166,5 @@ DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
  * @return The boolean answer
  */
 DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
-
 
 #endif
