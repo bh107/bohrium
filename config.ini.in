@@ -73,6 +73,11 @@ compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
 libs = ${OPENMP_LIBS}
+# The pre-fuser to use
+pre_fuser = pre_fuser_lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, collapse_redundant_axes
+# *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
 strides_as_variables = true
 const_as_var = true
@@ -92,6 +97,11 @@ platform_no = -1
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${OPENCL_LIBS}
+# The pre-fuser to use
+pre_fuser = pre_fuser_lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
+# *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
 strides_as_variables = true
 const_as_var = true

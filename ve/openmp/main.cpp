@@ -36,6 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/dtype.hpp>
+#include <jitk/apply_fusion.hpp>
 
 #include "store.hpp"
 #include "openmp_util.hpp"
@@ -300,21 +301,12 @@ void Impl::execute(bh_ir *bhir) {
             stat.num_instrs_into_fuser += instr_list.size();
             // Let's fuse the 'instr_list' into blocks
             // We start with the pre_fuser
-            if (config.defaultGet<bool>("pre_fuser", true)) {
-                block_list = pre_fuser_lossy(instr_list);
-            } else {
-                block_list = fuser_singleton(instr_list);
-            }
+            block_list = apply_pre_fusion(instr_list, config.defaultGet("pre_fuser", string("pre_fuser_lossy")));
             stat.num_blocks_out_of_fuser += block_list.size();
             const auto tfusion = chrono::steady_clock::now();
-            stat.time_pre_fusion +=  tfusion - tpre_fusion;
+            stat.time_pre_fusion += tfusion - tpre_fusion;
             // Then we fuse fully
-            if (config.defaultGet<bool>("serial_fusion", false)) {
-                fuser_serial(block_list, 1);
-            } else {
-                fuser_greedy(block_list);
-                collapse_redundant_axes(block_list);
-            }
+            apply_transformers(block_list, config.defaultGetList("fuser_list", {"greedy"}));
             stat.time_fusion += chrono::steady_clock::now() - tfusion;
             fcache.insert(instr_list, block_list);
         }
