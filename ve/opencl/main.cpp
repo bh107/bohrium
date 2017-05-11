@@ -156,6 +156,9 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 void Impl::execute(bh_ir *bhir) {
     auto texecution = chrono::steady_clock::now();
 
+    const bool verbose = config.defaultGet<bool>("verbose", false);
+    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+
     // Some statistics
     stat.record(bhir->instr_list);
 
@@ -193,9 +196,6 @@ void Impl::execute(bh_ir *bhir) {
         }
         bhir->instr_list = instr_list;
     }
-
-    const bool verbose = config.defaultGet<bool>("verbose", false);
-    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
@@ -255,7 +255,7 @@ void Impl::execute(bh_ir *bhir) {
             } else {
                 fuser_greedy(block_list, 0);
                 block_list = push_reductions_inwards(block_list);
-                block_list = split_for_threading(block_list, 1000);
+                block_list = split_for_threading(block_list);
                 block_list = collapse_redundant_axes(block_list);
             }
             stat.time_fusion += chrono::steady_clock::now() - tfusion;

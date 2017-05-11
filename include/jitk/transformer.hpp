@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_JITK_TRANSFORMER_HPP
 #define __BH_JITK_TRANSFORMER_HPP
 
-/* A collection of functions that transforms Blocks that Instructions */
+/* A collection of functions that transforms Blocks of Instructions */
 
 #include <iostream>
 
@@ -45,7 +45,7 @@ const LoopB *find_swappable_sub_block(const LoopB &parent);
 std::vector<Block> push_reductions_inwards(const std::vector<Block> &block_list);
 
 // Splits the 'block_list' in order to achieve a minimum amount of threading (if possible)
-std::vector<Block> split_for_threading(const std::vector<Block> &block_list, uint64_t min_threading,
+std::vector<Block> split_for_threading(const std::vector<Block> &block_list, uint64_t min_threading=1000,
                                        uint64_t cur_threading=0);
 
 // Collapses redundant axes within the 'block_list'
