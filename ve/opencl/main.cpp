@@ -254,9 +254,9 @@ void Impl::execute(bh_ir *bhir) {
                 fuser_serial(block_list, 1);
             } else {
                 fuser_greedy(block_list, 0);
-                block_list = push_reductions_inwards(block_list);
-                block_list = split_for_threading(block_list);
-                block_list = collapse_redundant_axes(block_list);
+                push_reductions_inwards(block_list);
+                split_for_threading(block_list);
+                collapse_redundant_axes(block_list);
             }
             stat.time_fusion += chrono::steady_clock::now() - tfusion;
             fcache.insert(instr_list, block_list);

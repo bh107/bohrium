@@ -25,6 +25,9 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
+namespace {
+
+// Help function that swap the two axes, 'axis1' and 'axis2', in all instructions in 'instr_list'
 vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2) {
     vector<InstrPtr> ret;
     for (const InstrPtr &instr: instr_list) {
@@ -35,6 +38,8 @@ vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, in
     return ret;
 }
 
+// Help function that swap the 'parent' block with its 'child' block.
+// NB: 'child' must point to a block in 'parent._block_list'
 vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
     vector<Block> ret;
     for (const Block &b: parent._block_list) {
@@ -54,6 +59,7 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
     return ret;
 }
 
+// Help function that find a loop block within 'parent' that it make sense to swappable
 const LoopB *find_swappable_sub_block(const LoopB &parent) {
     // For each sweep, we look for a sub-block that contains that sweep instructions.
     for (const InstrPtr sweep: parent._sweeps) {
@@ -72,11 +78,71 @@ const LoopB *find_swappable_sub_block(const LoopB &parent) {
     return NULL;
 }
 
-vector<Block> push_reductions_inwards(const vector<Block> &block_list) {
+// Help function that collapses 'axis' and 'axis+1' in all instructions within 'loop'
+// Returns false if encountering a non-compatible instruction
+bool collapse_instr_axes(LoopB &loop, const int axis) {
+    for (Block &block: loop._block_list) {
+        if (block.isInstr()) {
+            bh_instruction instr(*block.getInstr());
+            const int sa = instr.sweep_axis();
+            assert(sa != axis);
+            assert(sa != axis+1);
+            if (sa == axis or sa == axis+1) {
+                return false;
+            }
+            for (size_t i=0; i<instr.operand.size(); ++i) {
+                bh_view &view = instr.operand[i];
+                if (not bh_is_constant(&view)) {
+                    int _axis = axis;
+                    if (i==0 and bh_opcode_is_reduction(instr.opcode)) {
+                        _axis = sa < _axis ? _axis-1 : _axis;
+                    }
+                    assert(view.ndim > _axis+1);
+                    if (view.shape[_axis+1] * view.stride[_axis+1] != view.stride[_axis]) {
+                        return false;
+                    }
+                    view.shape[_axis] *= view.shape[_axis+1];
+                    view.stride[_axis] = view.stride[_axis+1];
+                }
+            }
+            instr.remove_axis(axis+1);
+            block.setInstr(instr);
+        } else {
+            --block.getLoop().rank;
+            if (not collapse_instr_axes(block.getLoop(), axis)) {
+                return false;
+            }
+        }
+    }
+    loop.metadata_update();
+    assert(loop.validation());
+    return true;
+}
+
+// Help function that collapses 'loop' with its child if possible
+bool collapse_loop_with_child(LoopB &loop) {
+    // In order to be collapsable, 'loop' can only have one child, that child must be a loop, and both 'loop'
+    // and the child cannot be sweeped
+    if (loop._sweeps.empty() and loop._block_list.size() == 1 and loop._reshapable) {
+        Block &child = loop._block_list[0];
+        if ((not child.isInstr()) and child.getLoop()._sweeps.empty() and child.getLoop()._reshapable) {
+            // Let's collapse with our single child
+            loop.size *= loop._block_list[0].getLoop().size;
+            // NB: we need the temporary step in order to avoid copying deleted data
+            auto tmp = std::move(loop._block_list[0].getLoop()._block_list);
+            loop._block_list = std::move(tmp);
+            return collapse_instr_axes(loop, loop.rank);
+        }
+    }
+    return false;
+}
+}
+
+void push_reductions_inwards(vector<Block> &block_list) {
     vector<Block> block_list2(block_list);
     for(Block &b: block_list2) {
         if (not b.isInstr()) {
-            b.getLoop()._block_list = push_reductions_inwards(b.getLoop()._block_list);
+            push_reductions_inwards(b.getLoop()._block_list);
         }
     }
     vector<Block> ret;
@@ -89,10 +155,9 @@ vector<Block> push_reductions_inwards(const vector<Block> &block_list) {
             ret.push_back(b);
         }
     }
-    return ret;
 }
 
-vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
+void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
     vector<Block> ret;
 
     for (const Block &block: block_list) {
@@ -148,73 +213,13 @@ vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_
             ret.push_back(block);
         }
     }
-    return ret;
 }
 
-// Help function that collapses 'axis' and 'axis+1' in all instructions within 'loop'
-// Returns false if encountering a non-compatible instruction
-static bool collapse_instr_axes(LoopB &loop, const int axis) {
-    for (Block &block: loop._block_list) {
-        if (block.isInstr()) {
-            bh_instruction instr(*block.getInstr());
-            const int sa = instr.sweep_axis();
-            assert(sa != axis);
-            assert(sa != axis+1);
-            if (sa == axis or sa == axis+1) {
-                return false;
-            }
-            for (size_t i=0; i<instr.operand.size(); ++i) {
-                bh_view &view = instr.operand[i];
-                if (not bh_is_constant(&view)) {
-                    int _axis = axis;
-                    if (i==0 and bh_opcode_is_reduction(instr.opcode)) {
-                        _axis = sa < _axis ? _axis-1 : _axis;
-                    }
-                    assert(view.ndim > _axis+1);
-                    if (view.shape[_axis+1] * view.stride[_axis+1] != view.stride[_axis]) {
-                        return false;
-                    }
-                    view.shape[_axis] *= view.shape[_axis+1];
-                    view.stride[_axis] = view.stride[_axis+1];
-                }
-            }
-            instr.remove_axis(axis+1);
-            block.setInstr(instr);
-        } else {
-            --block.getLoop().rank;
-            if (not collapse_instr_axes(block.getLoop(), axis)) {
-                return false;
-            }
-        }
-    }
-    loop.metadata_update();
-    assert(loop.validation());
-    return true;
-}
-
-// Help function that collapses 'loop' with its child if possible
-static bool collapse_loop_with_child(LoopB &loop) {
-    // In order to be collapsable, 'loop' can only have one child, that child must be a loop, and both 'loop'
-    // and the child cannot be sweeped
-    if (loop._sweeps.empty() and loop._block_list.size() == 1 and loop._reshapable) {
-        Block &child = loop._block_list[0];
-        if ((not child.isInstr()) and child.getLoop()._sweeps.empty() and child.getLoop()._reshapable) {
-            // Let's collapse with our single child
-            loop.size *= loop._block_list[0].getLoop().size;
-            // NB: we need the temporary step in order to avoid copying deleted data
-            auto tmp = std::move(loop._block_list[0].getLoop()._block_list);
-            loop._block_list = std::move(tmp);
-            return collapse_instr_axes(loop, loop.rank);
-        }
-    }
-    return false;
-}
-
-vector<Block> collapse_redundant_axes(const vector<Block> &block_list) {
+void collapse_redundant_axes(vector<Block> &block_list) {
     vector<Block> block_list2(block_list);
     for(Block &b: block_list2) {
         if (not b.isInstr()) {
-            b.getLoop()._block_list = collapse_redundant_axes(b.getLoop()._block_list);
+            collapse_redundant_axes(b.getLoop()._block_list);
         }
     }
     vector<Block> ret;
@@ -230,7 +235,6 @@ vector<Block> collapse_redundant_axes(const vector<Block> &block_list) {
             ret.push_back(block);
         }
     }
-    return ret;
 }
 } // jitk
 } // bohrium
