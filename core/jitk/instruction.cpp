@@ -33,33 +33,6 @@ namespace jitk {
 
 namespace { // We need some help functions
 
-// Write system operation
-void write_system_operation(const Scope &scope, const bh_instruction &instr, stringstream &out) {
-
-    switch (instr.opcode) {
-        case BH_FREE:
-//            out << "// FREE " << scope.getName(instr.operand[0]);
-            break;
-        case BH_SYNC:
-//            out << "// SYNC " << scope.getName(instr.operand[0]);
-            break;
-        case BH_NONE:
-//            out << "// NONE ";
-            break;
-        case BH_TALLY:
-//            out << "// TALLY";
-            break;
-        case BH_REPEAT:
-//            out << "// REPEAT";
-            break;
-        default:
-            std::cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
-                      ") not supported for non complex operations.\n";
-            throw std::runtime_error("Instruction not supported.");
-    }
-//    out << endl;
-}
-
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
 void write_sign_function(const string &operand, stringstream &out) {
     out << "((" << operand << " > 0) - (0 > " << operand << "))";
@@ -71,8 +44,8 @@ void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, cons
                                                const char *fname_complex) {
     const bh_type t0 = instr.operand_type(0);
     if (opencl and bh_type_is_complex(t0)) {
-        out << fname_complex << "(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " << ops[0] \
- << ", " << ops[1] << ");\n";
+        out << fname_complex << "(" << (t0 == BH_COMPLEX64 ? "float" : "double")
+            << ", " << ops[0] << ", " << ops[1] << ");\n";
     } else {
         out << ops[0] << " = " << fname << "(" << ops[1] << ");\n";
     }
@@ -168,16 +141,18 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 << ops[1] << ";\n";
             break;
         case BH_INVERT:
-            if (instr.operand[0].base->type == BH_BOOL)
+            if (instr.operand[0].base->type == BH_BOOL) {
                 out << ops[0] << " = !" << ops[1] << ";\n";
-            else
+            } else {
                 out << ops[0] << " = ~" << ops[1] << ";\n";
+            }
             break;
         case BH_MOD:
-            if (bh_type_is_float(instr.operand[0].base->type))
+            if (bh_type_is_float(instr.operand[0].base->type)) {
                 out << ops[0] << " = fmod(" << ops[1] << ", " << ops[2] << ");\n";
-            else
+            } else {
                 out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";\n";
+            }
             break;
         case BH_REMAINDER:
             if (bh_type_is_float(instr.operand[0].base->type)) {
@@ -185,15 +160,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             } else if (bh_type_is_unsigned_integer(instr.operand[0].base->type)) {
                 out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";\n";
             } else {
-                /* The Python/NumPy implementation of remainder on signed integers
-                    const @type@ rem = in1 % in2;
-                    if ((in1 > 0) == (in2 > 0) || rem == 0) {
-                        *((@type@ *)op1) = rem;
-                    }
-                    else {
-                        *((@type@ *)op1) = rem + in2;
-                    }
-                */
                 out << ops[0] << " = ((" << ops[1] << " > 0) == (" << ops[2] << " > 0) || "
                                           "(" << ops[1] <<  " % " << ops[2] << ") == 0)?"
                                           "(" << ops[1] <<  " % " << ops[2] << "):"
@@ -380,9 +346,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             }
             break;
         }
-
-
-        // Multiplication and division are handled differently in OpenCL
         case BH_MULTIPLY:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
                 out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
@@ -404,24 +367,13 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 out << ops[0] << " = " << ops[1] << " * " << ops[2] << ";\n";
             }
             break;
+
         case BH_DIVIDE: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
                     << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else if (bh_type_is_signed_integer(instr.operand[0].base->type)) {
-                /* Python/NumPy signed integer division
-                    if (in2 == 0 || (in1 == NPY_MIN_@TYPE@ && in2 == -1)) {
-                        npy_set_floatstatus_divbyzero();
-                        *((@type@ *)op1) = 0;
-                    }
-                    else if (((in1 > 0) != (in2 > 0)) && (in1 % in2 != 0)) {
-                        *((@type@ *)op1) = in1/in2 - 1;
-                    }
-                    else {
-                        *((@type@ *)op1) = in1/in2;
-                    }
-                */
                 out << ops[0] << " = ((" << ops[1] << " > 0) != (" << ops[2] << " > 0) && "
                                           "(" << ops[1] <<  " % " << ops[2] << ") != 0)?"
                                           "(" << ops[1] <<  " / " << ops[2] << " - 1):"
@@ -457,7 +409,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << "); " \
+                out << "CLOG(" << ops[0] << ", " << ops[1] << ");"
                     << ops[0] << " /= log(10.0f);\n";
             } else if (bh_type_is_complex(t0)) {
                 out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);\n";
@@ -495,15 +447,15 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 //             sgn(Im(z)) if Re(z) = 0
                 const char *ctype = (t0 == BH_COMPLEX64 ? "float" : "double");
                 if (opencl) {
-                    out << ctype << " real = " << ops[1] << ".s0; \n";
-                    out << ctype << " imag = " << ops[1] << ".s1; \n";
+                    out << ctype << " real = " << ops[1] << ".s0;\n";
+                    out << ctype << " imag = " << ops[1] << ".s1;\n";
 
                     // Complex sign always have Im(x) = 0
                     out << ops[0] << ".s1 = 0.0;\n";
                     out << ops[0] << ".s0 ";
                 } else {
-                    out << ctype << " real = creal(" << ops[1] << "); \n";
-                    out << ctype << " imag = cimag(" << ops[1] << "); \n";
+                    out << ctype << " real = creal(" << ops[1] << ");\n";
+                    out << ctype << " imag = cimag(" << ops[1] << ");\n";
                     out << ops[0] << " ";
                 }
 
@@ -527,10 +479,10 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             out << ops[0] << " = " << ops[1] << ";\n";
             break;
         case BH_COND_SCATTER:
-            out << "if (" << ops[2] << ") {" << ops[0] << " = " << ops[1] << ";}\n";
+            out << "if (" << ops[2] << ") { " << ops[0] << " = " << ops[1] << "; }\n";
             break;
         default:
-            cerr << "Instruction \"" << instr << "\" not supported\n";
+            cerr << "Instruction \"" << instr << "\" not supported" << endl;
             throw runtime_error("Instruction not supported.");
     }
 }
@@ -568,61 +520,8 @@ void dtype_min(bh_type dtype, stringstream &out) {
 
 void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
     if (bh_opcode_is_system(instr.opcode)) {
-        write_system_operation(scope, instr, out);
         return;
-    }
-    if (instr.opcode == BH_RANGE) {
-        vector<string> ops;
-        // Write output operand
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        // Let's find the flatten index of the output view
-        {
-            stringstream ss;
-            ss << "(";
-            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                ss << "+i" << i << "*" << instr.operand[0].stride[i];
-            }
-            ss << ")";
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
-    if (instr.opcode == BH_RANDOM) {
-        vector<string> ops;
-        // Write output operand
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        // Write the random generation
-        {
-            stringstream ss;
-            ss << "random123(" << instr.constant.value.r123.start \
-               << ", " << instr.constant.value.r123.key << ", ";
-
-            // Let's find the flatten index of the output view
-            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                ss << "+i" << i << "*" << instr.operand[0].stride[i];
-            }
-            ss << ")";
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
-    if (bh_opcode_is_accumulate(instr.opcode)) {
+    } else if (bh_opcode_is_accumulate(instr.opcode)) {
         vector<string> ops;
         // Write output operand
         {
@@ -652,93 +551,151 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         write_operation(instr, ops, out, opencl);
         return;
     }
-    if (instr.opcode == BH_GATHER) {
-        // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
-        vector<string> ops;
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        {
-            assert(not bh_is_constant(&instr.operand[1]));
-            stringstream ss;
-            scope.getName(instr.operand[1], ss);
-            ss << "[" << instr.operand[1].start << " + ";
-            scope.getName(instr.operand[2], ss);
-            if (scope.isArray(instr.operand[2])) {
-                write_array_subscription(scope, instr.operand[2], ss);
-            }
-            ss << "]";
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
-    if (instr.opcode == BH_SCATTER or instr.opcode == BH_COND_SCATTER) {
-        // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
-        vector<string> ops;
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            ss << "[" << instr.operand[0].start << " + ";
-            scope.getName(instr.operand[2], ss);
-            if (scope.isArray(instr.operand[2])) {
-                write_array_subscription(scope, instr.operand[2], ss);
-            }
-            ss << "]";
-            ops.push_back(ss.str());
-        }
-        {
-            stringstream ss;
-            scope.getName(instr.operand[1], ss);
-            if (scope.isArray(instr.operand[1])) {
-                write_array_subscription(scope, instr.operand[1], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
-            stringstream ss;
-            scope.getName(instr.operand[3], ss);
-            if (scope.isArray(instr.operand[3])) {
-                write_array_subscription(scope, instr.operand[3], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
 
-
-    vector<string> ops;
-    for (size_t o = 0; o < instr.operand.size(); ++o) {
-        const bh_view &view = instr.operand[o];
-        stringstream ss;
-        if (bh_is_constant(&view)) {
-            const int64_t constID = scope.symbols.constID(instr);
-            if (constID >= 0) {
-                ss << "c" << scope.symbols.constID(instr);
-            } else {
-                instr.constant.pprint(ss, opencl);
-            }
-        } else {
-            scope.getName(view, ss);
-            if (scope.isArray(view)) {
-                if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
-                    // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
-                    // reducing to a non-scalar
-                    write_array_subscription(scope, view, ss, true, instr.sweep_axis());
-                } else {
-                    write_array_subscription(scope, view, ss);
+    switch(instr.opcode) {
+        case BH_RANGE: {
+            vector<string> ops;
+            // Write output operand
+            {
+                stringstream ss;
+                scope.getName(instr.operand[0], ss);
+                if (scope.isArray(instr.operand[0])) {
+                    write_array_subscription(scope, instr.operand[0], ss);
                 }
+                ops.push_back(ss.str());
             }
+            // Let's find the flatten index of the output view
+            {
+                stringstream ss;
+                ss << "(";
+                for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+                    ss << "+i" << i << "*" << instr.operand[0].stride[i];
+                }
+                ss << ")";
+                ops.push_back(ss.str());
+            }
+            write_operation(instr, ops, out, opencl);
+            break;
         }
-        ops.push_back(ss.str());
+
+        case BH_RANDOM: {
+            vector<string> ops;
+            // Write output operand
+            {
+                stringstream ss;
+                scope.getName(instr.operand[0], ss);
+                if (scope.isArray(instr.operand[0])) {
+                    write_array_subscription(scope, instr.operand[0], ss);
+                }
+                ops.push_back(ss.str());
+            }
+            // Write the random generation
+            {
+                stringstream ss;
+                ss << "random123(" << instr.constant.value.r123.start \
+                   << ", " << instr.constant.value.r123.key << ", ";
+
+                // Let's find the flatten index of the output view
+                for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+                    ss << "+i" << i << "*" << instr.operand[0].stride[i];
+                }
+                ss << ")";
+                ops.push_back(ss.str());
+            }
+            write_operation(instr, ops, out, opencl);
+            break;
+        }
+
+        case BH_GATHER: {
+            // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
+            vector<string> ops;
+            {
+                stringstream ss;
+                scope.getName(instr.operand[0], ss);
+                if (scope.isArray(instr.operand[0])) {
+                    write_array_subscription(scope, instr.operand[0], ss);
+                }
+                ops.push_back(ss.str());
+            }
+            {
+                assert(not bh_is_constant(&instr.operand[1]));
+                stringstream ss;
+                scope.getName(instr.operand[1], ss);
+                ss << "[" << instr.operand[1].start << " + ";
+                scope.getName(instr.operand[2], ss);
+                if (scope.isArray(instr.operand[2])) {
+                    write_array_subscription(scope, instr.operand[2], ss);
+                }
+                ss << "]";
+                ops.push_back(ss.str());
+            }
+            write_operation(instr, ops, out, opencl);
+            break;
+        }
+
+        case BH_SCATTER:
+        case BH_COND_SCATTER: {
+            // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
+            vector<string> ops;
+            {
+                stringstream ss;
+                scope.getName(instr.operand[0], ss);
+                ss << "[" << instr.operand[0].start << " + ";
+                scope.getName(instr.operand[2], ss);
+                if (scope.isArray(instr.operand[2])) {
+                    write_array_subscription(scope, instr.operand[2], ss);
+                }
+                ss << "]";
+                ops.push_back(ss.str());
+            }
+            {
+                stringstream ss;
+                scope.getName(instr.operand[1], ss);
+                if (scope.isArray(instr.operand[1])) {
+                    write_array_subscription(scope, instr.operand[1], ss);
+                }
+                ops.push_back(ss.str());
+            }
+            if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
+                stringstream ss;
+                scope.getName(instr.operand[3], ss);
+                if (scope.isArray(instr.operand[3])) {
+                    write_array_subscription(scope, instr.operand[3], ss);
+                }
+                ops.push_back(ss.str());
+            }
+            write_operation(instr, ops, out, opencl);
+            break;
+        }
+        default: {
+            vector<string> ops;
+            for (size_t o = 0; o < instr.operand.size(); ++o) {
+                const bh_view &view = instr.operand[o];
+                stringstream ss;
+                if (bh_is_constant(&view)) {
+                    const int64_t constID = scope.symbols.constID(instr);
+                    if (constID >= 0) {
+                        ss << "c" << scope.symbols.constID(instr);
+                    } else {
+                        instr.constant.pprint(ss, opencl);
+                    }
+                } else {
+                    scope.getName(view, ss);
+                    if (scope.isArray(view)) {
+                        if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
+                            // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
+                            // reducing to a non-scalar
+                            write_array_subscription(scope, view, ss, true, instr.sweep_axis());
+                        } else {
+                            write_array_subscription(scope, view, ss);
+                        }
+                    }
+                }
+                ops.push_back(ss.str());
+            }
+            write_operation(instr, ops, out, opencl);
+        }
     }
-    write_operation(instr, ops, out, opencl);
 }
 
 bool has_reduce_identity(bh_opcode opcode) {
@@ -812,8 +769,9 @@ InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim)
     assert(size >= size_of_rank_dim);
     shape[rank] = size_of_rank_dim;
     if (size != size_of_rank_dim) { // We might have to add an extra dimension
-        if (size % size_of_rank_dim != 0)
+        if (size % size_of_rank_dim != 0) {
             throw runtime_error("reshape_rank(): shape is not divisible with 'size_of_rank_dim'");
+        }
         shape.push_back(size / size_of_rank_dim);
     }
     bh_instruction ret = bh_instruction(*instr);
