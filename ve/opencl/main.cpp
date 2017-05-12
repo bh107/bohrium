@@ -163,40 +163,8 @@ void Impl::execute(bh_ir *bhir) {
     // Some statistics
     stat.record(bhir->instr_list);
 
-    // For now, we handle extension methods by executing them individually
-    {
-        vector<bh_instruction> instr_list;
-        for (bh_instruction &instr: bhir->instr_list) {
-            auto ext = extmethods.find(instr.opcode);
-            auto childext = child_extmethods.find(instr.opcode);
-
-            if (ext != extmethods.end() or childext != child_extmethods.end()) {
-                // Execute the instructions up until now
-                bh_ir b;
-                b.instr_list = instr_list;
-                this->execute(&b);
-                instr_list.clear();
-
-                if (ext != extmethods.end()) {
-                    // Execute the extension method
-                    ext->second.execute(&instr, &engine);
-                } else if (childext != child_extmethods.end()) {
-                    // We let the child component execute the instrution
-                    set<bh_base *> ext_bases = instr.get_bases();
-                    engine.copyToHost(ext_bases);
-
-                    std::vector<bh_instruction> child_instr_list;
-                    child_instr_list.push_back(instr);
-                    b.instr_list = child_instr_list;
-
-                    child.execute(&b);
-                }
-            } else {
-                instr_list.push_back(instr);
-            }
-        }
-        bhir->instr_list = instr_list;
-    }
+    // Let's handle extension methods
+    handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;

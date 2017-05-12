@@ -30,6 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_type.h>
 #include <bh_instruction.hpp>
+#include <bh_component.hpp>
+#include <bh_extmethod.hpp>
 #include <jitk/block.hpp>
 #include <jitk/base_db.hpp>
 #include <jitk/kernel.hpp>
@@ -105,6 +107,69 @@ void set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
 }
 
 
+// Handle the extension methods within the 'bhir'
+void handle_extmethod(component::ComponentImpl *self,
+                      bh_ir *bhir,
+                      std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods) {
+
+    std::vector<bh_instruction> instr_list;
+    for (bh_instruction &instr: bhir->instr_list) {
+        auto ext = extmethods.find(instr.opcode);
+        if (ext != extmethods.end()) {
+            bh_ir b;
+            b.instr_list = instr_list;
+            self->execute(&b); // Execute the instructions up until now
+            instr_list.clear();
+            ext->second.execute(&instr, NULL); // Execute the extension method
+        } else {
+            instr_list.push_back(instr);
+        }
+    }
+    bhir->instr_list = instr_list;
+}
+
+// Handle the extension methods within the 'bhir'
+// This version takes a child component and possible an engine that must have a copyToHost() method
+template<typename T>
+void handle_extmethod(component::ComponentImpl *self,
+                      bh_ir *bhir,
+                      std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
+                      std::set<bh_opcode> &child_extmethods,
+                      component::ComponentFace &child,
+                      T *acc_engine = NULL) {
+
+    std::vector<bh_instruction> instr_list;
+    for (bh_instruction &instr: bhir->instr_list) {
+        auto ext = extmethods.find(instr.opcode);
+        auto childext = child_extmethods.find(instr.opcode);
+
+        if (ext != extmethods.end() or childext != child_extmethods.end()) {
+            // Execute the instructions up until now
+            bh_ir b;
+            b.instr_list = instr_list;
+            self->execute(&b);
+            instr_list.clear();
+
+            if (ext != extmethods.end()) {
+                // Execute the extension method
+                ext->second.execute(&instr, acc_engine);
+            } else if (childext != child_extmethods.end()) {
+                // We let the child component execute the instruction
+                std::set<bh_base *> ext_bases = instr.get_bases();
+                if (acc_engine != NULL) {
+                    acc_engine->copyToHost(ext_bases);
+                }
+                std::vector<bh_instruction> child_instr_list;
+                child_instr_list.push_back(instr);
+                b.instr_list = child_instr_list;
+                child.execute(&b);
+            }
+        } else {
+            instr_list.push_back(instr);
+        }
+    }
+    bhir->instr_list = instr_list;
+}
 
 } // jitk
 } // bohrium
