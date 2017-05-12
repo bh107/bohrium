@@ -284,39 +284,7 @@ void Impl::execute(bh_ir *bhir) {
     }
 
     // The cache system
-    vector<Block> block_list;
-    {
-        // Assign origin ids to all instructions starting at zero.
-        int64_t count = 0;
-        for (bh_instruction *instr: instr_list) {
-            instr->origin_id = count++;
-        }
-
-        bool hit;
-        tie(block_list, hit) = fcache.get(instr_list);
-        if (hit) {
-
-        } else {
-            const auto tpre_fusion = chrono::steady_clock::now();
-            stat.num_instrs_into_fuser += instr_list.size();
-            // Let's fuse the 'instr_list' into blocks
-            // We start with the pre_fuser
-            block_list = apply_pre_fusion(instr_list, config.defaultGet("pre_fuser", string("pre_fuser_lossy")));
-            stat.num_blocks_out_of_fuser += block_list.size();
-            const auto tfusion = chrono::steady_clock::now();
-            stat.time_pre_fusion += tfusion - tpre_fusion;
-            // Then we fuse fully
-            apply_transformers(block_list, config.defaultGetList("fuser_list", {"greedy"}));
-            stat.time_fusion += chrono::steady_clock::now() - tfusion;
-            fcache.insert(instr_list, block_list);
-        }
-    }
-
-    // Pretty printing the block
-    if (config.defaultGet<bool>("graph", false)) {
-        graph::DAG dag = graph::from_block_list(block_list);
-        graph::pprint(dag, "dag");
-    }
+    const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat);
 
     for(const Block &block: block_list) {
         assert(not block.isInstr());
