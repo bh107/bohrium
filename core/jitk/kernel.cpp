@@ -51,5 +51,23 @@ Kernel::Kernel(const LoopB &block) : block(block) {
     }
 }
 
+
+Kernel create_kernel_object(const Block &block, const bool verbose, Statistics &stat) {
+    const Kernel kernel(block.getLoop());
+
+    stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
+    stat.num_temp_arrays += kernel.getAllTemps().size();
+
+    // Debug print
+    if (verbose) {
+        std::cout << "Kernel's non-temps: \n";
+        for (const bh_base *base: kernel.getNonTemps()) {
+            std::cout << "\t" << *base << "\n";
+        }
+        std::cout << kernel.block;
+    }
+    return kernel;
+}
+
 } // jitk
 } // bohrium

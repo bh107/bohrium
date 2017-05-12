@@ -226,32 +226,19 @@ void Impl::execute(bh_ir *bhir) {
 
     // The cache system
     const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat);
-    
+
     for(const Block &block: block_list) {
         assert(not block.isInstr());
 
         //Let's create a kernel
-        Kernel kernel(block.getLoop());
-
-        // We can skip a lot of steps if the kernel does no computation
-        const bool kernel_is_computing = not kernel.block.isSystemOnly();
-
-        // For profiling statistic
-        stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
-        stat.num_temp_arrays += kernel.getAllTemps().size();
+        Kernel kernel = create_kernel_object(block, verbose, stat);
 
         const SymbolTable symbols(kernel.getAllInstr(),
                                   config.defaultGet("index_as_var", true),
                                   config.defaultGet("const_as_var", true));
 
-        // Debug print
-        if (verbose) {
-            cout << "Kernel's non-temps: \n";
-            for (bh_base *base: kernel.getNonTemps()) {
-                cout << "\t" << *base << "\n";
-            }
-            cout << kernel.block;
-        }
+        // We can skip a lot of steps if the kernel does no computation
+        const bool kernel_is_computing = not kernel.block.isSystemOnly();
 
         // Find the parallel blocks
         vector<const LoopB*> threaded_blocks;

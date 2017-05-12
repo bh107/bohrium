@@ -290,19 +290,11 @@ void Impl::execute(bh_ir *bhir) {
         assert(not block.isInstr());
 
         //Let's create a kernel
-        Kernel kernel(block.getLoop());
-
-        // For profiling statistic
-        stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
-        stat.num_temp_arrays += kernel.getAllTemps().size();
+        Kernel kernel = create_kernel_object(block, verbose, stat);
 
         const SymbolTable symbols(kernel.getAllInstr(),
                                   config.defaultGet("index_as_var", true),
                                   config.defaultGet("const_as_var", true));
-
-        // Debug print
-        if (verbose)
-            cout << kernel.block;
 
         // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
         vector<const bh_view*> offset_strides;

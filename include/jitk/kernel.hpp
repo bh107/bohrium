@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <jitk/block.hpp>
 #include <jitk/base_db.hpp>
+#include <jitk/statistics.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -107,6 +108,9 @@ public:
         return ret;
     }
 };
+
+// Create a new Kernel object including statistics and verbosity
+Kernel create_kernel_object(const Block &block, const bool verbose, Statistics &stat);
 
 } // jit
 } // bohrium
