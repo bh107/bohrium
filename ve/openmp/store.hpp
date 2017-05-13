@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/kernel.hpp>
 
 #include "compiler.hpp"
 
@@ -36,7 +37,7 @@ namespace bohrium {
 
 typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[], bh_constant_value constants[]);
 
-class Store {
+class EngineOpenMP {
   private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
@@ -56,15 +57,19 @@ class Store {
     // Whether we should write the kernel sources (.c files)
     const bool verbose;
 
+    // Return a kernel function based on the given 'source'
+    KernelFunction getFunction(const std::string &source);
+
   public:
-    Store(const ConfigParser &config, jitk::Statistics &stat);
-    ~Store();
+    EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
+    ~EngineOpenMP();
 
     // Some statistics
     jitk::Statistics &stat;
 
-    // Return a kernel function based on the given 'source'
-    KernelFunction getFunction(const std::string &source);
+    void execute(const std::string &source, const jitk::Kernel &kernel,
+                 const std::vector<const bh_view*> &offset_strides,
+                 const std::vector<const bh_instruction*> &constants);
 };
 
 

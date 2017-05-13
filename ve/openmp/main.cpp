@@ -54,7 +54,7 @@ class Impl : public ComponentImpl {
     // Fuse cache
     FuseCache fcache;
     // Compiled kernels store
-    Store store;
+    EngineOpenMP engine;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     //Allocated base arrays
@@ -62,7 +62,7 @@ class Impl : public ComponentImpl {
 
   public:
     Impl(int stack_level) : ComponentImpl(stack_level), stat(config.defaultGet("prof", false)),
-                            fcache(stat), store(config, stat) {}
+                            fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -296,41 +296,15 @@ void Impl::execute(bh_ir *bhir) {
         stringstream ss;
         write_kernel(kernel, symbols, config, offset_strides, ss);
 
-        // Compile the kernel
-        auto tbuild = chrono::steady_clock::now();
-        KernelFunction func = store.getFunction(ss.str());
-        assert(func != NULL);
-        stat.time_compile += chrono::steady_clock::now() - tbuild;
-
-        // Create a 'data_list' of data pointers
-        vector<void*> data_list;
-        data_list.reserve(kernel.getNonTemps().size());
-        for(bh_base *base: kernel.getNonTemps()) {
-            assert(base->data != NULL);
-            data_list.push_back(base->data);
-        }
-        // And the offset-and-strides
-        vector<uint64_t> offset_and_strides;
-        offset_and_strides.reserve(offset_strides.size());
-        for (const bh_view *view: offset_strides) {
-            const uint64_t t = (uint64_t) view->start;
-            offset_and_strides.push_back(t);
-            for (int i=0; i<view->ndim; ++i) {
-                const uint64_t s = (uint64_t) view->stride[i];
-                offset_and_strides.push_back(s);
-            }
-        }
-        // And the constants
-        vector<bh_constant_value> constants;
+        // Create the constant vector
+        vector<const bh_instruction*> constants;
         constants.reserve(symbols.constIDs().size());
         for (const InstrPtr &instr: symbols.constIDs()) {
-            constants.push_back(instr->constant.value);
+            constants.push_back(&(*instr));
         }
 
-        auto texec = chrono::steady_clock::now();
-        // Call the launcher function, which will execute the kernel
-        func(&data_list[0], &offset_and_strides[0], &constants[0]);
-        stat.time_exec += chrono::steady_clock::now() - texec;
+        // Let's execute the kernel
+        engine.execute(ss.str(), kernel, offset_strides, constants);
 
         // Finally, let's cleanup
         for(bh_base *base: kernel.getFrees()) {
