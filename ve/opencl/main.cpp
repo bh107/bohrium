@@ -79,6 +79,11 @@ class Impl : public ComponentImplWithChild {
             child_extmethods.insert(opcode);
         }
     }
+
+    // Implement the handle of extension methods
+    void handle_extmethod(bh_ir *bhir) {
+        util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
+    }
 };
 }
 
@@ -161,7 +166,7 @@ void Impl::execute(bh_ir *bhir) {
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
 
     // Let's handle extension methods
-    util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
+    handle_extmethod(bhir);
 
     // Some statistics
     stat.record(bhir->instr_list);
