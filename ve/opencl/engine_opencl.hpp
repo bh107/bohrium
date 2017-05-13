@@ -96,43 +96,35 @@ public:
         stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
     }
 
-    // Copy 'bases' to the device (ignoring bases that is already on the device)
+    // Copy 'base_list' to the device (ignoring bases that is already on the device)
     template <typename T>
-    void copyListToDevice(T &bases) {
+    void copyToDevice(T &base_list) {
         auto tcopy = std::chrono::steady_clock::now();
-        for(bh_base *base: bases) {
-            copyToDevice(base);
+        for(bh_base *base: base_list) {
+            if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+                cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+                buffers[base].reset(buf);
+
+                // If the host data is non-null we should copy it to the device
+                if (base->data != NULL) {
+                    if (verbose) {
+                        std::cout << "Copy to device: " << *base << std::endl;
+                    }
+                    queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                }
+            }
         }
         queue.finish();
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
 
     template <typename T>
-    cl::Buffer* copyToDevice(T &base) {
-        if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-            cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-            buffers[base].reset(buf);
-
-            // If the host data is non-null we should copy it to the device
-            if (base->data != NULL) {
-                if (verbose) {
-                    std::cout << "Copy to device: " << *base << std::endl;
-                }
-                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
-            }
-
-            return buf;
-        }
-        return NULL;
-    }
-
-    template <typename T>
     cl::Buffer* getBuffer(T &base) {
-        if(buffers.find(base) != buffers.end()) {
-            return &(*buffers[base]);
-        } else {
-            return copyToDevice(base);
+        if(buffers.find(base) == buffers.end()) {
+            std::vector<T> vec = {base};
+            copyToDevice(vec);
         }
+        return &(*buffers[base]);
     }
 
     // Get C buffer from wrapped C++ object
