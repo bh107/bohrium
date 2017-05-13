@@ -160,11 +160,11 @@ void Impl::execute(bh_ir *bhir) {
     const bool verbose = config.defaultGet<bool>("verbose", false);
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
 
-    // Some statistics
-    stat.record(bhir->instr_list);
-
     // Let's handle extension methods
     handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
+
+    // Some statistics
+    stat.record(bhir->instr_list);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
