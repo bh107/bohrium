@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 #include <iomanip>
 #include <dlfcn.h>
+#include <jitk/codegen_util.hpp>
 
 #include "store.hpp"
 
@@ -165,6 +166,11 @@ void EngineOpenMP::execute(const std::string &source, const jitk::Kernel &kernel
     func(&data_list[0], &offset_and_strides[0], &constant_arg[0]);
     stat.time_exec += chrono::steady_clock::now() - texec;
 
+}
+
+void EngineOpenMP::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
+    const std::set<bh_base*> empty;
+    jitk::util_set_constructor_flag(instr_list, empty);
 }
 
 

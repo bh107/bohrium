@@ -70,6 +70,9 @@ class EngineOpenMP {
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
+
+    // Sets the constructor flag of each instruction in 'instr_list'
+    void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
 };
 
 

@@ -266,8 +266,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
-        const std::set<bh_base*> empty;
-        util_set_constructor_flag(instr_list, empty);
+        engine.set_constructor_flag(instr_list);
     } else {
         for(bh_instruction *instr: instr_list) {
             instr->constructor = false;
