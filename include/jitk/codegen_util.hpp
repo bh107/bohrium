@@ -42,11 +42,7 @@ namespace jitk {
 
 
 // Write 'num' of spaces to 'out'
-void spaces(std::stringstream &out, int num) {
-    for (int i = 0; i < num; ++i) {
-        out << " ";
-    }
-}
+void spaces(std::stringstream &out, int num);
 
 
 // Write the kernel function arguments.

@@ -42,6 +42,12 @@ bool sweeping_innermost_axis(InstrPtr instr) {
 }
 
 
+void spaces(std::stringstream &out, int num) {
+    for (int i = 0; i < num; ++i) {
+        out << " ";
+    }
+}
+
 void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
                                      const vector<const bh_view*> &offset_strides,
                                      std::function<const char *(bh_type type)> type_writer,
