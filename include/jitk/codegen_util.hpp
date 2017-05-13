@@ -80,7 +80,7 @@ void write_loop_block(const SymbolTable &symbols,
 // Sets the constructor flag of each instruction in 'instr_list'
 // 'remotely_allocated_bases' is a collection of array bases already remotely allocated
 template<typename T>
-void set_constructor_flag(std::vector<bh_instruction*> &instr_list, const T &remotely_allocated_bases) {
+void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const T &remotely_allocated_bases) {
     std::set<bh_base*> initiated; // Arrays initiated in 'instr_list'
     for(bh_instruction *instr: instr_list) {
         instr->constructor = false;
@@ -99,44 +99,21 @@ void set_constructor_flag(std::vector<bh_instruction*> &instr_list, const T &rem
         }
     }
 }
-// Sets the constructor flag of each instruction in 'instr_list'
-// Notice, this function is just for convenience when no remotely allocated arrays exist
-void set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
-    const std::set<bh_base*> empty;
-    set_constructor_flag(instr_list, empty);
-}
-
 
 // Handle the extension methods within the 'bhir'
-void handle_extmethod(component::ComponentImpl *self,
-                      bh_ir *bhir,
-                      std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods) {
-
-    std::vector<bh_instruction> instr_list;
-    for (bh_instruction &instr: bhir->instr_list) {
-        auto ext = extmethods.find(instr.opcode);
-        if (ext != extmethods.end()) {
-            bh_ir b;
-            b.instr_list = instr_list;
-            self->execute(&b); // Execute the instructions up until now
-            instr_list.clear();
-            ext->second.execute(&instr, NULL); // Execute the extension method
-        } else {
-            instr_list.push_back(instr);
-        }
-    }
-    bhir->instr_list = instr_list;
-}
+void util_handle_extmethod(component::ComponentImpl *self,
+                           bh_ir *bhir,
+                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods);
 
 // Handle the extension methods within the 'bhir'
 // This version takes a child component and possible an engine that must have a copyToHost() method
 template<typename T>
-void handle_extmethod(component::ComponentImpl *self,
-                      bh_ir *bhir,
-                      std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
-                      std::set<bh_opcode> &child_extmethods,
-                      component::ComponentFace &child,
-                      T *acc_engine = NULL) {
+void util_handle_extmethod(component::ComponentImpl *self,
+                           bh_ir *bhir,
+                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
+                           std::set<bh_opcode> &child_extmethods,
+                           component::ComponentFace &child,
+                           T *acc_engine = NULL) {
 
     std::vector<bh_instruction> instr_list;
     for (bh_instruction &instr: bhir->instr_list) {

@@ -161,7 +161,7 @@ void Impl::execute(bh_ir *bhir) {
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
 
     // Let's handle extension methods
-    handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
+    util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
 
     // Some statistics
     stat.record(bhir->instr_list);
@@ -185,7 +185,7 @@ void Impl::execute(bh_ir *bhir) {
 
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
-        set_constructor_flag(instr_list, engine.buffers);
+        util_set_constructor_flag(instr_list, engine.buffers);
     } else {
         for (bh_instruction *instr: instr_list) {
             instr->constructor = false;
