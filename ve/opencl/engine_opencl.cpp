@@ -94,6 +94,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     default_device_type(config.defaultGet<string>("device_type", "auto")),
                                     platform_no(config.defaultGet<int>("platform_no", -1)),
                                     verbose(config.defaultGet<bool>("verbose", false)),
+                                    prof(config.defaultGet<bool>("prof", false)),
                                     stat(stat) {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -289,6 +290,10 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
     stat.time_exec += chrono::steady_clock::now() - texec;
+}
+
+void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
+    jitk::util_set_constructor_flag(instr_list, buffers);
 }
 
 } // bohrium

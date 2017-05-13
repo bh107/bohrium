@@ -178,14 +178,14 @@ void Impl::execute(bh_ir *bhir) {
 
         // Let's free device buffers and array memory
         for(bh_base *base: frees) {
-            engine.buffers.erase(base);
+            engine.delBuffer(base);
             bh_data_free(base);
         }
     }
 
     // Set the constructor flag
     if (config.defaultGet<bool>("array_contraction", true)) {
-        util_set_constructor_flag(instr_list, engine.buffers);
+        engine.set_constructor_flag(instr_list);
     } else {
         for (bh_instruction *instr: instr_list) {
             instr->constructor = false;
@@ -232,7 +232,7 @@ void Impl::execute(bh_ir *bhir) {
 
             // Let's free device buffers
             for (bh_base *base: kernel.getFrees()) {
-                engine.buffers.erase(base);
+                engine.delBuffer(base);
             }
 
             // Let's send the kernel instructions to our child
@@ -251,15 +251,6 @@ void Impl::execute(bh_ir *bhir) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
             engine.copyToDevice(kernel.getNonTemps());
-
-            if (config.defaultGet<bool>("prof", false)) {
-                // Let's check the current memory usage on the device
-                uint64_t sum = 0;
-                for (const auto &b: engine.buffers) {
-                    sum += bh_base_size(b.first);
-                }
-                stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
-            }
 
             // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
             vector<const bh_view*> offset_strides;
@@ -293,7 +284,7 @@ void Impl::execute(bh_ir *bhir) {
         // Let's free device buffers
         const auto &kernel_frees = kernel.getFrees();
         for(bh_base *base: kernel.getFrees()) {
-            engine.buffers.erase(base);
+            engine.delBuffer(base);
         }
 
         // Finally, let's cleanup

@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/kernel.hpp>
+#include <jitk/codegen_util.hpp>
 
 #include "cl.hpp"
 
@@ -58,11 +59,12 @@ private:
     const int platform_no;
     // Verbose flag
     const bool verbose;
+    // Record profiling statistics
+    const bool prof;
     // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
-public:
     // A map of allocated buffers on the device
-    std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers; //TODO; privatize
+    std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers;
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 
@@ -99,6 +101,16 @@ public:
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
     template <typename T>
     void copyToDevice(T &base_list) {
+
+        // Let's update the maximum memory usage on the device
+        if (prof) {
+            uint64_t sum = 0;
+            for (const auto &b: buffers) {
+                sum += bh_base_size(b.first);
+            }
+            stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
+        }
+
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
@@ -118,6 +130,10 @@ public:
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
 
+    // Sets the constructor flag of each instruction in 'instr_list'
+    void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+
+    // Retrieve a single buffer
     template <typename T>
     cl::Buffer* getBuffer(T &base) {
         if(buffers.find(base) == buffers.end()) {
@@ -125,6 +141,12 @@ public:
             copyToDevice(vec);
         }
         return &(*buffers[base]);
+    }
+
+    // Delete a buffer
+    template <typename T>
+    void delBuffer(T &base) {
+        buffers.erase(base);
     }
 
     // Get C buffer from wrapped C++ object
