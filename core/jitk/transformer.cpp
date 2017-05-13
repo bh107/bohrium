@@ -177,7 +177,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint
         }
         if (loop._block_list.size() > 1 // We need minimum two blocks in order to split!
             and max_nelem > min_threading // Is it even possible to achieve our goal?
-            and find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
+            and util_find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
 
             for (auto it = loop._block_list.begin(); it != loop._block_list.end(); ++it) {
                 // First we will place all sub-blocks that cannot be threaded in a shared block
