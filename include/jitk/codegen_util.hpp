@@ -41,6 +41,28 @@ namespace bohrium {
 namespace jitk {
 
 
+// This is the base class for engines, which exposes the interface used by the Vector-Egnines (Backends)
+class Engine {
+public:
+    // Verbose flag
+    const bool verbose;
+
+    // Some statistics
+    jitk::Statistics &stat;
+
+    // Record profiling statistics
+    const bool prof;
+
+    Engine(const ConfigParser &config, jitk::Statistics &stat) :  verbose(config.defaultGet<bool>("verbose", false)),
+                                                                  stat(stat),
+                                                                  prof(config.defaultGet<bool>("prof", false)) {}
+    virtual ~Engine() {};
+
+    // Sets the constructor flag of each instruction in 'instr_list'
+    virtual void set_constructor_flag(std::vector<bh_instruction*> &instr_list) = 0;
+};
+
+
 // Write 'num' of spaces to 'out'
 void spaces(std::stringstream &out, int num);
 

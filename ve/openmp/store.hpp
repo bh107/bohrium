@@ -37,7 +37,7 @@ namespace bohrium {
 
 typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[], bh_constant_value constants[]);
 
-class EngineOpenMP {
+class EngineOpenMP : public jitk::Engine {
   private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
@@ -54,18 +54,12 @@ class EngineOpenMP {
     // The compiler to use when function doesn't exist
     const Compiler compiler;
 
-    // Whether we should write the kernel sources (.c files)
-    const bool verbose;
-
     // Return a kernel function based on the given 'source'
     KernelFunction getFunction(const std::string &source);
 
   public:
     EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
     ~EngineOpenMP();
-
-    // Some statistics
-    jitk::Statistics &stat;
 
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const bh_view*> &offset_strides,

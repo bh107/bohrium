@@ -38,6 +38,7 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
+                                           Engine(config, stat),
                                            tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
                                            source_dir(tmp_dir / "src"),
                                            object_dir(tmp_dir / "obj"),
@@ -45,9 +46,7 @@ EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
                                                     config.defaultGet<string>("compiler_inc", ""),
                                                     config.defaultGet<string>("compiler_lib", "-lm"),
                                                     config.defaultGet<string>("compiler_flg", ""),
-                                                    config.defaultGet<string>("compiler_ext", "")),
-                                           verbose(config.defaultGet<bool>("verbose", false)),
-                                           stat(stat)
+                                                    config.defaultGet<string>("compiler_ext", ""))
 {
     // Let's make sure that the directories exist
     fs::create_directories(source_dir);

@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
-class EngineOpenCL {
+class EngineOpenCL : public jitk::Engine {
 private:
     // Map of all compiled OpenCL programs
     std::map<uint64_t, cl::Program> _programs;
@@ -57,10 +57,6 @@ private:
     const std::string default_device_type;
     // Default platform number
     const int platform_no;
-    // Verbose flag
-    const bool verbose;
-    // Record profiling statistics
-    const bool prof;
     // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
     // A map of allocated buffers on the device
@@ -68,8 +64,7 @@ private:
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 
-    // Some statistics
-    jitk::Statistics &stat;
+
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
