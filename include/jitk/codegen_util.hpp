@@ -60,6 +60,12 @@ public:
 
     // Sets the constructor flag of each instruction in 'instr_list'
     virtual void set_constructor_flag(std::vector<bh_instruction*> &instr_list) = 0;
+
+    // Execute the 'source'
+    virtual void execute(const std::string &source, const Kernel &kernel,
+                         const std::vector<const LoopB*> &threaded_blocks,
+                         const std::vector<const bh_view*> &offset_strides,
+                         const std::vector<const bh_instruction*> &constants) = 0;
 };
 
 

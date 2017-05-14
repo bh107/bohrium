@@ -124,8 +124,9 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
 
 
 void EngineOpenMP::execute(const std::string &source, const jitk::Kernel &kernel,
-                    const std::vector<const bh_view*> &offset_strides,
-                    const std::vector<const bh_instruction*> &constants) {
+                           const std::vector<const jitk::LoopB*> &threaded_blocks,
+                           const std::vector<const bh_view*> &offset_strides,
+                           const std::vector<const bh_instruction*> &constants) {
 
     // Compile the kernel
     auto tbuild = chrono::steady_clock::now();

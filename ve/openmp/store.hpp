@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/kernel.hpp>
+#include <jitk/block.hpp>
 
 #include "compiler.hpp"
 
@@ -61,11 +62,12 @@ class EngineOpenMP : public jitk::Engine {
     EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
     ~EngineOpenMP();
 
+    // Implementation of the virtual methods inherited from the Engine class
     void execute(const std::string &source, const jitk::Kernel &kernel,
+                 const std::vector<const jitk::LoopB*> &threaded_blocks,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
-    // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
 };
 

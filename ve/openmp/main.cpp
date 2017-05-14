@@ -309,7 +309,7 @@ void Impl::execute(bh_ir *bhir) {
         }
 
         // Let's execute the kernel
-        engine.execute(ss.str(), kernel, offset_strides, constants);
+        engine.execute(ss.str(), kernel, {}, offset_strides, constants);
 
         // Finally, let's cleanup
         for(bh_base *base: kernel.getFrees()) {
