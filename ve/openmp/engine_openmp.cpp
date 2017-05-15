@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 #include <jitk/codegen_util.hpp>
 
-#include "store.hpp"
+#include "engine_openmp.hpp"
 
 using namespace std;
 namespace fs = boost::filesystem;

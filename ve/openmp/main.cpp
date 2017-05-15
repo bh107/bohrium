@@ -38,7 +38,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/dtype.hpp>
 #include <jitk/apply_fusion.hpp>
 
-#include "store.hpp"
+#include "engine_openmp.hpp"
 #include "openmp_util.hpp"
 
 using namespace bohrium;
