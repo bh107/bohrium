@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
-class EngineOpenCL : public jitk::Engine {
+class EngineOpenCL {
 private:
     // Map of all compiled OpenCL programs
     std::map<uint64_t, cl::Program> _programs;
@@ -61,6 +61,12 @@ private:
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
     // A map of allocated buffers on the device
     std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers;
+    // Verbose flag
+    const bool verbose;
+    // Some statistics
+    jitk::Statistics &stat;
+    // Record profiling statistics
+    const bool prof;
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 

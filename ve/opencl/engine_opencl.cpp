@@ -83,7 +83,7 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
-EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) : Engine(config, stat),
+EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
                                     work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
                                     work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
@@ -92,7 +92,11 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
                                     compile_flg(config.defaultGet<string>("compiler_flg", "")),
                                     default_device_type(config.defaultGet<string>("device_type", "auto")),
-                                    platform_no(config.defaultGet<int>("platform_no", -1)) {
+                                    platform_no(config.defaultGet<int>("platform_no", -1)),
+                                    verbose(config.defaultGet<bool>("verbose", false)),
+                                    stat(stat),
+                                    prof(config.defaultGet<bool>("prof", false))
+{
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
     if(platforms.size() == 0) {
