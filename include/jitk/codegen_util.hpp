@@ -32,10 +32,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
+#include <bh_config_parser.hpp>
 #include <jitk/block.hpp>
 #include <jitk/base_db.hpp>
 #include <jitk/kernel.hpp>
-#include <bh_config_parser.hpp>
+#include <jitk/instruction.hpp>
+#include <jitk/fuser_cache.hpp>
+#include <jitk/apply_fusion.hpp>
+
 
 namespace bohrium {
 namespace jitk {
@@ -170,6 +174,144 @@ void util_handle_extmethod(component::ComponentImpl *self,
         }
     }
     bhir->instr_list = instr_list;
+}
+
+
+// Handle execution of regular instructions
+template<typename SelfType, typename EngineType>
+void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat, FuseCache &fcache, component::ComponentFace *child) {
+    using namespace std;
+
+    auto texecution = chrono::steady_clock::now();
+
+    const bool verbose = config.defaultGet<bool>("verbose", false);
+    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+
+    // Some statistics
+    stat.record(bhir->instr_list);
+
+    // Let's start by cleanup the instructions from the 'bhir'
+    vector<bh_instruction*> instr_list;
+    {
+        set<bh_base*> syncs;
+        set<bh_base*> frees;
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
+
+        // Let's copy sync'ed arrays back to the host
+        engine.copyToHost(syncs);
+
+        // Let's free device buffers and array memory
+        for(bh_base *base: frees) {
+            engine.delBuffer(base);
+            bh_data_free(base);
+        }
+    }
+
+    // Set the constructor flag
+    if (config.defaultGet<bool>("array_contraction", true)) {
+        engine.set_constructor_flag(instr_list);
+    } else {
+        for (bh_instruction *instr: instr_list) {
+            instr->constructor = false;
+        }
+    }
+
+    // The cache system
+    const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat);
+
+    for(const Block &block: block_list) {
+        assert(not block.isInstr());
+
+        //Let's create a kernel
+        Kernel kernel = create_kernel_object(block, verbose, stat);
+
+        const SymbolTable symbols(kernel.getAllInstr(),
+                                  config.defaultGet("index_as_var", true),
+                                  config.defaultGet("const_as_var", true));
+
+        // We can skip a lot of steps if the kernel does no computation
+        const bool kernel_is_computing = not kernel.block.isSystemOnly();
+
+        // Find the parallel blocks
+        const vector<const LoopB*> threaded_blocks = self.find_threaded_blocks(kernel);
+
+        // We might have to offload the execution to the CPU
+        if (threaded_blocks.size() == 0 and kernel_is_computing) {
+            if (verbose)
+                cout << "Offloading to CPU\n";
+
+            if (child == NULL) {
+                throw runtime_error("handle_execution(): threaded_blocks cannot be empty when child == NULL!");
+            }
+
+            auto toffload = chrono::steady_clock::now();
+
+            // Let's copy all non-temporary to the host
+            engine.copyToHost(kernel.getNonTemps());
+
+            // Let's free device buffers
+            for (bh_base *base: kernel.getFrees()) {
+                engine.delBuffer(base);
+            }
+
+            // Let's send the kernel instructions to our child
+            vector<bh_instruction> child_instr_list;
+            for (const InstrPtr instr: kernel.block.getAllInstr()) {
+                child_instr_list.push_back(*instr);
+            }
+            bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
+            child->execute(&tmp_bhir);
+            stat.time_offload += chrono::steady_clock::now() - toffload;
+            continue;
+        }
+
+        // Let's execute the kernel
+        if (kernel_is_computing) {
+
+            // We need a memory buffer on the device for each non-temporary array in the kernel
+            engine.copyToDevice(kernel.getNonTemps());
+
+            // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
+            vector<const bh_view*> offset_strides;
+            if (strides_as_variables) {
+                offset_strides = kernel.getOffsetAndStrides();
+            }
+
+            // Code generation
+            stringstream ss;
+            self.write_kernel(kernel, symbols, config, threaded_blocks, offset_strides, ss);
+
+            if (verbose) {
+                cout << "\n************ GPU Kernel ************\n" << ss.str()
+                     << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
+            }
+
+            // Create the constant vector
+            vector<const bh_instruction*> constants;
+            constants.reserve(symbols.constIDs().size());
+            for (const InstrPtr &instr: symbols.constIDs()) {
+                constants.push_back(&(*instr));
+            }
+
+            // Let's execute the OpenCL kernel
+            engine.execute(ss.str(), kernel, threaded_blocks, offset_strides, constants);
+        }
+
+        // Let's copy sync'ed arrays back to the host
+        engine.copyToHost(kernel.getSyncs());
+
+        // Let's free device buffers
+        const auto &kernel_frees = kernel.getFrees();
+        for(bh_base *base: kernel.getFrees()) {
+            engine.delBuffer(base);
+        }
+
+        // Finally, let's cleanup
+        for(bh_base *base: kernel_frees) {
+            bh_data_free(base);
+        }
+    }
+    stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
 } // jitk

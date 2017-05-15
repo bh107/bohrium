@@ -66,7 +66,7 @@ void apply_transformers(vector<Block> &block_list, const vector<string> &transfo
 }
 
 vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
-                                  FuseCache &fcache, Statistics &stat) {
+                             FuseCache &fcache, Statistics &stat) {
 
     vector<Block> block_list;
 

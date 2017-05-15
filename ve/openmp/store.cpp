@@ -128,6 +128,11 @@ void EngineOpenMP::execute(const std::string &source, const jitk::Kernel &kernel
                            const std::vector<const bh_view*> &offset_strides,
                            const std::vector<const bh_instruction*> &constants) {
 
+    // Make sure all arrays are allocated
+    for (bh_base *base: kernel.getNonTemps()) {
+        bh_data_malloc(base);
+    }
+
     // Compile the kernel
     auto tbuild = chrono::steady_clock::now();
     KernelFunction func = getFunction(source);

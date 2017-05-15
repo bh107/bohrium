@@ -69,6 +69,17 @@ class EngineOpenMP : public jitk::Engine {
                  const std::vector<const bh_instruction*> &constants);
 
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+
+    // Copy 'bases' to the host (ignoring bases that isn't on the device)
+    template <typename T>
+    void copyToHost(T &bases) {}
+
+    // Copy 'base_list' to the device (ignoring bases that is already on the device)
+    template <typename T>
+    void copyToDevice(T &base_list) {}
+
+    template <typename T>
+    void delBuffer(T &base) {}
 };
 
 
