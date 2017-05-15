@@ -53,7 +53,7 @@ class Impl : public ComponentImpl {
     Statistics stat;
     // Fuse cache
     FuseCache fcache;
-    // Compiled kernels store
+    // Teh OpenMP engine
     EngineOpenMP engine;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
@@ -61,7 +61,8 @@ class Impl : public ComponentImpl {
     set<bh_base*> _allocated_bases;
 
   public:
-    Impl(int stack_level) : ComponentImpl(stack_level), stat(config.defaultGet("prof", false)),
+    Impl(int stack_level) : ComponentImpl(stack_level),
+                            stat(config.defaultGet("prof", false)),
                             fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
@@ -76,6 +77,9 @@ class Impl : public ComponentImpl {
         util_handle_extmethod(this, bhir, extmethods);
     }
 
+    // The following methods implements the methods required by jitk::handle_execution()
+
+    // Write the OpenMP kernel
     void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks,
                       const vector<const bh_view*> &offset_strides, stringstream &ss);
@@ -179,7 +183,6 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-// Write the JIT kernel
 void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
                         const vector<const LoopB *> &threaded_blocks,
                         const vector<const bh_view*> &offset_strides, stringstream &ss) {
@@ -251,9 +254,9 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
 }
 
 void Impl::execute(bh_ir *bhir) {
-
     // Let's handle extension methods
     util_handle_extmethod(this, bhir, extmethods);
 
+    // And then the regular instructions
     handle_execution(*this, bhir, engine, config, stat, fcache, NULL);
 }

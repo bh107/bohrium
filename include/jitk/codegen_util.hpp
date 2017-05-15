@@ -149,9 +149,20 @@ void util_handle_extmethod(component::ComponentImpl *self,
 }
 
 
-// Handle execution of regular instructions
+/* Handle execution of regular instructions
+ * 'SelfType' most be a component implementation that exposes:
+ *     - find_threaded_blocks(...)
+ *     - void write_kernel(...)
+ * 'EngineType' most be a engine implementation that exposes:
+ *     - set_constructor_flag(...)
+ *     - void copyToHost(...)
+ *     - void copyToDevice(...)
+ *     - void delBuffer(...)
+ * 'child' can only be NULL when find_threaded_blocks() always returns one or more blocks
+ */
 template<typename SelfType, typename EngineType>
-void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat, FuseCache &fcache, component::ComponentFace *child) {
+void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
+                      FuseCache &fcache, component::ComponentFace *child) {
     using namespace std;
 
     auto texecution = chrono::steady_clock::now();

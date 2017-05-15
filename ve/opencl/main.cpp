@@ -177,9 +177,9 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
 
 void Impl::execute(bh_ir *bhir) {
-
     // Let's handle extension methods
     util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
 
+    // And then the regular instructions
     handle_execution(*this, bhir, engine, config, stat, fcache, &child);
 }
