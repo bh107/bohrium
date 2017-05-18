@@ -65,7 +65,8 @@ void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &sy
                                      const vector<const bh_view*> &offset_strides,
                                      std::function<const char *(bh_type type)> type_writer,
                                      stringstream &ss,
-                                     const char *array_type_prefix) {
+                                     const char *array_type_prefix,
+                                     const bool all_pointers) {
     ss << "(";
     for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
@@ -78,9 +79,15 @@ void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &sy
         }
     }
     for (const bh_view *view: offset_strides) {
-        ss << ", " << type_writer(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
+        ss << ", " << type_writer(BH_UINT64);
+        if (all_pointers)
+            ss << "*";
+        ss << " vo" << symbols.offsetStridesID(*view);
         for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << type_writer(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+            ss << ", " << type_writer(BH_UINT64);
+            if (all_pointers)
+                ss << "*";
+            ss << " vs" << symbols.offsetStridesID(*view) << "_" << i;
         }
     }
     if (symbols.constIDs().size() > 0) {
@@ -89,7 +96,10 @@ void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &sy
         }
         for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
             const InstrPtr &instr = *it;
-            ss << "const " << type_writer(instr->constant.type) << " c" << symbols.constID(*instr);
+            ss << "const " << type_writer(instr->constant.type);
+            if (all_pointers)
+                ss << "*";
+            ss << " c" << symbols.constID(*instr);
             if (++it != symbols.constIDs().end()) { // Not the last iteration
                 ss << ", ";
             }

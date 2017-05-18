@@ -40,7 +40,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/dtype.hpp>
 #include <jitk/apply_fusion.hpp>
 
-#include "engine_opencl.hpp"
+#include "engine_cuda.hpp"
 
 using namespace bohrium;
 using namespace jitk;
@@ -58,7 +58,7 @@ class Impl : public ComponentImplWithChild {
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     set<bh_opcode> child_extmethods;
     // The OpenCL engine
-    EngineOpenCL engine;
+    EngineCUDA engine;
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config.defaultGet("prof", false)),
                             fcache(stat), engine(config, stat) {}
@@ -138,22 +138,34 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     }
 }
 
+const char *write_thread_id(unsigned int dim) {
+    switch (dim) {
+        case 0:
+            return "blockIdx.x*blockDim.x+threadIdx.x";
+        case 1:
+            return "blockIdx.x*blockDim.x+threadIdx.x";
+        case 2:
+            return "blockIdx.x*blockDim.x+threadIdx.x";
+        default:
+            throw runtime_error("CUDA only support 3 dimensions");
+    }
+}
+
 void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
                         const vector<const LoopB *> &threaded_blocks,
                         const vector<const bh_view*> &offset_strides, stringstream &ss) {
 
     // Write the need includes
-    ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     ss << "#include <kernel_dependencies/complex_operations.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
     if (kernel.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_opencl.h>\n";
+        ss << "#include <kernel_dependencies/random123_cuda.h>\n";
     }
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "__kernel void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_opencl_type, ss, "__global", false);
+    ss << "extern \"C\" __global__ void execute";
+    write_kernel_function_arguments(kernel, symbols, offset_strides, write_c99_type, ss, NULL, false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks
@@ -163,7 +175,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
-            ss << "const " << write_opencl_type(BH_UINT32) << " i" << b->rank << " = get_global_id(" << i << "); " \
+            ss << "const size_t i" << b->rank << " = " << write_thread_id(i) << "; " \
                << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow\n";
         }
         ss << "\n";
