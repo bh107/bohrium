@@ -148,39 +148,25 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     queue = cl::CommandQueue(context, device);
 }
 
-
 pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
     const auto &b = threaded_blocks;
     switch (b.size()) {
-        case 1:
-        {
-            const cl_ulong lsize = work_group_size_1dx;
-            const cl_ulong rem = b[0]->size % lsize;
-            const cl_ulong gsize = b[0]->size + (rem==0?0:(lsize-rem));
-            return make_pair(cl::NDRange(gsize), cl::NDRange(lsize));
+        case 1: {
+            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]->size);
+            return make_pair(cl::NDRange(gsize_and_lsize.first), cl::NDRange(gsize_and_lsize.second));
         }
-        case 2:
-        {
-            const cl_ulong lsize_x = work_group_size_2dx;
-            const cl_ulong lsize_y = work_group_size_2dy;
-            const cl_ulong rem_x = b[0]->size % lsize_x;
-            const cl_ulong rem_y = b[1]->size % lsize_y;
-            const cl_ulong gsize_x = b[0]->size + (rem_x==0?0:(lsize_x-rem_x));
-            const cl_ulong gsize_y = b[1]->size + (rem_y==0?0:(lsize_y-rem_y));
-            return make_pair(cl::NDRange(gsize_x, gsize_y), cl::NDRange(lsize_x, lsize_y));
+        case 2: {
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]->size);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]->size);
+            return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first),
+                             cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second));
         }
-        case 3:
-        {
-            const cl_ulong lsize_x = work_group_size_3dx;
-            const cl_ulong lsize_y = work_group_size_3dy;
-            const cl_ulong lsize_z = work_group_size_3dz;
-            const cl_ulong rem_x = b[0]->size % lsize_x;
-            const cl_ulong rem_y = b[1]->size % lsize_y;
-            const cl_ulong rem_z = b[2]->size % lsize_z;
-            const cl_ulong gsize_x = b[0]->size + (rem_x==0?0:(lsize_x-rem_x));
-            const cl_ulong gsize_y = b[1]->size + (rem_y==0?0:(lsize_y-rem_y));
-            const cl_ulong gsize_z = b[2]->size + (rem_z==0?0:(lsize_z-rem_z));
-            return make_pair(cl::NDRange(gsize_x, gsize_y, gsize_z), cl::NDRange(lsize_x, lsize_y, lsize_z));
+        case 3: {
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]->size);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]->size);
+            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]->size);
+            return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
+                             cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }
         default:
             throw runtime_error("NDRanges: maximum of three dimensions!");

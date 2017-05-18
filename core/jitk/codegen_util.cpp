@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <limits>
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
@@ -46,6 +47,18 @@ void spaces(std::stringstream &out, int num) {
     for (int i = 0; i < num; ++i) {
         out << " ";
     }
+}
+
+pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
+    if (numeric_limits<uint32_t>::max() <= work_group_size or
+        numeric_limits<uint32_t>::max() <= block_size or
+        block_size < 0) {
+        throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
+    }
+    const uint32_t lsize = (uint32_t) work_group_size;
+    const uint32_t rem = (uint32_t) block_size % lsize;
+    const uint32_t gsize = (uint32_t) block_size + (rem==0?0:(lsize-rem));
+    return make_pair(gsize, lsize);
 }
 
 void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,

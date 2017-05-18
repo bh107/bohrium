@@ -48,6 +48,9 @@ namespace jitk {
 // Write 'num' of spaces to 'out'
 void spaces(std::stringstream &out, int num);
 
+// Calculate the work group sizes.
+// Return pair (global work size, local work size)
+std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size);
 
 // Write the kernel function arguments.
 // The function 'type_writer' should write the backend specific data type names.
