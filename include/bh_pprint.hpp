@@ -34,12 +34,14 @@ template<typename T>
 std::string pprint_carray(const T *ary, uint64_t size) {
     std::stringstream ss;
     ss << "[";
+
     for (uint64_t i=0; i<size; ++i) {
         ss << ary[i];
         if (i+1 < size) {
             ss << ", ";
         }
     }
+
     ss << "]";
     return ss.str();
 }
@@ -49,13 +51,17 @@ template<typename T>
 std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
 {
     out << "[";
-    for (typename std::vector<T>::const_iterator i = v.cbegin();;)
-    {
+
+    for (typename std::vector<T>::const_iterator i = v.cbegin();;) {
         out << *i;
-        if (++i == v.cend())
+
+        if (++i == v.cend()) {
             break;
+        }
+
         out << ", ";
     }
+
     out << "]";
     return out;
 }
