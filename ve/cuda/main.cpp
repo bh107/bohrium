@@ -156,7 +156,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
                         const vector<const bh_view*> &offset_strides, stringstream &ss) {
 
     // Write the need includes
-    ss << "#include <kernel_dependencies/complex_operations.h>\n";
+    ss << "#include <kernel_dependencies/complex_cuda.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_cuda.h>\n";
@@ -165,7 +165,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
     // Write the header of the execute function
     ss << "extern \"C\" __global__ void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_c99_type, ss, NULL, false);
+    write_kernel_function_arguments(kernel, symbols, offset_strides, write_cuda_type, ss, NULL, false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks

@@ -197,11 +197,9 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
     auto texec = chrono::steady_clock::now();
 
 
-    //pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > ranges = NDRanges(threaded_blocks);
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
     tie(blocks, threads) = NDRanges(threaded_blocks);
 
-    // grid for kernel: <<<N, 1>>>
     checkCudaErrors(cuLaunchKernel(program,
                                    get<0>(blocks), get<1>(blocks), get<2>(blocks),  // NxNxN blocks
                                    get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads

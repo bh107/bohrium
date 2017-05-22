@@ -80,6 +80,29 @@ const char* write_opencl_type(bh_type dtype)
     }
 }
 
+// Return C99 types, which are used inside the C99 kernels
+const char *write_cuda_type(bh_type dtype) {
+    switch (dtype) {
+        case BH_BOOL: return "bool";
+        case BH_INT8: return "int8_t";
+        case BH_INT16: return "int16_t";
+        case BH_INT32: return "int32_t";
+        case BH_INT64: return "int64_t";
+        case BH_UINT8: return "uint8_t";
+        case BH_UINT16: return "uint16_t";
+        case BH_UINT32: return "uint32_t";
+        case BH_UINT64: return "uint64_t";
+        case BH_FLOAT32: return "float";
+        case BH_FLOAT64: return "double";
+        case BH_COMPLEX64: return "cuFloatComplex";
+        case BH_COMPLEX128: return "cuDoubleComplex";
+        case BH_R123: return "ulong2";
+        default:
+            std::cerr << "Unknown CUDA type: " << bh_type_text(dtype) << std::endl;
+            throw std::runtime_error("Unknown CUDA type");
+    }
+}
+
 // Writes the union of C99 types that can make up a constant
 void write_c99_dtype_union(std::stringstream& out) {
     out << "union dtype {\n";
