@@ -25,93 +25,93 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #define logmaxfloat  log(FLT_MAX)
 #define logmaxdouble log(DBL_MAX)
-#define CABS(r,a)   r = hypot(a.s0, a.s1);
+#define CABS(r,a)   r = hypot(a.x, a.y);
 #define CADD(r,a,b) r = a + b;
 #define CSUB(r,a,b) r = a - b;
-#define CMUL(r,a,b) r.s0 = a.s0*b.s0 - a.s1*b.s1;               \
-                    r.s1 = a.s0*b.s1 + a.s1*b.s0;
-#define CDIV(t,r,x,y) { t ratio, denom, a, b, c, d;             \
-                      if (fabs(y.s0) <= fabs(y.s1)) {           \
-                          ratio = y.s0 / y.s1;                  \
-                          denom = y.s1;                         \
-                          a = x.s1;                             \
-                          b = x.s0;                             \
-                          c = -x.s0;                            \
-                          d = x.s1;                             \
+#define CMUL(r,a,b) r.x = a.x*b.x - a.y*b.y;               \
+                    r.y = a.x*b.y + a.y*b.x;
+#define CDIV(t,r,m,n) { t ratio, denom, a, b, c, d;             \
+                      if (fabs(n.x) <= fabs(n.y)) {           \
+                          ratio = n.x / n.y;                  \
+                          denom = n.y;                         \
+                          a = m.y;                             \
+                          b = m.x;                             \
+                          c = -m.x;                            \
+                          d = m.y;                             \
                       } else {                                  \
-                          ratio = y.s1 / y.s0;                  \
-                          denom = y.s0;                         \
-                          a = x.s0;                             \
-                          b = x.s1;                             \
-                          c = x.s1;                             \
-                          d = -x.s0;                            \
+                          ratio = n.y / n.x;                  \
+                          denom = n.x;                         \
+                          a = m.x;                             \
+                          b = m.y;                             \
+                          c = m.y;                             \
+                          d = -m.x;                            \
                       }                                         \
                       denom *= (1 + ratio * ratio);             \
-                      r.s0 = (a + b * ratio) / denom;           \
-                      r.s1 = (c + d * ratio) / denom; }
-#define CEQ(r,a,b) r = (a.s0 == b.s0) && (a.s1 == b.s1);
-#define CNEQ(r,a,b) r = (a.s0 != b.s0) || (a.s1 != b.s1);
+                      r.x = (a + b * ratio) / denom;           \
+                      r.y = (c + d * ratio) / denom; }
+#define CEQ(r,a,b) r = (a.x == b.x) && (a.y == b.y);
+#define CNEQ(r,a,b) r = (a.x != b.x) || (a.y != b.y);
 #define CPOW(t,r,a,b) { t logr, logi, x, y, cosy, siny;         \
-                        logr = log(hypot(a.s0, a.s1));          \
-                        logi = atan2(a.s1, a.s0);               \
-                        x = exp(logr * b.s0 - logi * b.s1);     \
-                        y = logr * b.s1 + logi * b.s0;          \
+                        logr = log(hypot(a.x, a.y));          \
+                        logi = atan2(a.y, a.x);               \
+                        x = exp(logr * b.x - logi * b.y);     \
+                        y = logr * b.y + logi * b.x;          \
                         siny = sincos(y, &cosy);                \
-                        r.s0 = x*cosy;                          \
-                        r.s1 = x*siny; }
-#define CSQRT(r,a) r.s0 = hypot(a.s0, a.s1);                    \
-                   if (r.s0 == 0.0)                             \
-                       r.s0 = r.s1 = 0.0;                       \
-                   else if (a.s0 > 0.0) {                       \
-                       r.s0 = sqrt(0.5 * (r.s0 + a.s0));        \
-                       r.s1 = a.s1/r.s0/2.0;                    \
+                        r.x = x*cosy;                          \
+                        r.y = x*siny; }
+#define CSQRT(r,a) r.x = hypot(a.x, a.y);                    \
+                   if (r.x == 0.0)                             \
+                       r.x = r.y = 0.0;                       \
+                   else if (a.x > 0.0) {                       \
+                       r.x = sqrt(0.5 * (r.x + a.x));        \
+                       r.y = a.y/r.x/2.0;                    \
                    } else {                                     \
-                       r.s1 = sqrt(0.5 * (r.s0 - a.s0));        \
-                       if (a.s1 < 0.0)                          \
-                           r.s1 = -r.s1;                        \
-                       r.s0 = a.s1/r.s1/2.0;                    \
+                       r.y = sqrt(0.5 * (r.x - a.x));        \
+                       if (a.y < 0.0)                          \
+                           r.y = -r.y;                        \
+                       r.x = a.y/r.y/2.0;                    \
                    }
 #define CEXP(t,r,a) { t cosi, sini, expr;                       \
-                      expr = exp(a.s0);                         \
-                      sini = sincos(a.s1, &cosi);               \
-                      r.s0 = expr*cosi;                         \
-                      r.s1 = expr*sini; }
-#define CLOG(r,a) r.s0 = log(hypot(a.s0, a.s1));                \
-                  r.s1 = atan2(a.s1, a.s0);
+                      expr = exp(a.x);                         \
+                      sini = sincos(a.y, &cosi);               \
+                      r.x = expr*cosi;                         \
+                      r.y = expr*sini; }
+#define CLOG(r,a) r.x = log(hypot(a.x, a.y));                \
+                  r.y = atan2(a.y, a.x);
 #define CSIN(t,r,a) { t cosr, sinr;                             \
-                    sinr = sincos(a.s0, &cosr);                 \
-                    r.s0 = sinr*cosh(a.s1);                     \
-                    r.s1 = cosr*sinh(a.s1); }
+                    sinr = sincos(a.x, &cosr);                 \
+                    r.x = sinr*cosh(a.y);                     \
+                    r.y = cosr*sinh(a.y); }
 #define CCOS(t, r,a) { t cosr, sinr;                            \
-                     sinr = sincos(a.s0, &cosr);                \
-                     r.s0 = cosr*cosh(a.s1);                    \
-                     r.s1 = -sinr*sinh(a.s1); }
-#define CTAN(t,r,a) r.s0 = 2.0*a.s0;                            \
-                    r.s1 = 2.0*a.s1;                            \
-                    if (fabs(r.s1) > logmax##t) {               \
-                        r.s0 = 0.0;                             \
-                        r.s1 = (r.s1 > 0.0 ? 1.0 : -1.0);       \
+                     sinr = sincos(a.x, &cosr);                \
+                     r.x = cosr*cosh(a.y);                    \
+                     r.y = -sinr*sinh(a.y); }
+#define CTAN(t,r,a) r.x = 2.0*a.x;                            \
+                    r.y = 2.0*a.y;                            \
+                    if (fabs(r.y) > logmax##t) {               \
+                        r.x = 0.0;                             \
+                        r.y = (r.y > 0.0 ? 1.0 : -1.0);       \
                     } else {                                    \
-                        t d = cos(r.s0) + cosh(r.s1);           \
-                        r.s0 = sin(r.s0) / d;                   \
-                        r.s1 = sinh(r.s1) / d;                  \
+                        t d = cos(r.x) + cosh(r.y);           \
+                        r.x = sin(r.x) / d;                   \
+                        r.y = sinh(r.y) / d;                  \
                     }
 #define CSINH(t,r,a) { t cosi, sini;                            \
-                     sini = sincos(a.s1, &cosi);                \
-                     r.s0 = sinh(a.s0)*cosi;                    \
-                     r.s1 = cosh(a.s0)*sini; }
+                     sini = sincos(a.y, &cosi);                \
+                     r.x = sinh(a.x)*cosi;                    \
+                     r.y = cosh(a.x)*sini; }
 #define CCOSH(t,r,a) { t cosi, sini;                            \
-                     sini = sincos(a.s1, &cosi);                \
-                     r.s0 = cosh(a.s0)*cosi;                    \
-                     r.s1 = sinh(a.s0)*sini; }
-#define CTANH(t,r,a) r.s0 = 2.0*a.s0;                           \
-                     r.s1 = 2.0*a.s1;                           \
-                     if (fabs(r.s0) > logmax##t) {              \
-                         r.s0 = (r.s0 > 0.0 ? 1.0 : -1.0);      \
-                         r.s1 = 0.0;                            \
+                     sini = sincos(a.y, &cosi);                \
+                     r.x = cosh(a.x)*cosi;                    \
+                     r.y = sinh(a.x)*sini; }
+#define CTANH(t,r,a) r.x = 2.0*a.x;                           \
+                     r.y = 2.0*a.y;                           \
+                     if (fabs(r.x) > logmax##t) {              \
+                         r.x = (r.x > 0.0 ? 1.0 : -1.0);      \
+                         r.y = 0.0;                            \
                      } else {                                   \
-                         t d = cosh(r.s0) + cos(r.s1);          \
-                         r.s0 = sinh(r.s0) / d;                 \
-                         r.s1 = sin(r.s1) / d;                  \
+                         t d = cosh(r.x) + cos(r.y);          \
+                         r.x = sinh(r.x) / d;                 \
+                         r.y = sin(r.y) / d;                  \
                      }
 #endif

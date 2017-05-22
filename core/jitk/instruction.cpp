@@ -223,7 +223,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isnan(" << ops[1] << ".s0);\n";
+                    out << ops[0] << " = isnan(" << ops[1] << ".x);\n";
                 } else {
                     out << ops[0] << " = isnan(creal(" << ops[1] << "));\n";
                 }
@@ -239,7 +239,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isinf(" << ops[1] << ".s0);\n";
+                    out << ops[0] << " = isinf(" << ops[1] << ".x);\n";
                 } else {
                     out << ops[0] << " = isinf(creal(" << ops[1] << "));\n";
                 }
@@ -255,7 +255,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isfinite(" << ops[1] << ".s0);\n";
+                    out << ops[0] << " = isfinite(" << ops[1] << ".x);\n";
                 } else {
                     out << ops[0] << " = isfinite(creal(" << ops[1] << "));\n";
                 }
@@ -443,14 +443,14 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         // Extracting the real or imaginary part differ in OpenCL
         case BH_REAL:
             if (opencl) {
-                out << ops[0] << " = " << ops[1] << ".s0;\n";
+                out << ops[0] << " = " << ops[1] << ".x;\n";
             } else {
                 out << ops[0] << " = creal(" << ops[1] << ");\n";
             }
             break;
         case BH_IMAG:
             if (opencl) {
-                out << ops[0] << " = " << ops[1] << ".s1;\n";
+                out << ops[0] << " = " << ops[1] << ".y;\n";
             } else {
                 out << ops[0] << " = cimag(" << ops[1] << ");\n";
             }
@@ -468,12 +468,12 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 //             sgn(Im(z)) if Re(z) = 0
                 const char *ctype = (t0 == BH_COMPLEX64 ? "float" : "double");
                 if (opencl) {
-                    out << ctype << " real = " << ops[1] << ".s0; \n";
-                    out << ctype << " imag = " << ops[1] << ".s1; \n";
+                    out << ctype << " real = " << ops[1] << ".x; \n";
+                    out << ctype << " imag = " << ops[1] << ".y; \n";
 
                     // Complex sign always have Im(x) = 0
-                    out << ops[0] << ".s1 = 0.0;\n";
-                    out << ops[0] << ".s0 ";
+                    out << ops[0] << ".y = 0.0;\n";
+                    out << ops[0] << ".x ";
                 } else {
                     out << ctype << " real = creal(" << ops[1] << "); \n";
                     out << ctype << " imag = cimag(" << ops[1] << "); \n";
