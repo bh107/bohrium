@@ -297,7 +297,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             } else if (!opencl and t0 == BH_INT64) {
                 out << ops[0] << " = llabs(" << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = abs(" << ops[1] << ");\n";
+                out << ops[0] << " = abs((int)" << ops[1] << ");\n";
             }
             break;
         }
@@ -428,11 +428,11 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             const bh_type t1 = instr.operand_type(1);
 
             if (opencl and t0 == BH_COMPLEX64 and t1 == BH_COMPLEX128) {
-                out << "convert_float2(" << ops[1] << ")";
+                out << "make_complex64((float)" << ops[1] << ".x, (float)" << ops[1] << ".y)";
             } else if (opencl and t0 == BH_COMPLEX128 and t1 == BH_COMPLEX64) {
-                out << "convert_double2(" << ops[1] << ")";
+                out << "make_complex128((double)" << ops[1] << ".x, (double)" << ops[1] << ".y)";
             } else if (opencl and bh_type_is_complex(t0) and not bh_type_is_complex(t1)) {
-                out << "(" << (t0 == BH_COMPLEX64 ? "float2" : "double2") << ")(" << ops[1] << ", 0.0)";
+                out << "make_complex" << (t0 == BH_COMPLEX64 ? "64" : "128") << "(" << ops[1] << ", 0.0f)";
             } else if (opencl and t0 == BH_BOOL and t1 != BH_BOOL) {
                 out << "(" << ops[1] << "==0?0:1)";
             } else {
@@ -446,8 +446,9 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << "); " \
-                    << ops[0] << " /= log(10.0f);\n";
+                out << "CLOG(" << ops[0] << ", " << ops[1] << "); CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") \
+                    << ", " << ops[0] << ", " <<  ops[0] << ", make_complex" << (t0 == BH_COMPLEX64 ? "64" : "128")
+                    << "(log(10.0f), 0.0f));\n";
             } else if (bh_type_is_complex(t0)) {
                 out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);\n";
             } else {
