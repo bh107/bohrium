@@ -36,8 +36,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/dtype.hpp>
+#include <jitk/apply_fusion.hpp>
 
-#include "store.hpp"
+#include "engine_openmp.hpp"
 #include "openmp_util.hpp"
 
 using namespace bohrium;
@@ -52,22 +53,41 @@ class Impl : public ComponentImpl {
     Statistics stat;
     // Fuse cache
     FuseCache fcache;
-    // Compiled kernels store
-    Store store;
+    // Teh OpenMP engine
+    EngineOpenMP engine;
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
 
   public:
-    Impl(int stack_level) : ComponentImpl(stack_level), stat(config.defaultGet("prof", false)),
-                            fcache(stat), store(config, stat) {}
+    Impl(int stack_level) : ComponentImpl(stack_level),
+                            stat(config.defaultGet("prof", false)),
+                            fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(bh_ir *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
         extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
+    }
+
+    // Implement the handle of extension methods
+    void handle_extmethod(bh_ir *bhir) {
+        util_handle_extmethod(this, bhir, extmethods);
+    }
+
+    // The following methods implements the methods required by jitk::handle_execution()
+
+    // Write the OpenMP kernel
+    void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+                      const vector<const LoopB *> &threaded_blocks,
+                      const vector<const bh_view*> &offset_strides, stringstream &ss);
+
+    // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
+    vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
+        vector<const LoopB*> threaded_blocks = {&kernel.block};
+        return threaded_blocks;
     }
 };
 }
@@ -163,13 +183,9 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                  const vector<const bh_view*> &offset_strides, stringstream &ss) {
-
-    // Make sure all arrays are allocated
-    for (bh_base *base: kernel.getNonTemps()) {
-        bh_data_malloc(base);
-    }
+void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+                        const vector<const LoopB *> &threaded_blocks,
+                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -185,37 +201,12 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "void execute(";
-    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-        bh_base *b = kernel.getNonTemps()[i];
-        ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
-        if (i+1 < kernel.getNonTemps().size()) {
-            ss << ", ";
-        }
-    }
-    for (const bh_view *view: offset_strides) {
-        ss << ", const " << write_c99_type(BH_UINT64) << " vo" << symbols.offsetStridesID(*view);
-        for (int i=0; i<view->ndim; ++i) {
-            ss << ", const " << write_c99_type(BH_UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i;
-        }
-    }
-    if (symbols.constIDs().size() > 0) {
-        if (kernel.getNonTemps().size() > 0) {
-            ss << ", "; // If any args were written before us, we need a comma
-        }
-        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
-            const InstrPtr &instr = *it;
-            ss << "const " << write_c99_type(instr->constant.type) << " c" << symbols.constID(*instr);
-            if (++it != symbols.constIDs().end()) { // Not the last iteration
-                ss << ", ";
-            }
-        }
-    }
-    ss << ") {\n";
+    ss << "void execute";
+    write_kernel_function_arguments(kernel, symbols, offset_strides, write_c99_type, ss, NULL, false);
 
     // Write the block that makes up the body of 'execute()'
+    ss << "{\n";
     write_loop_block(symbols, NULL, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
-
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
@@ -262,187 +253,10 @@ void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser
     }
 }
 
-// Sets the constructor flag of each instruction in 'instr_list'
-void set_constructor_flag(vector<bh_instruction*> &instr_list) {
-    set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    for(bh_instruction *instr: instr_list) {
-        instr->constructor = false;
-        for (size_t o = 0; o < instr->operand.size(); ++o) {
-            const bh_view &v = instr->operand[o];
-            if (not bh_is_constant(&v)) {
-                assert(v.base != NULL);
-                if (v.base->data == NULL and not util::exist_nconst(initiated, v.base)) {
-                    if (o == 0) { // It is only the output that is initiated
-                        initiated.insert(v.base);
-                        instr->constructor = true;
-                    }
-                }
-            }
-        }
-    }
-}
-
 void Impl::execute(bh_ir *bhir) {
-    auto texecution = chrono::steady_clock::now();
+    // Let's handle extension methods
+    util_handle_extmethod(this, bhir, extmethods);
 
-    const bool verbose = config.defaultGet<bool>("verbose", false);
-    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
-
-    // Some statistics
-    stat.record(bhir->instr_list);
-
-    // For now, we handle extension methods by executing them individually
-    {
-        vector<bh_instruction> instr_list;
-        for (bh_instruction &instr: bhir->instr_list) {
-            auto ext = extmethods.find(instr.opcode);
-            if (ext != extmethods.end()) {
-                bh_ir b;
-                b.instr_list = instr_list;
-                this->execute(&b); // Execute the instructions up until now
-                instr_list.clear();
-                ext->second.execute(&instr, NULL); // Execute the extension method
-            } else {
-                instr_list.push_back(instr);
-            }
-        }
-        bhir->instr_list = instr_list;
-    }
-
-    // Let's start by extracting a clean list of instructions from the 'bhir'
-    vector<bh_instruction*> instr_list;
-    {
-        set<bh_base*> syncs;
-        set<bh_base*> frees;
-        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
-
-        // Let's free array memory
-        for(bh_base *base: frees) {
-            bh_data_free(base);
-        }
-    }
-
-    // Set the constructor flag
-    if (config.defaultGet<bool>("array_contraction", true)) {
-        set_constructor_flag(instr_list);
-    } else {
-        for(bh_instruction *instr: instr_list) {
-            instr->constructor = false;
-        }
-    }
-
-    // The cache system
-    vector<Block> block_list;
-    {
-        // Assign origin ids to all instructions starting at zero.
-        int64_t count = 0;
-        for (bh_instruction *instr: instr_list) {
-            instr->origin_id = count++;
-        }
-
-        bool hit;
-        tie(block_list, hit) = fcache.get(instr_list);
-        if (hit) {
-
-        } else {
-            const auto tpre_fusion = chrono::steady_clock::now();
-            stat.num_instrs_into_fuser += instr_list.size();
-            // Let's fuse the 'instr_list' into blocks
-            // We start with the pre_fuser
-            if (config.defaultGet<bool>("pre_fuser", true)) {
-                block_list = pre_fuser_lossy(instr_list);
-            } else {
-                block_list = fuser_singleton(instr_list);
-            }
-            stat.num_blocks_out_of_fuser += block_list.size();
-            const auto tfusion = chrono::steady_clock::now();
-            stat.time_pre_fusion +=  tfusion - tpre_fusion;
-            // Then we fuse fully
-            if (config.defaultGet<bool>("serial_fusion", false)) {
-                fuser_serial(block_list, 1);
-            } else {
-                fuser_greedy(block_list);
-                block_list = collapse_redundant_axes(block_list);
-            }
-            stat.time_fusion += chrono::steady_clock::now() - tfusion;
-            fcache.insert(instr_list, block_list);
-        }
-    }
-
-    // Pretty printing the block
-    if (config.defaultGet<bool>("graph", false)) {
-        graph::DAG dag = graph::from_block_list(block_list);
-        graph::pprint(dag, "dag");
-    }
-
-    for(const Block &block: block_list) {
-        assert(not block.isInstr());
-
-        //Let's create a kernel
-        Kernel kernel(block.getLoop());
-
-        // For profiling statistic
-        stat.num_base_arrays += kernel.getNonTemps().size() + kernel.getAllTemps().size();
-        stat.num_temp_arrays += kernel.getAllTemps().size();
-
-        const SymbolTable symbols(kernel.getAllInstr(),
-                                  config.defaultGet("index_as_var", true),
-                                  config.defaultGet("const_as_var", true));
-
-        // Debug print
-        if (verbose)
-            cout << kernel.block;
-
-        // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
-        vector<const bh_view*> offset_strides;
-        if (strides_as_variables) {
-            offset_strides = kernel.getOffsetAndStrides();
-        }
-
-        // Code generation
-        stringstream ss;
-        write_kernel(kernel, symbols, config, offset_strides, ss);
-
-        // Compile the kernel
-        auto tbuild = chrono::steady_clock::now();
-        KernelFunction func = store.getFunction(ss.str());
-        assert(func != NULL);
-        stat.time_compile += chrono::steady_clock::now() - tbuild;
-
-        // Create a 'data_list' of data pointers
-        vector<void*> data_list;
-        data_list.reserve(kernel.getNonTemps().size());
-        for(bh_base *base: kernel.getNonTemps()) {
-            assert(base->data != NULL);
-            data_list.push_back(base->data);
-        }
-        // And the offset-and-strides
-        vector<uint64_t> offset_and_strides;
-        offset_and_strides.reserve(offset_strides.size());
-        for (const bh_view *view: offset_strides) {
-            const uint64_t t = (uint64_t) view->start;
-            offset_and_strides.push_back(t);
-            for (int i=0; i<view->ndim; ++i) {
-                const uint64_t s = (uint64_t) view->stride[i];
-                offset_and_strides.push_back(s);
-            }
-        }
-        // And the constants
-        vector<bh_constant_value> constants;
-        constants.reserve(symbols.constIDs().size());
-        for (const InstrPtr &instr: symbols.constIDs()) {
-            constants.push_back(instr->constant.value);
-        }
-
-        auto texec = chrono::steady_clock::now();
-        // Call the launcher function, which will execute the kernel
-        func(&data_list[0], &offset_and_strides[0], &constants[0]);
-        stat.time_exec += chrono::steady_clock::now() - texec;
-
-        // Finally, let's cleanup
-        for(bh_base *base: kernel.getFrees()) {
-            bh_data_free(base);
-        }
-    }
-    stat.time_total_execution += chrono::steady_clock::now() - texecution;
+    // And then the regular instructions
+    handle_execution(*this, bhir, engine, config, stat, fcache, NULL);
 }

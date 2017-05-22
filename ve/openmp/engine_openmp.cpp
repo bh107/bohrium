@@ -26,8 +26,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 #include <iomanip>
 #include <dlfcn.h>
+#include <jitk/codegen_util.hpp>
 
-#include "store.hpp"
+#include "engine_openmp.hpp"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -36,7 +37,7 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
-Store::Store(const ConfigParser &config, jitk::Statistics &stat) :
+EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
                                            tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
                                            source_dir(tmp_dir / "src"),
                                            object_dir(tmp_dir / "obj"),
@@ -53,7 +54,7 @@ Store::Store(const ConfigParser &config, jitk::Statistics &stat) :
     fs::create_directories(object_dir);
 }
 
-Store::~Store() {
+EngineOpenMP::~EngineOpenMP() {
     for(void *handle: _lib_handles) {
         dlerror(); // Reset errors
         if (dlclose(handle)) {
@@ -69,7 +70,7 @@ static string hash_filename(size_t hash, string extension=".so") {
     return ss.str();
 }
 
-KernelFunction Store::getFunction(const string &source) {
+KernelFunction EngineOpenMP::getFunction(const string &source) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
 
@@ -121,5 +122,62 @@ KernelFunction Store::getFunction(const string &source) {
 
     return _functions.at(hash);
 }
+
+
+void EngineOpenMP::execute(const std::string &source, const jitk::Kernel &kernel,
+                           const std::vector<const jitk::LoopB*> &threaded_blocks,
+                           const std::vector<const bh_view*> &offset_strides,
+                           const std::vector<const bh_instruction*> &constants) {
+
+    // Make sure all arrays are allocated
+    for (bh_base *base: kernel.getNonTemps()) {
+        bh_data_malloc(base);
+    }
+
+    // Compile the kernel
+    auto tbuild = chrono::steady_clock::now();
+    KernelFunction func = getFunction(source);
+    assert(func != NULL);
+    stat.time_compile += chrono::steady_clock::now() - tbuild;
+
+    // Create a 'data_list' of data pointers
+    vector<void*> data_list;
+    data_list.reserve(kernel.getNonTemps().size());
+    for(bh_base *base: kernel.getNonTemps()) {
+        assert(base->data != NULL);
+        data_list.push_back(base->data);
+    }
+
+    // And the offset-and-strides
+    vector<uint64_t> offset_and_strides;
+    offset_and_strides.reserve(offset_strides.size());
+    for (const bh_view *view: offset_strides) {
+        const uint64_t t = (uint64_t) view->start;
+        offset_and_strides.push_back(t);
+        for (int i=0; i<view->ndim; ++i) {
+            const uint64_t s = (uint64_t) view->stride[i];
+            offset_and_strides.push_back(s);
+        }
+    }
+
+    // And the constants
+    vector<bh_constant_value> constant_arg;
+    constant_arg.reserve(constants.size());
+    for (const bh_instruction* instr: constants) {
+        constant_arg.push_back(instr->constant.value);
+    }
+
+    auto texec = chrono::steady_clock::now();
+    // Call the launcher function, which will execute the kernel
+    func(&data_list[0], &offset_and_strides[0], &constant_arg[0]);
+    stat.time_exec += chrono::steady_clock::now() - texec;
+
+}
+
+void EngineOpenMP::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
+    const std::set<bh_base*> empty;
+    jitk::util_set_constructor_flag(instr_list, empty);
+}
+
 
 } // bohrium

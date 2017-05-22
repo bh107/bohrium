@@ -252,7 +252,7 @@ void bh_constant::pprint(ostream& out, bool opencl) const
                 break;
             case BH_COMPLEX64:
                 if (opencl) {
-                    out << "(float2)(";
+                    out << "make_complex64(";
                     ppfloat(value.complex64.real, out);
                     out << ", ";
                     ppfloat(value.complex64.imag, out);
@@ -267,7 +267,7 @@ void bh_constant::pprint(ostream& out, bool opencl) const
                 break;
             case BH_COMPLEX128:
                 if (opencl) {
-                    out << "(double2)(";
+                    out << "make_complex128(";
                     ppfloat(value.complex128.real, out);
                     out << ", ";
                     ppfloat(value.complex128.imag, out);

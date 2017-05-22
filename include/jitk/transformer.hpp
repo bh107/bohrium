@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_JITK_TRANSFORMER_HPP
 #define __BH_JITK_TRANSFORMER_HPP
 
-/* A collection of functions that transforms Blocks that Instructions */
+/* A collection of functions that transforms Blocks of Instructions */
 
 #include <iostream>
 
@@ -31,25 +31,14 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-// Swap the two axes, 'axis1' and 'axis2', in all instructions in 'instr_list'
-std::vector<InstrPtr> swap_axis(const std::vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2);
-
-// Swap the 'parent' block with its 'child' block.
-// NB: 'child' must point to a block in 'parent._block_list'
-std::vector<Block> swap_blocks(const LoopB &parent, const LoopB *child);
-
-// Find a loop block within 'parent' that it make sense to swappable
-const LoopB *find_swappable_sub_block(const LoopB &parent);
-
 // Transpose blocks such that reductions gets as innermost as possible
-std::vector<Block> push_reductions_inwards(const std::vector<Block> &block_list);
+void push_reductions_inwards(std::vector<Block> &block_list);
 
 // Splits the 'block_list' in order to achieve a minimum amount of threading (if possible)
-std::vector<Block> split_for_threading(const std::vector<Block> &block_list, uint64_t min_threading,
-                                       uint64_t cur_threading=0);
+void split_for_threading(std::vector<Block> &block_list, uint64_t min_threading=1000, uint64_t cur_threading=0);
 
 // Collapses redundant axes within the 'block_list'
-std::vector<Block> collapse_redundant_axes(const std::vector<Block> &block_list);
+void collapse_redundant_axes(std::vector<Block> &block_list);
 
 } // jitk
 } // bohrium

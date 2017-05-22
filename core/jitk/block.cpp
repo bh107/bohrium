@@ -495,7 +495,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     return Block(std::move(ret));
 }
 
-pair<vector<const LoopB *>, uint64_t> find_threaded_blocks(const LoopB &block) {
+pair<vector<const LoopB *>, uint64_t> util_find_threaded_blocks(const LoopB &block) {
     pair<vector<const LoopB*>, uint64_t> ret;
 
     // We should search in 'this' block and its sub-blocks

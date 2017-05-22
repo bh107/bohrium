@@ -33,33 +33,6 @@ namespace jitk {
 
 namespace { // We need some help functions
 
-// Write system operation
-void write_system_operation(const Scope &scope, const bh_instruction &instr, stringstream &out) {
-
-    switch (instr.opcode) {
-        case BH_FREE:
-//            out << "// FREE " << scope.getName(instr.operand[0]);
-            break;
-        case BH_SYNC:
-//            out << "// SYNC " << scope.getName(instr.operand[0]);
-            break;
-        case BH_NONE:
-//            out << "// NONE ";
-            break;
-        case BH_TALLY:
-//            out << "// TALLY";
-            break;
-        case BH_REPEAT:
-//            out << "// REPEAT";
-            break;
-        default:
-            std::cerr << "Instruction \"" << bh_opcode_text(instr.opcode) << "\" (" << instr.opcode <<
-                      ") not supported for non complex operations.\n";
-            throw std::runtime_error("Instruction not supported.");
-    }
-//    out << endl;
-}
-
 // Write the sign function ((x > 0) - (0 > x)) to 'out'
 void write_sign_function(const string &operand, stringstream &out) {
     out << "((" << operand << " > 0) - (0 > " << operand << "))";
@@ -82,18 +55,6 @@ void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, cons
 void write_operation(const bh_instruction &instr, const vector<string> &ops, stringstream &out, bool opencl) {
     switch (instr.opcode) {
         // Opcodes that are Complex/OpenCL agnostic
-        case BH_ADD:
-            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
-            break;
-        case BH_ADD_REDUCE:
-            out << ops[0] << " += " << ops[1] << ";\n";
-            break;
-        case BH_ADD_ACCUMULATE:
-            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
-            break;
-        case BH_SUBTRACT:
-            out << ops[0] << " = " << ops[1] << " - " << ops[2] << ";\n";
-            break;
         case BH_BITWISE_AND:
             out << ops[0] << " = " << ops[1] << " & " << ops[2] << ";\n";
             break;
@@ -250,7 +211,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isnan(" << ops[1] << ".s0);\n";
+                    out << ops[0] << " = isnan(" << ops[1] << ".x);\n";
                 } else {
                     out << ops[0] << " = isnan(creal(" << ops[1] << "));\n";
                 }
@@ -266,7 +227,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isinf(" << ops[1] << ".s0);\n";
+                    out << ops[0] << " = isinf(" << ops[1] << ".x);\n";
                 } else {
                     out << ops[0] << " = isinf(creal(" << ops[1] << "));\n";
                 }
@@ -282,7 +243,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
 
             if (bh_type_is_complex(t0)) {
                 if (opencl) {
-                    out << ops[0] << " = isfinite(" << ops[1] << ".s0);\n";
+                    out << ops[0] << " = isfinite(" << ops[1] << ".x);\n";
                 } else {
                     out << ops[0] << " = isfinite(creal(" << ops[1] << "));\n";
                 }
@@ -336,7 +297,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             } else if (!opencl and t0 == BH_INT64) {
                 out << ops[0] << " = llabs(" << ops[1] << ");\n";
             } else {
-                out << ops[0] << " = abs(" << ops[1] << ");\n";
+                out << ops[0] << " = abs((int)" << ops[1] << ");\n";
             }
             break;
         }
@@ -382,7 +343,35 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         }
 
 
-        // Multiplication and division are handled differently in OpenCL
+        // The operations that has to be handled differently in OpenCL
+        case BH_ADD:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
+            } else {
+                out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
+            }
+            break;
+        case BH_ADD_REDUCE:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[1] << ");\n";
+            } else {
+                out << ops[0] << " += " << ops[1] << ";\n";
+            }
+            break;
+        case BH_ADD_ACCUMULATE:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
+            } else {
+                out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
+            }
+            break;
+        case BH_SUBTRACT:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CSUB(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
+            } else {
+                out << ops[0] << " = " << ops[1] << " - " << ops[2] << ";\n";
+            }
+            break;
         case BH_MULTIPLY:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
                 out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
@@ -439,11 +428,11 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             const bh_type t1 = instr.operand_type(1);
 
             if (opencl and t0 == BH_COMPLEX64 and t1 == BH_COMPLEX128) {
-                out << "convert_float2(" << ops[1] << ")";
+                out << "make_complex64((float)" << ops[1] << ".x, (float)" << ops[1] << ".y)";
             } else if (opencl and t0 == BH_COMPLEX128 and t1 == BH_COMPLEX64) {
-                out << "convert_double2(" << ops[1] << ")";
+                out << "make_complex128((double)" << ops[1] << ".x, (double)" << ops[1] << ".y)";
             } else if (opencl and bh_type_is_complex(t0) and not bh_type_is_complex(t1)) {
-                out << "(" << (t0 == BH_COMPLEX64 ? "float2" : "double2") << ")(" << ops[1] << ", 0.0)";
+                out << "make_complex" << (t0 == BH_COMPLEX64 ? "64" : "128") << "(" << ops[1] << ", 0.0f)";
             } else if (opencl and t0 == BH_BOOL and t1 != BH_BOOL) {
                 out << "(" << ops[1] << "==0?0:1)";
             } else {
@@ -457,8 +446,9 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << "); " \
-                    << ops[0] << " /= log(10.0f);\n";
+                out << "CLOG(" << ops[0] << ", " << ops[1] << "); CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") \
+                    << ", " << ops[0] << ", " <<  ops[0] << ", make_complex" << (t0 == BH_COMPLEX64 ? "64" : "128")
+                    << "(log(10.0f), 0.0f));\n";
             } else if (bh_type_is_complex(t0)) {
                 out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);\n";
             } else {
@@ -470,14 +460,14 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         // Extracting the real or imaginary part differ in OpenCL
         case BH_REAL:
             if (opencl) {
-                out << ops[0] << " = " << ops[1] << ".s0;\n";
+                out << ops[0] << " = " << ops[1] << ".x;\n";
             } else {
                 out << ops[0] << " = creal(" << ops[1] << ");\n";
             }
             break;
         case BH_IMAG:
             if (opencl) {
-                out << ops[0] << " = " << ops[1] << ".s1;\n";
+                out << ops[0] << " = " << ops[1] << ".y;\n";
             } else {
                 out << ops[0] << " = cimag(" << ops[1] << ");\n";
             }
@@ -495,12 +485,12 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 //             sgn(Im(z)) if Re(z) = 0
                 const char *ctype = (t0 == BH_COMPLEX64 ? "float" : "double");
                 if (opencl) {
-                    out << ctype << " real = " << ops[1] << ".s0; \n";
-                    out << ctype << " imag = " << ops[1] << ".s1; \n";
+                    out << ctype << " real = " << ops[1] << ".x; \n";
+                    out << ctype << " imag = " << ops[1] << ".y; \n";
 
                     // Complex sign always have Im(x) = 0
-                    out << ops[0] << ".s1 = 0.0;\n";
-                    out << ops[0] << ".s0 ";
+                    out << ops[0] << ".y = 0.0;\n";
+                    out << ops[0] << ".x ";
                 } else {
                     out << ctype << " real = creal(" << ops[1] << "); \n";
                     out << ctype << " imag = cimag(" << ops[1] << "); \n";
@@ -567,10 +557,8 @@ void dtype_min(bh_type dtype, stringstream &out) {
 } // Anon namespace
 
 void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    if (bh_opcode_is_system(instr.opcode)) {
-        write_system_operation(scope, instr, out);
+    if (bh_opcode_is_system(instr.opcode))
         return;
-    }
     if (instr.opcode == BH_RANGE) {
         vector<string> ops;
         // Write output operand

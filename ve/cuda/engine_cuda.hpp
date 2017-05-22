@@ -24,7 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <memory>
 #include <vector>
+#include <tuple>
 #include <chrono>
+#include <boost/filesystem.hpp>
 
 #include <bh_config_parser.hpp>
 #include <bh_view.hpp>
@@ -32,25 +34,42 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/kernel.hpp>
 #include <jitk/codegen_util.hpp>
 
-#include "cl.hpp"
+#include <cuda.h>
+
+#include "compiler.hpp"
+
+namespace {
+    // This will output the proper CUDA error strings
+    // in the event that a CUDA host call returns an error
+    #define checkCudaErrors(err)  __checkCudaErrors (err, __FILE__, __LINE__)
+
+    inline void __checkCudaErrors( CUresult err, const char *file, const int line )
+    {
+        if( CUDA_SUCCESS != err) {
+            fprintf(stderr,
+                    "CUDA Driver API error = %04d from file <%s>, line %i.\n",
+                    err, file, line );
+            exit(-1);
+        }
+    }
+}
 
 namespace bohrium {
 
-class EngineOpenCL {
+class EngineCUDA {
 private:
     // Map of all compiled OpenCL programs
-    std::map<uint64_t, cl::Program> _programs;
-    // The OpenCL context, device, and queue used throughout the execution
-    cl::Context context;
-    cl::Device device;
-    cl::CommandQueue queue;
-    // OpenCL work group sizes
-    const cl_ulong work_group_size_1dx;
-    const cl_ulong work_group_size_2dx;
-    const cl_ulong work_group_size_2dy;
-    const cl_ulong work_group_size_3dx;
-    const cl_ulong work_group_size_3dy;
-    const cl_ulong work_group_size_3dz;
+    std::map<uint64_t, CUfunction> _programs;
+    // The CUDA context and device used throughout the execution
+    CUdevice   device;
+    CUcontext  context;
+    // OpenMP work group sizes
+    const uint64_t work_group_size_1dx;
+    const uint64_t work_group_size_2dx;
+    const uint64_t work_group_size_2dy;
+    const uint64_t work_group_size_3dx;
+    const uint64_t work_group_size_3dy;
+    const uint64_t work_group_size_3dz;
     // OpenCL compile flags
     const std::string compile_flg;
     // Default device type
@@ -58,25 +77,59 @@ private:
     // Default platform number
     const int platform_no;
     // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
-    std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
+    //std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
     // A map of allocated buffers on the device
-    std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers;
+    std::map<bh_base*, CUdeviceptr> buffers;
     // Verbose flag
     const bool verbose;
     // Some statistics
     jitk::Statistics &stat;
     // Record profiling statistics
     const bool prof;
+
+    // Path to a temporary directory for the source and object files
+    const boost::filesystem::path tmp_dir;
+
+    // Path to the directory of the source files
+    const boost::filesystem::path source_dir;
+
+    // Path to the directory of the object files
+    const boost::filesystem::path object_dir;
+
+    // The compiler to use when function doesn't exist
+    const Compiler compiler;
+
+    // Returns the block and thread sizes based on the 'threaded_blocks'
+    std::pair<std::tuple<uint32_t, uint32_t, uint32_t>, std::tuple<uint32_t, uint32_t, uint32_t> >
+        NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
+
 public:
-    EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
-
-
+    EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
+    ~EngineCUDA() {
+        cuCtxDetach(context);
+    }
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
+
+    // Delete a buffer
+    template <typename T>
+    void delBuffer(T &base) {
+        buffers.erase(base);
+    }
+
+    // Retrieve a single buffer
+    template <typename T>
+    CUdeviceptr *getBuffer(T &base) {
+        if(buffers.find(base) == buffers.end()) {
+            std::vector<T> vec = {base};
+            copyToDevice(vec);
+        }
+        return &buffers[base];
+    }
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>
@@ -89,13 +142,12 @@ public:
                 if (verbose) {
                     std::cout << "Copy to host: " << *base << std::endl;
                 }
-                queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                checkCudaErrors(cuMemcpyDtoH(base->data, buffers.at(base), bh_base_size(base)));
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
-                buffers.erase(base);
+                delBuffer(base);
             }
         }
-        queue.finish();
         stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
     }
 
@@ -115,55 +167,24 @@ public:
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                buffers[base].reset(buf);
+                CUdeviceptr new_buf;
+                checkCudaErrors(cuMemAlloc(&new_buf, bh_base_size(base)));
+                buffers[base] = new_buf;
 
                 // If the host data is non-null we should copy it to the device
                 if (base->data != NULL) {
                     if (verbose) {
                         std::cout << "Copy to device: " << *base << std::endl;
                     }
-                    queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                    checkCudaErrors(cuMemcpyHtoD(new_buf, base->data, bh_base_size(base)));
                 }
             }
         }
-        queue.finish();
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
-
-    // Retrieve a single buffer
-    template <typename T>
-    cl::Buffer* getBuffer(T &base) {
-        if(buffers.find(base) == buffers.end()) {
-            std::vector<T> vec = {base};
-            copyToDevice(vec);
-        }
-        return &(*buffers[base]);
-    }
-
-    // Delete a buffer
-    template <typename T>
-    void delBuffer(T &base) {
-        buffers.erase(base);
-    }
-
-    // Get C buffer from wrapped C++ object
-    template <typename T>
-    cl_mem getCBuffer(T &base) {
-        return (*getBuffer(base))();
-    }
-
-    cl::CommandQueue* getQueue() {
-        return &queue;
-    }
-
-    // Get C command queue from wrapped C++ object
-    cl_command_queue getCQueue() {
-        return queue();
-    }
 };
 
 } // bohrium

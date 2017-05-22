@@ -29,6 +29,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/kernel.hpp>
+#include <jitk/block.hpp>
 
 #include "compiler.hpp"
 
@@ -36,7 +38,7 @@ namespace bohrium {
 
 typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[], bh_constant_value constants[]);
 
-class Store {
+class EngineOpenMP {
   private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
@@ -53,18 +55,33 @@ class Store {
     // The compiler to use when function doesn't exist
     const Compiler compiler;
 
-    // Whether we should write the kernel sources (.c files)
+    // Verbose flag
     const bool verbose;
-
-  public:
-    Store(const ConfigParser &config, jitk::Statistics &stat);
-    ~Store();
 
     // Some statistics
     jitk::Statistics &stat;
 
     // Return a kernel function based on the given 'source'
     KernelFunction getFunction(const std::string &source);
+
+  public:
+    EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
+    ~EngineOpenMP();
+
+    // The following methods implements the methods required by jitk::handle_execution()
+
+    void execute(const std::string &source, const jitk::Kernel &kernel,
+                 const std::vector<const jitk::LoopB*> &threaded_blocks,
+                 const std::vector<const bh_view*> &offset_strides,
+                 const std::vector<const bh_instruction*> &constants);
+    void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+    // Notice, OpenMP has no device thus the device methods does nothing
+    template <typename T>
+    void copyToHost(T &bases) {}
+    template <typename T>
+    void copyToDevice(T &base_list) {}
+    template <typename T>
+    void delBuffer(T &base) {}
 };
 
 

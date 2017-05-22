@@ -246,7 +246,7 @@ void pprint(const DAG &dag, const char *filename, uint64_t min_threading) {
             BOOST_FOREACH(Vertex v, boost::vertices(graph)) {
                 uint64_t total_threading = 0;
                 if (not graph[v].isInstr()) {
-                    tie(std::ignore, total_threading) = find_threaded_blocks(graph[v].getLoop());
+                    tie(std::ignore, total_threading) = util_find_threaded_blocks(graph[v].getLoop());
                 }
                 for (const InstrPtr instr: graph[v].getAllInstr()) {
                     if (bh_opcode_is_system(instr->opcode))

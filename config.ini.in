@@ -8,6 +8,7 @@
 default    = bcexp, bccon, node, openmp
 openmp     = bcexp, bccon, node, openmp
 opencl     = bcexp, bccon, node, opencl, openmp
+cuda       = bcexp, bccon, node, cuda, openmp
 
 ############
 # Managers #
@@ -73,6 +74,11 @@ compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
 libs = ${OPENMP_LIBS}
+# The pre-fuser to use
+pre_fuser = pre_fuser_lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, collapse_redundant_axes
+# *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
 strides_as_variables = true
 const_as_var = true
@@ -92,10 +98,47 @@ platform_no = -1
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${OPENCL_LIBS}
+# The pre-fuser to use
+pre_fuser = pre_fuser_lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
+# *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
 strides_as_variables = true
 const_as_var = true
 # OpenCL work group sizes
+work_group_size_1dx = 128
+work_group_size_2dx = 32
+work_group_size_2dy = 4
+work_group_size_3dx = 32
+work_group_size_3dy = 2
+work_group_size_3dz = 2
+
+[cuda]
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_cuda${CMAKE_SHARED_LIBRARY_SUFFIX}
+verbose = false
+# Profiling statistics
+prof = false
+# Write a Graphviz graph for each kernel
+graph = false
+# Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
+device_type = auto
+# CUDA platform. -1 means automatic. Other numbers will index into list of platforms.
+platform_no = -1
+# Additional options given to the cuda compiler. See documentation for clBuildProgram
+compiler_flg = "--cubin -arch=sm_30 -m64"
+compiler_inc = "${VE_OPENMP_COMPILER_INC}"
+# List of extension methods
+libs = ${CUDA_LIBS}
+# The pre-fuser to use
+pre_fuser = pre_fuser_lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
+# *_as_var specifies whether to hard-code variables or have them as variables
+index_as_var = false
+strides_as_variables = false
+const_as_var = false
+# CUDA work group sizes
 work_group_size_1dx = 128
 work_group_size_2dx = 32
 work_group_size_2dy = 4

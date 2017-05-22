@@ -18,9 +18,11 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <limits>
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
+#include <jitk/kernel.hpp>
 
 using namespace std;
 
@@ -31,12 +33,81 @@ namespace jitk {
 // Does 'instr' reduce over the innermost axis?
 // Notice, that such a reduction computes each output element completely before moving
 // to the next element.
+namespace {
 bool sweeping_innermost_axis(InstrPtr instr) {
     if (not bh_opcode_is_sweep(instr->opcode))
         return false;
     assert(instr->operand.size() == 3);
-    return instr->sweep_axis() == instr->operand[1].ndim-1;
+    return instr->sweep_axis() == instr->operand[1].ndim - 1;
 }
+}
+
+
+void spaces(std::stringstream &out, int num) {
+    for (int i = 0; i < num; ++i) {
+        out << " ";
+    }
+}
+
+pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
+    if (numeric_limits<uint32_t>::max() <= work_group_size or
+        numeric_limits<uint32_t>::max() <= block_size or
+        block_size < 0) {
+        throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
+    }
+    const uint32_t lsize = (uint32_t) work_group_size;
+    const uint32_t rem = (uint32_t) block_size % lsize;
+    const uint32_t gsize = (uint32_t) block_size + (rem==0?0:(lsize-rem));
+    return make_pair(gsize, lsize);
+}
+
+void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
+                                     const vector<const bh_view*> &offset_strides,
+                                     std::function<const char *(bh_type type)> type_writer,
+                                     stringstream &ss,
+                                     const char *array_type_prefix,
+                                     const bool all_pointers) {
+    ss << "(";
+    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+        bh_base *b = kernel.getNonTemps()[i];
+        if(array_type_prefix != NULL) {
+            ss << array_type_prefix << " ";
+        }
+        ss << type_writer(b->type) << " *a" << symbols.baseID(b);
+        if (i+1 < kernel.getNonTemps().size()) {
+            ss << ", ";
+        }
+    }
+    for (const bh_view *view: offset_strides) {
+        ss << ", " << type_writer(BH_UINT64);
+        if (all_pointers)
+            ss << "*";
+        ss << " vo" << symbols.offsetStridesID(*view);
+        for (int i=0; i<view->ndim; ++i) {
+            ss << ", " << type_writer(BH_UINT64);
+            if (all_pointers)
+                ss << "*";
+            ss << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+        }
+    }
+    if (symbols.constIDs().size() > 0) {
+        if (kernel.getNonTemps().size() > 0) {
+            ss << ", "; // If any args were written before us, we need a comma
+        }
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            const InstrPtr &instr = *it;
+            ss << "const " << type_writer(instr->constant.type);
+            if (all_pointers)
+                ss << "*";
+            ss << " c" << symbols.constID(*instr);
+            if (++it != symbols.constIDs().end()) { // Not the last iteration
+                ss << ", ";
+            }
+        }
+    }
+    ss << ")";
+}
+
 
 void write_loop_block(const SymbolTable &symbols,
                       const Scope *parent_scope,
@@ -223,7 +294,7 @@ void write_loop_block(const SymbolTable &symbols,
         out << "\n";
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
-                if (b.getInstr() != NULL) {
+                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
                     spaces(out, 4 + b.rank()*4);
                     write_instr(peeled_scope, *b.getInstr(), out, opencl);
                 }
@@ -272,7 +343,7 @@ void write_loop_block(const SymbolTable &symbols,
     if (opencl) {
         for (const Block &b: block._block_list) {
             if (b.isInstr()) { // Finally, let's write the instruction
-                if (b.getInstr() != NULL) {
+                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
                     spaces(out, 4 + b.rank()*4);
                     write_instr(scope, *b.getInstr(), out, true);
                 }
@@ -284,17 +355,19 @@ void write_loop_block(const SymbolTable &symbols,
         for (const Block &b: block._block_list) {
             if (b.isInstr()) { // Finally, let's write the instruction
                 const InstrPtr instr = b.getInstr();
-                if (instr->operand.size() > 0 and not bh_opcode_is_system(instr->opcode)) {
-                    if (scope.isOpenmpAtomic(instr->operand[0])) {
-                        spaces(out, 4 + b.rank()*4);
-                        out << "#pragma omp atomic\n";
-                    } else if (scope.isOpenmpCritical(instr->operand[0])) {
-                        spaces(out, 4 + b.rank()*4);
-                        out << "#pragma omp critical\n";
+                if (not bh_opcode_is_system(instr->opcode)) {
+                    if (instr->operand.size() > 0) {
+                        if (scope.isOpenmpAtomic(instr->operand[0])) {
+                            spaces(out, 4 + b.rank()*4);
+                            out << "#pragma omp atomic\n";
+                        } else if (scope.isOpenmpCritical(instr->operand[0])) {
+                            spaces(out, 4 + b.rank()*4);
+                            out << "#pragma omp critical\n";
+                        }
                     }
+                    spaces(out, 4 + b.rank()*4);
+                    write_instr(scope, *instr, out);
                 }
-                spaces(out, 4 + b.rank()*4);
-                write_instr(scope, *instr, out);
             } else {
                 write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
             }
@@ -314,6 +387,26 @@ void write_loop_block(const SymbolTable &symbols,
     }
 }
 
+// Handle the extension methods within the 'bhir'
+void util_handle_extmethod(component::ComponentImpl *self,
+                           bh_ir *bhir,
+                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods) {
+
+    std::vector<bh_instruction> instr_list;
+    for (bh_instruction &instr: bhir->instr_list) {
+        auto ext = extmethods.find(instr.opcode);
+        if (ext != extmethods.end()) {
+            bh_ir b;
+            b.instr_list = instr_list;
+            self->execute(&b); // Execute the instructions up until now
+            instr_list.clear();
+            ext->second.execute(&instr, NULL); // Execute the extension method
+        } else {
+            instr_list.push_back(instr);
+        }
+    }
+    bhir->instr_list = instr_list;
+}
 
 } // jitk
 } // bohrium

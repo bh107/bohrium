@@ -25,6 +25,9 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
+namespace {
+
+// Help function that swap the two axes, 'axis1' and 'axis2', in all instructions in 'instr_list'
 vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2) {
     vector<InstrPtr> ret;
     for (const InstrPtr &instr: instr_list) {
@@ -35,6 +38,8 @@ vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, in
     return ret;
 }
 
+// Help function that swap the 'parent' block with its 'child' block.
+// NB: 'child' must point to a block in 'parent._block_list'
 vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
     vector<Block> ret;
     for (const Block &b: parent._block_list) {
@@ -54,6 +59,7 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
     return ret;
 }
 
+// Help function that find a loop block within 'parent' that it make sense to swappable
 const LoopB *find_swappable_sub_block(const LoopB &parent) {
     // For each sweep, we look for a sub-block that contains that sweep instructions.
     for (const InstrPtr sweep: parent._sweeps) {
@@ -72,88 +78,9 @@ const LoopB *find_swappable_sub_block(const LoopB &parent) {
     return NULL;
 }
 
-vector<Block> push_reductions_inwards(const vector<Block> &block_list) {
-    vector<Block> block_list2(block_list);
-    for(Block &b: block_list2) {
-        if (not b.isInstr()) {
-            b.getLoop()._block_list = push_reductions_inwards(b.getLoop()._block_list);
-        }
-    }
-    vector<Block> ret;
-    for(const Block &b: block_list2) {
-        const LoopB *swappable;
-        if (not b.isInstr() and (swappable = find_swappable_sub_block(b.getLoop())) != NULL)  {
-            const vector<Block>tmp = swap_blocks(b.getLoop(), swappable);
-            ret.insert(ret.end(), tmp.begin(), tmp.end());
-        } else {
-            ret.push_back(b);
-        }
-    }
-    return ret;
-}
-
-vector<Block> split_for_threading(const vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
-    vector<Block> ret;
-
-    for (const Block &block: block_list) {
-        // For now, we cannot make an instruction or a sweeped block threadable
-        if (block.isInstr() or block.getLoop()._sweeps.size() > 0) {
-            ret.push_back(block);
-            continue;
-        }
-        const LoopB &loop = block.getLoop();
-        uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
-        for (const InstrPtr instr: loop.getAllInstr()) {
-            if (instr->operand.size() > 0) {
-                const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
-                if (nelem > max_nelem)
-                    max_nelem = nelem;
-            }
-        }
-        if (loop._block_list.size() > 1 // We need minimum two blocks in order to split!
-            and max_nelem > min_threading // Is it even possible to achieve our goal?
-            and find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
-
-            for (auto it = loop._block_list.begin(); it != loop._block_list.end(); ++it) {
-                // First we will place all sub-blocks that cannot be threaded in a shared block
-                {
-                    LoopB newloop;
-                    newloop.rank = loop.rank;
-                    newloop.size = loop.size;
-                    while (it != loop._block_list.end() and (it->isInstr() or it->getLoop()._sweeps.size() > 0)) {
-                        assert(it->rank() == newloop.rank+1);
-                        newloop._block_list.push_back(*it);
-                        ++it;
-                    }
-                    if (not newloop._block_list.empty()) {
-                        newloop.metadata_update();
-                        ret.push_back(Block(std::move(newloop)));
-                    }
-                }
-                // Then we place the highly threaded sub-block in its own block
-                if (it != loop._block_list.end()) {
-                    assert(not it->isInstr());
-                    assert(it->getLoop()._sweeps.size() == 0);
-                    LoopB newloop;
-                    newloop.rank = loop.rank;
-                    newloop.size = loop.size;
-                    newloop._block_list.push_back(*it);
-                    newloop.metadata_update();
-                    ret.push_back(Block(std::move(newloop)));
-                } else {
-                    break;
-                }
-            }
-        } else {
-            ret.push_back(block);
-        }
-    }
-    return ret;
-}
-
 // Help function that collapses 'axis' and 'axis+1' in all instructions within 'loop'
 // Returns false if encountering a non-compatible instruction
-static bool collapse_instr_axes(LoopB &loop, const int axis) {
+bool collapse_instr_axes(LoopB &loop, const int axis) {
     for (Block &block: loop._block_list) {
         if (block.isInstr()) {
             bh_instruction instr(*block.getInstr());
@@ -193,7 +120,7 @@ static bool collapse_instr_axes(LoopB &loop, const int axis) {
 }
 
 // Help function that collapses 'loop' with its child if possible
-static bool collapse_loop_with_child(LoopB &loop) {
+bool collapse_loop_with_child(LoopB &loop) {
     // In order to be collapsable, 'loop' can only have one child, that child must be a loop, and both 'loop'
     // and the child cannot be sweeped
     if (loop._sweeps.empty() and loop._block_list.size() == 1 and loop._reshapable) {
@@ -209,12 +136,90 @@ static bool collapse_loop_with_child(LoopB &loop) {
     }
     return false;
 }
+}
 
-vector<Block> collapse_redundant_axes(const vector<Block> &block_list) {
+void push_reductions_inwards(vector<Block> &block_list) {
     vector<Block> block_list2(block_list);
     for(Block &b: block_list2) {
         if (not b.isInstr()) {
-            b.getLoop()._block_list = collapse_redundant_axes(b.getLoop()._block_list);
+            push_reductions_inwards(b.getLoop()._block_list);
+        }
+    }
+    vector<Block> ret;
+    for(const Block &b: block_list2) {
+        const LoopB *swappable;
+        if (not b.isInstr() and (swappable = find_swappable_sub_block(b.getLoop())) != NULL)  {
+            const vector<Block>tmp = swap_blocks(b.getLoop(), swappable);
+            ret.insert(ret.end(), tmp.begin(), tmp.end());
+        } else {
+            ret.push_back(b);
+        }
+    }
+}
+
+void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
+    vector<Block> ret;
+
+    for (const Block &block: block_list) {
+        // For now, we cannot make an instruction or a sweeped block threadable
+        if (block.isInstr() or block.getLoop()._sweeps.size() > 0) {
+            ret.push_back(block);
+            continue;
+        }
+        const LoopB &loop = block.getLoop();
+        uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
+        for (const InstrPtr instr: loop.getAllInstr()) {
+            if (instr->operand.size() > 0) {
+                const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
+                if (nelem > max_nelem)
+                    max_nelem = nelem;
+            }
+        }
+        if (loop._block_list.size() > 1 // We need minimum two blocks in order to split!
+            and max_nelem > min_threading // Is it even possible to achieve our goal?
+            and util_find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
+
+            for (auto it = loop._block_list.begin(); it != loop._block_list.end(); ++it) {
+                // First we will place all sub-blocks that cannot be threaded in a shared block
+                {
+                    LoopB newloop;
+                    newloop.rank = loop.rank;
+                    newloop.size = loop.size;
+                    while (it != loop._block_list.end() and (it->isInstr() or it->getLoop()._sweeps.size() > 0)) {
+                        assert(it->rank() == newloop.rank+1);
+                        newloop._block_list.push_back(*it);
+                        ++it;
+                    }
+                    if (not newloop._block_list.empty()) {
+                        newloop.metadata_update();
+                        ret.push_back(Block(std::move(newloop)));
+                    }
+                }
+                // Then we place the highly threaded sub-block in its own block
+                if (it != loop._block_list.end()) {
+                    assert(not it->isInstr());
+                    assert(it->getLoop()._sweeps.size() == 0);
+                    LoopB newloop;
+                    newloop.rank = loop.rank;
+                    newloop.size = loop.size;
+                    newloop._block_list.push_back(*it);
+                    newloop.metadata_update();
+                    ret.push_back(Block(std::move(newloop)));
+                } else {
+                    break;
+                }
+            }
+        } else {
+            ret.push_back(block);
+        }
+    }
+}
+
+void collapse_redundant_axes(vector<Block> &block_list) {
+    vector<Block> block_list2(block_list);
+    for(Block &b: block_list2) {
+        if (not b.isInstr()) {
+            collapse_redundant_axes(b.getLoop()._block_list);
         }
     }
     vector<Block> ret;
@@ -230,7 +235,6 @@ vector<Block> collapse_redundant_axes(const vector<Block> &block_list) {
             ret.push_back(block);
         }
     }
-    return ret;
 }
 } // jitk
 } // bohrium
