@@ -94,7 +94,7 @@ void Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
 
 void Compiler::compile(string object_abspath, string src_abspath) const {
     string cmd = process_str(object_abspath, src_abspath);
-     cout << "compile command: " << cmd << endl;
+    // cout << "compile command: " << cmd << endl;
 
     // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file

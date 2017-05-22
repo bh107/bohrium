@@ -127,6 +127,7 @@ device_type = auto
 platform_no = -1
 # Additional options given to the cuda compiler. See documentation for clBuildProgram
 compiler_flg = "--cubin -arch=sm_30 -m64"
+compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${CUDA_LIBS}
 # The pre-fuser to use

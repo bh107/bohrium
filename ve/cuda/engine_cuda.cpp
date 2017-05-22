@@ -47,6 +47,9 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat),
                                     prof(config.defaultGet<bool>("prof", false)),
+                                    tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
+                                    source_dir(tmp_dir / "src"),
+                                    object_dir(tmp_dir / "obj"),
                                     compiler(config.defaultGet<string>("compiler_cmd", "/usr/bin/nvcc"),
                                              config.defaultGet<string>("compiler_inc", ""),
                                              config.defaultGet<string>("compiler_lib", ""),
@@ -89,6 +92,10 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
         cuCtxDetach(context);
         exit(-1);
     }
+
+    // Let's make sure that the directories exist
+    fs::create_directories(source_dir);
+    fs::create_directories(object_dir);
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
@@ -145,8 +152,8 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
         fs::path objfile = object_dir / hash_filename(hash);
 
         // Write the source file and compile it (reading from disk)
-        // NB: this is a nice debug option, but will hurt performance
-       // if (verbose) {
+        // TODO: make nvcc read directly from stdin
+        {
             fs::path srcfile = source_dir;
             {
                 srcfile /= hash_filename(hash, ".cu");
@@ -155,12 +162,16 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
                 ofs.flush();
                 ofs.close();
             }
-            cout << "Write source " << srcfile << endl;
+            if (verbose) {
+                cout << "Write source " << srcfile << endl;
+            }
             compiler.compile(objfile.string(), srcfile.string());
-      //  } else {
+        }
+        /* else {
             // Pipe the source directly into the compiler thus no source file is written
-       //     compiler.compile(objfile.string(), source.c_str(), source.size());
-       // }
+            compiler.compile(objfile.string(), source.c_str(), source.size());
+        }
+       */
 
         CUmodule module;
         CUresult err = cuModuleLoad(&module, objfile.string().c_str());
