@@ -144,7 +144,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-    ss << "#include <kernel_dependencies/complex_operations.h>\n";
+    ss << "#include <kernel_dependencies/complex_opencl.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
     if (kernel.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_opencl.h>\n";

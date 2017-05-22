@@ -55,18 +55,6 @@ void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, cons
 void write_operation(const bh_instruction &instr, const vector<string> &ops, stringstream &out, bool opencl) {
     switch (instr.opcode) {
         // Opcodes that are Complex/OpenCL agnostic
-        case BH_ADD:
-            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
-            break;
-        case BH_ADD_REDUCE:
-            out << ops[0] << " += " << ops[1] << ";\n";
-            break;
-        case BH_ADD_ACCUMULATE:
-            out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
-            break;
-        case BH_SUBTRACT:
-            out << ops[0] << " = " << ops[1] << " - " << ops[2] << ";\n";
-            break;
         case BH_BITWISE_AND:
             out << ops[0] << " = " << ops[1] << " & " << ops[2] << ";\n";
             break;
@@ -355,7 +343,35 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         }
 
 
-        // Multiplication and division are handled differently in OpenCL
+        // The operations that has to be handled differently in OpenCL
+        case BH_ADD:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
+            } else {
+                out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
+            }
+            break;
+        case BH_ADD_REDUCE:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[1] << ");\n";
+            } else {
+                out << ops[0] << " += " << ops[1] << ";\n";
+            }
+            break;
+        case BH_ADD_ACCUMULATE:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
+            } else {
+                out << ops[0] << " = " << ops[1] << " + " << ops[2] << ";\n";
+            }
+            break;
+        case BH_SUBTRACT:
+            if (opencl and bh_type_is_complex(instr.operand_type(0))) {
+                out << "CSUB(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
+            } else {
+                out << ops[0] << " = " << ops[1] << " - " << ops[2] << ";\n";
+            }
+            break;
         case BH_MULTIPLY:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
                 out << "CMUL(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";

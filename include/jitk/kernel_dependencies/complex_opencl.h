@@ -23,11 +23,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_JITK_KERNEL_DEPENDENCIES_COMPLEX_OPERATIONS_H
 #define __BH_JITK_KERNEL_DEPENDENCIES_COMPLEX_OPERATIONS_H
 
+#define make_complex64(x, y) ((float2) (x, y))
+#define make_complex128(x, y) ((double2) (x, y))
+
 #define logmaxfloat  log(FLT_MAX)
 #define logmaxdouble log(DBL_MAX)
 #define CABS(r,a)   r = hypot(a.x, a.y);
-#define CADD(r,a,b) r = a + b;
-#define CSUB(r,a,b) r = a - b;
+#define CADD(r,a,b) r.x = a.x + b.x;                \
+                    r.y = a.y + b.y;
+#define CSUB(r,a,b) r.x = a.x - b.x;                \
+                    r.y = a.y - b.y;
 #define CMUL(r,a,b) r.x = a.x*b.x - a.y*b.y;               \
                     r.y = a.x*b.y + a.y*b.x;
 #define CDIV(t,r,m,n) { t ratio, denom, a, b, c, d;             \
