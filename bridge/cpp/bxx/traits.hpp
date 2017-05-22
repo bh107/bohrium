@@ -33,7 +33,7 @@ namespace bxx {
 inline
 void assign_const_type(bh_constant* constant, T value) {
     //TODO: The general case should result in a meaningful compile-time error.
-    std::cout << "Unsupported type [%s," << constant->type << "] " << &value << std::cout;
+    std::cout << "Unsupported type [%s, " << constant->type << "] " << &value << std::cout;
 }
 
     template <>
@@ -163,7 +163,7 @@ void assign_const_type(bh_constant* constant, std::complex<double> value)
 inline
 void assign_array_type(bh_base* base) {
     // TODO: The general case should result in a meaningful compile-time error.
-    std::cout << "Unsupported type!" << base << std::endl;
+    std::cout << "Unsupported type: " << base << std::endl;
 }
 
 template <>

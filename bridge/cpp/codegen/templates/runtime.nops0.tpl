@@ -4,6 +4,6 @@
 inline
 void @!op!@ (void)
 {
-    Runtime::instance().enqueue((bh_opcode)@!opcode!@);
+    Runtime::instance().enqueue(@!opcode!@);
 }
 <!--(end)-->

@@ -6,7 +6,7 @@
     void @!op!@ (multi_array<OutT>& res, multi_array<InT> &rhs)
     {
         Runtime::instance().typecheck<@!opcode!@, OutT, InT>();
-        Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, rhs);
+        Runtime::instance().enqueue(@!opcode!@, res, rhs);
     }
     <!--(end)-->
 
@@ -17,7 +17,7 @@
     void @!op!@ (multi_array<OutT>& res, const InT rhs)
     {
         Runtime::instance().typecheck<@!opcode!@, OutT, InT>();
-        Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, rhs);
+        Runtime::instance().enqueue(@!opcode!@, res, rhs);
     }
     <!--(end)-->
 <!--(end)-->

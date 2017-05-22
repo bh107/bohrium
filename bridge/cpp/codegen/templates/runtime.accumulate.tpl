@@ -17,6 +17,6 @@ void @!op!@ (multi_array<Tres>& res, multi_array<Tlhs> &lhs, int64_t rhs)
     if (rhs >= (int64_t)lhs.getRank()) {
         throw std::runtime_error("Error: Axis out of bounds in reduction.\n");
     }
-    Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, lhs, rhs);
+    Runtime::instance().enqueue(@!opcode!@, res, lhs, rhs);
 }
 <!--(end)-->
