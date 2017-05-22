@@ -6,7 +6,7 @@
     void @!op!@ (multi_array<TO>& res, multi_array<T1>& in1, multi_array<T2>& in2, multi_array<T3>& in3)
     {
         Runtime::instance().typecheck<@!opcode!@, TO, T1, T2, T3>();
-        Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, in1, in2, in3);
+        Runtime::instance().enqueue(@!opcode!@, res, in1, in2, in3);
     }
     <!--(end)-->
 
@@ -17,7 +17,7 @@
     void @!op!@ (multi_array<TO>& res, multi_array<TL>& lhs, multi_array<TR>& rhs)
     {
         Runtime::instance().typecheck<@!opcode!@, TO, TL, TR>();
-        Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, lhs, rhs);
+        Runtime::instance().enqueue(@!opcode!@, res, lhs, rhs);
     }
     <!--(end)-->
 
@@ -28,7 +28,7 @@
     void @!op!@ (multi_array<TO>& res, multi_array<TL>& lhs, const TR rhs)
     {
         Runtime::instance().typecheck<@!opcode!@, TO, TL, TR>();
-        Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, lhs, rhs);
+        Runtime::instance().enqueue(@!opcode!@, res, lhs, rhs);
     }
     <!--(end)-->
 
@@ -39,7 +39,7 @@
     void @!op!@ (multi_array<TO>& res, const TL lhs, multi_array<TR>& rhs)
     {
         Runtime::instance().typecheck<@!opcode!@, TO, TL, TR>();
-        Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, lhs, rhs);
+        Runtime::instance().enqueue(@!opcode!@, res, lhs, rhs);
     }
     <!--(end)-->
 <!--(end)-->

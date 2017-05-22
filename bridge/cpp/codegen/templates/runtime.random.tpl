@@ -5,6 +5,6 @@ inline
 void @!op!@ (multi_array<T>& res, uint64_t in1, uint64_t in2)
 {
     Runtime::instance().typecheck<@!opcode!@, T, uint64_t, uint64_t>();
-    Runtime::instance().enqueue((bh_opcode)@!opcode!@, res, in1, in2);
+    Runtime::instance().enqueue(@!opcode!@, res, in1, in2);
 }
 <!--(end)-->

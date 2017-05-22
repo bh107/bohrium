@@ -423,7 +423,7 @@ T scalar(multi_array<T>& op)
 {
     bool is_temp = op.getTemp();
     op.setTemp(false);
-    Runtime::instance().enqueue((bh_opcode)BH_SYNC, op);
+    Runtime::instance().enqueue(BH_SYNC, op);
     Runtime::instance().flush();
 
     bh_base *op_a = op.getBase();

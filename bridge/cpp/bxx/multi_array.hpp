@@ -754,7 +754,7 @@ multi_array<T>& flatten(multi_array<T>& rhs)
     result->meta.stride[0] = 1;
     result->link();
 
-    Runtime::instance().enqueue((bh_opcode)BH_IDENTITY, *result, rhs);
+    Runtime::instance().enqueue(BH_IDENTITY, *result, rhs);
 
     return *result;*/
 }
