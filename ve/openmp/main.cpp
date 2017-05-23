@@ -100,9 +100,7 @@ extern "C" void destroy(ComponentImpl* self) {
 }
 
 Impl::~Impl() {
-    if (config.defaultGet<bool>("prof", false)) {
-        stat.pprint("OpenMP", cout);
-    }
+    stat.write("OpenMP", config.defaultGet<std::string>("prof_filename", ""), cout);
 }
 
 // Writing the OpenMP header, which include "parallel for" and "simd"

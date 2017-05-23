@@ -111,9 +111,7 @@ extern "C" void destroy(ComponentImpl* self) {
 }
 
 Impl::~Impl() {
-    if (config.defaultGet<bool>("prof", false)) {
-        stat.pprint("CUDA", cout);
-    }
+    stat.write("CUDA", config.defaultGet<std::string>("prof_filename", ""), cout);
 }
 
 
