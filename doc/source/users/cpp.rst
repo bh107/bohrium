@@ -75,7 +75,7 @@ The update of the every second element in the example above introduces the slici
   y[_(0,-1,2)]  // Every second element
   y[_(0,-1,1)]  // All elements
   y[_(2,-1,1)]  // All but the first two
-  y[_(2,-2,1)]  // All but the last two
+  y[_(0,-2,1)]  // All but the last two
   y[_(1,-2,1)]  // Every second but the first and the last
 
 Further examples of the notation, as well as examples of applications such as Black-Scholes, Jacobi Stencil, and Monte Carlo Pi, can be inspected in the \lstinline!benchmark/cpp/src/! directory of the Bohrium source-code repository[approaches:bohrium:repository].
@@ -103,7 +103,7 @@ Simplest example of compiling an application using the Bohrium C++ library.
   #include "bxx/bohrium.hpp"
 
   using namespace std;
-  using namespace bh;
+  using namespace bxx;
 
   int main()
   {
