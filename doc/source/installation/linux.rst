@@ -49,7 +49,7 @@ And you should see a result similar to this::
 .. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
 
 Visualizer (matplotlib alternative)
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to use the Bohrium visualizer install the Bohrium Visualizer package::
 
@@ -185,13 +185,13 @@ And you should see a result similar to this::
 C / C++
 ~~~~~~~
 
-See the installation process for :ref:`Python / NumPy <numpy_installation>`, the C and C++ bridge requires no additional tasks.
+See the installation process for `Python / NumPy`_, the C and C++ bridge requires no additional tasks.
 
 
 Mono / .NET
 ~~~~~~~~~~~
 
-In addition to the installation process for :ref:`Python / NumPy <numpy_installation>`, the .NET bridge requires Mono::
+In addition to the installation process for `Python / NumPy`_, the .NET bridge requires Mono::
 
   sudo apt-get install mono-devel
   #This minimal version should work too:
