@@ -101,6 +101,9 @@ if (USE_WERROR)
     endif()
 endif()
 
+# Let's get the BH_VERSION_MAJOR, _MINOR, and _PATCH variables
+include(GetVersion)
+
 ########################
 # External dependencies
 find_package(PythonInterp)                                                          # Used for autogen
