@@ -18,7 +18,7 @@ The follow explains how to get Bohrium installed on Windows. Note that only 64bi
 You also need the `Microsoft Visual C++ 2010 Runtime <http://www.microsoft.com/en-us/download/details.aspx?id=14632>`_ installed.
 
 Building from source
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 You need to install either `Microsoft Visual C++ 2010 <http://msdn.microsoft.com/en-us/library/vstudio/60k1461a(v=vs.100).aspx>`_ or `Microsoft Visual C++ Express 2010 <https://www.microsoft.com/visualstudio/eng/products/visual-studio-express-products>`_.
 

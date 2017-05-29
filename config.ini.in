@@ -1,3 +1,5 @@
+# Bohrium version: ${BH_VERSION_STRING}
+
 ##########################################################################
 # Stack configurations, which are a comma separated lists of components. #
 # NB: 'stacks' is a reserved section name and 'default'                  #

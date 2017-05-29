@@ -2,6 +2,7 @@ Welcome!
 ========
 
 [![Build Status](https://travis-ci.org/bh107/bohrium.svg?branch=master)](https://travis-ci.org/bh107/bohrium) [![Anaconda-Server Badge](https://anaconda.org/bohrium/bohrium/badges/installer/conda.svg)](https://conda.anaconda.org/bohrium) [![Gitter Chat](https://badges.gitter.im/bh107/gitter.png)](https://gitter.im/bh107/Lobby)
+[![Documentation Status](https://readthedocs.org/projects/bohrium/badge/?version=latest)](http://bohrium.readthedocs.io/?badge=latest)
 
 Bohrium provides a runtime environment for efficiently executing vectorized applications using your favourite programming language Python/NumPy, C#, F# on Linux, Windows and MacOS.
 
@@ -13,12 +14,12 @@ Features
 |-----------|:---------------:|:---------------------:|:-------------:|:-------------:|:---:|:--:|:--:|
 |           |  Multi-Core CPU | Many-Core GPU         | Python2/NumPy | Python3/NumPy | C++ | C# | F# |
 | Linux     |  ✓              | ✓                     | ✓             | ✓             | ✓   | ✓  | ✓  |
-| MacOS     |                 |                       | ✓             |               | ✓   | ✓  | ✓  |
+| MacOS     |                 | ✓                     | ✓             |               | ✓   | ✓  | ✓  |
 | Windows   |                 |                       |               |               |     |    |    |
 
 - **Lazy Evaluation**, Bohrium will lazy evaluate all Python/NumPy operations until it encounters a “Python Read” such a printing an array or having a if-statement testing the value of an array.
-- **Views** Bohrium supports NumPy views fully thus operating on array slices does not involve data copying. 
-- **Loop Fusion**, Bohrium uses a [fusion algorithm](http://dl.acm.org/citation.cfm?id=2967945) that fuses (or merges) array operations into the same computation kernel that are then JIT-compiled and executed. However, Bohrium can only fuse operations that have some common sized dimension and no horizontal data conflicts. 
+- **Views** Bohrium supports NumPy views fully thus operating on array slices does not involve data copying.
+- **Loop Fusion**, Bohrium uses a [fusion algorithm](http://dl.acm.org/citation.cfm?id=2967945) that fuses (or merges) array operations into the same computation kernel that are then JIT-compiled and executed. However, Bohrium can only fuse operations that have some common sized dimension and no horizontal data conflicts.
 - **Lazy CPU/GPU Communiction**, Bohrium only move data between the host and the GPU when the data is accessed directly by Python or a Python C-extension.
 
 The documentation is available at www.bh107.org
@@ -37,7 +38,7 @@ On Linux-64 use [Anaconda](https://www.continuum.io/downloads):
 # Create a new environment 'bh' with the 'bohrium' package from the 'bohrium' channel:
 conda create -n bh -c bohrium bohrium
 # And source the new environment:
-source activate bh 
+source activate bh
 
 ```
 
@@ -71,6 +72,6 @@ python -m bohrium my_numpy_app.py
 
 In which case, all instances of `import numpy` is converted to `import bohrium` seamlessly. If you need to access the real numpy module use `import numpy_force`.
 
-If you have [Jupyter](http://jupyter.org/) installed, you can use the magic command `%%bohrium` to achieve the same results. 
+If you have [Jupyter](http://jupyter.org/) installed, you can use the magic command `%%bohrium` to achieve the same results.
 
 For the full user guide, which include C, C++, and .NET languages, see: http://bohrium.readthedocs.io/users/index.html
