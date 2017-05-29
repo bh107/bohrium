@@ -55,12 +55,28 @@ EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
 }
 
 EngineOpenMP::~EngineOpenMP() {
-    for(void *handle: _lib_handles) {
-        dlerror(); // Reset errors
-        if (dlclose(handle)) {
-            cerr << dlerror() << endl;
-        }
-    }
+    // If this cleanup is enabled, the application segfaults
+    // on destruction of the EngineOpenMP class.
+    //
+    // The reason for that is that OpenMP currently has no
+    // means in the definition of the standard to do a proper
+    // cleanup and hence internally does something funny.
+    // See https://stackoverflow.com/questions/5200418/destroying-threads-in-openmp-c
+    // for details.
+    //
+    // TODO A more sensible way to get around this issue
+    //      would be to also dlopen the openmp library
+    //      itself and therefore increase our reference count
+    //      to it. This enables the kernel so files to be unlinked
+    //      and cleaned up, but prevents the problematic code on
+    //      openmp cleanup to be triggered at bohrium runtime.
+
+    // for(void *handle: _lib_handles) {
+    //     dlerror(); // Reset errors
+    //     if (dlclose(handle)) {
+    //         cerr << dlerror() << endl;
+    //     }
+    // }
 }
 
 // Returns the filename of the given 'hash'
