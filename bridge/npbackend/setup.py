@@ -88,7 +88,7 @@ with open(buildpath("_info.py"), 'w') as o:
     o.write("import numpy as np\n")
 
     # Write the version string
-    o.write("\n__version__ = %s\n\n" % _version)
+    o.write("\n__version__ = '%s'\n\n" % _version)
 
     #Find number of operands and type signature for each Bohrium opcode
     #that Bohrium-C supports
