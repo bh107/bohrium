@@ -9,30 +9,36 @@ if(GIT_FOUND)
     execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags --match v[0-9]* --abbrev=0 --always
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             OUTPUT_VARIABLE _VERSION_STRING
+            ERROR_QUIET
             OUTPUT_STRIP_TRAILING_WHITESPACE)
-    string(REPLACE "v" "" BH_VERSION_STRING ${_VERSION_STRING}) # removing the "v"
-endif()
-
-# If the extraction failed, read the VERSION file
-if (BH_VERSION_STRING STREQUAL "")
-    file(READ ${CMAKE_SOURCE_DIR}/VERSION BH_VERSION_STRING)
-else()
-    # Else, write to the version to file for later use
-    file(WRITE ${CMAKE_SOURCE_DIR}/VERSION ${BH_VERSION_STRING})
-endif()
-message(STATUS "BH_VERSION_STRING: \"${BH_VERSION_STRING}\"")
-
-
-# Then we extract the MAJOR, MINOR, and PATCH version
-message("BH_VERSION_STRING: ${BH_VERSION_STRING}")
-if("${BH_VERSION_STRING}" MATCHES "v([0-9]+)\\.([0-9]+)")
-    set(${BH_VERSION_MAJOR} ${CMAKE_MATCH_1})
-    set(${BH_VERSION_MINOR} ${CMAKE_MATCH_2})
-    # The PATCH version might not exist
-    if("${BH_VERSION_STRING}" MATCHES "v[0-9]+\\.[0-9]+\\.([0-9]+)")
-        set(${BH_VERSION_PATCH} ${CMAKE_MATCH_1})
-    else()
-        set(${BH_VERSION_PATCH} 0)
+    if("${_VERSION_STRING}" MATCHES "v[0-9]+")
+        string(REPLACE "v" "" BH_VERSION_STRING ${_VERSION_STRING}) # removing the "v"
     endif()
 endif()
 
+if (DEFINED BH_VERSION_STRING)
+    # On success, write to the version to file for later use
+    file(WRITE ${CMAKE_SOURCE_DIR}/VERSION ${BH_VERSION_STRING})
+else()
+    # The extraction failed, read the VERSION file
+    file(READ ${CMAKE_SOURCE_DIR}/VERSION BH_VERSION_STRING)
+endif()
+
+# Then we extract the MAJOR, MINOR, and PATCH version
+if("${BH_VERSION_STRING}" MATCHES "([0-9]+)\\.([0-9]+)")
+    set(BH_VERSION_MAJOR ${CMAKE_MATCH_1})
+    set(BH_VERSION_MINOR ${CMAKE_MATCH_2})
+    # The PATCH version might not exist
+    if("${BH_VERSION_STRING}" MATCHES "[0-9]+\\.[0-9]+\\.([0-9]+)")
+        set(BH_VERSION_PATCH ${CMAKE_MATCH_1})
+    else()
+        set(BH_VERSION_PATCH 0)
+    endif()
+else()
+    message(FATAL_ERROR "Extracting MAJOR, MINOR, and PATCH version failed." )
+endif()
+
+message(STATUS "BH_VERSION_STRING: ${BH_VERSION_STRING}")
+message(STATUS "BH_VERSION_MAJOR: ${BH_VERSION_MAJOR}")
+message(STATUS "BH_VERSION_MINOR: ${BH_VERSION_MINOR}")
+message(STATUS "BH_VERSION_PATCH: ${BH_VERSION_PATCH}")
