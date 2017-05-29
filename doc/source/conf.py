@@ -12,7 +12,6 @@
 # serve to show the default.
 
 import sys, os
-import pkg_resources
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -54,7 +53,10 @@ master_doc = 'index'
 project = u'Bohrium'
 copyright = u'2012-2017, eScience Group @ NBI'
 
-ver_string = pkg_resources.get_distribution("bohrium").version
+ver_string = "0.0.0"
+with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "VERSION"), "r") as f:
+    ver_string = f.read()
+
 # The short X.Y version.
 version = ver_string
 # The full version, including alpha/beta/rc tags.

@@ -6,4 +6,3 @@ sphinxcontrib-bibtex
 numpy
 numpydoc
 breathe
-setuptools
