@@ -25,7 +25,7 @@ if(OpenCV_FOUND)
 
     install(TARGETS bh_opencv_filtering DESTINATION ${LIBDIR} COMPONENT bohrium)
 
-    set(OpenCV_TEMPLATE_LIBS ${OpenCV_TEMPLATE_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_opencv_filtering${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(OpenCV_TEMPLATE_LIBS ${OpenCV_TEMPLATE_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_opencv_filtering${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
     set(GEN_EXTMETHOD ${CMAKE_CURRENT_SOURCE_DIR}/../../core/codegen/gen_extmethod.py)
     foreach(FUNC threshold)
@@ -45,7 +45,7 @@ if(OpenCV_FOUND)
       target_link_libraries(bh_opencv_${FUNC} bh)
       target_link_libraries(bh_opencv_${FUNC} ${OpenCV_LIBS})
       install(TARGETS bh_opencv_${FUNC} DESTINATION ${LIBDIR} COMPONENT bohrium)
-      set(OpenCV_TEMPLATE_LIBS ${OpenCV_TEMPLATE_LIBS} "${CMAKE_INSTALL_PREFIX}/lib/libbh_opencv_${FUNC}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+      set(OpenCV_TEMPLATE_LIBS ${OpenCV_TEMPLATE_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_opencv_${FUNC}${CMAKE_SHARED_LIBRARY_SUFFIX}")
     endforeach(FUNC)
 
     set(OPENMP_LIBS ${OPENMP_LIBS} ${OpenCV_TEMPLATE_LIBS} PARENT_SCOPE)

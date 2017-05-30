@@ -56,7 +56,7 @@ if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
     DEPENDS numcil bhc ${target_file}
   )
 
-  install(FILES ${target_file} DESTINATION lib/mono COMPONENT bohrium-numcil)
-  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Bohrium.dll)")  
+  install(FILES ${target_file} DESTINATION ${LIBDIR}/mono COMPONENT bohrium-numcil)
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/mono/NumCIL.Bohrium.dll)")
 
 endif()
