@@ -112,7 +112,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
-        stat.pprint("OpenCL", cout);
+        stat.pprint("CUDA", cout);
     }
 }
 
