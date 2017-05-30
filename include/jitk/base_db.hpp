@@ -355,12 +355,13 @@ public:
     template <typename T>
     void writeDeclaration(const bh_view &view, const std::string &type_str, T &out) {
         assert(not isDeclared(view));
+
         if (use_volatile) {
             out << "volatile ";
         }
-        out << type_str << " ";
-        getName(view, out);
-        out << ";";
+
+        out << type_str << " " << getName(view) << ";";
+
         if (isTmp(view.base) or isScalarReplaced_RW(view.base)) {
             _declared_base.insert(view.base);
         } else if (isScalarReplaced_R(view)){

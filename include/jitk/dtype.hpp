@@ -27,28 +27,26 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_type.h>
 #include <jitk/codegen_util.hpp>
 
-
 namespace bohrium {
 namespace jitk {
-
 
 // Return C99 types, which are used inside the C99 kernels
 const char *write_c99_type(bh_type dtype) {
     switch (dtype) {
-        case BH_BOOL: return "bool";
-        case BH_INT8: return "int8_t";
-        case BH_INT16: return "int16_t";
-        case BH_INT32: return "int32_t";
-        case BH_INT64: return "int64_t";
-        case BH_UINT8: return "uint8_t";
-        case BH_UINT16: return "uint16_t";
-        case BH_UINT32: return "uint32_t";
-        case BH_UINT64: return "uint64_t";
-        case BH_FLOAT32: return "float";
-        case BH_FLOAT64: return "double";
-        case BH_COMPLEX64: return "float complex";
+        case BH_BOOL:       return "bool";
+        case BH_INT8:       return "int8_t";
+        case BH_INT16:      return "int16_t";
+        case BH_INT32:      return "int32_t";
+        case BH_INT64:      return "int64_t";
+        case BH_UINT8:      return "uint8_t";
+        case BH_UINT16:     return "uint16_t";
+        case BH_UINT32:     return "uint32_t";
+        case BH_UINT64:     return "uint64_t";
+        case BH_FLOAT32:    return "float";
+        case BH_FLOAT64:    return "double";
+        case BH_COMPLEX64:  return "float complex";
         case BH_COMPLEX128: return "double complex";
-        case BH_R123: return "bh_r123";
+        case BH_R123:       return "bh_r123";
         default:
             std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown C99 type");
@@ -56,47 +54,45 @@ const char *write_c99_type(bh_type dtype) {
 }
 
 // Return OpenCL API types, which are used inside the JIT kernels
-const char* write_opencl_type(bh_type dtype)
-{
-    switch (dtype)
-    {
-        case BH_BOOL: return "uchar";
-        case BH_INT8: return "char";
-        case BH_INT16: return "short";
-        case BH_INT32: return "int";
-        case BH_INT64: return "long";
-        case BH_UINT8: return "uchar";
-        case BH_UINT16: return "ushort";
-        case BH_UINT32: return "uint";
-        case BH_UINT64: return "ulong";
-        case BH_FLOAT32: return "float";
-        case BH_FLOAT64: return "double";
-        case BH_COMPLEX64: return "float2";
+const char* write_opencl_type(bh_type dtype) {
+    switch (dtype) {
+        case BH_BOOL:       return "uchar";
+        case BH_INT8:       return "char";
+        case BH_INT16:      return "short";
+        case BH_INT32:      return "int";
+        case BH_INT64:      return "long";
+        case BH_UINT8:      return "uchar";
+        case BH_UINT16:     return "ushort";
+        case BH_UINT32:     return "uint";
+        case BH_UINT64:     return "ulong";
+        case BH_FLOAT32:    return "float";
+        case BH_FLOAT64:    return "double";
+        case BH_COMPLEX64:  return "float2";
         case BH_COMPLEX128: return "double2";
-        case BH_R123: return "ulong2";
+        case BH_R123:       return "ulong2";
         default:
             std::cerr << "Unknown OpenCL type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown OpenCL type");
     }
 }
 
-// Return C99 types, which are used inside the C99 kernels
+// Return CUDA types, which are used inside the JIT kernels
 const char *write_cuda_type(bh_type dtype) {
     switch (dtype) {
-        case BH_BOOL: return "bool";
-        case BH_INT8: return "int8_t";
-        case BH_INT16: return "int16_t";
-        case BH_INT32: return "int32_t";
-        case BH_INT64: return "int64_t";
-        case BH_UINT8: return "uint8_t";
-        case BH_UINT16: return "uint16_t";
-        case BH_UINT32: return "uint32_t";
-        case BH_UINT64: return "uint64_t";
-        case BH_FLOAT32: return "float";
-        case BH_FLOAT64: return "double";
-        case BH_COMPLEX64: return "cuFloatComplex";
+        case BH_BOOL:       return "bool";
+        case BH_INT8:       return "char";
+        case BH_INT16:      return "short";
+        case BH_INT32:      return "int";
+        case BH_INT64:      return "long";
+        case BH_UINT8:      return "unsigned char";
+        case BH_UINT16:     return "unsigned short";
+        case BH_UINT32:     return "unsigned int";
+        case BH_UINT64:     return "unsigned long";
+        case BH_FLOAT32:    return "float";
+        case BH_FLOAT64:    return "double";
+        case BH_COMPLEX64:  return "cuFloatComplex";
         case BH_COMPLEX128: return "cuDoubleComplex";
-        case BH_R123: return "ulong2";
+        case BH_R123:       return "ulong2";
         default:
             std::cerr << "Unknown CUDA type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown CUDA type");
@@ -112,17 +108,6 @@ void write_c99_dtype_union(std::stringstream& out) {
     }
     out << "};\n";
 }
-
-// Writes the union of OpenCL types that can make up a constant
-void write_opencl_dtype_union(std::stringstream& out) {
-    out << "union dtype {\n";
-    for (bh_type t = BH_BOOL; t <= BH_COMPLEX128; ++t) {
-        spaces(out, 4);
-        out << write_opencl_type(t) << " " << bh_type_text(t) << ";\n";
-    }
-    out << "};\n";
-}
-
 
 } // jitk
 } // bohrium
