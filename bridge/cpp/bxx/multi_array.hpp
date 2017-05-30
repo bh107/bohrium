@@ -203,7 +203,7 @@ unsigned long multi_array<T>::getRank() const
 
 template <typename T>
 inline
-size_t multi_array<T>::len()
+size_t multi_array<T>::len() const
 {
     size_t nelements = 1;
     for (int i = 0; i < meta.ndim; ++i) {
@@ -214,7 +214,7 @@ size_t multi_array<T>::len()
 
 template <typename T>
 inline
-int64_t multi_array<T>::shape(int64_t dim)
+int64_t multi_array<T>::shape(int64_t dim) const
 {
     if (dim>=meta.ndim) {
         throw std::runtime_error("Dude you are like totally out of bounds!\n");

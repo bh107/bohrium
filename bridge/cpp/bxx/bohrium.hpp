@@ -190,8 +190,8 @@ public:
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    size_t len();
-    int64_t shape(int64_t dim);             // Probe for the shape of the given dimension
+    size_t len() const;
+    int64_t shape(int64_t dim) const;             // Probe for the shape of the given dimension
     unsigned long getRank() const;
 
     // Iterator
