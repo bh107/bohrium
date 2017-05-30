@@ -290,7 +290,17 @@ protected:
 private:
     void reset_meta();						// Helper, shared among constructors
 
+    template <typename S>
+    friend void swap(multi_array<S>& lhs, multi_array<S>& rhs);
 };
+
+template <typename T>
+inline void swap(multi_array<T>& lhs, multi_array<T>& rhs) {
+    using std::swap;
+    swap(lhs.temp_, rhs.temp_);
+    swap(lhs.slicing_dim_, rhs.slicing_dim_);
+    swap(lhs.meta, rhs.meta);
+}
 
 template <typename TL, typename TR>
 inline
