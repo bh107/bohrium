@@ -78,7 +78,7 @@ set_timestamp(buildpath("bhc.i"),time)
 # The version if written in the VERSION file in the root of Bohrium
 _version = "0.0.0"
 with open(srcpath("..", "..", "VERSION"), "r") as f:
-    _version = f.read()
+    _version = f.read().strip()
 
 # Create the _info.py file
 time = get_timestamp(srcpath('setup.py'))

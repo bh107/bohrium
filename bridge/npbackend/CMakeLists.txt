@@ -21,11 +21,14 @@ if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_
     # Generate distutils package and install it
     add_custom_target(
         bhpy ALL
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --prefix=${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS bhc
     )
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${LIBDIR} DESTINATION . COMPONENT bohrium)
+
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/platlib/
+            DESTINATION ${LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages
+            COMPONENT bohrium)
 else()
     if (NOT NUMPY_INCLUDE_DIRS)
         message(STATUS "The Python/NumPy bridge cannot be built, because the numpy headers are missing")
@@ -51,22 +54,27 @@ if(${PYTHON_VERSION_MAJOR} EQUAL "2")
         message(STATUS ${CYTHON3})
     endif()
 
+    # Check if NumPy 3 exist
     execute_process(COMMAND "${PYTHON3}" "-c" "import numpy as n;"
                     RESULT_VARIABLE NUMPY3)
     if(${NUMPY3} EQUAL "0" AND PYTHON3 AND CYTHON3)
-        message(STATUS "Found Python3, Cython3, and NumPy3")
+        #Get Python Minor version
+        execute_process(COMMAND "${PYTHON3}" "-c" "import sys; print(sys.version_info.minor);"
+                OUTPUT_VARIABLE NUMPY3_MINOR)
+        string(STRIP ${NUMPY3_MINOR} NUMPY3_MINOR)
+
+        message(STATUS "Found Python3.${NUMPY3_MINOR}, Cython3, and NumPy3")
 
         # Generate distutils package and install it
         add_custom_target(
                 bhpy3 ALL
-                COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --prefix=${CMAKE_CURRENT_BINARY_DIR}
+                COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib3
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 DEPENDS bhc
         )
-        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${LIBDIR}
-                DESTINATION .
-                COMPONENT bohrium3
-                PATTERN "python2.*" EXCLUDE) # we don't want python2 installed again
+        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/platlib3/
+                DESTINATION ${LIBDIR}/python3.${NUMPY3_MINOR}/site-packages
+                COMPONENT bohrium3)
     endif()
 endif()
 

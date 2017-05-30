@@ -34,6 +34,12 @@ class BohriumContext():
         self.__numpy_random = sys.modules['numpy.random']
         self.__numpy_linalg = sys.modules['numpy.linalg']
 
+        # Sub-module matlib has to be imported explicitly once in order to be available through bohrium
+        try:
+            import numpy.matlib
+        except ImportError:
+            pass
+
     def __enter__(self):
         import numpy
         import bohrium

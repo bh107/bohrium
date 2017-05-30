@@ -46,8 +46,8 @@ if(BRIDGE_CIL AND MONO_FOUND)
     DEPENDS ${numcil_binaries}
   )
 
-  install(FILES ${numcil_binaries} DESTINATION lib/mono COMPONENT bohrium-numcil)
-  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.dll)")
-  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/lib/mono/NumCIL.Unsafe.dll)")
+  install(FILES ${numcil_binaries} DESTINATION ${LIBDIR}/mono COMPONENT bohrium-numcil)
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/mono/NumCIL.dll)")
+  install(CODE "execute_process(COMMAND gacutil -i ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/mono/NumCIL.Unsafe.dll)")
 
 endif()
