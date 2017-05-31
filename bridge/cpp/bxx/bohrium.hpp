@@ -190,8 +190,8 @@ public:
     // Types:
     typedef multi_array_iter<T> iterator;
 
-    size_t len();
-    int64_t shape(int64_t dim);             // Probe for the shape of the given dimension
+    size_t len() const;
+    int64_t shape(int64_t dim) const;             // Probe for the shape of the given dimension
     unsigned long getRank() const;
 
     // Iterator
@@ -290,7 +290,17 @@ protected:
 private:
     void reset_meta();						// Helper, shared among constructors
 
+    template <typename S>
+    friend void swap(multi_array<S>& lhs, multi_array<S>& rhs);
 };
+
+template <typename T>
+inline void swap(multi_array<T>& lhs, multi_array<T>& rhs) {
+    using std::swap;
+    swap(lhs.temp_, rhs.temp_);
+    swap(lhs.slicing_dim_, rhs.slicing_dim_);
+    swap(lhs.meta, rhs.meta);
+}
 
 template <typename TL, typename TR>
 inline

@@ -269,8 +269,10 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
             self.write_kernel(kernel, symbols, config, threaded_blocks, offset_strides, ss);
 
             if (verbose) {
-                cout << "\n************ GPU Kernel ************\n" << ss.str()
-                     << "^^^^^^^^^^^^ Kernel End ^^^^^^^^^^^^" << endl;
+                cout << '\n'
+                     << "************ Kernel Begin ************" << '\n'
+                     << ss.str()
+                     << "^^^^^^^^^^^^  Kernel End  ^^^^^^^^^^^^" << endl;
             }
 
             // Create the constant vector
