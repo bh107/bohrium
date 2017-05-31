@@ -208,6 +208,7 @@
         PyErr_SetString(PyExc_ValueError,"Sequence elements must be Python integers");
         return NULL;
     }
+    Py_DECREF(o);
   }
   $1 = temp;
 }
