@@ -467,7 +467,15 @@ def broadcast_arrays(*args):
     """
     try:
         ret = []
-        bargs = numpy.broadcast_arrays(*args)
+        # We use NumPy's broadcast_arrays() to broadcast the views.
+        # Notice that the 'subok' argument is first introduced in version 10 of NumPy
+        try:
+            bargs = numpy.broadcast_arrays(*args, subok=True)
+        except TypeError as err:
+            if "subok" in err.message:
+                bargs = numpy.broadcast_arrays(*args)
+            else:
+                raise
 
         for a, b in zip(args, bargs):
             if numpy.isscalar(a) or not isinstance(a, numpy.ndarray):
