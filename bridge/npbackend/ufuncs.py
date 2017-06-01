@@ -99,7 +99,7 @@ def assign(ary, out):
                 # Convert the NumPy array to bohrium
                 ary = array_create.array(ary)
             ary = get_bhc(ary)
-        target.ufunc(identity, out, ary)
+        target.ufunc(UFUNCS["identity"], out, ary)
     else:
         if bhary.check(ary):
             if "BH_SYNC_WARN" in os.environ:
@@ -216,7 +216,7 @@ class Ufunc(object):
         # Some simple optimizations
         if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
             # Replace power of 2 with a multiplication
-            target.ufunc(multiply, bhcs[0], bhcs[1], bhcs[1])
+            target.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
         else:
             target.ufunc(self, *bhcs)
 
