@@ -31,6 +31,12 @@ from . import target
 import operator
 import functools
 import numpy_force as numpy
+cimport numpy as numpy
+
+cpdef get_cdata(numpy.ndarray ary):
+    """Returns the array data pointer as an integer. 
+    This function is MUCH faster than the ndarray.ctypes attribute"""
+    return <unsigned long long> ary.data
 
 def check(ary):
     """Returns True if 'ary' is a Bohrium array"""
@@ -190,8 +196,8 @@ def identical_views(view1, view2):
 
     b1 = get_base(view1)
     b2 = get_base(view1)
-    v1_offset = view1.start if hasattr(view1, 'start') else view1.ctypes.data - b1.ctypes.data
-    v2_offset = view2.start if hasattr(view2, 'start') else view2.ctypes.data - b2.ctypes.data
+    v1_offset = view1.start if hasattr(view1, 'start') else get_cdata(view1) - get_cdata(b1)
+    v2_offset = view2.start if hasattr(view2, 'start') else get_cdata(view2) - get_cdata(b2)
     if v1_offset != v2_offset:
         return False
     return True
