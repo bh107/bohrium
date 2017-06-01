@@ -150,6 +150,7 @@ if os.path.realpath(buildpath('random123.pyx')) != os.path.realpath(srcpath('ran
   shutil.copy2(srcpath('random123.pyx'), buildpath('random123.pyx'))
   shutil.copy2(srcpath('bhary.pyx'), buildpath('bhary.pyx'))
   shutil.copy2(srcpath('_util.pyx'), buildpath('_util.pyx'))
+  shutil.copy2(srcpath('ufuncs.pyx'), buildpath('ufuncs.pyx'))
 
 setup(name='Bohrium',
       version=_version,
@@ -197,6 +198,12 @@ setup(name='Bohrium',
                              ),
                    Extension(name='bhary',
                              sources=[buildpath('bhary.pyx')],
+                             include_dirs=[srcpath('.')],
+                             libraries=[],
+                             library_dirs=[],
+                             ),
+                   Extension(name='ufuncs',
+                             sources=[buildpath('ufuncs.pyx')],
                              include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],
