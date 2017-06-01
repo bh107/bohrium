@@ -232,14 +232,14 @@ def get_bhc(ary):
                     dtype_in(base.dtype, [numpy.complex64, numpy.complex128]):
 
             # All this is simply a hack to reinterpret 'ary' as a complex view of the 'base'
-            offset = (ary.ctypes.data - base.ctypes.data) // base.itemsize
+            offset = (get_cdata(ary) - get_cdata(base)) // base.itemsize
             cary = numpy.frombuffer(base, dtype=base.dtype, offset=offset * base.itemsize)
             cary = numpy.lib.stride_tricks.as_strided(cary, ary.shape, ary.strides, subok=True)
 
             # if the view/base offset is aligned with the complex dtype, we know that the
             # 'ary' is a view of the real part of 'base'
             from . import ufuncs
-            if (ary.ctypes.data - base.ctypes.data) % base.itemsize == 0:
+            if (get_cdata(ary) - get_cdata(base)) % base.itemsize == 0:
                 ary = ufuncs.real(cary)
             else:
                 ary = ufuncs.imag(cary)
@@ -253,15 +253,15 @@ def get_bhc(ary):
         strides = [0]*ary.ndim
         offset = 0
     else:
-        if not base.ctypes.data <= ary.ctypes.data < base.ctypes.data + base.nbytes:
+        if not get_cdata(base) <= get_cdata(ary) < get_cdata(base) + base.nbytes:
             raise ValueError("The view must point to data within the base array")
 
         # Lets make sure that 'ary' has a Bohrium-C base array
         if base.bhc_ary is None:
             base._data_np2bhc()
 
-        offset = (ary.ctypes.data - base.ctypes.data) // base.itemsize
-        if (ary.ctypes.data - base.ctypes.data) % base.itemsize != 0:
+        offset = (get_cdata(ary) - get_cdata(base)) // base.itemsize
+        if (get_cdata(ary) - get_cdata(base)) % base.itemsize != 0:
             raise TypeError("The view offset must be element aligned")
         if not 0 <= offset < base.size:
             raise TypeError("The view offset is greater than the total number of elements in the base!")
