@@ -50,7 +50,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                     tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
                                     source_dir(tmp_dir / "src"),
                                     object_dir(tmp_dir / "obj"),
-                                    compiler(config.defaultGet<string>("compiler_cmd", "/usr/bin/nvcc"),
+                                    compiler(config.defaultGet<string>("compiler_cmd", "nvcc"),
                                              config.defaultGet<string>("compiler_inc", ""),
                                              config.defaultGet<string>("compiler_lib", ""),
                                              config.defaultGet<string>("compiler_flg", ""),

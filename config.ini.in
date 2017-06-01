@@ -127,7 +127,8 @@ graph = false
 device_type = auto
 # CUDA platform. -1 means automatic. Other numbers will index into list of platforms.
 platform_no = -1
-# Additional options given to the cuda compiler. See documentation for clBuildProgram
+# Additional options given to the cuda compiler.
+compiler_cmd = "${CUDA_NVCC_EXECUTABLE}"
 compiler_flg = "--cubin -arch=sm_30 -m64"
 compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods

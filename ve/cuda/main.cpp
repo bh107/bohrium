@@ -57,7 +57,7 @@ class Impl : public ComponentImplWithChild {
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     set<bh_opcode> child_extmethods;
-    // The OpenCL engine
+    // The CUDA engine
     EngineCUDA engine;
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config.defaultGet("prof", false)),
@@ -76,7 +76,7 @@ public:
         }
     }
 
-    // Write an OpenCL kernel
+    // Write an CUDA kernel
     void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks,
                       const vector<const bh_view*> &offset_strides, stringstream &ss);
@@ -112,12 +112,12 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (config.defaultGet<bool>("prof", false)) {
-        stat.pprint("OpenCL", cout);
+        stat.pprint("CUDA", cout);
     }
 }
 
 
-// Writes the OpenCL specific for-loop header
+// Writes the CUDA specific for-loop header
 void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config,
                       bool loop_is_peeled, const vector<const LoopB *> &threaded_blocks, stringstream &out) {
     // Write the for-loop header
@@ -126,11 +126,11 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
     if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
                      [&block](const LoopB* b){return *b == block;}) == threaded_blocks.end()) {
-        out << "for(" << write_opencl_type(BH_UINT64) << " " << itername;
+        out << "for(" << write_cuda_type(BH_UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-            out << "=1; ";
+            out << " = 1; ";
         else
-            out << "=0; ";
+            out << " = 0; ";
         out << itername << " < " << block.size << "; ++" << itername << ") {\n";
     } else {
         assert(block._sweeps.size() == 0);
@@ -141,11 +141,11 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
 const char *write_thread_id(unsigned int dim) {
     switch (dim) {
         case 0:
-            return "blockIdx.x*blockDim.x+threadIdx.x";
+            return "(blockIdx.x * blockDim.x + threadIdx.x)";
         case 1:
-            return "blockIdx.x*blockDim.x+threadIdx.x";
+            return "(blockIdx.y * blockDim.y + threadIdx.y)";
         case 2:
-            return "blockIdx.x*blockDim.x+threadIdx.x";
+            return "(blockIdx.z * blockDim.z + threadIdx.z)";
         default:
             throw runtime_error("CUDA only support 3 dimensions");
     }
@@ -175,14 +175,14 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
-            ss << "const size_t i" << b->rank << " = " << write_thread_id(i) << "; " \
-               << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow\n";
+            ss << "const int i" << b->rank << " = " << write_thread_id(i) << "; " \
+               << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, NULL, kernel.block, config, threaded_blocks, true, write_opencl_type, loop_head_writer, ss);
+    write_loop_block(symbols, NULL, kernel.block, config, threaded_blocks, true, write_cuda_type, loop_head_writer, ss);
 
     ss << "}\n\n";
 }

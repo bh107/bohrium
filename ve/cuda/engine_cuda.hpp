@@ -118,6 +118,7 @@ public:
     // Delete a buffer
     template <typename T>
     void delBuffer(T &base) {
+        checkCudaErrors(cuMemFree(buffers[base]));
         buffers.erase(base);
     }
 
