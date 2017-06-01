@@ -182,7 +182,7 @@ public:
     multi_array(const multi_array<OtherT> &operand);    // Copy
 
     template <typename ...Dimensions>                   // Variadic constructor
-    multi_array(Dimensions... dims);
+    explicit multi_array(Dimensions... dims);
 
     // ** Deconstructor **
     ~multi_array();
