@@ -80,7 +80,7 @@ def assign(ary, out):
     """Copy data from array 'ary' to 'out'"""
 
     if not np.isscalar(ary):
-        (ary, out) = broadcast_arrays(ary, out)
+        (ary, out) = broadcast_arrays(ary, out)[0]
         # We ignore self assignments
         if bhary.get_base(ary) is bhary.get_base(out) and \
                 bhary.identical_views(ary, out):
@@ -132,7 +132,7 @@ class Ufunc(object):
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of array arguments")
 
-        # Lets make sure that 'out' is always a positional argument
+        # Let's make sure that 'out' is always a positional argument
         try:
             out = kwargs['out']
             del kwargs['out']
@@ -148,17 +148,16 @@ class Ufunc(object):
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
         # Broadcast the args
-        bargs = broadcast_arrays(*args)
+        (bargs, out_shape) = broadcast_arrays(*args)
 
         # Pop the output from the 'bargs' list
         out = None
         if len(args) == self.info['nop']:
             out = args.pop()
-            if bargs[-1].shape != out.shape:
+            if out_shape != out.shape:
                 raise ValueError("non-broadcastable output operand with shape %s "
                                  "doesn't match the broadcast shape %s" %
                                  (str(args[-1].shape), str(out.shape)))
-        out_shape = bargs[-1].shape
 
         # We use a tmp array if the in-/out-put has memory conflicts
         if out is not None:
@@ -226,7 +225,6 @@ class Ufunc(object):
             # We need to convert the output type before returning
             assign(args[0], out)
             return out
-        return out
 
 
     @fix_biclass_wrapper
