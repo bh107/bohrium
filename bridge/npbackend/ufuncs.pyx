@@ -13,7 +13,7 @@ from . import array_create
 import numpy_force as np
 from . import _info
 from ._util import dtype_equal
-from .bhary import get_bhc, get_base, fix_biclass_wrapper
+from .bhary import get_bhc, get_base, fix_biclass_wrapper, get_cdata
 from . import bhary
 from . import target
 from .array_manipulation import broadcast_arrays, flatten
@@ -70,7 +70,7 @@ def overlap_conflict(out, *inputs):
         if not np.isscalar(i):
             if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
                      out.strides == i.strides and out.shape == i.shape and \
-                     out.ctypes.data == i.ctypes.data):
+                     get_cdata(out) == get_cdata(i)):
                 return True
     return False
 
@@ -80,7 +80,7 @@ def assign(ary, out):
     """Copy data from array 'ary' to 'out'"""
 
     if not np.isscalar(ary):
-        (ary, out) = broadcast_arrays(ary, out)
+        (ary, out) = broadcast_arrays(ary, out)[0]
         # We ignore self assignments
         if bhary.get_base(ary) is bhary.get_base(out) and \
                 bhary.identical_views(ary, out):
@@ -99,7 +99,7 @@ def assign(ary, out):
                 # Convert the NumPy array to bohrium
                 ary = array_create.array(ary)
             ary = get_bhc(ary)
-        target.ufunc(identity, out, ary)
+        target.ufunc(UFUNCS["identity"], out, ary)
     else:
         if bhary.check(ary):
             if "BH_SYNC_WARN" in os.environ:
@@ -132,7 +132,7 @@ class Ufunc(object):
         if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
             raise ValueError("invalid number of array arguments")
 
-        # Lets make sure that 'out' is always a positional argument
+        # Let's make sure that 'out' is always a positional argument
         try:
             out = kwargs['out']
             del kwargs['out']
@@ -148,17 +148,16 @@ class Ufunc(object):
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
         # Broadcast the args
-        bargs = broadcast_arrays(*args)
+        (bargs, out_shape) = broadcast_arrays(*args)
 
         # Pop the output from the 'bargs' list
         out = None
         if len(args) == self.info['nop']:
             out = args.pop()
-            if bargs[-1].shape != out.shape:
+            if out_shape != out.shape:
                 raise ValueError("non-broadcastable output operand with shape %s "
                                  "doesn't match the broadcast shape %s" %
                                  (str(args[-1].shape), str(out.shape)))
-        out_shape = bargs[-1].shape
 
         # We use a tmp array if the in-/out-put has memory conflicts
         if out is not None:
@@ -216,7 +215,7 @@ class Ufunc(object):
         # Some simple optimizations
         if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
             # Replace power of 2 with a multiplication
-            target.ufunc(multiply, bhcs[0], bhcs[1], bhcs[1])
+            target.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
         else:
             target.ufunc(self, *bhcs)
 
@@ -226,7 +225,6 @@ class Ufunc(object):
             # We need to convert the output type before returning
             assign(args[0], out)
             return out
-        return out
 
 
     @fix_biclass_wrapper

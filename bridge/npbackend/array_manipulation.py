@@ -428,11 +428,11 @@ def broadcast_arrays(*args):
     """
     Broadcast any number of arrays against each other.
 
-    .. note:: This function differ from NumPy in one way: it does not touch arrays that does not need broadcasting
+    .. note:: This function is very similar to NumPy's  `broadcast_arrays()`
 
     Parameters
     ----------
-    `*args` : array_likes
+    `array_list` : array_likes
         The arrays to broadcast.
 
     Returns
@@ -442,30 +442,18 @@ def broadcast_arrays(*args):
         They are typically not contiguous.  Furthermore, more than one element of a
         broadcasted array may refer to a single memory location.  If you
         need to write to the arrays, make copies first.
-
-    Examples
-    --------
-    >>> x = np.array([[1,2,3]])
-    >>> y = np.array([[1],[2],[3]])
-    >>> np.broadcast_arrays(x, y)
-    [array([[1, 2, 3],
-           [1, 2, 3],
-           [1, 2, 3]]), array([[1, 1, 1],
-           [2, 2, 2],
-           [3, 3, 3]])]
-
-    Here is a useful idiom for getting contiguous copies instead of
-    non-contiguous views.
-
-    >>> [np.array(a) for a in np.broadcast_arrays(x, y)]
-    [array([[1, 2, 3],
-           [1, 2, 3],
-           [1, 2, 3]]), array([[1, 1, 1],
-           [2, 2, 2],
-           [3, 3, 3]])]
-
+    shape : tuple
+        The shape the arrays are broadcasted to
     """
     try:
+        if len(args) == 0:
+            return ([], [])
+
+        # Common case where nothing needs to be broadcasted.
+        bcast = numpy.broadcast(*args)
+        if all(array.shape == bcast.shape for array in args if not numpy.isscalar(array)):    
+            return (args, bcast.shape)
+
         ret = []
         # We use NumPy's broadcast_arrays() to broadcast the views.
         # Notice that the 'subok' argument is first introduced in version 10 of NumPy
@@ -487,9 +475,9 @@ def broadcast_arrays(*args):
     except ValueError as msg:
         if str(msg).find("shape mismatch: objects cannot be broadcast to a single shape") != -1:
             shapes = [arg.shape for arg in args]
-            raise ValueError("shape mismatch: objects cannot be broadcast to a single shape: %s" % shapes)
-
-    return ret
+            raise ValueError("shape mismatch: objects cannot be broadcasted to a single shape: %s" % shapes)
+        raise
+    return (ret, bcast.shape)
 
 
 @fix_biclass_wrapper

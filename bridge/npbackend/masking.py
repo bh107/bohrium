@@ -125,7 +125,7 @@ def where(condition, x=None, y=None):
             array_types.append(v.dtype)
     out_type = numpy.find_common_type(array_types, scalar_types)
 
-    condition, x, y = array_manipulation.broadcast_arrays(condition, x, y)
+    condition, x, y = array_manipulation.broadcast_arrays(condition, x, y)[0]
 
     ret = array_create.zeros(condition.shape, dtype=out_type)
     ret[condition] = x[condition]

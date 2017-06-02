@@ -185,7 +185,7 @@ def take_using_index_tuple(a, index_tuple, out=None):
             return array_create.empty((0,), dtype=a.dtype)
 
     # And then broadcast them into the same shape
-    index_list = array_manipulation.broadcast_arrays(*index_list)
+    index_list = array_manipulation.broadcast_arrays(*index_list)[0]
 
     # Let's find the absolute index
     abs_index = index_list[-1].copy()
@@ -365,7 +365,7 @@ def put_using_index_tuple(a, index_tuple, v):
             return array_create.empty((0,), dtype=a.dtype)
 
     # And then broadcast them into the same shape
-    index_list = array_manipulation.broadcast_arrays(*index_list)
+    index_list = array_manipulation.broadcast_arrays(*index_list)[0]
 
     # Let's find the absolute index
     abs_index = index_list[-1].copy()
