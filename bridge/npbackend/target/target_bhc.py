@@ -38,6 +38,16 @@ class BhcAPI:
         for key, val in get_bhc_api().items():
             if key.startswith("bhc_"):
                 setattr(self, key[4:], val) # Save key without the "bhc_"
+
+    def __call__(self, name, *args, **kwargs):
+        """Call the API function named `name` with the `*args` and `**kwargs`"""
+        func = getattr(self, name)
+        return func(*args, **kwargs)
+
+    def call_single_dtype(self, name, dtype_name, *args, **kwargs):
+        """Call the API function with only a single type signature it its name."""
+        return self("%s_A%s" % (name, dtype_name), *args, **kwargs)
+
 bhc = BhcAPI()
 
 
@@ -50,17 +60,14 @@ class Base(interface.Base):
             return
 
         if bhc_obj is None:
-            func = eval("bhc.new_A%s" % self.dtype_name)
-            bhc_obj = _bhc_exec(func, size)
+            bhc_obj = bhc.call_single_dtype("new", self.dtype_name, size)
 
         self.bhc_obj = bhc_obj
-
 
     def __del__(self):
         if self.size == 0:
             return
-
-        exec("bhc.destroy_A%s(self.bhc_obj)" % self.dtype_name)
+        bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
 
 
 class View(interface.View):
@@ -72,16 +79,12 @@ class View(interface.View):
 
         if self.size == 0:
             return
-
-        func = eval("bhc.view_A%s" % self.dtype_name)
-        self.bhc_obj = func(base.bhc_obj, ndim, start, shape, strides)
-
+        self.bhc_obj = bhc.call_single_dtype("view", self.dtype_name, base.bhc_obj, ndim, start, shape, strides)
 
     def __del__(self):
         if self.size == 0:
             return
-
-        exec("bhc.destroy_A%s(self.bhc_obj)" % self.dtype_name)
+        bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
 
 
 def _bhc_exec(func, *args):
@@ -120,18 +123,15 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     dtype = dtype_name(ary)
     ary = ary.bhc_obj
 
-    exec("bhc.sync_A%s(ary)" % dtype)
-    exec("bhc.flush()")
+    bhc.call_single_dtype("sync", dtype, ary)
+    bhc.flush()
 
-    bhc_data_get = eval("bhc.data_get_A%s" % dtype)
-    data = bhc_data_get(ary, allocate, nullify)
-
+    data = bhc.call_single_dtype("data_get", dtype, ary, allocate, nullify)
     if data is None:
         if not allocate:
             return 0
         else:
             raise MemoryError()
-
     return int(data)
 
 
@@ -142,6 +142,7 @@ def set_bhc_data_from_ary(self, ary):
     assert dtype == dtype_name(ary)
     ptr = get_data_pointer(self, allocate=True, nullify=False)
     ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
+
 
 def ufunc(op, *args, **kwd):
     """
@@ -173,7 +174,7 @@ def ufunc(op, *args, **kwd):
         else:
             scalar_type = dtype_name(args[1])
 
-    fname  = "bhc.%s"%op
+    fname = "%s" % op
     for arg, dtype in zip(args, dtypes):
         if numpy.isscalar(arg):
             if dtype is None:
@@ -186,7 +187,7 @@ def ufunc(op, *args, **kwd):
             else:
                 fname += "_A%s"%dtype_name(dtype)
 
-    _bhc_exec(eval(fname), *args)
+    _bhc_exec(getattr(bhc, fname), *args)
 
 
 def reduce(op, out, ary, axis):
@@ -198,7 +199,7 @@ def reduce(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    ufunc("%s_reduce" % op.info['name'], out, ary, axis, dtypes=[None,None,numpy.dtype("int64")])
+    ufunc("%s_reduce" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
 
 
 def accumulate(op, out, ary, axis):
@@ -230,7 +231,7 @@ def extmethod(name, out, in1, in2):
     if out.size == 0 or out.base.size == 0:
         return
 
-    func = eval("bhc.extmethod_A%s_A%s_A%s" % (
+    func = getattr(bhc, "extmethod_A%s_A%s_A%s" % (
         dtype_name(out),
         dtype_name(in1),
         dtype_name(in2)
