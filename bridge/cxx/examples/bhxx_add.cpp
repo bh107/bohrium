@@ -17,7 +17,9 @@ GNU Lesser General Public License along with bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <bhxx/MultiArray.hpp>
+#include <bhxx/multi_array.hpp>
+#include <bhxx/array_operations.hpp>
+#include <bhxx/runtime.hpp>
 
 #include <iostream>
 
@@ -27,8 +29,13 @@ void compute()
 {
     std::cout << "Hello Addition." << std::endl;
 
-    BhArray<float> x({2,3,4});
-    
+    BhArray<float> a({2,3,4}, {12,4,1});
+    BhArray<float> b({2,3,4}, {12,4,1});
+    BhArray<float> c({2,3,4}, {12,4,1});
+
+    test_add(a, b, c);
+    test_add(a, b, 42.0);
+    Runtime::instance().flush();
 }
 
 int main()

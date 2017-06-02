@@ -17,6 +17,10 @@
 // along with linalgwrap. If not, see <http://www.gnu.org/licenses/>.
 //
 
+#ifndef __BHXX_MULTI_ARRAY_H
+#define __BHXX_MULTI_ARRAY_H
+
+
 #include <vector>
 #include <numeric>
 #include <bh_component.hpp>
@@ -43,8 +47,8 @@ public:
 
 template <typename T>
 class BhBase {
-    bh_base base;
 public:
+    bh_base base;
     typedef T scalar_type;
     BhBase(size_t nelem) {
         base.data = nullptr;
@@ -59,10 +63,14 @@ class BhArray {
 public:
     typedef T scalar_type;
     SVector<size_t, BH_MAXDIM> shape;
+    SVector<int64_t, BH_MAXDIM> stride;
     std::shared_ptr<BhBase<T> > base;
 
     // Create a new view that points to a new base
-    BhArray(const std::vector<size_t> &new_shape) : shape(new_shape), base(new BhBase<T>(shape.prod())) {}
+    BhArray(const std::vector<size_t> &new_shape, const std::vector<int64_t> &new_stride) :
+            shape(new_shape),
+            stride(new_stride),
+            base(new BhBase<T>(shape.prod())) {}
 
     // Create a new view that points to base that `other` points to
     BhArray(const std::vector<size_t> &new_shape, BhArray other) : shape(new_shape), base(std::move(other.base)) {}
@@ -70,4 +78,6 @@ public:
 
 
 
-}
+} // namespace bhxx
+
+#endif

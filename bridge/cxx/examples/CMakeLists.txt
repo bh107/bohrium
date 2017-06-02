@@ -6,4 +6,5 @@ add_executable(bhxx_add "bhxx_add.cpp" )   # bhxx_add
 target_link_libraries(bhxx_add bh)         # Depends on libbh.so ...
 include_directories("..")                  # ... and header files of the C++ Bridge
 include_directories("../../cpp/")
-install(TARGETS bhxx_add DESTINATION share/bohrium/test/cpp COMPONENT bohrium)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/../)
+install(TARGETS bhxx_add DESTINATION share/bohrium/test/cxx COMPONENT bohrium)
