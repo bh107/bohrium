@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_instruction.hpp>
+#include "multi_array.hpp"
 
 namespace bhxx {
 
@@ -60,6 +61,7 @@ public:
     void instr_append_operand(bh_instruction &instr, BhArray<T> ary) {
         bh_view view;
         view.base = &ary.base->base;
+        view.start = ary.offset;
         view.ndim = ary.shape.size();
         std::copy(ary.shape.begin(), ary.shape.end(), &view.shape[0]);
         std::copy(ary.stride.begin(), ary.stride.end(), &view.stride[0]);
@@ -92,12 +94,14 @@ public:
         bh_instruction instr;
         instr.opcode = opcode;
         instr_append_operand(instr, ops...);
+        instr_list.push_back(instr);
     }
 
     // Send enqueued instructions to Bohrium for execution
     void flush() {
         bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
         runtime.execute(&bhir);
+        instr_list.clear();
     }
 };
 

@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2017 by the linalgwrap authors
+//
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -17,34 +20,13 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
 
-#include <bhxx/bhxx.hpp>
+#ifndef __BHXX_H
+#define __BHXX_H
 
-using namespace bhxx;
+#include <bhxx/array_operations.hpp>
+#include "multi_array_impl.hpp"
+#include "runtime.hpp"
 
-void compute()
-{
-    std::cout << "Hello Addition." << std::endl;
 
-    BhArray<float> a({2,3,4}, {12,4,1});
-    BhArray<float> b({2,3,4}, {12,4,1});
-    BhArray<float> c({2,3,4}, {12,4,1});
-    identity(b, 1);
-    identity(c, 2);
-
-    add(a, b, c);
-    std::cout << a << std::endl;
-
-    add(b, a, -10.0);
-    std::cout << b << std::endl;
-
-    Runtime::instance().flush();
-}
-
-int main()
-{
-    compute();
-    return 0;
-}
-
+#endif
