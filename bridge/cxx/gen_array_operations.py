@@ -55,6 +55,29 @@ def main(args):
                 impl += ");\n}\n"
         impl += "\n\n"; head += "\n\n"
 
+    # Let's handle random
+    doc = """
+/*Fill out with random data.
+  The returned result is a deterministic function of the key and counter,
+  i.e. a unique (seed, indexes) tuple will always produce the same result.
+  The result is highly sensitive to small changes in the inputs, so that the sequence
+  of values produced by simply incrementing the counter (or key) is effectively
+  indistinguishable from a sequence of samples of a uniformly distributed random variable.
+
+  random123(out, seed, key) where: 'out' is the array to fill with random data
+                                   'seed' is the seed of a random sequence
+                                   'key' is the index in the random sequence */
+"""
+    impl += doc; head += doc
+    decl = "void random(BhArray<uint64_t> &out, uint64_t seed, uint64_t key)"
+    head += "%s;\n" % decl
+    impl += "%s\n" % decl
+    impl += """
+{
+    \tRuntime::instance().enqueue_random(out, seed, key);
+}
+"""
+
     # Let's add header and footer
     head = """/* Bohrium CXX Bridge: array operation functions. Auto generated! */
 

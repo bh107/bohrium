@@ -99,6 +99,23 @@ public:
         instr_list.push_back(instr);
     }
 
+    // We have to handle random specially because of the `BH_R123` scalar type
+    void enqueue_random(BhArray<uint64_t> &out, uint64_t seed, uint64_t key) {
+        bh_instruction instr;
+        instr.opcode = BH_RANDOM;
+        // Append the output array
+        instr_append_operand(instr, out);
+
+        // Append the special BH_R123 constant
+        bh_view view;
+        view.base = nullptr;
+        instr.operand.push_back(view);
+        instr.constant.type = BH_R123;
+        instr.constant.value.r123.start = seed;
+        instr.constant.value.r123.key   = key;
+        instr_list.push_back(instr);
+    }
+
     // Send enqueued instructions to Bohrium for execution
     void flush() {
         bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);

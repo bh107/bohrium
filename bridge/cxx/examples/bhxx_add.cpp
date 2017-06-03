@@ -39,6 +39,10 @@ void compute()
     add(b, a, -10.0);
     std::cout << b << std::endl;
 
+    BhArray<uint64_t> r({10});
+    random(r, 42, 42);
+    std::cout << r << std::endl;
+
     Runtime::instance().flush();
 }
 
