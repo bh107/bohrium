@@ -71,8 +71,13 @@ public:
             stride(contiguous_stride(shape)),
             base(new BhBase<T>(shape.prod())) {}
 
-    // Create a new view that points to base that `other` points to
-    BhArray(const std::vector<size_t> &new_shape, BhArray other) : shape(new_shape), base(std::move(other.base)) {}
+    // Create a view that points to the given base
+    BhArray(const std::shared_ptr<BhBase<T> > &base, const Shape &shape,
+            const Stride &stride, const size_t offset = 0) :
+            offset(offset),
+            shape(shape),
+            stride(stride),
+            base(base) {}
 
     // Pretty printing the content of the array
     // TODO: for now it always print the flatten array
