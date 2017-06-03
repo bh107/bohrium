@@ -7,6 +7,9 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
 include_directories(../cpp/bxx)
+include_directories(../cpp)
+include_directories(${CMAKE_SOURCE_DIR}/bridge/cxx/include)
+include_directories(${CMAKE_BINARY_DIR}/bridge/cxx/include)
 
 set(SRC_H ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.h
           ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.h
