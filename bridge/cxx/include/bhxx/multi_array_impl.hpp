@@ -26,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bhxx/array_operations.hpp>
 #include "multi_array.hpp"
-
+#include "runtime.hpp"
 
 
 namespace bhxx {

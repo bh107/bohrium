@@ -23,44 +23,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 
 #include <vector>
-#include <numeric>
 #include <ostream>
 #include <bh_component.hpp>
 #include <bxx/traits.hpp>
-
+#include "util.hpp"
 
 namespace bhxx {
-
-template <typename T, std::size_t MaxLength>
-struct SVector : public std::vector<T> {
-public:
-    using std::vector<T>::vector;
-    SVector(const std::vector<T> &other) : SVector(other.begin(), other.end()) {}
-    SVector() = default;
-
-    T sum() const {
-        return std::accumulate(this->begin(), this->end(), T{0});
-    }
-    T prod() const {
-        return std::accumulate(this->begin(), this->end(), T{1}, std::multiplies<T>());
-    }
-};
-
-typedef SVector<int64_t, BH_MAXDIM> Stride;
-typedef SVector<size_t, BH_MAXDIM> Shape;
-
-
-// Return a contiguous stride (row-major) based on `shape`
-Stride contiguous_stride(const Shape &shape) {
-    Stride ret(shape.size());
-    int64_t stride = 1;
-    for (int64_t i = shape.size()-1; i >= 0; --i) {
-        ret[i] = stride;
-        stride *= static_cast<int64_t>(shape[i]);
-    }
-    return ret;
-}
-
 
 template <typename T>
 class BhBase {

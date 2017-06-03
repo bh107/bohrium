@@ -21,7 +21,7 @@ def main(args):
                                'bhc_ary' : "bhc_ndarray_%s_p"%t[2]}
 
     # Let's generate the header and implementation of all array operations
-    impl = ""
+    head = ""; impl = ""
     for op in opcodes:
 
         if op['opcode'] in ["BH_REPEAT", "BH_RANDOM"]:
@@ -30,36 +30,38 @@ def main(args):
         if len(op['types']) == 0:
             continue
 
-        impl += "// %s: %s\n"%(op['opcode'][3:], op['doc'])
-        impl += "// E.g. %s:\n"%(op['code'])
+        doc = "// %s: %s\n"%(op['opcode'][3:], op['doc'])
+        doc += "// E.g. %s:\n"%(op['code'])
+        impl += doc; head += doc
 
         # Generate a function for each type signature
         for type_sig in op['types']:
             for layout in op['layout']:
-                impl += "void %s(" % op['opcode'][3:].lower()
+                decl = "void %s(" % op['opcode'][3:].lower()
                 for i, (symbol, t) in enumerate(zip(layout, type_sig)):
                     if i == 0:
-                        impl += "BhArray<%s> &out" % type_map[t]['cpp']
+                        decl += "BhArray<%s> &out" % type_map[t]['cpp']
                     else:
                         if symbol == "A":
-                            impl += ", const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+                            decl += ", const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
                         else:
-                            impl += ", %s in%d"%(type_map[t]['cpp'], i)
-                impl += ") {\n"
-                impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
+                            decl += ", %s in%d"%(type_map[t]['cpp'], i)
+                decl += ")"
+                head += "%s;\n" % decl
+                impl += decl;
+                impl += "\n{\n\tRuntime::instance().enqueue(%s, out" % op['opcode']
                 for i in range(len(layout)-1):
                     impl += ", in%d" % (i+1)
                 impl += ");\n}\n"
-        impl += "\n\n"
+        impl += "\n\n"; head += "\n\n"
 
     # Let's add header and footer
-    impl = """/* Bohrium CXX Bridge: array operation functions. Auto generated! */
+    head = """/* Bohrium CXX Bridge: array operation functions. Auto generated! */
 
 #ifndef __BHXX_ARRAY_OPERATIONS_H
 #define __BHXX_ARRAY_OPERATIONS_H
 
 #include <bhxx/multi_array.hpp>
-#include <bhxx/runtime.hpp>
 
 namespace bhxx {
 
@@ -68,13 +70,29 @@ namespace bhxx {
 } // namespace bhxx
 
 #endif
-""" % impl
+""" % head
 
-    if not os.path.exists(args.output):
-        os.makedirs(args.output)
+    impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */
+
+#include <bhxx/runtime.hpp>
+#include <bhxx/array_operations.hpp>
+
+namespace bhxx {
+
+%s
+
+} // namespace bhxx
+    """ % impl
+
+    if not os.path.exists(args.inc_output):
+        os.makedirs(args.inc_output)
+    if not os.path.exists(args.src_output):
+        os.makedirs(args.src_output)
 
     # Finally, let's write the files
-    with open(join(args.output,'array_operations.hpp'), 'w') as f:
+    with open(join(args.inc_output, 'array_operations.hpp'), 'w') as f:
+        f.write(head)
+    with open(join(args.src_output, 'array_operations.cpp'), 'w') as f:
         f.write(impl)
 
 if __name__ == "__main__":
@@ -84,8 +102,12 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        'output',
-        help='Path to the output directory.'
+        'inc_output',
+        help='Path to the header output directory.'
+    )
+    parser.add_argument(
+        'src_output',
+        help='Path to the source output directory.'
     )
     args = parser.parse_args()
     main(args)
