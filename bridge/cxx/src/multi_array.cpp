@@ -17,35 +17,32 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#include <iostream>
 
-#include <bhxx/bhxx.hpp>
+#include <bhxx/multi_array.hpp>
 
-using namespace bhxx;
+using namespace std;
 
-void compute()
-{
-    std::cout << "Hello Addition." << std::endl;
+namespace bhxx {
 
-    BhArray<float> a({2,3,4}, {12,4,1});
-    BhArray<float> b({2,3,4}, {12,4,1});
-    BhArray<float> c({2,3,4}, {12,4,1});
-    identity(b, 1);
-    identity(c, 2);
-
-    add(a, b, c);
-    std::cout << a << std::endl;
-
-    add(b, a, -10.0);
-    std::cout << b << std::endl;
-
-    Runtime::instance().flush();
-    a.pprint();
+template <typename T>
+void BhArray<T>::pprint() const {
+    cout << "hej" << endl;
 }
 
-int main()
-{
-    compute();
-    return 0;
-}
+// Instantiate all possible types of `BhArray`, which makes it possible to 
+template class BhArray<bool>;
+template class BhArray<int8_t>;
+template class BhArray<int16_t>;
+template class BhArray<int32_t>;
+template class BhArray<int64_t>;
+template class BhArray<uint8_t>;
+template class BhArray<uint16_t>;
+template class BhArray<uint32_t>;
+template class BhArray<uint64_t>;
+template class BhArray<float>;
+template class BhArray<double>;
+template class BhArray<std::complex<float> >;
+template class BhArray<std::complex<double> >;
 
+
+} // namespace bhxx

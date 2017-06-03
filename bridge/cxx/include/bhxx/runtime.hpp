@@ -26,6 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include "multi_array.hpp"
 
+#include "multi_array.hpp"
+
 namespace bhxx {
 
 

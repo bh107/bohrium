@@ -8,17 +8,40 @@ set(SRC_H ${CMAKE_CURRENT_BINARY_DIR}/bhxx/array_operations.hpp)
 
 add_custom_command(
     OUTPUT ${SRC_H}
-    COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/bhxx
+    COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx
     DEPENDS gen_array_operations.py
             ../../core/codegen/opcodes.json
             ../cpp/codegen/element_types.json
-            ${CMAKE_CURRENT_SOURCE_DIR}/bhxx/runtime.hpp
-            ${CMAKE_CURRENT_BINARY_DIR}/bhxx/array_operations.hpp
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
-add_custom_target(BHXX ALL DEPENDS ${SRC_H})
+add_custom_target(BHXX_CODEGEN DEPENDS ${SRC_H})
 
-install(DIRECTORY bhxx DESTINATION include COMPONENT bohrium)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bhxx/array_operations.hpp DESTINATION include/bhxx COMPONENT bohrium)
+# Include the headers of Bohrium
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
+
+# Include the headers of bhxx
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
+
+# Include the header of bxx. TODO: removed dependecy of the old C++ bridge
+include_directories("../cpp/")
+
+# Define the bhxx library
+file(GLOB SRC src/*.cpp)
+add_library(bhxx SHARED ${SRC})
+
+# We depend on bh.so
+target_link_libraries(bhxx bh)
+
+# And we depend on the code generated files
+add_dependencies(bhxx BHXX_CODEGEN)
+
+# Let's install header files (both static and generated headers)
+install(DIRECTORY include/bhxx DESTINATION include COMPONENT bohrium)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/codegen/array_operations.hpp DESTINATION include/bhxx COMPONENT bohrium)
+
+# Let's install the library
+install(TARGETS bhxx DESTINATION ${LIBDIR} COMPONENT bohrium)
 
 add_subdirectory(examples)

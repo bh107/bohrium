@@ -112,7 +112,6 @@ public:
 };
 
 
-
 } // namespace bhxx
 
 #endif
