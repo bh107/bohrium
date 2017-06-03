@@ -23,14 +23,15 @@ def main(args):
     # Let's generate the header and implementation of all array operations
     impl = ""
     for op in opcodes:
-        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
-            continue
-        impl += "// %s: %s\n"%(op['opcode'][3:], op['doc'])
-        impl += "// E.g. %s:\n"%(op['code'])
 
+        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM"]:
+            continue
         # Generate functions that takes no operands
         if len(op['types']) == 0:
             continue
+
+        impl += "// %s: %s\n"%(op['opcode'][3:], op['doc'])
+        impl += "// E.g. %s:\n"%(op['code'])
 
         # Generate a function for each type signature
         for type_sig in op['types']:
@@ -45,11 +46,13 @@ def main(args):
                         else:
                             impl += ", %s in%d"%(type_map[t]['cpp'], i)
                 impl += ") {\n"
-                impl += "\t\n"
-                impl += "}\n"
+                impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
+                for i in range(len(layout)-1):
+                    impl += ", in%d" % (i+1)
+                impl += ");\n}\n"
         impl += "\n\n"
 
-    #Let's add header and footer
+    # Let's add header and footer
     impl = """/* Bohrium CXX Bridge: array operation functions. Auto generated! */
 
 #ifndef __BHXX_ARRAY_OPERATIONS_H

@@ -33,8 +33,8 @@ void compute()
     BhArray<float> b({2,3,4}, {12,4,1});
     BhArray<float> c({2,3,4}, {12,4,1});
 
-    test_add(a, b, c);
-    test_add(a, b, 42.0);
+    add(a, b, c);
+    add(a, b, 42.0);
     Runtime::instance().flush();
 }
 

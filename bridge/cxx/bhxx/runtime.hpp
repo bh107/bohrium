@@ -54,8 +54,10 @@ public:
         return instance;
     };
 
+    // `instr_append_operand()` append an operand to the list of instruction in `instr`
+    // Variadic base case: appending one array
     template <typename T>
-    void instr_set_operand(bh_instruction &instr, int op_count, BhArray<T> ary) {
+    void instr_append_operand(bh_instruction &instr, BhArray<T> ary) {
         bh_view view;
         view.base = &ary.base->base;
         view.ndim = ary.shape.size();
@@ -63,43 +65,41 @@ public:
         std::copy(ary.stride.begin(), ary.stride.end(), &view.stride[0]);
         instr.operand.push_back(view);
     }
-
+    // Variadic base case: appending one scalar
     template <typename T>
-    void instr_set_operand(bh_instruction &instr, int op_count, T scalar) {
+    void instr_append_operand(bh_instruction &instr, T scalar) {
         bh_view view;
         view.base = nullptr;
         instr.operand.push_back(view);
         bxx::assign_const_type(&instr.constant, scalar);
     }
-
+    // Variadic case: appending one array and continue
     template <typename T, typename... Ts>
-    void instr_set_operand(bh_instruction &instr, int op_count, BhArray<T> ary, Ts... ops) {
-        instr_set_operand(instr, op_count, ary);
-        instr_set_operand(instr, op_count+1, ops...);
+    void instr_append_operand(bh_instruction &instr, BhArray<T> ary, Ts... ops) {
+        instr_append_operand(instr, ary);
+        instr_append_operand(instr, ops...);
     }
-
+    // Variadic case: appending one scalar and continue
+    template <typename T, typename... Ts>
+    void instr_append_operand(bh_instruction &instr, T scalar, Ts... ops) {
+        instr_append_operand(instr, scalar);
+        instr_append_operand(instr, ops...);
+    }
+    // Create and enqueue a new bh_instruction based on `opcode` and a variadic pack of BhArrays
+    // and at most one scalar value
     template <typename... Ts>
     void enqueue(bh_opcode opcode, Ts... ops) {
         bh_instruction instr;
         instr.opcode = opcode;
-        instr_set_operand(instr, 0, ops...);
+        instr_append_operand(instr, ops...);
     }
 
+    // Send enqueued instructions to Bohrium for execution
     void flush() {
-        // Send instructions to Bohrium
         bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
         runtime.execute(&bhir);
     }
-
 };
-
-
-void test_add(BhArray<float> &out, const BhArray<float> &in1, const BhArray<float> &in2) {
-    Runtime::instance().enqueue(BH_ADD, out, in1, in2);
-}
-void test_add(BhArray<float> &out, const BhArray<float> &in1, float in2) {
-    Runtime::instance().enqueue(BH_ADD, out, in1, in2);
-}
 
 }
 #endif
