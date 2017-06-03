@@ -24,12 +24,8 @@ using namespace std;
 
 namespace bhxx {
 
-template <typename T>
-void BhArray<T>::pprint() const {
-    cout << "hej" << endl;
-}
 
-// Instantiate all possible types of `BhArray`, which makes it possible to 
+// Instantiate all possible types of `BhArray`, which makes it possible to implement many of the methods here
 template class BhArray<bool>;
 template class BhArray<int8_t>;
 template class BhArray<int16_t>;

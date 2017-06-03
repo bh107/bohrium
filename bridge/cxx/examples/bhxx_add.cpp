@@ -40,7 +40,6 @@ void compute()
     std::cout << b << std::endl;
 
     Runtime::instance().flush();
-    a.pprint();
 }
 
 int main()

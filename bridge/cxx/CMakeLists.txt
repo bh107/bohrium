@@ -39,7 +39,7 @@ add_dependencies(bhxx BHXX_CODEGEN)
 
 # Let's install header files (both static and generated headers)
 install(DIRECTORY include/bhxx DESTINATION include COMPONENT bohrium)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/codegen/array_operations.hpp DESTINATION include/bhxx COMPONENT bohrium)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx DESTINATION include  COMPONENT bohrium)
 
 # Let's install the library
 install(TARGETS bhxx DESTINATION ${LIBDIR} COMPONENT bohrium)
