@@ -39,7 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
 
-#define BH_MAXDIM (16)
+constexpr bh_intp BH_MAXDIM = 16;
 
 //Implements pprint of base arrays
 DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_base& b);
