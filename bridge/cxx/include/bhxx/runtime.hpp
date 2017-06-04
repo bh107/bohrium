@@ -44,13 +44,13 @@ private:
     bohrium::ConfigParser config;                // Bohrium Configuration
     bohrium::component::ComponentFace runtime;   // The Bohrium Runtime i.e. the child of this component
 
-    std::map<std::string, bh_opcode> extensions; // Register of extensions
-    size_t extension_count;
+    std::map<std::string, bh_opcode> extmethods; // Mapping an extension method name to an opcode id
+    size_t extmethod_next_opcode_id;             // The opcode id for the next new extension method
 
 public:
     Runtime() : config(-1), // stack level -1 is the bridge
                 runtime(config.getChildLibraryPath(), 0), // and child is stack level 0
-                extension_count(BH_MAX_OPCODE_ID+1) {}
+                extmethod_next_opcode_id(BH_MAX_OPCODE_ID+1) {}
 
     static Runtime& instance() {
         static Runtime instance;
@@ -114,6 +114,25 @@ public:
         instr.constant.value.r123.start = seed;
         instr.constant.value.r123.key   = key;
         instr_list.push_back(instr);
+    }
+
+    // Enqueue an extension method
+    template<typename T>
+    void enqueue_extmethod(const std::string& name, BhArray<T> &out, BhArray<T> &in1, BhArray<T> &in2) {
+        bh_opcode opcode;
+
+        // Look for the extension opcode
+        auto it = extmethods.find(name);
+        if (it != extmethods.end()) {   // Got it
+            opcode = it->second;
+        } else {                        // Add it
+            opcode = extmethod_next_opcode_id++;
+            runtime.extmethod(name.c_str(), opcode); // Tell the rest of Bohrium about this new extmethod
+            extmethods.insert(std::pair<std::string, bh_opcode>(name, opcode));
+        }
+
+        // Now that we have an opcode, let's enqueue the instruction
+        enqueue(opcode, out, in1, in2);
     }
 
     // Send enqueued instructions to Bohrium for execution
