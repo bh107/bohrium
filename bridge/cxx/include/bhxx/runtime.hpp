@@ -154,15 +154,7 @@ public:
     }
 
     // Send enqueued instructions to Bohrium for execution
-    void flush() {
-        bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
-        runtime.execute(&bhir);
-        instr_list.clear();
-        for(bh_base *base: free_list) {
-            delete base;
-        }
-        free_list.clear();
-    }
+    void flush();
 
     ~Runtime() {
         flush();
