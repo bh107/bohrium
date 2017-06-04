@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bhxx/multi_array.hpp>
 #include <bhxx/runtime.hpp>
+#include <bhxx/array_operations.hpp>
 
 using namespace std;
 
@@ -29,6 +30,34 @@ template<typename T>
 inline BhBase<T>::~BhBase() {
 //    cout << "Delete base " << this << endl;
     Runtime::instance().enqueue_free(*this);
+}
+
+template<typename T>
+void BhArray<T>::pprint(std::ostream& os) const {
+
+    // Let's makes sure that the data we are reading is contiguous
+    BhArray<T> contiguous = BhArray<T>(shape);
+    identity(contiguous, *this);
+    sync(contiguous);
+    Runtime::instance().flush();
+
+    // Get the data pointer and check for NULL
+    const T* data = static_cast<T*>(contiguous.base->base->data);
+    if (data == nullptr) {
+        os << "[<Uninitiated>]" << endl;
+        return;
+    }
+
+    // Pretty print the content
+    os << scientific;
+    os << "[";
+    for(size_t i=0; i < static_cast<size_t>(contiguous.base->base->nelem); ++i) {
+        if (i > 0) {
+            os << ", ";
+        }
+        os << data[i];
+    }
+    os << "]" << endl;
 }
 
 

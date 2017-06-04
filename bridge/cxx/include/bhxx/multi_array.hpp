@@ -98,6 +98,12 @@ public:
 };
 
 
+template <typename T>
+std::ostream& operator<< (std::ostream& os, const BhArray<T>& ary) {
+    ary.pprint(os);
+    return os;
+}
+
 } // namespace bhxx
 
 #endif
