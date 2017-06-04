@@ -29,7 +29,7 @@ def main(args):
 
     impl += "//Array types:\n"
     for key, val in type_map.items():
-        impl += "struct bhc_ndarray_%s {multi_array<%s> me;};\n"%(val['name'], val['bhc'])
+        impl += "struct bhc_ndarray_%s {bhxx::BhArray<%s> me;};\n"%(val['name'], val['cpp'])
 
     #Let's add header and footer
     head = """/* Bohrium C Bridge: data types. Auto generated! */
@@ -37,7 +37,6 @@ def main(args):
 #ifndef __BHC_TYPES_H
 #define __BHC_TYPES_H
 
-#include <stdint.h>
 #include <bh_type.h>
 
 #ifdef _WIN32
@@ -58,10 +57,9 @@ extern "C" {
 """%head
     impl = """/* Bohrium C Bridge: data types. Auto generated! */
 
-#include <bohrium.hpp>
+#include <stdint.h>
+#include <bhxx/bhxx.hpp>
 #include "bhc.h"
-
-using namespace bxx;
 
 %s
 """%impl

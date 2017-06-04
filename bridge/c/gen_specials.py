@@ -125,10 +125,10 @@ def main(args):
         impl += """
 {
     try{
-        Runtime::instance().enqueue_extension(name, *((multi_array<%(cpp)s>*) out),
-                                                    *((multi_array<%(cpp)s>*) in1),
-                                                    *((multi_array<%(cpp)s>*) in2));
-    }catch (...){
+        bhxx::Runtime::instance().enqueue_extmethod(name, *((bhxx::BhArray<%(cpp)s>*) out),
+                                                          *((bhxx::BhArray<%(cpp)s>*) in1),
+                                                          *((bhxx::BhArray<%(cpp)s>*) in2));
+    }catch (... ){
         return -1;
     }
     return 0;
@@ -154,7 +154,6 @@ extern "C" {
     impl = """/* Bohrium C Bridge: special functions. Auto generated! */
 
 #include <bhxx/bhxx.hpp>
-#include <bxx/bohrium.hpp>
 #include "bhc.h"
 
 using namespace bxx;

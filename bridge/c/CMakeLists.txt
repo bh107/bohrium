@@ -41,8 +41,8 @@ add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
                        ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.cpp
 )
 
-#We depend on bh.so
-target_link_libraries(bhc bh)
+#We depend on bhxx.so
+target_link_libraries(bhc bhxx)
 
 #And we depend on bxx being built
 add_dependencies(bhc BXX)
