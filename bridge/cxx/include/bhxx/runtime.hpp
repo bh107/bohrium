@@ -48,6 +48,9 @@ private:
     std::map<std::string, bh_opcode> extmethods; // Mapping an extension method name to an opcode id
     size_t extmethod_next_opcode_id;             // The opcode id for the next new extension method
 
+    // Append instruction to the `instr_list`
+    void instr_list_append(bh_instruction &instr);
+
 public:
     Runtime() : config(-1), // stack level -1 is the bridge
                 runtime(config.getChildLibraryPath(), 0), // and child is stack level 0
@@ -98,7 +101,7 @@ public:
         bh_instruction instr;
         instr.opcode = opcode;
         instr_append_operand(instr, ops...);
-        instr_list.push_back(instr);
+        instr_list_append(instr);
     }
 
     // We have to handle random specially because of the `BH_R123` scalar type
@@ -115,7 +118,7 @@ public:
         instr.constant.type = BH_R123;
         instr.constant.value.r123.start = seed;
         instr.constant.value.r123.key   = key;
-        instr_list.push_back(instr);
+        instr_list_append(instr);
     }
 
     // We have to handle free specially because it takes a `BhBase` and must maintain the `free_list`
@@ -130,7 +133,7 @@ public:
         bh_instruction instr;
         instr.opcode = BH_FREE;
         instr.operand.push_back(view);
-        instr_list.push_back(instr);
+        instr_list_append(instr);
         free_list.push_back(base.base);
     }
 

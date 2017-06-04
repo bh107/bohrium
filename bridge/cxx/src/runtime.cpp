@@ -25,6 +25,14 @@ using namespace std;
 namespace bhxx {
 
 
+void Runtime::instr_list_append(bh_instruction &instr) {
+    if (instr_list.size() > 1000) {
+        flush();
+    }
+    instr_list.push_back(instr);
+}
+
+
 void Runtime::flush() {
     bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
     runtime.execute(&bhir);
