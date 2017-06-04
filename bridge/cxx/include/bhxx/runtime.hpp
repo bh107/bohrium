@@ -52,6 +52,7 @@ public:
                 runtime(config.getChildLibraryPath(), 0), // and child is stack level 0
                 extmethod_next_opcode_id(BH_MAX_OPCODE_ID+1) {}
 
+    // Get the singleton instance of the Runtime class
     static Runtime& instance() {
         static Runtime instance;
         return instance;
@@ -140,6 +141,10 @@ public:
         bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
         runtime.execute(&bhir);
         instr_list.clear();
+    }
+
+    ~Runtime() {
+        flush();
     }
 };
 
