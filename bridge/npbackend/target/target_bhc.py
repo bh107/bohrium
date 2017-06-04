@@ -96,9 +96,7 @@ def _bhc_exec(func, *args):
             if not hasattr(args[i], 'bhc_obj'):
                 # Ignore zero-sized views
                 return
-
             args[i] = args[i].bhc_obj
-
     return func(*args)
 
 
@@ -124,7 +122,7 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     ary = ary.bhc_obj
 
     bhc.call_single_dtype("sync", dtype, ary)
-    bhc.flush()
+    runtime_flush()
 
     data = bhc.call_single_dtype("data_get", dtype, ary, allocate, nullify)
     if data is None:
