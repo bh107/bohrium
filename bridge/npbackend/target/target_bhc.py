@@ -106,11 +106,7 @@ def runtime_flush():
 
 
 def tally():
-    """
-    System instruction that informs the child component
-    to tally operations.
-    """
-    bhc.tally()
+    pass
 
 
 def get_data_pointer(ary, allocate=False, nullify=False):
