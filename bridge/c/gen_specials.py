@@ -85,16 +85,16 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
+    bh_base *b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
 
     if(force_alloc) {
-        bh_data_malloc(&b);
+        bh_data_malloc(b);
     }
 
-    %(bhc)s* ret = (%(bhc)s*)(b.data);
+    %(bhc)s* ret = (%(bhc)s*)(b->data);
 
     if(nullify) {
-        b.data = NULL;
+        b->data = NULL;
     }
 
     return ret;
@@ -109,8 +109,8 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
-    b.data = data;
+    bh_base *b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
+    b->data = data;
 }
 """%t
 

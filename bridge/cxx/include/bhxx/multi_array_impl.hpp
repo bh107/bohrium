@@ -42,7 +42,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
     Runtime::instance().flush();
 
     // Get the data pointer and check for NULL
-    const T* data = static_cast<T*>(contiguous.base->base.data);
+    const T* data = static_cast<T*>(contiguous.base->base->data);
     if (data == nullptr) {
         os << "[<Uninitiated>]" << endl;
         return;
@@ -51,7 +51,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
     // Pretty print the content
     os << scientific;
     os << "[";
-    for(size_t i=0; i < static_cast<size_t>(contiguous.base->base.nelem); ++i) {
+    for(size_t i=0; i < static_cast<size_t>(contiguous.base->base->nelem); ++i) {
         if (i > 0) {
             os << ", ";
         }

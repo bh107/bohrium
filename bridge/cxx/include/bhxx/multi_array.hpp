@@ -30,16 +30,22 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
+
+// The base underlying (multiple) arrays
 template <typename T>
 class BhBase {
 public:
-    bh_base base;
+    // NB: `base` must survive until the next flush and not when the `BhBase` object is freed
+    bh_base *base;
     typedef T scalar_type;
-    BhBase(size_t nelem) {
-        base.data = nullptr;
-        base.nelem = nelem;
-        bxx::assign_array_type<T>(&base);
+    BhBase(size_t nelem) : base(new bh_base()){
+        base->data = nullptr;
+        base->nelem = nelem;
+        bxx::assign_array_type<T>(base);
+//        std::cout << "Create base " << this << std::endl;
     }
+
+    ~BhBase();
 };
 
 
@@ -77,6 +83,13 @@ public:
             offset(offset),
             shape(shape),
             stride(stride),
+            base(base) {}
+
+    // Create a view that points to the given base (contiguous stride, row-major)
+    BhArray(const std::shared_ptr<BhBase<T> > &base, const Shape &shape, const size_t offset = 0) :
+            offset(offset),
+            shape(shape),
+            stride(contiguous_stride(shape)),
             base(base) {}
 
     // Pretty printing the content of the array

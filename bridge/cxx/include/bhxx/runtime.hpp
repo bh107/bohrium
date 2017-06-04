@@ -40,6 +40,7 @@ namespace bhxx {
 class Runtime {
 private:
     std::vector<bh_instruction> instr_list;      // The lazy evaluated instructions
+    std::vector<bh_base*> free_list;             // The bases that has to freed at the next flush
 
     bohrium::ConfigParser config;                // Bohrium Configuration
     bohrium::component::ComponentFace runtime;   // The Bohrium Runtime i.e. the child of this component
@@ -63,7 +64,7 @@ public:
     template <typename T>
     void instr_append_operand(bh_instruction &instr, BhArray<T> ary) {
         bh_view view;
-        view.base = &ary.base->base;
+        view.base = ary.base->base;
         view.start = ary.offset;
         view.ndim = ary.shape.size();
         std::copy(ary.shape.begin(), ary.shape.end(), &view.shape[0]);
@@ -117,6 +118,22 @@ public:
         instr_list.push_back(instr);
     }
 
+    // We have to handle free specially because it takes a `BhBase` and must maintain the `free_list`
+    template<typename T>
+    void enqueue_free(BhBase<T> &base) {
+        bh_view view;
+        view.base = base.base;
+        view.start = 0;
+        view.ndim = 1;
+        view.shape[0] = base.base->nelem;
+        view.stride[0] = 1;
+        bh_instruction instr;
+        instr.opcode = BH_FREE;
+        instr.operand.push_back(view);
+        instr_list.push_back(instr);
+        free_list.push_back(base.base);
+    }
+
     // Enqueue an extension method
     template<typename T>
     void enqueue_extmethod(const std::string& name, BhArray<T> &out, BhArray<T> &in1, BhArray<T> &in2) {
@@ -141,6 +158,10 @@ public:
         bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
         runtime.execute(&bhir);
         instr_list.clear();
+        for(bh_base *base: free_list) {
+            delete base;
+        }
+        free_list.clear();
     }
 
     ~Runtime() {
