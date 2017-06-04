@@ -315,7 +315,7 @@ class Ufunc(object):
             func = eval("np.%s.reduce" % self.info['name'])
             return func(ary, axis=axis, out=out)
 
-        # Make sure that 'axis' is a sorted list of dimensions to reduce
+        # Make sure that 'axis' is a list of dimensions to reduce
         if axis is None:
             # We reduce all dimensions
             axis = range(ary.ndim)
@@ -326,14 +326,6 @@ class Ufunc(object):
             # We reduce multiple dimensions
             axis = list(axis)
 
-        if len(axis) != len(set(axis)):
-            raise ValueError("duplicate value in 'axis'")
-        axis = sorted(axis, reverse=True)
-
-        # When reducing booleans numerically, we count the number of True values
-        if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
-            ary = array_create.array(ary, dtype=np.uint64)
-
         # Check for out of bounds and convert negative axis values
         if len(axis) > ary.ndim:
             raise ValueError("number of 'axes' to reduce is out of bounds")
@@ -342,6 +334,17 @@ class Ufunc(object):
                 axis[i] = ary.ndim + axis[i]
             if axis[i] >= ary.ndim:
                 raise ValueError("'axis' is out of bounds")
+
+        # No axis should be reduced multiple times
+        if len(axis) != len(set(axis)):
+            raise ValueError("duplicate value in 'axis'")
+
+        # TODO: is this a good idea?
+        axis = sorted(axis, reverse=True)
+
+        # When reducing booleans numerically, we count the number of True values
+        if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
+            ary = array_create.array(ary, dtype=np.uint64)
 
         if len(axis) == 1:
             # One axis reduction we can handle directly
@@ -387,7 +390,7 @@ class Ufunc(object):
     @fix_biclass_wrapper
     def accumulate(self, ary, axis=0, out=None):
         """
-        accumulate(array, axis=0, out=None)
+        accumulate(ary, axis=0, out=None)
 
         Accumulate the result of applying the operator to all elements.
 
@@ -408,7 +411,7 @@ class Ufunc(object):
 
         Parameters
         ----------
-        array : array_like
+        ary : array_like
             The array to act on.
         axis : int, optional
             The axis along which to apply the accumulation; default is zero.
@@ -465,7 +468,13 @@ class Ufunc(object):
                 raise ValueError("output dimension mismatch expect "\
                                  "shape '%s' got '%s'" % (ary.shape, out.shape))
 
-        #Let NumPy handle NumPy array accumulate
+        # Check for out of bounds and convert negative axis values
+        if axis < 0:
+            axis = ary.ndim + axis
+        if axis >= ary.ndim:
+            raise ValueError("'axis' is out of bounds")
+
+        # Let NumPy handle NumPy array accumulate
         if not bhary.check(ary):
             func = eval("np.%s.accumulate" % self.info['name'])
             return func(ary, axis=axis, out=out)
