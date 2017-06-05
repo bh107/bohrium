@@ -28,7 +28,7 @@ def main(args):
     impl += "%s\n"%decl
     impl += """
 {
-    Runtime::instance().flush();
+    bhxx::Runtime::instance().flush();
 }
 """
 
@@ -39,10 +39,8 @@ def main(args):
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """
-{
-    multi_array<%(cpp)s> *ret = new multi_array<%(cpp)s>(size);
-    ret->setTemp(false);
-    ret->link();
+{    
+    bhxx::BhArray<%(cpp)s> *ret = new bhxx::BhArray<%(cpp)s>({size});
     return (%(bhc_ary)s) ret;
 }
 """%t
@@ -55,7 +53,7 @@ def main(args):
         impl += "%s\n"%decl
         impl += """
 {
-    delete ((multi_array<%(cpp)s>*)ary);
+    delete ((bhxx::BhArray<%(cpp)s>*)ary);
 }
 """%t
 
@@ -69,9 +67,10 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base *b = ((multi_array<%(cpp)s>*)src)->meta.base;
-    multi_array<%(cpp)s>* ret = new multi_array<%(cpp)s>(b, rank, start, shape, stride);
-    ret->setTemp(false);
+    bhxx::Shape _shape(shape, shape+rank);
+    bhxx::Stride _stride(stride, stride+rank);
+    const auto &b = ((bhxx::BhArray<%(cpp)s>*)src)->base;
+    bhxx::BhArray<%(cpp)s>* ret = new bhxx::BhArray<%(cpp)s>(b, _shape, _stride, start);
     return (%(bhc_ary)s) ret;
 }
 """%t
@@ -86,7 +85,7 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base *b = ((multi_array<%(cpp)s>*)ary)->meta.base;
+    bh_base *b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
 
     if(force_alloc) {
         bh_data_malloc(b);
@@ -110,7 +109,7 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base *b = ((multi_array<%(cpp)s>*)ary)->meta.base;
+    bh_base *b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
     b->data = data;
 }
 """%t
@@ -126,10 +125,10 @@ def main(args):
         impl += """
 {
     try{
-        Runtime::instance().enqueue_extension(name, *((multi_array<%(cpp)s>*) out),
-                                                    *((multi_array<%(cpp)s>*) in1),
-                                                    *((multi_array<%(cpp)s>*) in2));
-    }catch (...){
+        bhxx::Runtime::instance().enqueue_extmethod(name, *((bhxx::BhArray<%(cpp)s>*) out),
+                                                          *((bhxx::BhArray<%(cpp)s>*) in1),
+                                                          *((bhxx::BhArray<%(cpp)s>*) in2));
+    }catch (... ){
         return -1;
     }
     return 0;
@@ -154,7 +153,7 @@ extern "C" {
 """%head
     impl = """/* Bohrium C Bridge: special functions. Auto generated! */
 
-#include <bohrium.hpp>
+#include <bhxx/bhxx.hpp>
 #include "bhc.h"
 
 using namespace bxx;

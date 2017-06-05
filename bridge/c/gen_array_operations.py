@@ -23,7 +23,7 @@ def main(args):
     # Let's generate the header and implementation of all array operations
     head = ""; impl = ""
     for op in opcodes:
-        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM", "BH_NONE"]:#We handle random separately and ignore None
+        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM", "BH_NONE", "BH_TALLY"]:#We handle random separately and ignore None
             continue
         doc = "// %s: %s\n"%(op['opcode'][3:], op['doc'])
         doc += "// E.g. %s:\n"%(op['code'])
@@ -61,11 +61,11 @@ def main(args):
                 head += "DLLEXPORT %s;\n"%decl
                 impl += decl;
                 impl += "{\n"
-                impl += "\tmulti_array<%(t)s> *o = (multi_array<%(t)s> *) out;\n"%{'t':type_map[type_sig[0]]['cpp']}
+                impl += "\tbhxx::BhArray<%(t)s> *o = (bhxx::BhArray<%(t)s> *) out;\n"%{'t':type_map[type_sig[0]]['cpp']}
                 bxx_args = "*o";
                 for i, (symbol, t) in enumerate(zip(layout[1:], type_sig[1:])):
                     if symbol in ["A", "D1"]:
-                        impl += "\tmulti_array<%(t)s> *i%(i)d = (multi_array<%(t)s> *) in%(i)d;\n"%{'t':type_map[t]['cpp'], 'i':i+1}
+                        impl += "\tbhxx::BhArray<%(t)s> *i%(i)d = (bhxx::BhArray<%(t)s> *) in%(i)d;\n"%{'t':type_map[t]['cpp'], 'i':i+1}
                         bxx_args += ", *i%d"%(i+1);
                     else:
                         impl += "\t%s i%d;\n"%(type_map[t]['cpp'], i+1)
@@ -75,8 +75,7 @@ def main(args):
                         else:
                             impl += "\ti%(i)d = in%(i)d;\n"%{'i':i+1}
                         bxx_args += ", i%d"%(i+1);
-                impl += "\t%s(%s);\n"%(op['opcode'].lower(), bxx_args)
-
+                impl += "\tbhxx::%s(%s);\n"%(op['opcode'][3:].lower(), bxx_args)
                 impl += "}\n"
         impl += "\n\n"; head += "\n\n"
 
@@ -99,7 +98,7 @@ def main(args):
     impl += "%s\n"%decl
     impl += """
 {
-    bh_random<uint64_t>(*((multi_array<uint64_t>*)out), seed, key);
+    bhxx::random(*((bhxx::BhArray<uint64_t>*) out), seed, key);
 }
 """
 
@@ -127,10 +126,8 @@ extern "C" {
 """%head
     impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 
-#include <bohrium.hpp>
+#include <bhxx/bhxx.hpp>
 #include "bhc.h"
-
-using namespace bxx;
 
 %s
 """%impl
