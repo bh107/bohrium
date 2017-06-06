@@ -28,6 +28,9 @@ namespace bhxx {
 
 template <typename T>
 void BhArray<T>::pprint(std::ostream& os) const {
+    if (base == nullptr) {
+        throw runtime_error("Cannot call pprint on array without base");
+    }
 
     // Let's makes sure that the data we are reading is contiguous
     BhArray<T> contiguous{shape};

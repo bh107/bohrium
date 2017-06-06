@@ -33,16 +33,16 @@ void BhInstruction::append_operand(bh_constant cnt) {
     constant = cnt;
 }
 
-void BhInstruction::append_operand(BhBase base) {
+void BhInstruction::append_operand(std::unique_ptr<BhBase> base) {
     if (opcode != BH_FREE) {
         throw std::runtime_error(
-              "BhBase objects can only be freed. Use a full BhArray if you want to call "
-              "any other operation on it.");
+              "BhBase objects can only be freed. Use a full BhArray if you want to "
+              "berform any other operation on it.");
     }
 
     // Move the data to the unique pointer, which
     // will delete it once this object is deleted.
-    base_ptr.reset(new BhBase(std::move(base)));
+    base_ptr = std::move(base);
 
     // Make a bh_view to this base
     bh_view view;
@@ -58,29 +58,21 @@ void BhInstruction::append_operand(BhBase base) {
 template <typename T>
 void BhInstruction::append_operand(BhArray<T>& ary) {
     if (opcode == BH_FREE) {
-        // Calling BH_FREE on an array with external
-        // storage management is undefined behaviour
-        if (!ary.base->own_memory()) {
-            throw std::runtime_error(
-                  "Cannot call BH_FREE on a BhArray object, which reference a BhBase "
-                  "object, which uses external storage.");
-        }
-
-        // BH_FREE  is special because it is automatically invoked
-        // by the deleter of the shared pointer to BhBase if that
-        // thing is not used any more. So we just free the reference
-        // to the BhBase.
-        ary.base.reset();
-    } else {
-        // Forward to the const version below.
-        append_operand(const_cast<const BhArray<T>&>(ary));
+        throw std::runtime_error(
+              "BH_FREE cannot be used as an instruction on arrays in the bhxx interface. "
+              "Use Runtime::instance().enqueue(BH_FREE,array) instead.");
     }
+
+    // Forward to the const version below.
+    append_operand(const_cast<const BhArray<T>&>(ary));
 }
 
 template <typename T>
 void BhInstruction::append_operand(const BhArray<T>& ary) {
     if (opcode == BH_FREE) {
-        throw std::runtime_error("Const arrays cannot be freed.");
+        throw std::runtime_error(
+              "BH_FREE cannot be used as an instruction on arrays in the bhxx interface. "
+              "Use Runtime::instance().enqueue(BH_FREE,array) instead.");
     }
 
     bh_view view;

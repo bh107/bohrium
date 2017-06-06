@@ -42,13 +42,12 @@ void BhBaseDeleter::operator()(BhBase* ptr) const {
         ptr->data = nullptr;
     }
 
-    // Now send BH_FREE to Bohrium and bake the
-    // instruction responsible for freeing the BhBase object.
+    // Now send BH_FREE to Bohrium and hand the
+    // ownership of the BhBase object over to
+    // the BhInstruction object by the means of a unique_ptr
     BhInstruction instr(BH_FREE);
-    instr.append_operand(std::move(*ptr));
+    instr.append_operand(std::unique_ptr<BhBase>(ptr));
     Runtime::instance().enqueue(std::move(instr));
-
-    delete ptr;
 }
 
 // Instantiate all possible types of the set_type function

@@ -49,10 +49,10 @@ class BhInstruction : public bh_instruction {
     /** Append a special bh_constant */
     void append_operand(bh_constant cnt);
 
-    /** Append a base object
+    /** Append a base object for deletion
      *
      * \note Only valid for BH_FREE */
-    void append_operand(BhBase base);
+    void append_operand(std::unique_ptr<BhBase> base);
 
   private:
     /** Container for a BhBase object, which is only needed for the

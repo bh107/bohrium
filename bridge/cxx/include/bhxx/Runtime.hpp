@@ -44,12 +44,8 @@ class Runtime {
 
     // Create and enqueue a new bh_instruction based on `opcode` and a variadic
     // pack of BhArrays and at most one scalar value
-    template <typename... Ts>
-    void enqueue(bh_opcode opcode, Ts&... ops) {
-        BhInstruction instr(opcode);
-        instr.append_operand(ops...);
-        enqueue(std::move(instr));
-    }
+    template <typename T, typename... Ts>
+    void enqueue(bh_opcode opcode, T& op, Ts&... ops);
 
     /** Enqueue any BhInstruction object */
     void enqueue(BhInstruction instr);
@@ -60,23 +56,7 @@ class Runtime {
     // Enqueue an extension method
     template <typename T>
     void enqueue_extmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
-                           BhArray<T>& in2) {
-        bh_opcode opcode;
-
-        // Look for the extension opcode
-        auto it = extmethods.find(name);
-        if (it != extmethods.end()) {
-            opcode = it->second;
-        } else {
-            // Add it and tell rest of Bohrium about this new extmethod
-            opcode = extmethod_next_opcode_id++;
-            runtime.extmethod(name.c_str(), opcode);
-            extmethods.insert(std::pair<std::string, bh_opcode>(name, opcode));
-        }
-
-        // Now that we have an opcode, let's enqueue the instruction
-        enqueue(opcode, out, in1, in2);
-    }
+                           BhArray<T>& in2);
 
     // Send enqueued instructions to Bohrium for execution
     void flush();
@@ -89,6 +69,14 @@ class Runtime {
     Runtime& operator=(const Runtime&) = delete;
 
   private:
+    //@{
+    /** BH_FREE is special, since we deal with it via the BhBaseDeleter.
+     * This function just resets the shared pointers of all arrays
+     * */
+    template <typename T>
+    void bh_free(BhArray<T>& ary);
+    //@}
+
     // The lazy evaluated instructions
     std::vector<BhInstruction> instr_list;
 
@@ -104,4 +92,59 @@ class Runtime {
     // The opcode id for the next new extension method
     bh_opcode extmethod_next_opcode_id;
 };
+
+//
+// ----------------------------------------------------------
+//
+
+template <typename T, typename... Ts>
+void Runtime::enqueue(bh_opcode opcode, T& op, Ts&... ops) {
+    if (opcode == BH_FREE) {
+        // BH_FREE is special, see the bh_free function why.
+        assert(sizeof...(Ts) == 0);
+        bh_free(op);
+    } else {
+        BhInstruction instr(opcode);
+        instr.append_operand(op, ops...);
+        enqueue(std::move(instr));
+    }
+}
+
+template <typename T>
+void Runtime::enqueue_extmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
+                                BhArray<T>& in2) {
+    bh_opcode opcode;
+
+    // Look for the extension opcode
+    auto it = extmethods.find(name);
+    if (it != extmethods.end()) {
+        opcode = it->second;
+    } else {
+        // Add it and tell rest of Bohrium about this new extmethod
+        opcode = extmethod_next_opcode_id++;
+        runtime.extmethod(name.c_str(), opcode);
+        extmethods.insert(std::pair<std::string, bh_opcode>(name, opcode));
+    }
+
+    // Now that we have an opcode, let's enqueue the instruction
+    enqueue(opcode, out, in1, in2);
+}
+
+template <typename T>
+void Runtime::bh_free(BhArray<T>& ary) {
+    // Calling BH_FREE on an array with external
+    // storage management is undefined behaviour
+    if (!ary.base->own_memory()) {
+        throw std::runtime_error(
+              "Cannot call BH_FREE on a BhArray object, which uses external storage "
+              "in its BhBase.");
+    }
+
+    // BH_FREE  is special because it is automatically invoked
+    // by the deleter of the shared pointer to BhBase if the last
+    // array referencing BhBase is deleted.
+    // So instead of actually deleting anything we will just
+    // remove our reference to the BhBase instead
+    ary.base.reset();
+}
 }
