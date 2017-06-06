@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bhxx/runtime.hpp>
+#include <bhxx/Runtime.hpp>
 
 using namespace std;
 

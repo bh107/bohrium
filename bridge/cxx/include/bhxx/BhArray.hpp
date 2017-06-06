@@ -18,10 +18,9 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BHXX_BH_ARRAY_H
-#define __BHXX_BH_ARRAY_H
+#pragma once
 
-#include "bh_base.hpp"
+#include "BhBase.hpp"
 #include "util.hpp"
 #include <ostream>
 #include <vector>
@@ -97,5 +96,3 @@ std::ostream& operator<<(std::ostream& os, const BhArray<T>& ary) {
 }
 
 }  // namespace bhxx
-
-#endif

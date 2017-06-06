@@ -18,7 +18,10 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bhxx/bh_instruction.hpp>
+#include <bhxx/BhInstruction.hpp>
+
+// TODO get rid of this header
+//      (Still from the old interface)
 #include <bxx/traits.hpp>
 
 namespace bhxx {

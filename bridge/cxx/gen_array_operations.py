@@ -84,7 +84,7 @@ def main(args):
 #ifndef __BHXX_ARRAY_OPERATIONS_H
 #define __BHXX_ARRAY_OPERATIONS_H
 
-#include <bhxx/bh_array.hpp>
+#include <bhxx/BhArray.hpp>
 #include <complex>
 
 namespace bhxx {
@@ -98,7 +98,7 @@ namespace bhxx {
 
     impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 
-#include <bhxx/runtime.hpp>
+#include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
 
 namespace bhxx {

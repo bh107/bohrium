@@ -17,12 +17,11 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BOHRIUM_BRIDGE_BHXX_RUNTIME
-#define __BOHRIUM_BRIDGE_BHXX_RUNTIME
+#pragma once
 #include <iostream>
 #include <sstream>
 
-#include "bh_instruction.hpp"
+#include "BhInstruction.hpp"
 #include <bh_component.hpp>
 
 namespace bhxx {
@@ -106,4 +105,3 @@ class Runtime {
     bh_opcode extmethod_next_opcode_id;
 };
 }
-#endif

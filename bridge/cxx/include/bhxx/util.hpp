@@ -21,8 +21,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BHXX_UTIL_H
-#define __BHXX_UTIL_H
+#pragma once
 
 #include <bh_view.hpp>
 #include <functional>
@@ -52,5 +51,3 @@ typedef SVector<size_t, BH_MAXDIM>  Shape;
 Stride contiguous_stride(const Shape& shape);
 
 }  // namespace bhxx
-
-#endif

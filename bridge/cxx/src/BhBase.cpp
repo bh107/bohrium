@@ -18,44 +18,41 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bhxx/array_operations.hpp>
-#include <bhxx/bh_array.hpp>
-#include <bhxx/runtime.hpp>
+#include <bh_memory.h>
+#include <bhxx/BhBase.hpp>
+#include <bhxx/BhInstruction.hpp>
+#include <bhxx/Runtime.hpp>
 
-using namespace std;
+// TODO get rid of this header
+//      (Still from the old interface)
+#include <bxx/traits.hpp>
 
 namespace bhxx {
 
 template <typename T>
-void BhArray<T>::pprint(std::ostream& os) const {
-
-    // Let's makes sure that the data we are reading is contiguous
-    BhArray<T> contiguous{shape};
-    identity(contiguous, *this);
-    sync(contiguous);
-    Runtime::instance().flush();
-
-    // Get the data pointer and check for NULL
-    const T* data = contiguous.data();
-    if (data == nullptr) {
-        os << "[<Uninitiated>]" << endl;
-        return;
-    }
-
-    // Pretty print the content
-    os << scientific;
-    os << "[";
-    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->nelem); ++i) {
-        if (i > 0) {
-            os << ", ";
-        }
-        os << data[i];
-    }
-    os << "]" << endl;
+void BhBase::set_type() {
+    bxx::assign_array_type<T>(this);
 }
 
-// Instantiate all possible types of `BhArray`
-#define INSTANTIATE(TYPE) template class BhArray<TYPE>
+void BhBaseDeleter::operator()(BhBase* ptr) const {
+    // Check whether we are responsible for the memory or not.
+    if (!ptr->own_memory()) {
+        // Externally managed -> set it to null to avoid
+        // deletion by Bohrium
+        ptr->data = nullptr;
+    }
+
+    // Now send BH_FREE to Bohrium and bake the
+    // instruction responsible for freeing the BhBase object.
+    BhInstruction instr(BH_FREE);
+    instr.append_operand(std::move(*ptr));
+    Runtime::instance().enqueue(std::move(instr));
+
+    delete ptr;
+}
+
+// Instantiate all possible types of the set_type function
+#define INSTANTIATE(TYPE) template void BhBase::set_type<TYPE>()
 
 INSTANTIATE(bool);
 INSTANTIATE(int8_t);
@@ -72,5 +69,4 @@ INSTANTIATE(std::complex<float>);
 INSTANTIATE(std::complex<double>);
 
 #undef INSTANTIATE
-
-}  // namespace bhxx
+}
