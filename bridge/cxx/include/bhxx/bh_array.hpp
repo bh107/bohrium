@@ -21,27 +21,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BHXX_BH_ARRAY_H
 #define __BHXX_BH_ARRAY_H
 
+#include "bh_base.hpp"
 #include "util.hpp"
-#include <bh_component.hpp>
-#include <bxx/traits.hpp>
-#include <memory>
 #include <ostream>
 #include <vector>
 
 namespace bhxx {
-
-// The base underlying (multiple) arrays
-template <typename T>
-class BhBase {
-  public:
-    typedef T scalar_type;
-
-    // NB: `base` must survive until the next flush
-    // and not when the `BhBase` object is freed
-    bh_base* base;
-    BhBase(size_t nelem);
-    ~BhBase();
-};
 
 template <typename T>
 class BhArray {
@@ -55,45 +40,53 @@ class BhArray {
     // The array stride (the absolute stride of each dimension in number of elements)
     Stride stride;
     // Pointer to the base of this array
-    std::shared_ptr<BhBase<T>> base;
+    std::shared_ptr<BhBase> base;
 
     // Create a new view that points to a new base
     BhArray(Shape shape, Stride stride, const size_t offset = 0)
           : offset(offset),
             shape(std::move(shape)),
             stride(std::move(stride)),
-            base(new BhBase<T>(shape.prod())) {}
+            base(new BhBase(shape.prod()), BhBaseDeleter{}) {
+        base->set_type<T>();
+    }
 
     // Create a new view that points to a new base (contiguous stride, row-major)
     BhArray(Shape shape, const size_t offset = 0)
-          : offset(offset),
-            shape(std::move(shape)),
-            stride(contiguous_stride(shape)),
-            base(new BhBase<T>(shape.prod())) {}
+          : BhArray(shape, contiguous_stride(shape), offset) {}
 
     // Create a view that points to the given base
-    BhArray(std::shared_ptr<BhBase<T>> base, Shape shape, Stride stride,
+    BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride,
             const size_t offset = 0)
           : offset(offset),
             shape(std::move(shape)),
             stride(std::move(stride)),
-            base(base) {}
+            base(std::move(base)) {}
 
     // Create a view that points to the given base (contiguous stride, row-major)
-    BhArray(const std::shared_ptr<BhBase<T>>& base, const Shape& shape,
-            const size_t offset = 0)
-          : offset(offset), shape(shape), stride(contiguous_stride(shape)), base(base) {}
+    BhArray(std::shared_ptr<BhBase> base, Shape shape, const size_t offset = 0)
+          : BhArray(std::move(base), shape, contiguous_stride(shape), offset) {}
 
     // Pretty printing the content of the array
     // TODO: for now it always print the flatten array
     void pprint(std::ostream& os) const;
 
     //@{
-    /** Obtain the data pointer of the base array.
+    /** Obtain the data pointer of the base array, not taking
+     *  ownership of any kind.
+     *
      *  \note This pointer might be a nullptr if the data in
-     *        the base is not yet initialised */
-    const T* data() const { return static_cast<T*>(base->base->data); }
-    T*       data() { return static_cast<T*>(base->base->data); }
+     *        the base is not yet initialised
+     *
+     * \note You can always force initialisation using
+     *  ```
+     *      sync(array);
+     *      Runtime::instance().flush();
+     *  ```
+     *  after which ``data()`` should not be nullptr.
+     */
+    const T* data() const { return static_cast<T*>(base->data); }
+    T*       data() { return static_cast<T*>(base->data); }
     //@}
 };
 

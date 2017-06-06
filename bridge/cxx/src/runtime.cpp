@@ -24,23 +24,42 @@ using namespace std;
 
 namespace bhxx {
 
+Runtime::Runtime()
+      : config(-1),                                // stack level -1 is the bridge
+        runtime(config.getChildLibraryPath(), 0),  // and child is stack level 0
+        extmethod_next_opcode_id(BH_MAX_OPCODE_ID + 1) {}
 
-void Runtime::instr_list_append(bh_instruction &instr) {
-    if (instr_list.size() > 1000) {
-        flush();
-    }
-    instr_list.push_back(instr);
+void Runtime::enqueue(BhInstruction instr) {
+    if (instr_list.size() > 1000) flush();
+    instr_list.push_back(std::move(instr));
 }
 
+void Runtime::enqueue_random(BhArray<uint64_t>& out, uint64_t seed, uint64_t key) {
+    BhInstruction instr(BH_RANDOM);
+    instr.append_operand(out);  // Append output array
+
+    // Append the special BH_R123 constant
+    bh_constant cnt;
+    cnt.type             = BH_R123;
+    cnt.value.r123.start = seed;
+    cnt.value.r123.key   = key;
+    instr.append_operand(cnt);
+
+    enqueue(std::move(instr));
+}
 
 void Runtime::flush() {
-    bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
+    // Construct Bohrium Internal Representation
+    // and fill it with our instructions.
+    bh_ir bhir;
+    bhir.instr_list.resize(instr_list.size());
+    std::transform(
+          instr_list.begin(), instr_list.end(), bhir.instr_list.begin(),
+          [](const BhInstruction& bi) { return static_cast<const bh_instruction&>(bi); });
+
+    // Execute them
     runtime.execute(&bhir);
     instr_list.clear();
-    for(bh_base *base: free_list) {
-        delete base;
-    }
-    free_list.clear();
 }
 
-} // namespace bhxx
+}  // namespace bhxx
