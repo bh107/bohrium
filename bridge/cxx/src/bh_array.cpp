@@ -28,8 +28,16 @@ namespace bhxx {
 
 template <typename T>
 inline BhBase<T>::~BhBase() {
-    //    cout << "Delete base " << this << endl;
     Runtime::instance().enqueue_free(*this);
+    // cout << "Delete base " << this << endl;
+}
+
+template <typename T>
+inline BhBase<T>::BhBase() : base(new bh_base()) {
+    base->data  = nullptr;
+    base->nelem = nelem;
+    bxx::assign_array_type<T>(base);
+    // std::cout << "Create base " << this << std::endl;
 }
 
 template <typename T>

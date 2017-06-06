@@ -34,17 +34,12 @@ namespace bhxx {
 template <typename T>
 class BhBase {
   public:
-    // NB: `base` must survive until the next flush and not when the `BhBase` object is
-    // freed
-    bh_base*  base;
     typedef T scalar_type;
-    BhBase(size_t nelem) : base(new bh_base()) {
-        base->data  = nullptr;
-        base->nelem = nelem;
-        bxx::assign_array_type<T>(base);
-        //        std::cout << "Create base " << this << std::endl;
-    }
 
+    // NB: `base` must survive until the next flush
+    // and not when the `BhBase` object is freed
+    bh_base* base;
+    BhBase(size_t nelem);
     ~BhBase();
 };
 
@@ -63,23 +58,26 @@ class BhArray {
     std::shared_ptr<BhBase<T>> base;
 
     // Create a new view that points to a new base
-    BhArray(const Shape& shape, const Stride& stride, const size_t offset = 0)
+    BhArray(Shape shape, Stride stride, const size_t offset = 0)
           : offset(offset),
-            shape(shape),
-            stride(stride),
+            shape(std::move(shape)),
+            stride(std::move(stride)),
             base(new BhBase<T>(shape.prod())) {}
 
     // Create a new view that points to a new base (contiguous stride, row-major)
-    BhArray(const Shape& shape, const size_t offset = 0)
+    BhArray(Shape shape, const size_t offset = 0)
           : offset(offset),
-            shape(shape),
+            shape(std::move(shape)),
             stride(contiguous_stride(shape)),
             base(new BhBase<T>(shape.prod())) {}
 
     // Create a view that points to the given base
-    BhArray(const std::shared_ptr<BhBase<T>>& base, const Shape& shape,
-            const Stride& stride, const size_t offset = 0)
-          : offset(offset), shape(shape), stride(stride), base(base) {}
+    BhArray(std::shared_ptr<BhBase<T>> base, Shape shape, Stride stride,
+            const size_t offset = 0)
+          : offset(offset),
+            shape(std::move(shape)),
+            stride(std::move(stride)),
+            base(base) {}
 
     // Create a view that points to the given base (contiguous stride, row-major)
     BhArray(const std::shared_ptr<BhBase<T>>& base, const Shape& shape,
