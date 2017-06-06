@@ -128,8 +128,14 @@ def where(condition, x=None, y=None):
     condition, x, y = array_manipulation.broadcast_arrays(condition, x, y)[0]
 
     ret = array_create.zeros(condition.shape, dtype=out_type)
-    ret[condition] = x[condition]
-    ret[~condition] = y[~condition]
+    if numpy.isscalar(x):
+        ret[condition] = x
+    else:
+        ret[condition] = x[condition]
+    if numpy.isscalar(y):
+        ret[~condition] = y
+    else:
+        ret[~condition] = y[~condition]
     return ret
 
 
