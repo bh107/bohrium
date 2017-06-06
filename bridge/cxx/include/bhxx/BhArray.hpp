@@ -44,7 +44,7 @@ class BhArray {
     // Create a new view that points to a new base
     BhArray(Shape shape, Stride stride, const size_t offset = 0)
           : offset(offset),
-            shape(std::move(shape)),
+            shape(shape),
             stride(std::move(stride)),
             base(new BhBase(shape.prod()), BhBaseDeleter{}) {
         base->set_type<T>();
