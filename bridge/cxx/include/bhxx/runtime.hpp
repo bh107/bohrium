@@ -36,15 +36,20 @@ namespace bhxx {
  */
 class Runtime {
   private:
-    std::vector<bh_instruction> instr_list;  // The lazy evaluated instructions
-    std::vector<bh_base*> free_list;  // The bases that has to freed at the next flush
+    // The lazy evaluated instructions
+    std::vector<bh_instruction> instr_list;
 
-    bohrium::ConfigParser config;  // Bohrium Configuration
-    bohrium::component::ComponentFace
-          runtime;  // The Bohrium Runtime i.e. the child of this component
+    // The bases that has to freed at the next flush
+    std::vector<bh_base*> free_list;
 
-    std::map<std::string, bh_opcode>
-           extmethods;                // Mapping an extension method name to an opcode id
+    // Bohrium Configuration
+    bohrium::ConfigParser config;
+
+    // The Bohrium Runtime i.e. the child of this component
+    bohrium::component::ComponentFace runtime;
+
+    // Mapping an extension method name to an opcode id
+    std::map<std::string, bh_opcode> extmethods;
     size_t extmethod_next_opcode_id;  // The opcode id for the next new extension method
 
     // Append instruction to the `instr_list`
@@ -94,9 +99,8 @@ class Runtime {
         instr_append_operand(instr, scalar);
         instr_append_operand(instr, ops...);
     }
-    // Create and enqueue a new bh_instruction based on `opcode` and a variadic pack of
-    // BhArrays
-    // and at most one scalar value
+    // Create and enqueue a new bh_instruction based on `opcode` and a variadic
+    // pack of BhArrays and at most one scalar value
     template <typename... Ts>
     void enqueue(bh_opcode opcode, Ts... ops) {
         bh_instruction instr;
@@ -122,8 +126,8 @@ class Runtime {
         instr_list_append(instr);
     }
 
-    // We have to handle free specially because it takes a `BhBase` and must maintain the
-    // `free_list`
+    // We have to handle free specially because it takes a `BhBase`
+    // and must maintain the `free_list`
     template <typename T>
     void enqueue_free(BhBase<T>& base) {
         bh_view view;
@@ -149,11 +153,10 @@ class Runtime {
         auto it = extmethods.find(name);
         if (it != extmethods.end()) {  // Got it
             opcode = it->second;
-        } else {  // Add it
+        } else {
+            // Add it and tell rest of Bohrium about this new extmethod
             opcode = extmethod_next_opcode_id++;
-            runtime.extmethod(
-                  name.c_str(),
-                  opcode);  // Tell the rest of Bohrium about this new extmethod
+            runtime.extmethod(name.c_str(), opcode);
             extmethods.insert(std::pair<std::string, bh_opcode>(name, opcode));
         }
 

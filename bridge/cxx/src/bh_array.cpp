@@ -36,13 +36,13 @@ template <typename T>
 void BhArray<T>::pprint(std::ostream& os) const {
 
     // Let's makes sure that the data we are reading is contiguous
-    BhArray<T> contiguous = BhArray<T>(shape);
+    BhArray<T> contiguous{shape};
     identity(contiguous, *this);
     sync(contiguous);
     Runtime::instance().flush();
 
     // Get the data pointer and check for NULL
-    const T* data = static_cast<T*>(contiguous.base->base->data);
+    const T* data = contiguous.data();
     if (data == nullptr) {
         os << "[<Uninitiated>]" << endl;
         return;

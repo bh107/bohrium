@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "util.hpp"
 #include <bh_component.hpp>
 #include <bxx/traits.hpp>
+#include <memory>
 #include <ostream>
 #include <vector>
 
@@ -88,6 +89,14 @@ class BhArray {
     // Pretty printing the content of the array
     // TODO: for now it always print the flatten array
     void pprint(std::ostream& os) const;
+
+    //@{
+    /** Obtain the data pointer of the base array.
+     *  \note This pointer might be a nullptr if the data in
+     *        the base is not yet initialised */
+    const T* data() const { return static_cast<T*>(base->base->data); }
+    T*       data() { return static_cast<T*>(base->base->data); }
+    //@}
 };
 
 template <typename T>
