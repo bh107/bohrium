@@ -85,6 +85,7 @@ def main(args):
 #define __BHXX_ARRAY_OPERATIONS_H
 
 #include <bhxx/bh_array.hpp>
+#include <complex>
 
 namespace bhxx {
 

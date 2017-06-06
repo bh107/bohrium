@@ -85,7 +85,7 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base *b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
+    bhxx::BhBase* b = ((bhxx::BhArray<%(cpp)s>*)ary)->base.get();
 
     if(force_alloc) {
         bh_data_malloc(b);
@@ -109,8 +109,7 @@ def main(args):
         impl += "%s\n"%decl
         impl += """\
 {
-    bh_base *b = ((bhxx::BhArray<%(cpp)s>*)ary)->base->base;
-    b->data = data;
+    ((bhxx::BhArray<%(cpp)s>*)ary)->base->data = data;
 }
 """%t
 
@@ -155,8 +154,6 @@ extern "C" {
 
 #include <bhxx/bhxx.hpp>
 #include "bhc.h"
-
-using namespace bxx;
 
 %s
 """%impl

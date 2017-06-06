@@ -2,7 +2,7 @@ template <typename T>
 inline
 void assign_const_type(bh_constant* constant, T value) {
     //TODO: The general case should result in a meaningful compile-time error.
-    std::cout << "Unsupported type [%s, " << constant->type << "] " << &value << std::cout;
+    std::cout << "Unsupported type [%s, " << constant->type << "] " << &value << std::endl;
 }
 
 <!--(for ctype, _bh_atype, bh_ctype, bh_enum in data)-->
