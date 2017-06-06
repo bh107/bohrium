@@ -24,23 +24,21 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BHXX_UTIL_H
 #define __BHXX_UTIL_H
 
-#include <vector>
-#include <numeric>
-#include <functional>
 #include <bh_view.hpp>
+#include <functional>
+#include <numeric>
+#include <vector>
 
 namespace bhxx {
 
 template <typename T, std::size_t MaxLength>
 struct SVector : public std::vector<T> {
-public:
+  public:
     using std::vector<T>::vector;
-    SVector(const std::vector<T> &other) : SVector(other.begin(), other.end()) {}
+    SVector(const std::vector<T>& other) : SVector(other.begin(), other.end()) {}
     SVector() = default;
 
-    T sum() const {
-        return std::accumulate(this->begin(), this->end(), T{0});
-    }
+    T sum() const { return std::accumulate(this->begin(), this->end(), T{0}); }
     T prod() const {
         return std::accumulate(this->begin(), this->end(), T{1}, std::multiplies<T>());
     }
@@ -48,12 +46,11 @@ public:
 
 // Some common SVectors
 typedef SVector<int64_t, BH_MAXDIM> Stride;
-typedef SVector<size_t, BH_MAXDIM> Shape;
-
+typedef SVector<size_t, BH_MAXDIM>  Shape;
 
 // Return a contiguous stride (row-major) based on `shape`
-Stride contiguous_stride(const Shape &shape);
+Stride contiguous_stride(const Shape& shape);
 
-} // namespace bhxx
+}  // namespace bhxx
 
 #endif

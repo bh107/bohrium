@@ -18,31 +18,31 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bhxx/multi_array.hpp>
-#include <bhxx/runtime.hpp>
 #include <bhxx/array_operations.hpp>
+#include <bhxx/bh_array.hpp>
+#include <bhxx/runtime.hpp>
 
 using namespace std;
 
 namespace bhxx {
 
-template<typename T>
+template <typename T>
 inline BhBase<T>::~BhBase() {
-//    cout << "Delete base " << this << endl;
+    //    cout << "Delete base " << this << endl;
     Runtime::instance().enqueue_free(*this);
 }
 
-template<typename T>
+template <typename T>
 void BhArray<T>::pprint(std::ostream& os) const {
 
     // Let's makes sure that the data we are reading is contiguous
-    BhArray<T> contiguous = BhArray<T>(shape);
+    BhArray<T> contiguous{shape};
     identity(contiguous, *this);
     sync(contiguous);
     Runtime::instance().flush();
 
     // Get the data pointer and check for NULL
-    const T* data = static_cast<T*>(contiguous.base->base->data);
+    const T* data = contiguous.data();
     if (data == nullptr) {
         os << "[<Uninitiated>]" << endl;
         return;
@@ -51,7 +51,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
     // Pretty print the content
     os << scientific;
     os << "[";
-    for(size_t i=0; i < static_cast<size_t>(contiguous.base->base->nelem); ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->base->nelem); ++i) {
         if (i > 0) {
             os << ", ";
         }
@@ -60,8 +60,8 @@ void BhArray<T>::pprint(std::ostream& os) const {
     os << "]" << endl;
 }
 
-
-// Instantiate all possible types of `BhArray` and `BhBase`, which makes it possible to implement many of
+// Instantiate all possible types of `BhArray` and `BhBase`, which makes it possible to
+// implement many of
 // their methods here
 template class BhArray<bool>;
 template class BhArray<int8_t>;
@@ -74,8 +74,8 @@ template class BhArray<uint32_t>;
 template class BhArray<uint64_t>;
 template class BhArray<float>;
 template class BhArray<double>;
-template class BhArray<std::complex<float> >;
-template class BhArray<std::complex<double> >;
+template class BhArray<std::complex<float>>;
+template class BhArray<std::complex<double>>;
 template class BhBase<bool>;
 template class BhBase<int8_t>;
 template class BhBase<int16_t>;
@@ -87,8 +87,7 @@ template class BhBase<uint32_t>;
 template class BhBase<uint64_t>;
 template class BhBase<float>;
 template class BhBase<double>;
-template class BhBase<std::complex<float> >;
-template class BhBase<std::complex<double> >;
+template class BhBase<std::complex<float>>;
+template class BhBase<std::complex<double>>;
 
-
-} // namespace bhxx
+}  // namespace bhxx
