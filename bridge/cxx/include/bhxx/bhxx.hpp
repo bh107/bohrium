@@ -24,8 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BHXX_H
 #define __BHXX_H
 
-#include "multi_array.hpp"
-#include "runtime.hpp"
 #include <bhxx/array_operations.hpp>
+#include <bhxx/bh_array.hpp>
+#include <bhxx/runtime.hpp>
 
 #endif

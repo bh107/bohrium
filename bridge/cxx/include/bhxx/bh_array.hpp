@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BHXX_MULTI_ARRAY_H
-#define __BHXX_MULTI_ARRAY_H
+#ifndef __BHXX_BH_ARRAY_H
+#define __BHXX_BH_ARRAY_H
 
 #include "util.hpp"
 #include <bh_component.hpp>

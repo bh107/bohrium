@@ -22,11 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 
-#include "multi_array.hpp"
+#include "bh_array.hpp"
 #include <bh_component.hpp>
 #include <bh_instruction.hpp>
-
-#include "multi_array.hpp"
 
 namespace bhxx {
 
