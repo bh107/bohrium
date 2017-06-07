@@ -36,6 +36,39 @@ void RuntimeDeleter::operator()(BhBase* ptr) const {
     Runtime::instance().enqueue_deletion(std::unique_ptr<BhBase>(ptr));
 }
 
+//
+// Properties and data access
+//
+
+template <typename T>
+void BhArray<T>::initialise_data() {
+    bhxx::sync(*this);
+    Runtime::instance().flush();
+    bh_data_malloc(base.get());
+    assert(base->data != nullptr);
+}
+
+template <typename T>
+bool BhArray<T>::is_contiguous() const {
+    assert(shape.size() == stride.size());
+
+    auto itshape  = std::begin(shape);
+    auto itstride = std::begin(stride);
+
+    int64_t acc = 1;
+    for (; itstride != std::end(stride); ++itstride, ++itshape) {
+        if (acc != *itstride) return false;
+        acc *= static_cast<int64_t>(*itshape);
+    }
+
+    assert(acc == static_cast<int64_t>(n_elem()));
+    return offset == 0;
+}
+
+//
+// Routines
+//
+
 template <typename T>
 void BhArray<T>::pprint(std::ostream& os) const {
     if (base == nullptr) {
