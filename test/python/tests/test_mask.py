@@ -18,6 +18,14 @@ class test_set_bool_mask_scalar:
         cmd += "res[m] = %s(42)" % dtype
         return cmd
 
+    def test_set_scalar_nan(self, arg):
+        (cmd, dtype) = arg
+        if dtype in util.TYPES.FLOAT:
+            cmd += "res[m] = M.nan"
+        else:
+            cmd = "res = 0"
+        return cmd
+
 
 class test_set_bool_mask:
     def init(self):
