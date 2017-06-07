@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <functional>
 #include <numeric>
+#include <ostream>
 #include <vector>
 
 namespace bhxx {
@@ -49,5 +50,21 @@ typedef SVector<size_t, BH_MAXDIM>  Shape;
 
 // Return a contiguous stride (row-major) based on `shape`
 Stride contiguous_stride(const Shape& shape);
+
+template <typename T, std::size_t MaxLength>
+std::ostream& operator<<(std::ostream& o, const SVector<T, MaxLength>& vec) {
+    o << '(';
+
+    if (!vec.empty()) {
+        auto it = std::begin(vec);
+        o << *it;
+        ++it;
+
+        for (; it != std::end(vec); ++it) o << ',' << *it;
+    }
+
+    o << ')';
+    return o;
+}
 
 }  // namespace bhxx
