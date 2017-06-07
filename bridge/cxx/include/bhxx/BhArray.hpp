@@ -102,36 +102,63 @@ class BhArray {
      */
     BhArray(std::shared_ptr<BhBase> base, Shape shape, const size_t offset = 0)
           : BhArray(std::move(base), shape, contiguous_stride(shape), offset) {
-        assert(base->nelem == shape.prod());
+        assert(n_elem() == shape.prod());
     }
 
     //
-    // Information and data access
+    // Information
     //
-
-    //@{
-    /** Obtain the data pointer of the base array, not taking
-     *  ownership of any kind.
-     *
-     *  \note This pointer might be a nullptr if the data in
-     *        the base is not yet initialised.
-     *
-     * \note You can always force initialisation using
-     *  ```
-     *      sync(array);
-     *      Runtime::instance().flush();
-     *  ```
-     *  after which ``data()`` should not be nullptr.
-     */
-    const T* data() const { return static_cast<T*>(base->data); }
-    T*       data() { return static_cast<T*>(base->data); }
-    //@}
 
     /** Return the rank of the BhArray */
     size_t rank() const {
         assert(shape.size() == stride.size());
         return shape.size();
     }
+
+    /** Return the number of elements */
+    size_t n_elem() const { return static_cast<size_t>(base->nelem); }
+
+    /** Return whether the view is contiguous and row-major */
+    bool is_contiguous() const;
+
+    //
+    // Data access
+    //
+    /** Is the data referenced by this view's base array already
+     *  allocated, i.e. initialised */
+    bool is_data_initialised() const { return base->data != nullptr; }
+
+    /** Initialise the data pointer of the base array
+     *
+     * This is mainly intended for initialisation cases where
+     * data should be transferred to Bohrium before running any
+     * operations. In such a case one would first call
+     * ``array.initialise_data()`` followed by ``array.data()``
+     * to retrieve a data pointer and write the initialisation
+     * data to it.
+     *
+     * \note Implies a sync and a flush, so calling this after
+     *       the initialisation stage is discouraged.
+     */
+    void initialise_data();
+
+    //@{
+    /** Obtain the data pointer of the base array, not taking
+     *  ownership of any kind.
+     *
+     *  \note This pointer might be a nullptr if the data in
+     *        the base data is not yet initialised.
+     *
+     * \note You can always force initialisation using
+     *  ``array.initialise_data()``, after which ``data()``
+     *  will not be nullptr. As the documentation in
+     *  initialise_data explains, this is a common use case
+     *  when copying data into Bohrium for performing
+     *  operations on them.
+     */
+    const T* data() const { return static_cast<T*>(base->data); }
+    T*       data() { return static_cast<T*>(base->data); }
+    //@}
 
     //
     // Routines
