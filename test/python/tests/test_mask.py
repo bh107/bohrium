@@ -18,6 +18,14 @@ class test_set_bool_mask_scalar:
         cmd += "res[m] = %s(42)" % dtype
         return cmd
 
+    def test_set_scalar_nan(self, arg):
+        (cmd, dtype) = arg
+        if dtype in util.TYPES.FLOAT:
+            cmd += "res[m] = M.nan"
+        else:
+            cmd = "res = 0"
+        return cmd
+
 
 class test_set_bool_mask:
     def init(self):
@@ -60,6 +68,11 @@ class test_where:
                 cmd += "m = R.random_integers(0, 1, size=a.shape, dtype=np.bool, bohrium=BH); "
                 yield (cmd, dtype)
 
+    def test_scalar_condition(self, arg):
+        (cmd, dtype) = arg
+        cmd += "res = M.where(%s(True), a, b)" % dtype
+        return cmd
+
     def test_scalar1(self, arg):
         (cmd, dtype) = arg
         cmd += "res = M.where(m, %s(42), a)" % dtype
@@ -75,7 +88,7 @@ class test_where:
         cmd += "res = M.where(m, a, b)"
         return cmd
 
-    def test_nanarray(self, arg):
+    def test_nan_array(self, arg):
         (cmd, dtype) = arg
         if dtype in util.TYPES.FLOAT:
             cmd += "a[0] = M.nan;"
@@ -83,3 +96,13 @@ class test_where:
             return cmd
         else:
             return "res = 0"
+
+    def test_nan_scalar1(self, arg):
+        (cmd, dtype) = arg
+        cmd += "res = M.where(m, M.nan, a)"
+        return cmd
+
+    def test_nan_scalar2(self, arg):
+        (cmd, dtype) = arg
+        cmd += "res = M.where(m, a, M.nan)"
+        return cmd

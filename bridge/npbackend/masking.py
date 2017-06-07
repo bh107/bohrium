@@ -9,6 +9,7 @@ from . import bhary
 from . import reorganization
 from . import array_manipulation
 from . import ufuncs
+from . import summations
 import numpy_force as numpy
 from .bhary import fix_biclass_wrapper
 
@@ -90,30 +91,21 @@ def where(condition, x=None, y=None):
     if not (bhary.check(condition) or bhary.check(x) or bhary.check(y)):
         return numpy.where(condition, x, y)
 
-    # Let's find a non-scalar and make sure that non-scalars are Bohrium arrays
-    t = None
-    if not numpy.isscalar(condition):
+    # Make sure that non-scalars are Bohrium arrays
+    if numpy.isscalar(condition):
+        condition = bool(condition)
+    else:
         condition = array_create.array(condition).astype("bool")
-        t = condition
 
     if not numpy.isscalar(x):
         x = array_create.array(x)
-        t = x
 
     if not numpy.isscalar(y):
         y = array_create.array(y)
-        t = y
 
-    # All arguments are scalars
-    if t is None:
-        if condition:
-            return x
-        else:
-            return y
-
-    # Shortcut if input arrays are finite
-    if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
-        return condition * x + ~condition * y
+    # Shortcut if all arguments are scalars
+    if all(numpy.isscalar(k) or k.size == 1 for k in (x, y, condition)):
+        return x if condition else y
 
     # Find appropriate output type
     array_types = []
@@ -125,17 +117,22 @@ def where(condition, x=None, y=None):
             array_types.append(v.dtype)
     out_type = numpy.find_common_type(array_types, scalar_types)
 
-    condition, x, y = array_manipulation.broadcast_arrays(condition, x, y)[0]
+    # Shortcut if input arrays are finite
+    if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
+        if numpy.isscalar(condition):
+            res = condition * x + (not condition) * y
+        else:
+            res = condition * x + ufuncs.logical_not(condition) * y
+        if numpy.isscalar(res):
+            return out_type(res)
+        else:
+            return res.astype(out_type)
 
-    ret = array_create.zeros(condition.shape, dtype=out_type)
-    if numpy.isscalar(x):
-        ret[condition] = x
-    else:
-        ret[condition] = x[condition]
-    if numpy.isscalar(y):
-        ret[~condition] = y
-    else:
-        ret[~condition] = y[~condition]
+    # General case: use fancy indexing
+    (condition, x, y), newshape = array_manipulation.broadcast_arrays(condition, x, y)
+    ret = array_create.zeros(newshape, dtype=out_type)
+    ret[condition] = x if numpy.isscalar(x) else x[condition]
+    ret[~condition] = y if numpy.isscalar(y) else y[~condition]
     return ret
 
 
@@ -152,7 +149,7 @@ def masked_set(ary, bool_mask, value):
     Set the 'value' into 'ary' at the location specified through 'bool_mask'.
     """
 
-    if numpy.isscalar(value):
+    if numpy.isscalar(value) and ufuncs.isfinite(value):
         ary *= ~bool_mask
         ary += bool_mask * value
     else:
