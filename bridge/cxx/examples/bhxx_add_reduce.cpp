@@ -17,30 +17,35 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#include <iostream>
 
-#include <bhxx/runtime.hpp>
+#include <bhxx/bhxx.hpp>
 
-using namespace std;
+void compute() {
+    using bhxx::BhArray;
+    using bhxx::Runtime;
 
-namespace bhxx {
+    BhArray<uint64_t> a({50, 3, 2});
+    identity(a, 3);
+    bhxx::random(a, 42, 42);
 
+    BhArray<uint64_t> b({3, 2});
+    bhxx::add_reduce(b, a, 0);
+    bhxx::free(a);
 
-void Runtime::instr_list_append(bh_instruction &instr) {
-    if (instr_list.size() > 1000) {
-        flush();
-    }
-    instr_list.push_back(instr);
+    BhArray<uint64_t> c({3, 2});
+    bhxx::identity(c, b);
+
+    BhArray<uint64_t> d({2});
+    bhxx::add_reduce(d, c, 0);
+    bhxx::free(c);
+
+    std::cout << b << std::endl;
+    std::cout << d << std::endl;
+    Runtime::instance().flush();
 }
 
-
-void Runtime::flush() {
-    bh_ir bhir = bh_ir(instr_list.size(), &instr_list[0]);
-    runtime.execute(&bhir);
-    instr_list.clear();
-    for(bh_base *base: free_list) {
-        delete base;
-    }
-    free_list.clear();
+int main() {
+    compute();
+    return 0;
 }
-
-} // namespace bhxx

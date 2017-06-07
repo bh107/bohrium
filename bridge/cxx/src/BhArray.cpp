@@ -18,22 +18,29 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <bhxx/BhArray.hpp>
+#include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
-#include <bhxx/bh_array.hpp>
-#include <bhxx/runtime.hpp>
 
 using namespace std;
 
 namespace bhxx {
 
-template <typename T>
-inline BhBase<T>::~BhBase() {
-    //    cout << "Delete base " << this << endl;
-    Runtime::instance().enqueue_free(*this);
+// Note: This one line of code cannot move to the hpp file,
+// since it requires the inclusion of Runtime.hpp, which in turn
+// requires the inclusion of BhArray.hpp
+void RuntimeDeleter::operator()(BhBase* ptr) const {
+    // Simply hand the deletion over to Bohrium
+    // including the ownership of the pointer to be deleted
+    // by the means of a unique pointer.
+    Runtime::instance().enqueue_deletion(std::unique_ptr<BhBase>(ptr));
 }
 
 template <typename T>
 void BhArray<T>::pprint(std::ostream& os) const {
+    if (base == nullptr) {
+        throw runtime_error("Cannot call pprint on array without base");
+    }
 
     // Let's makes sure that the data we are reading is contiguous
     BhArray<T> contiguous{shape};
@@ -51,7 +58,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
     // Pretty print the content
     os << scientific;
     os << "[";
-    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->base->nelem); ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->nelem); ++i) {
         if (i > 0) {
             os << ", ";
         }
@@ -60,34 +67,23 @@ void BhArray<T>::pprint(std::ostream& os) const {
     os << "]" << endl;
 }
 
-// Instantiate all possible types of `BhArray` and `BhBase`, which makes it possible to
-// implement many of
-// their methods here
-template class BhArray<bool>;
-template class BhArray<int8_t>;
-template class BhArray<int16_t>;
-template class BhArray<int32_t>;
-template class BhArray<int64_t>;
-template class BhArray<uint8_t>;
-template class BhArray<uint16_t>;
-template class BhArray<uint32_t>;
-template class BhArray<uint64_t>;
-template class BhArray<float>;
-template class BhArray<double>;
-template class BhArray<std::complex<float>>;
-template class BhArray<std::complex<double>>;
-template class BhBase<bool>;
-template class BhBase<int8_t>;
-template class BhBase<int16_t>;
-template class BhBase<int32_t>;
-template class BhBase<int64_t>;
-template class BhBase<uint8_t>;
-template class BhBase<uint16_t>;
-template class BhBase<uint32_t>;
-template class BhBase<uint64_t>;
-template class BhBase<float>;
-template class BhBase<double>;
-template class BhBase<std::complex<float>>;
-template class BhBase<std::complex<double>>;
+// Instantiate all possible types of `BhArray`
+#define INSTANTIATE(TYPE) template class BhArray<TYPE>
+
+INSTANTIATE(bool);
+INSTANTIATE(int8_t);
+INSTANTIATE(int16_t);
+INSTANTIATE(int32_t);
+INSTANTIATE(int64_t);
+INSTANTIATE(uint8_t);
+INSTANTIATE(uint16_t);
+INSTANTIATE(uint32_t);
+INSTANTIATE(uint64_t);
+INSTANTIATE(float);
+INSTANTIATE(double);
+INSTANTIATE(std::complex<float>);
+INSTANTIATE(std::complex<double>);
+
+#undef INSTANTIATE
 
 }  // namespace bhxx
