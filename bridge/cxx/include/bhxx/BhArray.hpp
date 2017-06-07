@@ -66,8 +66,7 @@ class BhArray {
           : offset(offset_),
             shape(shape_),
             stride(std::move(stride_)),
-            base(make_base_ptr(shape_.prod())) {
-        base->set_type<T>();
+            base(make_base_ptr(T(0), shape_.prod())) {
         assert(shape.size() == stride.size());
     }
 
@@ -128,33 +127,12 @@ class BhArray {
      *  allocated, i.e. initialised */
     bool is_data_initialised() const { return base->data != nullptr; }
 
-    /** Initialise the data pointer of the base array
-     *
-     * This is mainly intended for initialisation cases where
-     * data should be transferred to Bohrium before running any
-     * operations. In such a case one would first call
-     * ``array.initialise_data()`` followed by ``array.data()``
-     * to retrieve a data pointer and write the initialisation
-     * data to it.
-     *
-     * \note Implies a sync and a flush, so calling this after
-     *       the initialisation stage is discouraged.
-     */
-    void initialise_data();
-
     //@{
     /** Obtain the data pointer of the base array, not taking
      *  ownership of any kind.
      *
      *  \note This pointer might be a nullptr if the data in
-     *        the base data is not yet initialised.
-     *
-     * \note You can always force initialisation using
-     *  ``array.initialise_data()``, after which ``data()``
-     *  will not be nullptr. As the documentation in
-     *  initialise_data explains, this is a common use case
-     *  when copying data into Bohrium for performing
-     *  operations on them.
+     *        the base data is not initialised.
      */
     const T* data() const { return static_cast<T*>(base->data); }
     T*       data() { return static_cast<T*>(base->data); }

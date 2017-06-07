@@ -41,14 +41,6 @@ void RuntimeDeleter::operator()(BhBase* ptr) const {
 //
 
 template <typename T>
-void BhArray<T>::initialise_data() {
-    bhxx::sync(*this);
-    Runtime::instance().flush();
-    bh_data_malloc(base.get());
-    assert(base->data != nullptr);
-}
-
-template <typename T>
 bool BhArray<T>::is_contiguous() const {
     assert(shape.size() == stride.size());
 
