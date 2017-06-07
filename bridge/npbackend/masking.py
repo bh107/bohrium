@@ -91,22 +91,20 @@ def where(condition, x=None, y=None):
     if not (bhary.check(condition) or bhary.check(x) or bhary.check(y)):
         return numpy.where(condition, x, y)
 
-    # Let's find a non-scalar and make sure that non-scalars are Bohrium arrays
-    t = None
-    if not numpy.isscalar(condition):
+    # Make sure that non-scalars are Bohrium arrays
+    if numpy.isscalar(condition):
+        condition = bool(condition)
+    else:
         condition = array_create.array(condition).astype("bool")
-        t = condition
 
     if not numpy.isscalar(x):
         x = array_create.array(x)
-        t = x
 
     if not numpy.isscalar(y):
         y = array_create.array(y)
-        t = y
 
-    # All arguments are scalars
-    if t is None:
+    # Shortcut if all arguments are scalars
+    if all(numpy.isscalar(k) or k.size == 1 for k in (x, y, condition)):
         return x if condition else y
 
     # Find appropriate output type
@@ -121,9 +119,16 @@ def where(condition, x=None, y=None):
 
     # Shortcut if input arrays are finite
     if ufuncs.isfinite(x).all() and ufuncs.isfinite(y).all():
-        print(out_type)
-        return condition * x + ~condition * y
+        if numpy.isscalar(condition):
+            res = condition * x + (not condition) * y
+        else:
+            res = condition * x + ufuncs.logical_not(condition) * y
+        if numpy.isscalar(res):
+            return out_type(res)
+        else:
+            return res.astype(out_type)
 
+    # General case: use fancy indexing
     (condition, x, y), newshape = array_manipulation.broadcast_arrays(condition, x, y)
     ret = array_create.zeros(newshape, dtype=out_type)
     ret[condition] = x if numpy.isscalar(x) else x[condition]
