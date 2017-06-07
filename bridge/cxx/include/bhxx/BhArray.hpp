@@ -62,12 +62,13 @@ class BhArray {
     std::shared_ptr<BhBase> base;
 
     /** Create a new view */
-    BhArray(Shape shape, Stride stride, const size_t offset = 0)
-          : offset(offset),
-            shape(shape),
-            stride(std::move(stride)),
-            base(make_base_ptr(shape.prod())) {
+    BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)
+          : offset(offset_),
+            shape(shape_),
+            stride(std::move(stride_)),
+            base(make_base_ptr(shape_.prod())) {
         base->set_type<T>();
+        assert(shape.size() == stride.size());
     }
 
     /** Create a new view (contiguous stride, row-major) */
@@ -82,12 +83,14 @@ class BhArray {
      *        construct a BhBase object, use the make_base_ptr
      *        helper function.
      */
-    BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride,
-            const size_t offset = 0)
-          : offset(offset),
-            shape(std::move(shape)),
-            stride(std::move(stride)),
-            base(std::move(base)) {}
+    BhArray(std::shared_ptr<BhBase> base_, Shape shape_, Stride stride_,
+            const size_t offset_ = 0)
+          : offset(offset_),
+            shape(std::move(shape_)),
+            stride(std::move(stride_)),
+            base(std::move(base_)) {
+        assert(shape.size() == stride.size());
+    }
 
     /** Create a view that points to the given base (contiguous stride, row-major)
      *
@@ -98,18 +101,20 @@ class BhArray {
      *        helper function.
      */
     BhArray(std::shared_ptr<BhBase> base, Shape shape, const size_t offset = 0)
-          : BhArray(std::move(base), shape, contiguous_stride(shape), offset) {}
+          : BhArray(std::move(base), shape, contiguous_stride(shape), offset) {
+        assert(base->nelem == shape.prod());
+    }
 
-    // Pretty printing the content of the array
-    // TODO: for now it always print the flatten array
-    void pprint(std::ostream& os) const;
+    //
+    // Information and data access
+    //
 
     //@{
     /** Obtain the data pointer of the base array, not taking
      *  ownership of any kind.
      *
      *  \note This pointer might be a nullptr if the data in
-     *        the base is not yet initialised
+     *        the base is not yet initialised.
      *
      * \note You can always force initialisation using
      *  ```
@@ -121,6 +126,20 @@ class BhArray {
     const T* data() const { return static_cast<T*>(base->data); }
     T*       data() { return static_cast<T*>(base->data); }
     //@}
+
+    /** Return the rank of the BhArray */
+    size_t rank() const {
+        assert(shape.size() == stride.size());
+        return shape.size();
+    }
+
+    //
+    // Routines
+    //
+
+    // Pretty printing the content of the array
+    // TODO: for now it always print the flatten array
+    void pprint(std::ostream& os) const;
 };
 
 template <typename T>
