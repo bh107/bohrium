@@ -25,15 +25,14 @@ using namespace std;
 namespace bhxx {
 
 // Return a contiguous stride (row-major) based on `shape`
-Stride contiguous_stride(const Shape &shape) {
-    Stride ret(shape.size());
+Stride contiguous_stride(const Shape& shape) {
+    Stride  ret(shape.size());
     int64_t stride = 1;
-    for (int64_t i = shape.size()-1; i >= 0; --i) {
+    for (int64_t i = shape.size() - 1; i >= 0; --i) {
         ret[i] = stride;
         stride *= static_cast<int64_t>(shape[i]);
     }
     return ret;
 }
 
-
-} // namespace bhxx
+}  // namespace bhxx
