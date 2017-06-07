@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bhxx/Runtime.hpp>
+#include <iterator>
 
 using namespace std;
 
@@ -48,18 +49,30 @@ void Runtime::enqueue_random(BhArray<uint64_t>& out, uint64_t seed, uint64_t key
     enqueue(std::move(instr));
 }
 
+void Runtime::enqueue_deletion(std::unique_ptr<BhBase> base_ptr) {
+    // Check whether we are responsible for the memory or not.
+    if (!base_ptr->own_memory()) {
+        // Externally managed
+        // => set it to null to avoid deletion by Bohrium
+        base_ptr->data = nullptr;
+    }
+
+    BhInstruction instr(BH_FREE);
+    instr.append_operand(*base_ptr);
+    bases_for_deletion.push_back(std::move(base_ptr));
+    enqueue(std::move(instr));
+}
+
 void Runtime::flush() {
     // Construct Bohrium Internal Representation
-    // and fill it with our instructions.
+    // and fill it with our instructions and execute.
     bh_ir bhir;
-    bhir.instr_list.resize(instr_list.size());
-    std::transform(
-          instr_list.begin(), instr_list.end(), bhir.instr_list.begin(),
-          [](const BhInstruction& bi) { return static_cast<const bh_instruction&>(bi); });
-
-    // Execute them
+    std::move(instr_list.begin(), instr_list.end(), std::back_inserter(bhir.instr_list));
     runtime.execute(&bhir);
     instr_list.clear();
+
+    // Purge the bases we have scheduled for deletion:
+    bases_for_deletion.clear();
 }
 
 }  // namespace bhxx

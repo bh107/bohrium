@@ -93,14 +93,4 @@ class BhBase : public bh_base {
     // if this flag is allowed to change randomly.
     bool m_own_memory;
 };
-
-/** Class which enqueues a BH_FREE on the bh_base object
- *
- * \note Used as deleter in the shared pointer of BhArray
- *       to make sure that all BhBase objects are queued
- *       for deletion with BH_FREE.
- * */
-struct BhBaseDeleter {
-    void operator()(BhBase* ptr) const;
-};
 }

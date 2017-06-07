@@ -27,6 +27,26 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
+/** Class which enqueues an BhBase object for deletion
+ *  with the Bohrium Runtime, but does not actually delete
+ *  it straight away.
+ *
+ *  \note This is needed to ensure that all BhBase objects
+ *  are still around until the list of instructions has
+ *  been emptied.
+ */
+struct RuntimeDeleter {
+    void operator()(BhBase* ptr) const;
+};
+
+/** Helper function to make shared pointers to BhBase,
+ *  which use the RuntimeDeleter as their deleter */
+template <typename... Args>
+std::shared_ptr<BhBase> make_base_ptr(Args... args) {
+    return std::shared_ptr<BhBase>(new BhBase(std::forward<Args>(args)...),
+                                   RuntimeDeleter{});
+}
+
 template <typename T>
 class BhArray {
   public:
@@ -41,20 +61,27 @@ class BhArray {
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
 
-    // Create a new view that points to a new base
+    /** Create a new view */
     BhArray(Shape shape, Stride stride, const size_t offset = 0)
           : offset(offset),
             shape(shape),
             stride(std::move(stride)),
-            base(new BhBase(shape.prod()), BhBaseDeleter{}) {
+            base(make_base_ptr(shape.prod())) {
         base->set_type<T>();
     }
 
-    // Create a new view that points to a new base (contiguous stride, row-major)
+    /** Create a new view (contiguous stride, row-major) */
     BhArray(Shape shape, const size_t offset = 0)
           : BhArray(shape, contiguous_stride(shape), offset) {}
 
-    // Create a view that points to the given base
+    /** Create a view that points to the given base
+     *
+     *  \note The caller should make sure that the shared pointer
+     *        uses the RuntimeDeleter as its deleter, since this is
+     *        implicitly assumed throughout, i.e. if one wants to
+     *        construct a BhBase object, use the make_base_ptr
+     *        helper function.
+     */
     BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride,
             const size_t offset = 0)
           : offset(offset),
@@ -62,7 +89,14 @@ class BhArray {
             stride(std::move(stride)),
             base(std::move(base)) {}
 
-    // Create a view that points to the given base (contiguous stride, row-major)
+    /** Create a view that points to the given base (contiguous stride, row-major)
+     *
+     *  \note The caller should make sure that the shared pointer
+     *        uses the RuntimeDeleter as its deleter, since this is
+     *        implicitly assumed throughout, i.e. if one wants to
+     *        construct a BhBase object, use the make_base_ptr
+     *        helper function.
+     */
     BhArray(std::shared_ptr<BhBase> base, Shape shape, const size_t offset = 0)
           : BhArray(std::move(base), shape, contiguous_stride(shape), offset) {}
 

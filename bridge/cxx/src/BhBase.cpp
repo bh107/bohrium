@@ -20,8 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_memory.h>
 #include <bhxx/BhBase.hpp>
-#include <bhxx/BhInstruction.hpp>
-#include <bhxx/Runtime.hpp>
 
 // TODO get rid of this header
 //      (Still from the old interface)
@@ -32,22 +30,6 @@ namespace bhxx {
 template <typename T>
 void BhBase::set_type() {
     bxx::assign_array_type<T>(this);
-}
-
-void BhBaseDeleter::operator()(BhBase* ptr) const {
-    // Check whether we are responsible for the memory or not.
-    if (!ptr->own_memory()) {
-        // Externally managed -> set it to null to avoid
-        // deletion by Bohrium
-        ptr->data = nullptr;
-    }
-
-    // Now send BH_FREE to Bohrium and hand the
-    // ownership of the BhBase object over to
-    // the BhInstruction object by the means of a unique_ptr
-    BhInstruction instr(BH_FREE);
-    instr.append_operand(std::unique_ptr<BhBase>(ptr));
-    Runtime::instance().enqueue(std::move(instr));
 }
 
 // Instantiate all possible types of the set_type function

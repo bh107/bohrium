@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
+/** Helper class to build instructions */
 class BhInstruction : public bh_instruction {
   public:
     BhInstruction(bh_opcode code) : bh_instruction{} { opcode = code; }
@@ -52,15 +53,6 @@ class BhInstruction : public bh_instruction {
     /** Append a base object for deletion
      *
      * \note Only valid for BH_FREE */
-    void append_operand(std::unique_ptr<BhBase> base);
-
-  private:
-    /** Container for a BhBase object, which is only needed for the
-     *  case where this instruction represents a BH_FREE, because
-     *  in this case we need to keep the BhBase alive until the
-     *  queued instructions are all done, which is achieved by transferring
-     *  the ownership of the BhBase to this very object.
-     */
-    std::unique_ptr<BhBase> base_ptr;
+    void append_operand(BhBase& base);
 };
 }

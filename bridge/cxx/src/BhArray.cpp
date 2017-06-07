@@ -26,6 +26,16 @@ using namespace std;
 
 namespace bhxx {
 
+// Note: This one line of code cannot move to the hpp file,
+// since it requires the inclusion of Runtime.hpp, which in turn
+// requires the inclusion of BhArray.hpp
+void RuntimeDeleter::operator()(BhBase* ptr) const {
+    // Simply hand the deletion over to Bohrium
+    // including the ownership of the pointer to be deleted
+    // by the means of a unique pointer.
+    Runtime::instance().enqueue_deletion(std::unique_ptr<BhBase>(ptr));
+}
+
 template <typename T>
 void BhArray<T>::pprint(std::ostream& os) const {
     if (base == nullptr) {

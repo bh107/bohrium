@@ -58,6 +58,12 @@ class Runtime {
     void enqueue_extmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
                            BhArray<T>& in2);
 
+    /** Schedule a base object for deletion
+     *
+     * Will call BH_FREE on it first at the next flush
+     */
+    void enqueue_deletion(std::unique_ptr<BhBase> base_ptr);
+
     // Send enqueued instructions to Bohrium for execution
     void flush();
 
@@ -70,15 +76,24 @@ class Runtime {
 
   private:
     //@{
-    /** BH_FREE is special, since we deal with it via the BhBaseDeleter.
-     * This function just resets the shared pointers of all arrays
+    /** BH_FREE for arrays is special, since we deal with the deletion of the
+     * base implictly via the BhBaseDeleter (which in turn calls
+     * enqueue_deletion in this object).
+     *
+     * This function just resets the shared pointers of the array, which
+     * might trigger the call of enqueue_deletion, but only if the
+     * array is really no longer needed.
      * */
     template <typename T>
     void bh_free(BhArray<T>& ary);
     //@}
 
     // The lazy evaluated instructions
-    std::vector<BhInstruction> instr_list;
+    std::vector<bh_instruction> instr_list;
+
+    // Unique pointers to base objecs, which are to be
+    // purged after the next flush
+    std::vector<std::unique_ptr<BhBase>> bases_for_deletion;
 
     // Bohrium Configuration
     bohrium::ConfigParser config;
@@ -140,7 +155,7 @@ void Runtime::bh_free(BhArray<T>& ary) {
               "in its BhBase.");
     }
 
-    // BH_FREE  is special because it is automatically invoked
+    // BH_FREE is special because it is automatically invoked
     // by the deleter of the shared pointer to BhBase if the last
     // array referencing BhBase is deleted.
     // So instead of actually deleting anything we will just

@@ -33,23 +33,19 @@ void BhInstruction::append_operand(bh_constant cnt) {
     constant = cnt;
 }
 
-void BhInstruction::append_operand(std::unique_ptr<BhBase> base) {
+void BhInstruction::append_operand(BhBase& base) {
     if (opcode != BH_FREE) {
         throw std::runtime_error(
               "BhBase objects can only be freed. Use a full BhArray if you want to "
               "berform any other operation on it.");
     }
 
-    // Move the data to the unique pointer, which
-    // will delete it once this object is deleted.
-    base_ptr = std::move(base);
-
     // Make a bh_view to this base
     bh_view view;
-    view.base      = base_ptr.get();
+    view.base      = &base;
     view.start     = 0;
     view.ndim      = 1;
-    view.shape[0]  = base_ptr->nelem;
+    view.shape[0]  = base.nelem;
     view.stride[0] = 1;
 
     operand.push_back(view);
