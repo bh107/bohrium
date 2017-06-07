@@ -48,6 +48,9 @@ class BhBase : public bh_base {
      *
      * The class will make sure, that the storage is not deleted when
      * going out of scope.
+     *
+     * Needless to say that the memory should be large enough to
+     * incorporate nelem_ elements.
      * */
     template <typename T>
     BhBase(size_t nelem_, T* memory) : m_own_memory(false) {
@@ -69,15 +72,19 @@ class BhBase : public bh_base {
     /** Deleted copy assignment */
     BhBase& operator=(const BhBase&) = delete;
 
+    /** Delete move assignment */
+    BhBase& operator=(BhBase&& other) = delete;
+    // The reason for doing this is that there might still be
+    // objects in the instruction queue which refer to the data
+    // pointer used in this object. We hence cannot free the data,
+    // but this is our only pointer to it within reach, so we
+    // would theoretically need to free it here.
+
     /** Move another BhBase object here */
     BhBase(BhBase&& other) : bh_base(std::move(other)), m_own_memory(other.m_own_memory) {
         other.m_own_memory = true;
         other.data         = nullptr;
     }
-
-    /** Move-assign a BhBase object */
-    BhBase& operator=(BhBase&&) = delete;
-    // TODO Implement the upper guy
 
   private:
     // Is the memory in here owned by Bohrium or is it provided

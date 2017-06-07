@@ -18,7 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_memory.h>
 #include <bhxx/BhBase.hpp>
 
 namespace bhxx {
