@@ -133,6 +133,9 @@ class BhArray {
      *
      *  \note This pointer might be a nullptr if the data in
      *        the base data is not initialised.
+     *
+     *  \note No flush is done automatically. The data might be
+     *        out of sync with Bohrium.
      */
     const T* data() const { return static_cast<T*>(base->data); }
     T*       data() { return static_cast<T*>(base->data); }
@@ -152,5 +155,10 @@ std::ostream& operator<<(std::ostream& os, const BhArray<T>& ary) {
     ary.pprint(os);
     return os;
 }
+
+/** Convert an array with exactly one element to a scalar by calling
+ *  sync and flush and returning the value */
+template <typename T>
+T as_scalar(BhArray<T>& ary);
 
 }  // namespace bhxx
