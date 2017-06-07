@@ -33,16 +33,6 @@ class BhBase : public bh_base {
      *  */
     bool own_memory() { return m_own_memory; }
 
-    /** Construct a base array with nelem elements */
-    BhBase(size_t nelem_) : m_own_memory(true) {
-        data  = nullptr;
-        nelem = static_cast<int64_t>(nelem_);
-    }
-
-    /** Set the data type of the data pointed by data. */
-    template <typename T>
-    void set_type();
-
     /** Construct a base array with nelem elements using
      * externally managed storage.
      *
@@ -57,6 +47,46 @@ class BhBase : public bh_base {
         data  = memory;
         nelem = static_cast<int64_t>(nelem_);
         set_type<T>();
+    }
+
+    /** Construct a base array and initialise it with the elements
+     *  provided by an iterator range.
+     *
+     *  The values are copied into the Bohrium storage. If you want to
+     *  provide external storage to Bohrium use the constructor
+     *  BhBase(size_t nelem, T* memory) instead.
+     */
+    template <typename InputIterator,
+              typename T = typename std::iterator_traits<InputIterator>::value_type>
+    BhBase(InputIterator begin, InputIterator end)
+          : BhBase(T(0), static_cast<size_t>(std::distance(begin, end))) {
+        assert(std::distance(begin, end) > 0);
+
+        // Allocate an array and copy the data over.
+        bh_data_malloc(this);
+        std::copy(begin, end, static_cast<T*>(data));
+    }
+
+    /** Construct a base array with nelem elements
+     *
+     * \param dummy   Dummy argument to fix the type of elements used.
+     *                It may only have ever have the value 0 in the
+     *                appropriate type.
+     *
+     * \note The use of this particular constructor is discouraged.
+     *       It is only needed from BhArray to construct base objects
+     *       which are uninitialised and do not yet hold any deta.
+     *       If you wish to construct an uninitialised BhBase object,
+     *       do this via the BhArray interface and not using this constructor.
+     */
+    template <typename T>
+    BhBase(T dummy, size_t nelem_) : m_own_memory(true) {
+        data  = nullptr;
+        nelem = static_cast<bh_index>(nelem_);
+        set_type<T>();
+
+        // The dummy is a dummy argument and should always be identical zero.
+        assert(dummy == T(0));
     }
 
     ~BhBase() {
@@ -87,6 +117,10 @@ class BhBase : public bh_base {
     }
 
   private:
+    /** Set the data type of the data pointed by data. */
+    template <typename T>
+    void set_type();
+
     // Is the memory in here owned by Bohrium or is it provided
     // by external means. If it is owned by Bohrium, we assume
     // that Bohrium has also allocated it, which means that if
