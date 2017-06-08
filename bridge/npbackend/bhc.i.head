@@ -3,7 +3,7 @@
 #include<bhc.h>
 %}
 
-%typemap(in) bh_bool const {
+%typemap(in) bhc_bool const {
     if(PyObject_IsTrue($input))
         $1 = 1;
     else
@@ -16,152 +16,152 @@
         $1 = PyInt_AsUnsignedLongMask($input);
     %#endif
 }
-%typemap(in) bh_int8 const {
+%typemap(in) bhc_int8 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_int16 const {
+%typemap(in) bhc_int16 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_int32 const {
+%typemap(in) bhc_int32 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_int64 const {
+%typemap(in) bhc_int64 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint8 const {
+%typemap(in) bhc_uint8 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint16 const {
+%typemap(in) bhc_uint16 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint32 const {
+%typemap(in) bhc_uint32 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint64 const {
+%typemap(in) bhc_uint64 const {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_float64 const {
+%typemap(in) bhc_float64 const {
     $1 = PyFloat_AsDouble($input);
 }
-%typemap(in) bh_float32 const {
+%typemap(in) bhc_float32 const {
     $1 = PyFloat_AsDouble($input);
 }
-%typemap(in) bh_complex64  const{
+%typemap(in) bhc_complex64  const {
     Py_complex t = PyComplex_AsCComplex($input);
     $1.real = (float) t.real;
     $1.imag = (float) t.imag;
 }
-%typemap(in) bh_complex128 const{
+%typemap(in) bhc_complex128 const {
     Py_complex t = PyComplex_AsCComplex($input);
     $1.real = t.real;
     $1.imag = t.imag;
 }
-%typemap(in) bh_bool {
+%typemap(in) bhc_bool {
     if(PyObject_IsTrue($input))
         $1 = 1;
     else
         $1 = 0;
 }
-%typemap(in) bh_int8 {
+%typemap(in) bhc_int8 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_int16 {
+%typemap(in) bhc_int16 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_int32 {
+%typemap(in) bhc_int32 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_int64 {
+%typemap(in) bhc_int64 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint8 {
+%typemap(in) bhc_uint8 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint16 {
+%typemap(in) bhc_uint16 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint32 {
+%typemap(in) bhc_uint32 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_uint64 {
+%typemap(in) bhc_uint64 {
     %#if PY_MAJOR_VERSION >= 3
         $1 = PyLong_AsLong($input);
     %#else
         $1 = PyInt_AsLong($input);
     %#endif
 }
-%typemap(in) bh_float64 {
+%typemap(in) bhc_float64 {
     $1 = PyFloat_AsDouble($input);
 }
-%typemap(in) bh_float32 {
+%typemap(in) bhc_float32 {
     $1 = PyFloat_AsDouble($input);
 }
-%typemap(in) bh_complex64 {
+%typemap(in) bhc_complex64 {
     Py_complex t = PyComplex_AsCComplex($input);
     $1.real = (float) t.real;
     $1.imag = (float) t.imag;
 }
-%typemap(in) bh_complex128 {
+%typemap(in) bhc_complex128 {
     Py_complex t = PyComplex_AsCComplex($input);
     $1.real = t.real;
     $1.imag = t.imag;

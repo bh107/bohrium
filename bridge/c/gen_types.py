@@ -9,14 +9,14 @@ def main(args):
     prefix = os.path.abspath(os.path.dirname(__file__))
 
     # Let's read the opcode and type files
-    with open(join(prefix,'..','cpp','codegen','element_types.json')) as f:
+    with open(join(prefix,'..','..','core','codegen','types.json')) as f:
         types   = json.loads(f.read())
         type_map = {}
-        for t in types:
-            type_map[t[-1]] = {'cpp'     : t[0],
-                               'bhc'     : t[1],
-                               'name'    : t[2],
-                               'bhc_ary' : "bhc_ndarray_%s_p"%t[2]}
+        for t in types[:-1]:
+            type_map[t['enum']] = {'cpp'     : t['cpp'],
+                                   'bhc'     : t['bhc'],
+                                   'name'    : t['union'],
+                                   'bhc_ary' : "bhc_ndarray_%s_p"%t['union']}
 
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
@@ -37,7 +37,21 @@ def main(args):
 #ifndef __BHC_TYPES_H
 #define __BHC_TYPES_H
 
-#include <bh_type.h>
+#include <stdint.h>
+typedef unsigned char bhc_bool;
+typedef int8_t        bhc_int8;
+typedef int16_t       bhc_int16;
+typedef int32_t       bhc_int32;
+typedef int64_t       bhc_int64;
+typedef uint8_t       bhc_uint8;
+typedef uint16_t      bhc_uint16;
+typedef uint32_t      bhc_uint32;
+typedef uint64_t      bhc_uint64;
+typedef float         bhc_float32;
+typedef double        bhc_float64;
+typedef struct { bhc_float32 real, imag; } bhc_complex64;
+typedef struct { bhc_float64 real, imag; } bhc_complex128;
+typedef struct { bhc_uint64 start, key; } bhc_r123;
 
 #ifdef _WIN32
 #define DLLEXPORT __declspec( dllexport )
@@ -57,7 +71,6 @@ extern "C" {
 """%head
     impl = """/* Bohrium C Bridge: data types. Auto generated! */
 
-#include <stdint.h>
 #include <bhxx/bhxx.hpp>
 #include "bhc.h"
 
