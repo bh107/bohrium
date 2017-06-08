@@ -35,7 +35,7 @@ using namespace std;
  * @param nelements The number of elements
  * @param new_base The handler for the newly created base
  */
-void bh_create_base(bh_type type, bh_index nelements, bh_base** new_base)
+void bh_create_base(bh_type type, int64_t nelements, bh_base** new_base)
 {
     bh_base *base = (bh_base *) malloc(sizeof(bh_base));
 
@@ -94,7 +94,7 @@ void bh_destroy_base(bh_base**  base)
  */
 void bh_data_malloc(bh_base* base)
 {
-    bh_intp bytes;
+    int64_t bytes;
 
     if(base == NULL) return;
     if(base->data != NULL) return;
@@ -125,7 +125,7 @@ void bh_data_malloc(bh_base* base)
  */
 void bh_data_free(bh_base* base)
 {
-    bh_intp bytes;
+    int64_t bytes;
 
     if(base == NULL) return;
     if(base->data == NULL) return;
@@ -148,7 +148,7 @@ void bh_data_free(bh_base* base)
  * @base    The base in question
  * @return  The size of the base array in bytes
  */
-bh_index bh_base_size(const bh_base *base)
+int64_t bh_base_size(const bh_base *base)
 {
     return base->nelem * bh_type_size(base->type);
 }

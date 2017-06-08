@@ -44,7 +44,7 @@ public:
      * @ninstr      Number of instructions
      * @instr_list  The instruction list
      */
-    bh_ir(bh_intp ninstr, const bh_instruction instr_list[]);
+    bh_ir(int64_t ninstr, const bh_instruction instr_list[]);
 
     // Special constructor for 1 instruction
     // Used by the GPU to send instructions to the CPU
@@ -54,7 +54,7 @@ public:
     *
     * @bhir The BhIR serialized as a char array
     */
-    bh_ir(const char bhir[], bh_intp size);
+    bh_ir(const char bhir[], int64_t size);
 
     /* Serialize the BhIR object into a char buffer
     *  (use the bh_ir constructor above to deserialization)

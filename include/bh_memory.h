@@ -33,7 +33,7 @@ extern "C" {
  * @size  The size of the allocated block
  * @return A pointer to data, and NULL on error
  */
-bh_data_ptr bh_memory_malloc(bh_intp size);
+void* bh_memory_malloc(int64_t size);
 
 /* Frees a previously allocated data block
  *
@@ -41,7 +41,7 @@ bh_data_ptr bh_memory_malloc(bh_intp size);
  * @size  The size of the allocated block
  * @return A pointer to data, and NULL on error
  */
-bh_intp bh_memory_free(bh_data_ptr data, bh_intp size);
+int64_t bh_memory_free(void* data, int64_t size);
 
 #ifdef __cplusplus
 }

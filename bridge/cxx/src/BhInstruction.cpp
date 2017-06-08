@@ -73,8 +73,8 @@ void BhInstruction::append_operand(const BhArray<T>& ary) {
 
     bh_view view;
     view.base  = ary.base.get();
-    view.start = static_cast<bh_index>(ary.offset);
-    view.ndim  = static_cast<bh_intp>(ary.shape.size());
+    view.start = static_cast<int64_t>(ary.offset);
+    view.ndim  = static_cast<int64_t>(ary.shape.size());
     std::copy(ary.shape.begin(), ary.shape.end(), &view.shape[0]);
     std::copy(ary.stride.begin(), ary.stride.end(), &view.stride[0]);
     operand.push_back(view);

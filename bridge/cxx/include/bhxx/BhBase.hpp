@@ -36,7 +36,7 @@ class BhBase : public bh_base {
     /** Construct a base array with nelem elements */
     BhBase(size_t nelem_) : m_own_memory(true) {
         data  = nullptr;
-        nelem = static_cast<bh_index>(nelem_);
+        nelem = static_cast<int64_t>(nelem_);
     }
 
     /** Set the data type of the data pointed by data. */
@@ -52,7 +52,7 @@ class BhBase : public bh_base {
     template <typename T>
     BhBase(size_t nelem_, T* memory) : m_own_memory(false) {
         data  = memory;
-        nelem = static_cast<bh_index>(nelem_);
+        nelem = static_cast<int64_t>(nelem_);
         set_type<T>();
     }
 

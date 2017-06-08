@@ -41,7 +41,7 @@ public:
         assert(instr->operand[1].base->nelem == 5);
         assert(instr->operand[1].base->type == BH_FLOAT32);
 
-        for(bh_intp i=0; i<subject->ndim; ++i) {
+        for(int64_t i=0; i<subject->ndim; ++i) {
             if(subject->shape[i] < 16) {
                 throw runtime_error("Cannot visualize because of input shape");
             }

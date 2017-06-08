@@ -31,14 +31,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-void bh_view::insert_axis(bh_index dim, bh_index size, bh_index stride) {
+void bh_view::insert_axis(int64_t dim, int64_t size, int64_t stride) {
     assert(dim <= ndim);
 
     if (dim == ndim) { // Appending
         this->shape[dim] = size;
         this->stride[dim] = stride;
     } else { // Inserting
-        for (bh_index i = ndim-1; i >= 0; --i) {
+        for (int64_t i = ndim-1; i >= 0; --i) {
             if (i >= dim) { // Move shape and stride one to the right
                 this->shape[i+1] = this->shape[i];
                 this->stride[i+1] = this->stride[i];
@@ -53,11 +53,11 @@ void bh_view::insert_axis(bh_index dim, bh_index size, bh_index stride) {
     ++ndim;
 }
 
-void bh_view::remove_axis(bh_index dim) {
+void bh_view::remove_axis(int64_t dim) {
     assert(1 < ndim);
     assert(dim < ndim);
 
-    for (bh_index i=dim; i < ndim-1; ++i) {
+    for (int64_t i=dim; i < ndim-1; ++i) {
         shape[i] = shape[i+1];
         stride[i] = stride[i+1];
     }
@@ -193,7 +193,7 @@ bh_view bh_view_simplify(const bh_view& view)
     res.base = view.base;
     res.ndim = 0;
     res.start = view.start;
-    bh_intp i = 0;
+    int64_t i = 0;
 
     while (view.shape[i] == 1 && i < view.ndim-1) {
         ++i;
@@ -233,11 +233,11 @@ bh_view bh_view_simplify(const bh_view& view)
  * @view The view
  * @return The simplified view
  */
-bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape)
+bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
 {
     assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
 
-    if (view.ndim < (bh_intp)shape.size()) {
+    if (view.ndim < (int64_t)shape.size()) {
         std::stringstream ss;
         ss << "Can not simplify to more dimensions: ";
         ss << "shape: " << shape << " view: " << view;
@@ -248,7 +248,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
     res.base = view.base;
     res.ndim = 0;
     res.start = view.start;
-    bh_intp i = 0;
+    int64_t i = 0;
 
     while (view.shape[i] == 1 && i < view.ndim-1) {
         ++i;
@@ -267,7 +267,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
             }
         }
 
-        if ((bh_intp)shape.size() == res.ndim) {
+        if ((int64_t)shape.size() == res.ndim) {
             if (view.shape[i] == 1) {
                 continue;
             } else {
@@ -306,7 +306,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
         ++res.ndim;
     }
 
-    if (res.ndim != (bh_intp)shape.size()) {
+    if (res.ndim != (int64_t)shape.size()) {
         std::stringstream ss;
         ss << "Can not simplify to given shape: ";
         ss << "shape: " << shape << " view: " << view;
@@ -321,9 +321,9 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape
  * @view    The view in question.
  * @return  Number of elements.
  */
-bh_index bh_nelements_nbcast(const bh_view *view)
+int64_t bh_nelements_nbcast(const bh_view *view)
 {
-    bh_index res = 1;
+    int64_t res = 1;
     for (int i = 0; i < view->ndim; ++i) {
         if(view->stride[i] != 0) {
             res *= view->shape[i];
@@ -339,10 +339,10 @@ bh_index bh_nelements_nbcast(const bh_view *view)
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-bh_index bh_nelements(bh_intp ndim, const bh_index shape[])
+int64_t bh_nelements(int64_t ndim, const int64_t shape[])
 {
     assert (ndim > 0);
-    bh_index res = 1;
+    int64_t res = 1;
     for (int i = 0; i < ndim; ++i) {
         res *= shape[i];
     }
@@ -350,7 +350,7 @@ bh_index bh_nelements(bh_intp ndim, const bh_index shape[])
     return res;
 }
 
-bh_index bh_nelements(const bh_view& view)
+int64_t bh_nelements(const bh_view& view)
 {
     return bh_nelements(view.ndim,view.shape);
 }
@@ -360,10 +360,10 @@ bh_index bh_nelements(const bh_view& view)
  * @view    The view in question
  * @return  The total number of elements in view
  */
-bh_intp bh_set_contiguous_stride(bh_view *view)
+int64_t bh_set_contiguous_stride(bh_view *view)
 {
-    bh_intp s = 1;
-    for(bh_intp i = view->ndim-1; i >= 0; --i) {
+    int64_t s = 1;
+    for(int64_t i = view->ndim-1; i >= 0; --i) {
         view->stride[i] = s;
         s *= view->shape[i];
     }
@@ -463,8 +463,8 @@ bool bh_is_contiguous(const bh_view* a)
         return false;
     }
 
-    bh_index weight = 1;
-    for(bh_index dim = a->ndim-1; dim >= 0; --dim) {
+    int64_t weight = 1;
+    for(int64_t dim = a->ndim-1; dim >= 0; --dim) {
         if (a->stride[dim] != weight) {
             return false;
         }

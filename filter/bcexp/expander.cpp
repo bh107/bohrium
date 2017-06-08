@@ -112,7 +112,7 @@ size_t Expander::gc(void)
     return collected;
 }
 
-bh_base* Expander::make_base(bh_type type, bh_index nelem)
+bh_base* Expander::make_base(bh_type type, int64_t nelem)
 {
     bh_base* base = NULL;
     try {
@@ -131,14 +131,14 @@ bh_base* Expander::make_base(bh_type type, bh_index nelem)
     return base;
 }
 
-bh_view Expander::make_temp(bh_view& meta, bh_type type, bh_index nelem)
+bh_view Expander::make_temp(bh_view& meta, bh_type type, int64_t nelem)
 {
     bh_view view = meta;
     view.base = make_base(type, nelem);
     return view;
 }
 
-bh_view Expander::make_temp(bh_type type, bh_index nelem)
+bh_view Expander::make_temp(bh_type type, int64_t nelem)
 {
     bh_view view;
     view.base = make_base(type, nelem);

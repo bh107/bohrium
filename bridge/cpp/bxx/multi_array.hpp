@@ -102,7 +102,7 @@ multi_array<T>::multi_array(const multi_array<T>& operand) : temp_(false), slici
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
 
-    memcpy(meta.shape, operand.meta.shape, sizeof(bh_index)*BH_MAXDIM);
+    memcpy(meta.shape, operand.meta.shape, sizeof(int64_t)*BH_MAXDIM);
 
     int64_t stride = 1;                 // Reset strides
     for(int64_t i=meta.ndim-1; 0 <= i; --i) {
@@ -119,7 +119,7 @@ multi_array<T>::multi_array(const multi_array<OtherT>& operand) : temp_(false), 
     meta.ndim   = operand.meta.ndim;
     meta.start  = 0;
 
-    memcpy(meta.shape, operand.meta.shape, sizeof(bh_index)*BH_MAXDIM);
+    memcpy(meta.shape, operand.meta.shape, sizeof(int64_t)*BH_MAXDIM);
 
     int64_t stride = 1;                 // Reset strides
     for(int64_t i=meta.ndim-1; 0 <= i; --i) {
@@ -769,7 +769,7 @@ multi_array<T>& transpose(multi_array<T>& rhs)
 
     multi_array<T>* result = &Runtime::instance().temp_view<T>(rhs);
 
-    for(bh_intp i=0, j=result->meta.ndim-1; i<result->meta.ndim; ++i, --j) {
+    for(int64_t i=0, j=result->meta.ndim-1; i<result->meta.ndim; ++i, --j) {
         result->meta.stride[i]  = rhs.meta.stride[j];
         result->meta.shape[i]   = rhs.meta.shape[j];
     }

@@ -37,7 +37,7 @@ namespace io = boost::iostreams;
 * @ninstr      Number of instructions
 * @instr_list  The instruction list
 */
-bh_ir::bh_ir(bh_intp ninstr, const bh_instruction instr_list[])
+bh_ir::bh_ir(int64_t ninstr, const bh_instruction instr_list[])
     : tally(false)
 {
     this->instr_list = vector<bh_instruction>(instr_list, &instr_list[ninstr]);
@@ -53,7 +53,7 @@ bh_ir::bh_ir(const bh_instruction& instr)
 *
 * @bhir The BhIr serialized as a char array or vector
 */
-bh_ir::bh_ir(const char bhir[], bh_intp size)
+bh_ir::bh_ir(const char bhir[], int64_t size)
     : tally(false)
 {
     io::basic_array_source<char> source(bhir,size);
