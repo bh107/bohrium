@@ -9,14 +9,14 @@ def main(args):
     prefix = os.path.abspath(os.path.dirname(__file__))
 
     # Let's read the opcode and type files
-    with open(join(prefix,'..','cpp','codegen','element_types.json')) as f:
+    with open(join(prefix,'..','..','core','codegen','types.json')) as f:
         types   = json.loads(f.read())
         type_map = {}
-        for t in types:
-            type_map[t[-1]] = {'cpp'     : t[0],
-                               'bhc'     : t[1],
-                               'name'    : t[2],
-                               'bhc_ary' : "bhc_ndarray_%s_p"%t[2]}
+        for t in types[:-1]:
+            type_map[t['enum']] = {'cpp'     : t['cpp'],
+                                   'bhc'     : t['bhc'],
+                                   'name'    : t['union'],
+                                   'bhc_ary' : "bhc_ndarray_%s_p"%t['union']}
 
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
@@ -80,7 +80,7 @@ def main(args):
     doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "%s* bhc_data_get_A%s(const %s ary, bh_bool force_alloc, bh_bool nullify)"%(t['bhc'], t['name'], t['bhc_ary'])
+        decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool force_alloc, bhc_bool nullify)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s\n"%decl
         impl += """\
@@ -91,7 +91,7 @@ def main(args):
         bh_data_malloc(b);
     }
 
-    %(bhc)s* ret = (%(bhc)s*)(b->data);
+    void* ret = (%(bhc)s*)(b->data);
 
     if(nullify) {
         b->data = NULL;

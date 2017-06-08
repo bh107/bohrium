@@ -32,7 +32,7 @@ add_custom_command(
             gen_array_operations.py
             gen_specials.py
             ../../core/codegen/opcodes.json
-            ../cpp/codegen/element_types.json
+            ../../core/codegen/types.json
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
