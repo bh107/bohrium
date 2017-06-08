@@ -85,10 +85,10 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
     meta.start = 0;
 
     // Count number of elements
-    bh_intp nelements = 1;
+    int64_t nelements = 1;
 
     // Contiguous stride
-    for(bh_intp dim=meta.ndim-1; dim >= 0; --dim) {
+    for(int64_t dim=meta.ndim-1; dim >= 0; --dim) {
         meta.stride[dim] = nelements;
         nelements *= meta.shape[dim];
     }

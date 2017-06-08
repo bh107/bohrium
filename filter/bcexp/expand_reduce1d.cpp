@@ -28,7 +28,7 @@ namespace bcexp {
 
 static std::map<int, int> fold_map;
 
-static inline int find_fold(bh_index elements, int thread_limit)
+static inline int find_fold(int64_t elements, int thread_limit)
 {
     for (int i = elements/thread_limit; i > 1; i--)
     {
@@ -44,7 +44,7 @@ int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
     int start_pc = pc;
     bh_instruction& instr = bhir.instr_list[pc];
     bh_opcode opcode = instr.opcode;
-    bh_index elements = bh_nelements(instr.operand[1]);
+    int64_t elements = bh_nelements(instr.operand[1]);
     verbose_print("[Reduce1D] Expanding " + string(bh_opcode_text(opcode)));
 
     if (elements * 2 < thread_limit) {

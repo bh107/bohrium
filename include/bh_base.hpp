@@ -33,13 +33,13 @@ namespace boost {namespace serialization {class access;}}
 struct bh_base
 {
     // Pointer to the actual data.
-    bh_data_ptr   data;
+    void*   data;
 
     // The type of data in the array
     bh_type       type;
 
     // The number of elements in the array
-    bh_index      nelem;
+    int64_t      nelem;
 
     // Returns an unique ID of this base array
     unsigned int get_label() const;
@@ -78,7 +78,7 @@ DLLEXPORT void bh_destroy_base(bh_base**  base);
  * @base    The base in question
  * @return  The size of the base array in bytes
  */
-bh_index bh_base_size(const bh_base *base);
+int64_t bh_base_size(const bh_base *base);
 
 /* Allocate data memory for the given base if not already allocated.
  * For convenience, the base is allowed to be NULL.

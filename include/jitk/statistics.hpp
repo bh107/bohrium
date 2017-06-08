@@ -109,7 +109,7 @@ class Statistics {
         if (enabled) {
             for (const bh_instruction &instr: instr_list) {
                 if (instr.opcode != BH_IDENTITY and not bh_opcode_is_system(instr.opcode)) {
-                    const std::vector<bh_index> shape = instr.shape();
+                    const std::vector<int64_t> shape = instr.shape();
                     totalwork += bh_nelements(shape.size(), &shape[0]);
                 }
                 if (instr.opcode == BH_SYNC) {

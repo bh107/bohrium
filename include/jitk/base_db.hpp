@@ -43,11 +43,11 @@ struct idx_less {
         if (v2.start < v1.start) return false;
         if (v1.ndim < v2.ndim) return true;
         if (v2.ndim < v1.ndim) return false;
-        for (bh_intp i = 0; i < v1.ndim; ++i) {
+        for (int64_t i = 0; i < v1.ndim; ++i) {
             if (v1.shape[i] < v2.shape[i]) return true;
             if (v2.shape[i] < v1.shape[i]) return false;
         }
-        for (bh_intp i = 0; i < v1.ndim; ++i) {
+        for (int64_t i = 0; i < v1.ndim; ++i) {
             if (v1.stride[i] < v2.stride[i]) return true;
             if (v2.stride[i] < v1.stride[i]) return false;
         }
@@ -63,7 +63,7 @@ struct OffsetAndStrides_less {
         if (v2.ndim < v1.ndim) return false;
         if (v1.start < v2.start) return true;
         if (v2.start < v1.start) return false;
-        for (bh_intp i = 0; i < v1.ndim; ++i) {
+        for (int64_t i = 0; i < v1.ndim; ++i) {
             if (v1.stride[i] < v2.stride[i]) return true;
             if (v2.stride[i] < v1.stride[i]) return false;
         }

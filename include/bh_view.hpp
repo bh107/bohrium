@@ -39,7 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
 
-constexpr bh_intp BH_MAXDIM = 16;
+constexpr int64_t BH_MAXDIM = 16;
 
 //Implements pprint of base arrays
 DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_base& b);
@@ -57,24 +57,24 @@ struct bh_view
         start = view.start;
         ndim = view.ndim;
         assert(ndim < BH_MAXDIM);
-        std::memcpy(shape, view.shape, ndim * sizeof(bh_index));
-        std::memcpy(stride, view.stride, ndim * sizeof(bh_index));
+        std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
+        std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
     }
 
     /// Pointer to the base array.
     bh_base*      base;
 
     /// Index of the start element
-    bh_index      start;
+    int64_t      start;
 
     /// Number of dimensions
-    bh_intp       ndim;
+    int64_t       ndim;
 
     /// Number of elements in each dimensions
-    bh_index      shape[BH_MAXDIM];
+    int64_t      shape[BH_MAXDIM];
 
     /// The stride for each dimensions
-    bh_index      stride[BH_MAXDIM];
+    int64_t      stride[BH_MAXDIM];
 
     // Returns a vector of tuples that describe the view using (almost)
     // Python Notation.
@@ -86,10 +86,10 @@ struct bh_view
 
     // Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
     // NB: 0 <= 'dim' <= ndim
-    void insert_axis(bh_index dim, bh_index size, bh_index stride);
+    void insert_axis(int64_t dim, int64_t size, int64_t stride);
 
     // Remove the axis 'dim'
-    void remove_axis(bh_index dim);
+    void remove_axis(int64_t dim);
 
     // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
@@ -103,12 +103,12 @@ struct bh_view
         if (ndim < other.ndim) return true;
         if (other.ndim < ndim) return false;
 
-        for (bh_intp i = 0; i < ndim; ++i) {
+        for (int64_t i = 0; i < ndim; ++i) {
             if (shape[i] < other.shape[i]) return true;
             if (other.shape[i] < shape[i]) return false;
         }
 
-        for (bh_intp i = 0; i < ndim; ++i) {
+        for (int64_t i = 0; i < ndim; ++i) {
             if (stride[i] < other.stride[i]) return true;
             if (other.stride[i] < stride[i]) return false;
         }
@@ -123,13 +123,13 @@ struct bh_view
         if (ndim != other.ndim) return false;
         if (start != other.start) return false;
 
-        for (bh_intp i = 0; i < ndim; ++i) {
+        for (int64_t i = 0; i < ndim; ++i) {
             if (shape[i] != other.shape[i]) {
                 return false;
             }
         }
 
-        for (bh_intp i = 0; i < ndim; ++i) {
+        for (int64_t i = 0; i < ndim; ++i) {
             if (stride[i] != other.stride[i]) {
                 return false;
             }
@@ -150,7 +150,7 @@ struct bh_view
         ar << tmp;
         ar & start;
         ar & ndim;
-        for(bh_intp i = 0; i < ndim; ++i) {
+        for(int64_t i = 0; i < ndim; ++i) {
             ar & shape[i];
             ar & stride[i];
         }
@@ -164,7 +164,7 @@ struct bh_view
         ar & start;
         ar & ndim;
 
-        for(bh_intp i = 0; i < ndim; ++i) {
+        for(int64_t i = 0; i < ndim; ++i) {
             ar & shape[i];
             ar & stride[i];
         }
@@ -181,7 +181,7 @@ DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
  * @param nelements The number of elements
  * @param new_base The handler for the newly created base
  */
-DLLEXPORT void bh_create_base(bh_type type, bh_index nelements, bh_base** new_base);
+DLLEXPORT void bh_create_base(bh_type type, int64_t nelements, bh_base** new_base);
 
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
@@ -197,7 +197,7 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_index>& shape);
+DLLEXPORT bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape);
 
 /* Find the base array for a given view
  *
@@ -211,7 +211,7 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view& view, const std::vector<bh_ind
  * @view    The view in question.
  * @return  Number of elements.
  */
-bh_index bh_nelements_nbcast(const bh_view *view);
+int64_t bh_nelements_nbcast(const bh_view *view);
 
 /* Number of element in a given shape
  *
@@ -219,15 +219,15 @@ bh_index bh_nelements_nbcast(const bh_view *view);
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-DLLEXPORT bh_index bh_nelements(bh_intp ndim, const bh_index shape[]);
-DLLEXPORT bh_index bh_nelements(const bh_view& view);
+DLLEXPORT int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
+DLLEXPORT int64_t bh_nelements(const bh_view& view);
 
 /* Set the view stride to contiguous row-major
  *
  * @view    The view in question
  * @return  The total number of elements in view
  */
-DLLEXPORT bh_intp bh_set_contiguous_stride(bh_view *view);
+DLLEXPORT int64_t bh_set_contiguous_stride(bh_view *view);
 
 /* Updates the view with the complete base
  *

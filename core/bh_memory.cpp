@@ -34,7 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
  * @size  The size of the allocated block
  * @return A pointer to data, and NULL on error
  */
-bh_data_ptr bh_memory_malloc(bh_intp size)
+void* bh_memory_malloc(int64_t size)
 {
 #ifdef _WIN32
     return _aligned_malloc(size, 16);
@@ -42,7 +42,7 @@ bh_data_ptr bh_memory_malloc(bh_intp size)
     //Allocate page-size aligned memory.
     //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    bh_data_ptr data = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+    void* data = mmap(0, size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
     if(data == MAP_FAILED)
         return NULL;
     else
@@ -56,7 +56,7 @@ bh_data_ptr bh_memory_malloc(bh_intp size)
  * @size  The size of the allocated block
  * @return A pointer to data, and NULL on error
  */
-bh_intp bh_memory_free(bh_data_ptr data, bh_intp size)
+int64_t bh_memory_free(void* data, int64_t size)
 {
 #ifdef _WIN32
 	_aligned_free(data);

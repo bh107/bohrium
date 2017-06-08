@@ -60,11 +60,8 @@ enum /* bh_type */
     BH_UNKNOWN
 };
 
-typedef int64_t    bh_intp;
-typedef bh_intp    bh_index;
-typedef bh_intp    bh_type;
-typedef bh_intp    bh_opcode;
-typedef void*      bh_data_ptr;
+typedef int64_t    bh_type;
+typedef int64_t    bh_opcode;
 
 
 /* Byte size for type
