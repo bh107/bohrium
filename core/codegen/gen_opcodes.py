@@ -33,7 +33,7 @@ def gen_headerfile( opcodes ):
 #ifndef __BH_OPCODE_H
 #define __BH_OPCODE_H
 
-#include "bh_type.h"
+#include "bh_type.hpp"
 
 #ifdef __cplusplus
 extern "C" {

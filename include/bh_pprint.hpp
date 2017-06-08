@@ -26,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_opcode.h>
 #include <bh_view.hpp>
 #include <bh_ir.hpp>
-#include <bh_type.h>
+#include <bh_type.hpp>
 
 
 // Pretty print a C array

@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_MEMORY_H
 #define __BH_MEMORY_H
 
-#include <bh_type.h>
+#include <bh_type.hpp>
 
 #ifdef __cplusplus
 extern "C" {

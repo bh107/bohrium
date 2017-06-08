@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdint.h>
 
-#include <bh_type.h>
+#include <bh_type.hpp>
 #include <climits>
 #include <cfloat>
 #include <cassert>

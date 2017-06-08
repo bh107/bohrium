@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_TYPE_H
-#define __BH_TYPE_H
+#ifndef __BH_TYPE_HPP
+#define __BH_TYPE_HPP
 
 #include <stdint.h>
 #include <bh_win.h>

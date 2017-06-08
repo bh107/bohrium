@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <functional>
 
 #include <bh_util.hpp>
-#include <bh_type.h>
+#include <bh_type.hpp>
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
