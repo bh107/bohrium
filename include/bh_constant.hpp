@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 
-#include <bh_type.h>
+#include <bh_type.hpp>
 
 union bh_constant_value
 {

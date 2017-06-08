@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_BASE_H
 #define __BH_BASE_H
 
-#include "bh_type.h"
+#include "bh_type.hpp"
 #include <bh_constant.hpp>
 #include "bh_win.h"
 

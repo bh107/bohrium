@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <cassert>
 #include <tuple>
-#include "bh_type.h"
+#include "bh_type.hpp"
 #include "bh_base.hpp"
 #include <bh_constant.hpp>
 #include "bh_win.h"
