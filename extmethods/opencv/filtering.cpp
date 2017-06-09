@@ -58,19 +58,19 @@ public:
         cv::Mat src, dst;
 
         switch(A->base->type) {
-            case BH_UINT8: {
+            case bh_type::UINT8: {
                 std::copy((bh_uint8*) B_data, ((bh_uint8*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
                 dst = cv::Mat(C->shape[0], C->shape[1], CV_8UC1, (bh_uint8*) C_data);
                 break;
             }
-            case BH_FLOAT32: {
+            case bh_type::FLOAT32: {
                 std::copy((bh_float32*) B_data, ((bh_float32*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_32FC1, (bh_float32*) A_data);
                 dst = cv::Mat(C->shape[0], C->shape[1], CV_32FC1, (bh_float32*) C_data);
                 break;
             }
-            case BH_FLOAT64: {
+            case bh_type::FLOAT64: {
                 std::copy((bh_float64*) B_data, ((bh_float64*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_64FC1, (bh_float64*) A_data);
                 dst = cv::Mat(C->shape[0], C->shape[1], CV_64FC1, (bh_float64*) C_data);
@@ -123,19 +123,19 @@ public:
         cv::Mat dst;
 
         switch(A->base->type) {
-            case BH_UINT8: {
+            case bh_type::UINT8: {
                 std::copy((bh_uint8*) B_data, ((bh_uint8*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
                 dst = cv::Mat(C->shape[0], C->shape[1], CV_8UC1, (bh_uint8*) C_data);
                 break;
             }
-            case BH_FLOAT32: {
+            case bh_type::FLOAT32: {
                 std::copy((bh_float32*) B_data, ((bh_float32*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_32FC1, (bh_float32*) A_data);
                 dst = cv::Mat(C->shape[0], C->shape[1], CV_32FC1, (bh_float32*) C_data);
                 break;
             }
-            case BH_FLOAT64: {
+            case bh_type::FLOAT64: {
                 std::copy((bh_float64*) B_data, ((bh_float64*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_64FC1, (bh_float64*) A_data);
                 dst = cv::Mat(C->shape[0], C->shape[1], CV_64FC1, (bh_float64*) C_data);
@@ -167,7 +167,7 @@ public:
         bh_data_malloc(A->base);
         void *A_data = A->base->data;
 
-        if(A->base->type != BH_UINT8) {
+        if(A->base->type != bh_type::UINT8) {
             throw std::runtime_error("Connected components by OpenCV only works for uint8 images.");
         }
 

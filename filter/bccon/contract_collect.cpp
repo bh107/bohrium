@@ -64,12 +64,14 @@ static void rewrite_chain_add_sub(bh_ir &bhir, vector<bh_instruction*>& chain)
     }
 
     switch (first.constant.type) {
-        case BH_BOOL:
-        case BH_COMPLEX64:
-        case BH_COMPLEX128:
-        case BH_R123:
+        case bh_type::BOOL:
+        case bh_type::COMPLEX64:
+        case bh_type::COMPLEX128:
+        case bh_type::R123:
             verbose_print("[Collect] \tDon't know how to do complex types, yet.");
             return;
+        default:
+            break;
     }
 
     float_t sum = 0.0;
@@ -120,12 +122,14 @@ static void rewrite_chain_mul_div(bh_ir &bhir, vector<bh_instruction*>& chain)
     }
 
     switch (first.constant.type) {
-        case BH_BOOL:
-        case BH_COMPLEX64:
-        case BH_COMPLEX128:
-        case BH_R123:
+        case bh_type::BOOL:
+        case bh_type::COMPLEX64:
+        case bh_type::COMPLEX128:
+        case bh_type::R123:
             verbose_print("[Collect] \tDon't know how to do complex types, yet.");
             return;
+        default:
+            break;
     }
 
     float_t result = 1.0;

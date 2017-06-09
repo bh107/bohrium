@@ -79,12 +79,12 @@ void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &sy
         }
     }
     for (const bh_view *view: offset_strides) {
-        ss << ", " << type_writer(BH_UINT64);
+        ss << ", " << type_writer(bh_type::UINT64);
         if (all_pointers)
             ss << "*";
         ss << " vo" << symbols.offsetStridesID(*view);
         for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << type_writer(BH_UINT64);
+            ss << ", " << type_writer(bh_type::UINT64);
             if (all_pointers)
                 ss << "*";
             ss << " vs" << symbols.offsetStridesID(*view) << "_" << i;
@@ -262,7 +262,7 @@ void write_loop_block(const SymbolTable &symbols,
         {stringstream t; t << "i" << block.rank; itername = t.str();}
         out << "{ // Peeled loop, 1. sweep iteration\n";
         spaces(out, 8 + block.rank*4);
-        out << type_writer(BH_UINT64) << " " << itername << " = 0;\n";
+        out << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
 
         // Write temporary and scalar replaced array declarations
         for (const InstrPtr instr: block.getLocalInstr()) {
@@ -287,7 +287,7 @@ void write_loop_block(const SymbolTable &symbols,
         for (const bh_view *view: indexes) {
             if (not peeled_scope.isIdxDeclared(*view)) {
                 spaces(out, 8 + block.rank * 4);
-                peeled_scope.writeIdxDeclaration(*view, type_writer(BH_UINT64), out);
+                peeled_scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), out);
                 out << "\n";
             }
         }
@@ -333,7 +333,7 @@ void write_loop_block(const SymbolTable &symbols,
     for (const bh_view *view: indexes) {
         if (not scope.isIdxDeclared(*view)) {
             spaces(out, 8 + block.rank * 4);
-            scope.writeIdxDeclaration(*view, type_writer(BH_UINT64), out);
+            scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), out);
             out << "\n";
         }
     }

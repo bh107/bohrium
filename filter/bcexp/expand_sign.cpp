@@ -93,13 +93,13 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
         nelements *= meta.shape[dim];
     }
 
-    if (!((input_type == BH_COMPLEX64) || (input_type == BH_COMPLEX128))) {
+    if (!((input_type == bh_type::COMPLEX64) || (input_type == bh_type::COMPLEX128))) {
         verbose_print("[Sign] Expanding complex sign");
         // For non-complex: sign(x) = (x>0)-(x<0)
         // Temps
         bh_view lss    = make_temp(meta, input_type, nelements);
         bh_view gtr    = make_temp(meta, input_type, nelements);
-        bh_view t_bool = make_temp(meta, BH_BOOL,    nelements);
+        bh_view t_bool = make_temp(meta, bh_type::BOOL,    nelements);
 
         // Sequence
         inject(bhir, ++pc, BH_GREATER,  t_bool, input, 0.0);
@@ -116,12 +116,12 @@ int Expander::expand_sign(bh_ir& bhir, int pc)
     } else {
         verbose_print("[Sign] Expanding normal sign");
         // For complex: sign(0) = 0, sign(z) = z/|z|
-        bh_type float_type = (input_type == BH_COMPLEX64) ? BH_FLOAT32 : BH_FLOAT64;
+        bh_type float_type = (input_type == bh_type::COMPLEX64) ? bh_type::FLOAT32 : bh_type::FLOAT64;
 
         // General form: sign(z) = z/(|z|+(z==0))
         // Temps
         bh_view f_abs  = make_temp(meta, float_type, nelements);
-        bh_view b_zero = make_temp(meta, BH_BOOL,    nelements);
+        bh_view b_zero = make_temp(meta, bh_type::BOOL,    nelements);
         bh_view f_zero = make_temp(meta, float_type, nelements);
 
         // Sequence

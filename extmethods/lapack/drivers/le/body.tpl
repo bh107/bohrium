@@ -40,20 +40,20 @@ public:
                 int ku = 0;
 
                 switch(AB->base->type) {
-                    case BH_FLOAT32: {
+                    case bh_type::FLOAT32: {
                         kl = calc_kl<bh_float32>((bh_float32*) AB_data, AB->shape[0], AB->shape[1]);
                         ku = calc_ku<bh_float32>((bh_float32*) AB_data, AB->shape[0]);
                         break;
                     }
-                    case BH_FLOAT64: {
+                    case bh_type::FLOAT64: {
                         kl = calc_kl<bh_float64>((bh_float64*) AB_data, AB->shape[0], AB->shape[1]);
                         ku = calc_ku<bh_float64>((bh_float64*) AB_data, AB->shape[0]);
                         break;
                     }
-                    case BH_COMPLEX64: {
+                    case bh_type::COMPLEX64: {
                         throw std::runtime_error("Not implemented yet!");
                     }
-                    case BH_COMPLEX128: {
+                    case bh_type::COMPLEX128: {
                         throw std::runtime_error("Not implemented yet!");
                     }
                     default:
@@ -66,18 +66,18 @@ public:
                 int lda = 2 * kl + ku + 1;
 
                 switch(AB->base->type) {
-                    case BH_FLOAT32: {
+                    case bh_type::FLOAT32: {
                         AB_data = get_ab_data<bh_float32>((bh_float32*) AB_data, AB->shape[0], AB->shape[1], kl, ku);
                         break;
                     }
-                    case BH_FLOAT64: {
+                    case bh_type::FLOAT64: {
                         AB_data = get_ab_data<bh_float64>((bh_float64*) AB_data, AB->shape[0], AB->shape[1], kl, ku);
                         break;
                     }
-                    case BH_COMPLEX64: {
+                    case bh_type::COMPLEX64: {
                         throw std::runtime_error("Not implemented yet!");
                     }
-                    case BH_COMPLEX128: {
+                    case bh_type::COMPLEX128: {
                         throw std::runtime_error("Not implemented yet!");
                     }
                     default:
@@ -103,22 +103,22 @@ public:
             void *DL, *D, *DU;
 
             switch(A->base->type) {
-                case BH_FLOAT32: {
+                case bh_type::FLOAT32: {
                     DL = get_subdiagonal<bh_float32>(A_data, n);
                     D  = get_diagonal<bh_float32>(A_data, n);
                     DU = get_superdiagonal<bh_float32>(A_data, n);
                     break;
                 }
-                case BH_FLOAT64: {
+                case bh_type::FLOAT64: {
                     DL = get_subdiagonal<bh_float64>(A_data, n);
                     D  = get_diagonal<bh_float64>(A_data, n);
                     DU = get_superdiagonal<bh_float64>(A_data, n);
                     break;
                 }
-                case BH_COMPLEX64: {
+                case bh_type::COMPLEX64: {
                     throw std::runtime_error("Not implemented yet!");
                 }
-                case BH_COMPLEX128: {
+                case bh_type::COMPLEX128: {
                     throw std::runtime_error("Not implemented yet!");
                 }
                 default:
@@ -143,18 +143,18 @@ public:
             // https://www.ibm.com/support/knowledgecenter/SSFHY8_5.3.0/com.ibm.cluster.essl.v5r3.essl100.doc/am5gr_upsm.htm
 
             switch(B->base->type) {
-                case BH_FLOAT32: {
+                case bh_type::FLOAT32: {
                     AP_data = get_ap_data<bh_float32>((bh_float32*) AP_data, n);
                     break;
                 }
-                case BH_FLOAT64: {
+                case bh_type::FLOAT64: {
                     AP_data = get_ap_data<bh_float64>((bh_float64*) AP_data, n);
                     break;
                 }
-                case BH_COMPLEX64: {
+                case bh_type::COMPLEX64: {
                     throw std::runtime_error("Not implemented yet!");
                 }
-                case BH_COMPLEX128: {
+                case bh_type::COMPLEX128: {
                     throw std::runtime_error("Not implemented yet!");
                 }
                 default:

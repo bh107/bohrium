@@ -33,20 +33,20 @@ namespace jitk {
 // Return C99 types, which are used inside the C99 kernels
 const char *write_c99_type(bh_type dtype) {
     switch (dtype) {
-        case BH_BOOL:       return "bool";
-        case BH_INT8:       return "int8_t";
-        case BH_INT16:      return "int16_t";
-        case BH_INT32:      return "int32_t";
-        case BH_INT64:      return "int64_t";
-        case BH_UINT8:      return "uint8_t";
-        case BH_UINT16:     return "uint16_t";
-        case BH_UINT32:     return "uint32_t";
-        case BH_UINT64:     return "uint64_t";
-        case BH_FLOAT32:    return "float";
-        case BH_FLOAT64:    return "double";
-        case BH_COMPLEX64:  return "float complex";
-        case BH_COMPLEX128: return "double complex";
-        case BH_R123:       return "bh_r123";
+        case bh_type::BOOL:       return "bool";
+        case bh_type::INT8:       return "int8_t";
+        case bh_type::INT16:      return "int16_t";
+        case bh_type::INT32:      return "int32_t";
+        case bh_type::INT64:      return "int64_t";
+        case bh_type::UINT8:      return "uint8_t";
+        case bh_type::UINT16:     return "uint16_t";
+        case bh_type::UINT32:     return "uint32_t";
+        case bh_type::UINT64:     return "uint64_t";
+        case bh_type::FLOAT32:    return "float";
+        case bh_type::FLOAT64:    return "double";
+        case bh_type::COMPLEX64:  return "float complex";
+        case bh_type::COMPLEX128: return "double complex";
+        case bh_type::R123:       return "struct { uint64_t start, key; }";
         default:
             std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown C99 type");
@@ -56,20 +56,20 @@ const char *write_c99_type(bh_type dtype) {
 // Return OpenCL API types, which are used inside the JIT kernels
 const char* write_opencl_type(bh_type dtype) {
     switch (dtype) {
-        case BH_BOOL:       return "uchar";
-        case BH_INT8:       return "char";
-        case BH_INT16:      return "short";
-        case BH_INT32:      return "int";
-        case BH_INT64:      return "long";
-        case BH_UINT8:      return "uchar";
-        case BH_UINT16:     return "ushort";
-        case BH_UINT32:     return "uint";
-        case BH_UINT64:     return "ulong";
-        case BH_FLOAT32:    return "float";
-        case BH_FLOAT64:    return "double";
-        case BH_COMPLEX64:  return "float2";
-        case BH_COMPLEX128: return "double2";
-        case BH_R123:       return "ulong2";
+        case bh_type::BOOL:       return "uchar";
+        case bh_type::INT8:       return "char";
+        case bh_type::INT16:      return "short";
+        case bh_type::INT32:      return "int";
+        case bh_type::INT64:      return "long";
+        case bh_type::UINT8:      return "uchar";
+        case bh_type::UINT16:     return "ushort";
+        case bh_type::UINT32:     return "uint";
+        case bh_type::UINT64:     return "ulong";
+        case bh_type::FLOAT32:    return "float";
+        case bh_type::FLOAT64:    return "double";
+        case bh_type::COMPLEX64:  return "float2";
+        case bh_type::COMPLEX128: return "double2";
+        case bh_type::R123:       return "ulong2";
         default:
             std::cerr << "Unknown OpenCL type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown OpenCL type");
@@ -79,20 +79,20 @@ const char* write_opencl_type(bh_type dtype) {
 // Return CUDA types, which are used inside the JIT kernels
 const char *write_cuda_type(bh_type dtype) {
     switch (dtype) {
-        case BH_BOOL:       return "bool";
-        case BH_INT8:       return "char";
-        case BH_INT16:      return "short";
-        case BH_INT32:      return "int";
-        case BH_INT64:      return "long";
-        case BH_UINT8:      return "unsigned char";
-        case BH_UINT16:     return "unsigned short";
-        case BH_UINT32:     return "unsigned int";
-        case BH_UINT64:     return "unsigned long";
-        case BH_FLOAT32:    return "float";
-        case BH_FLOAT64:    return "double";
-        case BH_COMPLEX64:  return "cuFloatComplex";
-        case BH_COMPLEX128: return "cuDoubleComplex";
-        case BH_R123:       return "ulong2";
+        case bh_type::BOOL:       return "bool";
+        case bh_type::INT8:       return "char";
+        case bh_type::INT16:      return "short";
+        case bh_type::INT32:      return "int";
+        case bh_type::INT64:      return "long";
+        case bh_type::UINT8:      return "unsigned char";
+        case bh_type::UINT16:     return "unsigned short";
+        case bh_type::UINT32:     return "unsigned int";
+        case bh_type::UINT64:     return "unsigned long";
+        case bh_type::FLOAT32:    return "float";
+        case bh_type::FLOAT64:    return "double";
+        case bh_type::COMPLEX64:  return "cuFloatComplex";
+        case bh_type::COMPLEX128: return "cuDoubleComplex";
+        case bh_type::R123:       return "ulong2";
         default:
             std::cerr << "Unknown CUDA type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown CUDA type");
@@ -102,10 +102,21 @@ const char *write_cuda_type(bh_type dtype) {
 // Writes the union of C99 types that can make up a constant
 void write_c99_dtype_union(std::stringstream& out) {
     out << "union dtype {\n";
-    for (bh_type t = BH_BOOL; t <= BH_COMPLEX128; ++t) {
-        spaces(out, 4);
-        out << write_c99_type(t) << " " << bh_type_text(t) << ";\n";
-    }
+    spaces(out, 4);
+    out << write_c99_type(bh_type::BOOL) << " " << bh_type_text(bh_type::BOOL) << ";\n";
+    out << write_c99_type(bh_type::INT8) << " " << bh_type_text(bh_type::INT8) << ";\n";
+    out << write_c99_type(bh_type::INT16) << " " << bh_type_text(bh_type::INT16) << ";\n";
+    out << write_c99_type(bh_type::INT32) << " " << bh_type_text(bh_type::INT32) << ";\n";
+    out << write_c99_type(bh_type::INT64) << " " << bh_type_text(bh_type::INT64) << ";\n";
+    out << write_c99_type(bh_type::UINT8) << " " << bh_type_text(bh_type::UINT8) << ";\n";
+    out << write_c99_type(bh_type::UINT16) << " " << bh_type_text(bh_type::UINT16) << ";\n";
+    out << write_c99_type(bh_type::UINT32) << " " << bh_type_text(bh_type::UINT32) << ";\n";
+    out << write_c99_type(bh_type::UINT64) << " " << bh_type_text(bh_type::UINT64) << ";\n";
+    out << write_c99_type(bh_type::FLOAT32) << " " << bh_type_text(bh_type::FLOAT32) << ";\n";
+    out << write_c99_type(bh_type::FLOAT64) << " " << bh_type_text(bh_type::FLOAT64) << ";\n";
+    out << write_c99_type(bh_type::COMPLEX64) << " " << bh_type_text(bh_type::COMPLEX64) << ";\n";
+    out << write_c99_type(bh_type::COMPLEX128) << " " << bh_type_text(bh_type::COMPLEX128) << ";\n";
+    out << write_c99_type(bh_type::R123) << " " << bh_type_text(bh_type::R123) << ";\n";
     out << "};\n";
 }
 

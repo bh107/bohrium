@@ -41,26 +41,24 @@ typedef struct { double real, imag; } bh_complex128;
 typedef struct { bh_uint64 start, key; } bh_r123;
 
 /* Codes for data types */
-enum /* bh_type */
+enum class bh_type
 {
-    BH_BOOL,
-    BH_INT8,
-    BH_INT16,
-    BH_INT32,
-    BH_INT64,
-    BH_UINT8,
-    BH_UINT16,
-    BH_UINT32,
-    BH_UINT64,
-    BH_FLOAT32,
-    BH_FLOAT64,
-    BH_COMPLEX64,
-    BH_COMPLEX128,
-    BH_R123,
-    BH_UNKNOWN
+    BOOL,
+    INT8,
+    INT16,
+    INT32,
+    INT64,
+    UINT8,
+    UINT16,
+    UINT32,
+    UINT64,
+    FLOAT32,
+    FLOAT64,
+    COMPLEX64,
+    COMPLEX128,
+    R123
 };
 
-typedef int64_t    bh_type;
 typedef int64_t    bh_opcode;
 
 

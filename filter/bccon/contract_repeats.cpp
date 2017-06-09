@@ -112,7 +112,7 @@ void Contracter::contract_repeats(bh_ir &bhir)
 
                     // We use the BH_R123 type, because this can hold two values
                     bh_constant constant;
-                    constant.type = BH_R123;
+                    constant.type = bh_type::R123;
                     constant.value.r123.start = size;
                     constant.value.r123.key = occur;
                     repeat_instr.constant = constant;

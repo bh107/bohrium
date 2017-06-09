@@ -143,49 +143,48 @@ inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T 
     instr.constant.type = type;
 
     switch(type) {
-        case BH_BOOL:
+        case bh_type::BOOL:
             instr.constant.value.bool8 = (bh_bool)value;
             break;
-        case BH_INT8:
+        case bh_type::INT8:
             instr.constant.value.int8 = (bh_int8)value;
             break;
-        case BH_INT16:
+        case bh_type::INT16:
             instr.constant.value.int16 = (bh_int16)value;
             break;
-        case BH_INT32:
+        case bh_type::INT32:
             instr.constant.value.int32 = (bh_int32)value;
             break;
-        case BH_INT64:
+        case bh_type::INT64:
             instr.constant.value.int64 = (bh_int64)value;
             break;
-        case BH_UINT8:
+        case bh_type::UINT8:
             instr.constant.value.uint8 = (bh_uint8)value;
             break;
-        case BH_UINT16:
+        case bh_type::UINT16:
             instr.constant.value.uint16 = (bh_uint16)value;
             break;
-        case BH_UINT32:
+        case bh_type::UINT32:
             instr.constant.value.uint32 = (bh_uint32)value;
             break;
-        case BH_UINT64:
+        case bh_type::UINT64:
             instr.constant.value.uint64 = (bh_uint64)value;
             break;
-        case BH_FLOAT32:
+        case bh_type::FLOAT32:
             instr.constant.value.float32 = (bh_float32)value;
             break;
-        case BH_FLOAT64:
+        case bh_type::FLOAT64:
             instr.constant.value.float64 = (bh_float64)value;
             break;
-        case BH_COMPLEX64:
+        case bh_type::COMPLEX64:
             instr.constant.value.complex64.real = (float)value;
             instr.constant.value.complex64.imag = (float)0.0;
             break;
-        case BH_COMPLEX128:
+        case bh_type::COMPLEX128:
             instr.constant.value.complex128.real = (double)value;
             instr.constant.value.complex128.imag = (double)0.0;
             break;
-        case BH_R123:
-        case BH_UNKNOWN:
+        case bh_type::R123:
         default:
             fprintf(stderr, "set_constant unsupported for given type.");
             break;
