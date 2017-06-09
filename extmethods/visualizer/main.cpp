@@ -39,7 +39,7 @@ public:
 
         assert(args != NULL);
         assert(instr->operand[1].base->nelem == 5);
-        assert(instr->operand[1].base->type == BH_FLOAT32);
+        assert(instr->operand[1].base->type == bh_type::FLOAT32);
 
         for(int64_t i=0; i<subject->ndim; ++i) {
             if(subject->shape[i] < 16) {

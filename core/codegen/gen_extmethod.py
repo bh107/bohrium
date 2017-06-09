@@ -37,7 +37,7 @@ def gen_extmethod(json, header_tpl, body_tpl, func_tpl, footer_tpl):
         body_func = ""
         for t in method["types"]:
             body_func += func_tpl(
-                utype=options[t]["type"].upper(),
+                utype="bh_type::%s" % options[t]["type"].upper()[3:],
                 t=t,
                 **(dict(subs, **dict(options[t], **method)))
             )

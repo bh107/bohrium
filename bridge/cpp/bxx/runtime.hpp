@@ -378,7 +378,7 @@ void Runtime::enqueue(bh_opcode opcode, multi_array<TO>& op0, const uint64_t op1
     instr->operand[0] = op0.meta;
     instr->operand[1].base = NULL;
 
-    instr->constant.type = BH_R123;
+    instr->constant.type = bh_type::R123;
     instr->constant.value.r123.start = op1;
     instr->constant.value.r123.key   = op2;
 }

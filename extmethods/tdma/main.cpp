@@ -99,10 +99,10 @@ public:
         bh_data_malloc(rhs->base);
 
         switch(diagonals->base->type) {
-            case BH_FLOAT32:
+            case bh_type::FLOAT32:
                 tdma_reduce<bh_float32>(diagonals, rhs, out);
                 break;
-            case BH_FLOAT64:
+            case bh_type::FLOAT64:
                 tdma_reduce<bh_float64>(diagonals, rhs, out);
                 break;
             default:

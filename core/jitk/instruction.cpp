@@ -44,7 +44,7 @@ void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, cons
                                                const char *fname_complex) {
     const bh_type t0 = instr.operand_type(0);
     if (opencl and bh_type_is_complex(t0)) {
-        out << fname_complex << "(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " << ops[0] \
+        out << fname_complex << "(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " << ops[0] \
  << ", " << ops[1] << ");\n";
     } else {
         out << ops[0] << " = " << fname << "(" << ops[1] << ");\n";
@@ -129,7 +129,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 << ops[1] << ";\n";
             break;
         case BH_INVERT:
-            if (instr.operand[0].base->type == BH_BOOL)
+            if (instr.operand[0].base->type == bh_type::BOOL)
                 out << ops[0] << " = !" << ops[1] << ";\n";
             else
                 out << ops[0] << " = ~" << ops[1] << ";\n";
@@ -286,7 +286,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_ABSOLUTE: {
             const bh_type t0 = instr.operand_type(1);
 
-            if (t0 == BH_BOOL) {
+            if (t0 == bh_type::BOOL) {
                 out << ops[0] << " = true;\n";
             } else if (bh_type_is_unsigned_integer(t0)) {
                 out << ops[0] << " = " << ops[1] << ";\n"; // no-op
@@ -294,7 +294,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 out << "CABS(" << ops[0] << ", " << ops[1] << ");\n";
             } else if (bh_type_is_float(t0)) {
                 out << ops[0] << " = fabs(" << ops[1] << ");\n";
-            } else if (!opencl and t0 == BH_INT64) {
+            } else if (!opencl and t0 == bh_type::INT64) {
                 out << ops[0] << " = llabs(" << ops[1] << ");\n";
             } else {
                 out << ops[0] << " = abs((int)" << ops[1] << ");\n";
@@ -332,7 +332,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_POWER: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CPOW(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
+                out << "CPOW(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " \
                     << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else if (opencl and bh_type_is_integer(t0)) {
                 out << "IPOW(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
@@ -396,7 +396,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_DIVIDE: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") << ", " \
+                out << "CDIV(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " \
                     << ops[0] << ", " << ops[1] << ", " << ops[2] << ");\n";
             } else if (bh_type_is_signed_integer(instr.operand[0].base->type)) {
                 /* Python/NumPy signed integer division
@@ -427,13 +427,13 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             const bh_type t0 = instr.operand_type(0);
             const bh_type t1 = instr.operand_type(1);
 
-            if (opencl and t0 == BH_COMPLEX64 and t1 == BH_COMPLEX128) {
+            if (opencl and t0 == bh_type::COMPLEX64 and t1 == bh_type::COMPLEX128) {
                 out << "make_complex64((float)" << ops[1] << ".x, (float)" << ops[1] << ".y)";
-            } else if (opencl and t0 == BH_COMPLEX128 and t1 == BH_COMPLEX64) {
+            } else if (opencl and t0 == bh_type::COMPLEX128 and t1 == bh_type::COMPLEX64) {
                 out << "make_complex128((double)" << ops[1] << ".x, (double)" << ops[1] << ".y)";
             } else if (opencl and bh_type_is_complex(t0) and not bh_type_is_complex(t1)) {
-                out << "make_complex" << (t0 == BH_COMPLEX64 ? "64" : "128") << "(" << ops[1] << ", 0.0f)";
-            } else if (opencl and t0 == BH_BOOL and t1 != BH_BOOL) {
+                out << "make_complex" << (t0 == bh_type::COMPLEX64 ? "64" : "128") << "(" << ops[1] << ", 0.0f)";
+            } else if (opencl and t0 == bh_type::BOOL and t1 != bh_type::BOOL) {
                 out << "(" << ops[1] << "==0?0:1)";
             } else {
                 out << ops[1];
@@ -446,8 +446,8 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << "); CDIV(" << (t0 == BH_COMPLEX64 ? "float" : "double") \
-                    << ", " << ops[0] << ", " <<  ops[0] << ", make_complex" << (t0 == BH_COMPLEX64 ? "64" : "128")
+                out << "CLOG(" << ops[0] << ", " << ops[1] << "); CDIV(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") \
+                    << ", " << ops[0] << ", " <<  ops[0] << ", make_complex" << (t0 == bh_type::COMPLEX64 ? "64" : "128")
                     << "(log(10.0f), 0.0f));\n";
             } else if (bh_type_is_complex(t0)) {
                 out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);\n";
@@ -483,7 +483,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 //              1         if Re(z) > 0
                 // csgn(z) = { -1         if Re(z) < 0
                 //             sgn(Im(z)) if Re(z) = 0
-                const char *ctype = (t0 == BH_COMPLEX64 ? "float" : "double");
+                const char *ctype = (t0 == bh_type::COMPLEX64 ? "float" : "double");
                 if (opencl) {
                     out << ctype << " real = " << ops[1] << ".x; \n";
                     out << ctype << " imag = " << ops[1] << ".y; \n";
@@ -532,7 +532,7 @@ void dtype_max(bh_type dtype, stringstream &out) {
         if (not bh_type_is_signed_integer(dtype)) {
             out << "u";
         }
-        if (dtype == BH_INT64 or dtype == BH_UINT64) {
+        if (dtype == bh_type::INT64 or dtype == bh_type::UINT64) {
             out << "ll";
         }
     } else {
@@ -545,7 +545,7 @@ void dtype_max(bh_type dtype, stringstream &out) {
 void dtype_min(bh_type dtype, stringstream &out) {
     if (bh_type_is_integer(dtype)) {
         out << bh_type_limit_min_integer(dtype)+1;
-        if (dtype == BH_INT64 or dtype == BH_UINT64) {
+        if (dtype == bh_type::INT64 or dtype == bh_type::UINT64) {
             out << "ll";
         }
     } else {

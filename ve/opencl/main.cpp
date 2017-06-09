@@ -126,7 +126,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
     if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
                      [&block](const LoopB* b){return *b == block;}) == threaded_blocks.end()) {
-        out << "for(" << write_opencl_type(BH_UINT64) << " " << itername;
+        out << "for(" << write_opencl_type(bh_type::UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << "=1; ";
         else
@@ -163,7 +163,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const LoopB *b = threaded_blocks[i];
             spaces(ss, 4);
-            ss << "const " << write_opencl_type(BH_UINT32) << " i" << b->rank << " = get_global_id(" << i << "); " \
+            ss << "const " << write_opencl_type(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); " \
                << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow\n";
         }
         ss << "\n";

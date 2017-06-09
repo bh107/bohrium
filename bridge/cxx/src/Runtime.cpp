@@ -41,7 +41,7 @@ void Runtime::enqueue_random(BhArray<uint64_t>& out, uint64_t seed, uint64_t key
 
     // Append the special BH_R123 constant
     bh_constant cnt;
-    cnt.type             = BH_R123;
+    cnt.type             = bh_type::R123;
     cnt.value.r123.start = seed;
     cnt.value.r123.key   = key;
     instr.append_operand(cnt);
