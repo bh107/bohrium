@@ -11,14 +11,14 @@ def main(args):
     # Let's read the opcode and type files
     with open(join(prefix,'..','..','core','codegen','opcodes.json')) as f:
         opcodes = json.loads(f.read())
-    with open(join(prefix,'..','cpp','codegen','element_types.json')) as f:
+    with open(join(prefix,'..','..','core','codegen','types.json')) as f:
         types   = json.loads(f.read())
         type_map = {}
-        for t in types:
-            type_map[t[-1]] = {'cpp'     : t[0],
-                               'bhc'     : t[1],
-                               'name'    : t[2],
-                               'bhc_ary' : "bhc_ndarray_%s_p"%t[2]}
+        for t in types[:-1]:
+            type_map[t['enum']] = {'cpp'     : t['cpp'],
+                                   'bhc'     : t['bhc'],
+                                   'name'    : t['union'],
+                                   'bhc_ary' : "bhc_ndarray_%s_p"%t['union']}
 
     # Let's generate the header and implementation of all array operations
     head = ""; impl = ""

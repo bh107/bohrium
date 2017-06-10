@@ -13,7 +13,7 @@ add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx ${CMAKE_CURRENT_BINARY_DIR}/src
     DEPENDS gen_array_operations.py
             ../../core/codegen/opcodes.json
-            ../cpp/codegen/element_types.json
+            ../../core/codegen/types.json
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 #add_custom_target(BHXX_CODEGEN DEPENDS ${SRC_H})

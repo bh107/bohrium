@@ -21,15 +21,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_memory.h>
 #include <bhxx/BhBase.hpp>
 
-// TODO get rid of this header
-//      (Still from the old interface)
-#include <bxx/traits.hpp>
-
 namespace bhxx {
 
 template <typename T>
 void BhBase::set_type() {
-    bxx::assign_array_type<T>(this);
+    type = bh_type_from_template<T>();
 }
 
 // Instantiate all possible types of the set_type function

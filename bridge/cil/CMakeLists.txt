@@ -33,7 +33,7 @@ if(BRIDGE_CIL AND MONO_FOUND AND PYTHONINTERP_FOUND)
       COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py codegen/output
       DEPENDS gen_array_operations.py
             ../../core/codegen/opcodes.json
-            ../cpp/codegen/element_types.json
+            ../../core/codegen/types.json
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   )
 

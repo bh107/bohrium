@@ -13,14 +13,14 @@ def main(args):
     # Let's read the opcode and type files
     with open(join(prefix,'..','..','core','codegen','opcodes.json')) as f:
         opcodes = json.loads(f.read())
-    with open(join(prefix,'..','cpp','codegen','element_types.json')) as f:
+    with open(join(prefix,'..','..','core','codegen','types.json')) as f:
         types   = json.loads(f.read())
         type_map = {}
-        for t in types:
-            type_map[t[-1]] = {'cpp'     : t[0],
-                               'bhc'     : t[1],
-                               'name'    : t[2],
-                               'bhc_ary' : "bhc_ndarray_%s_p"%t[2]}
+        for t in types[:-1]:
+            type_map[t['enum']] = {'cpp'     : t['cpp'],
+                                   'bhc'     : t['bhc'],
+                                   'name'    : t['union'],
+                                   'bhc_ary' : "bhc_ndarray_%s_p"%t['union']}
 
     # Let's generate the header and implementation of all array operations
     head = ""
@@ -57,7 +57,7 @@ def main(args):
         head += "\n\n"
 
     #Let's handle random
-    decl = "void bhc_random123_Auint64_Kuint64_Kuint64([Out] bhc_ndarray_uint64_p @out, [In] bh_uint64 seed, [In] bh_uint64 key)"
+    decl = "void bhc_random123_Auint64_Kuint64_Kuint64([Out] bhc_ndarray_uint64_p @out, [In] bhc_uint64 seed, [In] bhc_uint64 key)"
     head += dllimport%decl
 
     #We also need flush
@@ -97,19 +97,19 @@ using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-using bh_bool = System.Boolean;
-using bh_int8 = System.SByte;
-using bh_uint8 = System.Byte;
-using bh_int16 = System.Int16;
-using bh_uint16 = System.UInt16;
-using bh_int32 = System.Int32;
-using bh_uint32 = System.UInt32;
-using bh_int64 = System.Int64;
-using bh_uint64 = System.UInt64;
-using bh_float32 = System.Single;
-using bh_float64 = System.Double;
-using bh_complex64 = NumCIL.Complex64.DataType;
-using bh_complex128 = System.Numerics.Complex;
+using bhc_bool = System.Boolean;
+using bhc_int8 = System.SByte;
+using bhc_uint8 = System.Byte;
+using bhc_int16 = System.Int16;
+using bhc_uint16 = System.UInt16;
+using bhc_int32 = System.Int32;
+using bhc_uint32 = System.UInt32;
+using bhc_int64 = System.Int64;
+using bhc_uint64 = System.UInt64;
+using bhc_float32 = System.Single;
+using bhc_float64 = System.Double;
+using bhc_complex64 = NumCIL.Complex64.DataType;
+using bhc_complex128 = System.Numerics.Complex;
 
 namespace NumCIL.Bohrium
 {
