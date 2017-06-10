@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __BH_CONSTANT_H
 
 #include <iostream>
-
 #include <bh_type.hpp>
 
 union bh_constant_value
@@ -41,12 +40,36 @@ union bh_constant_value
     bh_complex64  complex64;
     bh_complex128 complex128;
     bh_r123       r123;
+
+    // Constructors for each possible union type
+    bh_constant_value() = default;
+    bh_constant_value(bool val) : bool8(val) {}
+    bh_constant_value(int8_t val) : int8(val) {}
+    bh_constant_value(int16_t val) : int16(val) {}
+    bh_constant_value(int32_t val) : int32(val) {}
+    bh_constant_value(int64_t val) : int64(val) {}
+    bh_constant_value(uint8_t val) : uint8(val) {}
+    bh_constant_value(uint16_t val) : uint16(val) {}
+    bh_constant_value(uint32_t val) : uint32(val) {}
+    bh_constant_value(uint64_t val) : uint64(val) {}
+    bh_constant_value(float val) : float32(val) {}
+    bh_constant_value(double val) : float64(val) {}
+    bh_constant_value(std::complex<float> val) : complex64{val.real(), val.imag()} {}
+    bh_constant_value(std::complex<double> val) : complex128{val.real(), val.imag()} {}
+    bh_constant_value(bh_r123 val) : r123(val) {}
 };
 
-struct bh_constant
+class bh_constant
 {
+public:
     bh_constant_value value;
     bh_type type;
+
+    bh_constant() = default;
+
+    //Constructor based on type
+    template<typename T>
+    bh_constant(T val) : value(val), type(bh_type_from_template<T>()){}
 
     //Convert the constant value to an int64
     //Throw an overflow_error() exception if impossible
