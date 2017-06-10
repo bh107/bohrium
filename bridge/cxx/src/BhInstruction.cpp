@@ -20,10 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bhxx/BhInstruction.hpp>
 
-// TODO get rid of this header
-//      (Still from the old interface)
-#include <bxx/traits.hpp>
-
 namespace bhxx {
 
 void BhInstruction::append_operand(bh_constant cnt) {
@@ -85,7 +81,7 @@ void BhInstruction::append_operand(T scalar) {
     bh_view view;
     view.base = nullptr;
     operand.push_back(view);
-    bxx::assign_const_type(&constant, scalar);
+    constant = bh_constant(scalar);
 }
 
 // Instantiate all possible types for bh_instruction
