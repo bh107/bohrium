@@ -21,6 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_TYPE_HPP
 #define __BH_TYPE_HPP
 
+#include <stdexcept>
+#include <complex>
 #include <stdint.h>
 #include <bh_win.h>
 
@@ -58,6 +60,53 @@ enum class bh_type
     COMPLEX128,
     R123
 };
+
+// Return a `bh_type` based on a template type
+template<typename T> inline bh_type bh_type_from_template() {
+    throw std::runtime_error("Type not supported in Bohrium");
+}
+template<> inline bh_type bh_type_from_template<bool>() {
+    return bh_type::BOOL;
+}
+template<> inline bh_type bh_type_from_template<int8_t>() {
+    return bh_type::INT8;
+}
+template<> inline bh_type bh_type_from_template<int16_t>() {
+    return bh_type::INT16;
+}
+template<> inline bh_type bh_type_from_template<int32_t>() {
+    return bh_type::INT32;
+}
+template<> inline bh_type bh_type_from_template<int64_t>() {
+    return bh_type::INT64;
+}
+template<> inline bh_type bh_type_from_template<uint8_t>() {
+    return bh_type::UINT8;
+}
+template<> inline bh_type bh_type_from_template<uint16_t>() {
+    return bh_type::UINT16;
+}
+template<> inline bh_type bh_type_from_template<uint32_t>() {
+    return bh_type::UINT32;
+}
+template<> inline bh_type bh_type_from_template<uint64_t>() {
+    return bh_type::UINT64;
+}
+template<> inline bh_type bh_type_from_template<float>() {
+    return bh_type::FLOAT32;
+}
+template<> inline bh_type bh_type_from_template<double>() {
+    return bh_type::FLOAT64;
+}
+template<> inline bh_type bh_type_from_template<std::complex<float> >() {
+    return bh_type::COMPLEX64;
+}
+template<> inline bh_type bh_type_from_template<std::complex<double> >() {
+    return bh_type::COMPLEX128;
+}
+template<> inline bh_type bh_type_from_template<bh_r123>() {
+    return bh_type::R123;
+}
 
 typedef int64_t    bh_opcode;
 
