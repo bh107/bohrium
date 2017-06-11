@@ -139,7 +139,6 @@ add_subdirectory(extmethods/tdma)
 add_subdirectory(extmethods/lapack)
 add_subdirectory(extmethods/opencv)
 
-add_subdirectory(bridge/cpp)
 add_subdirectory(bridge/cxx)
 add_subdirectory(bridge/c)
 add_subdirectory(bridge/npbackend)
