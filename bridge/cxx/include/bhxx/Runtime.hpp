@@ -91,7 +91,7 @@ class Runtime {
     // The lazy evaluated instructions
     std::vector<bh_instruction> instr_list;
 
-    // Unique pointers to base objecs, which are to be
+    // Unique pointers to base objects, which are to be
     // purged after the next flush
     std::vector<std::unique_ptr<BhBase>> bases_for_deletion;
 

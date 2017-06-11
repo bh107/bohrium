@@ -31,8 +31,14 @@ Runtime::Runtime()
         extmethod_next_opcode_id(BH_MAX_OPCODE_ID + 1) {}
 
 void Runtime::enqueue(BhInstruction instr) {
-    if (instr_list.size() > 1000) flush();
     instr_list.push_back(std::move(instr));
+
+    // We hard-code a kernel size threshold here.
+    // NB: we HAVE to include the just enqueued instruction since it might be a BH_FREE,
+    // which clears `bases_for_deletion`.
+    if (instr_list.size() >= 1000) {
+        flush();
+    }
 }
 
 void Runtime::enqueue_random(BhArray<uint64_t>& out, uint64_t seed, uint64_t key) {
