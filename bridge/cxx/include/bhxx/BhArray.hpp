@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "BhBase.hpp"
-#include "util.hpp"
+#include "SVector.hpp"
 #include <ostream>
 #include <vector>
 
@@ -155,10 +155,5 @@ std::ostream& operator<<(std::ostream& os, const BhArray<T>& ary) {
     ary.pprint(os);
     return os;
 }
-
-/** Convert an array with exactly one element to a scalar by calling
- *  sync and flush and returning the value */
-template <typename T>
-T as_scalar(BhArray<T>& ary);
 
 }  // namespace bhxx

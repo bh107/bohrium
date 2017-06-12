@@ -1,6 +1,3 @@
-//
-// Copyright (C) 2017 by the linalgwrap authors
-//
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -21,12 +18,21 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BHXX_H
-#define __BHXX_H
+#include <bhxx/SVector.hpp>
 
-#include <bhxx/BhArray.hpp>
-#include <bhxx/Runtime.hpp>
-#include <bhxx/array_operations.hpp>
-#include <bhxx/util.hpp>
+using namespace std;
 
-#endif
+namespace bhxx {
+
+// Return a contiguous stride (row-major) based on `shape`
+Stride contiguous_stride(const Shape& shape) {
+    Stride  ret(shape.size());
+    int64_t stride = 1;
+    for (int64_t i = shape.size() - 1; i >= 0; --i) {
+        ret[i] = stride;
+        stride *= static_cast<int64_t>(shape[i]);
+    }
+    return ret;
+}
+
+}  // namespace bhxx
