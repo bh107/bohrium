@@ -122,7 +122,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif
+#endif // __BHC_ARRAY_OPERATIONS_H
 """%head
     impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 

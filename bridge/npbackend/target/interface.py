@@ -205,3 +205,8 @@ def cond_scatter(out, ary, indexes, mask):
     :param Mixed ary: A boolean mask that specifies which indexes and values to include and exclude
     """
     raise NotImplementedError()
+
+
+def message(msg):
+    """ Send and receive a message through the component stack """
+    raise NotImplementedError()

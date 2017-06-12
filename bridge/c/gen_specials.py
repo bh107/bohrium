@@ -25,10 +25,24 @@ def main(args):
     impl += doc; head += doc
     decl = "void bhc_flush(void)"
     head += "DLLEXPORT %s;\n"%decl
-    impl += "%s\n"%decl
+    impl += "%s"%decl
     impl += """
 {
     bhxx::Runtime::instance().flush();
+}
+"""
+
+    doc = "\n//Send and receive a message through the component stack\n"
+    doc += "//NB: the returned string is invalidated on the next call to bhc_message()\n"
+    impl += doc; head += doc
+    decl = "const char* bhc_message(const char* msg)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{
+    static std::string msg_recv;
+    msg_recv = bhxx::Runtime::instance().message(msg);
+    return msg_recv.c_str();
 }
 """
 
@@ -37,7 +51,7 @@ def main(args):
     for key, t in type_map.items():
         decl = "%s bhc_new_A%s(uint64_t size)"%(t['bhc_ary'], t['name'])
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s\n"%decl
+        impl += "%s"%decl
         impl += """
 {    
     bhxx::BhArray<%(cpp)s> *ret = new bhxx::BhArray<%(cpp)s>({size});
@@ -50,7 +64,7 @@ def main(args):
     for key, t in type_map.items():
         decl = "void bhc_destroy_A%s(%s ary)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s\n"%decl
+        impl += "%s"%decl
         impl += """
 {
     delete ((bhxx::BhArray<%(cpp)s>*)ary);
@@ -64,7 +78,7 @@ def main(args):
         decl += "const %s src, uint64_t rank, int64_t start, "%t['bhc_ary']
         decl += "const int64_t *shape, const int64_t *stride)"
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s\n"%decl
+        impl += "%s"%decl
         impl += """\
 {
     bhxx::Shape _shape(shape, shape+rank);
@@ -82,7 +96,7 @@ def main(args):
     for key, t in type_map.items():
         decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool force_alloc, bhc_bool nullify)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s\n"%decl
+        impl += "%s"%decl
         impl += """\
 {
     bhxx::BhBase* b = ((bhxx::BhArray<%(cpp)s>*)ary)->base.get();
@@ -106,7 +120,7 @@ def main(args):
     for key, t in type_map.items():
         decl = "void bhc_data_set_A%(name)s(const %(bhc_ary)s ary, %(bhc)s *data)"%t
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s\n"%decl
+        impl += "%s"%decl
         impl += """\
 {
     ((bhxx::BhArray<%(cpp)s>*)ary)->base->data = data;
@@ -120,7 +134,7 @@ def main(args):
         decl += "_A%(name)s_A%(name)s_A%(name)s"%t
         decl += "(const char *name, %(bhc_ary)s out, const %(bhc_ary)s in1, const %(bhc_ary)s in2)"%t
         head += "DLLEXPORT %s;\n"%decl
-        impl += "%s\n"%decl
+        impl += "%s"%decl
         impl += """
 {
     try{
@@ -148,7 +162,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif
+#endif // __BHC_SPECIALS_H
 """%head
     impl = """/* Bohrium C Bridge: special functions. Auto generated! */
 

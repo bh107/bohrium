@@ -67,6 +67,9 @@ class Runtime {
     // Send enqueued instructions to Bohrium for execution
     void flush();
 
+    // Send and receive a message through the component stack
+    std::string message(const std::string &msg);
+
     ~Runtime() { flush(); }
 
     Runtime(Runtime&&) = default;

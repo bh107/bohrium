@@ -81,4 +81,8 @@ void Runtime::flush() {
     bases_for_deletion.clear();
 }
 
+std::string Runtime::message(const std::string &msg) {
+    return runtime.message(msg);
+}
+
 }  // namespace bhxx
