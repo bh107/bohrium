@@ -92,34 +92,8 @@ void BhArray<T>::pprint(std::ostream& os) const {
     os << "]" << endl;
 }
 
-template <typename T>
-T as_scalar(BhArray<T>& ary) {
-    if (ary.base == nullptr) {
-        throw runtime_error(
-              "Cannot call bhxx::as_scalar on BhArray objects without base");
-    }
-
-    if (ary.n_elem() != 1) {
-        throw runtime_error(
-              "Cannot call bhxx::as_scalar on BhArray objects with more than one "
-              "element");
-    }
-
-    sync(ary);
-    Runtime::instance().flush();
-
-    const T* data = ary.data();
-    if (data == nullptr) {
-        throw runtime_error("Cannot get the scalar from an uninitialised BhArray.");
-    }
-
-    return *data;
-}
-
 // Instantiate all possible types of `BhArray`
-#define INSTANTIATE(TYPE)         \
-    template class BhArray<TYPE>; \
-    template TYPE as_scalar(BhArray<TYPE>&)
+#define INSTANTIATE(TYPE) template class BhArray<TYPE>;
 
 INSTANTIATE(bool);
 INSTANTIATE(int8_t);
