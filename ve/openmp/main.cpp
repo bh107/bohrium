@@ -89,6 +89,11 @@ class Impl : public ComponentImpl {
         vector<const LoopB*> threaded_blocks = {&kernel.block};
         return threaded_blocks;
     }
+
+    // Handle messages from parent
+    string message(const string &msg) {
+        return "";
+    }
 };
 }
 

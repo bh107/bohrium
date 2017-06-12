@@ -75,6 +75,13 @@ class ComponentImpl {
      */
     virtual void extmethod(const std::string &name, bh_opcode opcode) = 0;
 
+    /* Send and receive a message through the component stack
+     *
+     * @msg    The message to send
+     * @return The received message
+     * Throws exceptions on error
+     */
+    virtual std::string message(const std::string &msg) = 0;
 };
 
 // Representation of a component interface, which consist of a create()
@@ -116,10 +123,21 @@ class ComponentFace {
      * @opcode Opcode for the new function.
      * Throws exceptions on error
      */
-    void extmethod(const std::string &name, bh_opcode opcode){
+    void extmethod(const std::string &name, bh_opcode opcode) {
         assert(_implementation != NULL);
         _implementation->extmethod(name, opcode);
     };
+
+    /* Send and receive a message through the component stack
+     *
+     * @msg    The message to send
+     * @return The received message
+     * Throws exceptions on error
+     */
+    std::string message(const std::string &msg) {
+        assert(_implementation != NULL);
+        return _implementation->message(msg);
+    }
 };
 
 // Representation of a component implementation that has a child.
@@ -140,6 +158,9 @@ public:
     virtual void extmethod(const std::string &name, bh_opcode opcode) {
         child.extmethod(name, opcode);
     };
+    virtual std::string message(const std::string &msg) {
+        return child.message(msg);
+    }
 };
 
 }} //namespace bohrium::component

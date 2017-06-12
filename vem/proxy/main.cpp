@@ -48,6 +48,10 @@ public:
     void extmethod(const std::string &name, bh_opcode opcode) {
         throw runtime_error("[PROXY-VEM] extmethod() not implemented!");
     };
+
+    virtual string message(const string &msg) {
+        throw runtime_error("[PROXY-VEM] message() not implemented!");
+    }
 };
 } //Unnamed namespace
 
