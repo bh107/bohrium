@@ -12,6 +12,7 @@ if 'numpy_force' not in sys.modules:
 from numpy_force import *
 
 from .array_create import *
+from .backend_messaging import *
 from .array_manipulation import *
 from .reorganization import *
 from .ufuncs import UFUNCS
