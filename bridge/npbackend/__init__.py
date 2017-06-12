@@ -29,7 +29,8 @@ asarray = array
 asanyarray = array
 
 
-class BohriumContext():
+class BohriumContext:
+    """Enable Bohrium within the context"""
     def __init__(self):
         self.__numpy        = sys.modules['numpy']
         self.__numpy_random = sys.modules['numpy.random']
@@ -65,6 +66,15 @@ def replace_numpy(function):
             result = function(*args, **kwargs)
         return result
     return wrapper
+
+
+class Profiling:
+    """Profiling the Bohrium backend within the context"""
+    def __enter__(self):
+        statistic_enable_and_reset()
+
+    def __exit__(self, *args):
+        print(statistic())
 
 
 # Expose all ufuncs
