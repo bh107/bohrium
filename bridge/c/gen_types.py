@@ -67,7 +67,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif
+#endif // __BHC_TYPES_H
 """%head
     impl = """/* Bohrium C Bridge: data types. Auto generated! */
 
