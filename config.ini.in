@@ -66,6 +66,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_openmp${CMAKE_SHARED_LIBRARY_S
 verbose = false
 # Profiling statistics
 prof = false
+prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD}"
@@ -90,6 +91,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_S
 verbose = false
 # Profiling statistics
 prof = false
+prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
 # Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
@@ -121,6 +123,7 @@ impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_cuda${CMAKE_SHARED_LIBRARY_SUF
 verbose = false
 # Profiling statistics
 prof = false
+prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
 # Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
