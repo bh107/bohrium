@@ -44,11 +44,11 @@ template <typename T>
 bool BhArray<T>::is_contiguous() const {
     assert(shape.size() == stride.size());
 
-    auto itshape  = std::begin(shape);
-    auto itstride = std::begin(stride);
+    auto itshape  = shape.rbegin();
+    auto itstride = stride.rbegin();
 
     int64_t acc = 1;
-    for (; itstride != std::end(stride); ++itstride, ++itshape) {
+    for (; itstride != stride.rend(); ++itstride, ++itshape) {
         if (acc != *itstride) return false;
         acc *= static_cast<int64_t>(*itshape);
     }
@@ -93,7 +93,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
 }
 
 // Instantiate all possible types of `BhArray`
-#define INSTANTIATE(TYPE) template class BhArray<TYPE>;
+#define INSTANTIATE(TYPE) template class BhArray<TYPE>
 
 INSTANTIATE(bool);
 INSTANTIATE(int8_t);
