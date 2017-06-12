@@ -112,6 +112,9 @@ class Statistics {
             out << "\n";
             out << BOLD << RED << "Unaccounted for (wall - total):  " << unaccounted() << "s\n" << RST;
             out << endl;
+        } else {
+            out << BLU << "[" << backend_name << "] Profiling: " << RST;
+            out << BOLD << RED << "Statistic Disabled\n" << RST;
         }
     }
 
