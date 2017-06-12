@@ -46,6 +46,7 @@ std::string pprint_ratio(uint64_t a, uint64_t b) {
 class Statistics {
   public:
     bool enabled;
+    bool print_on_exit; // On exist, write to file or pprint to stdout
     uint64_t num_base_arrays           = 0;
     uint64_t num_temp_arrays           = 0;
     uint64_t num_syncs                 = 0;
@@ -70,7 +71,8 @@ class Statistics {
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
-    Statistics(bool enabled) : enabled(enabled) {}
+    Statistics(bool enabled) : enabled(enabled), print_on_exit(enabled) {}
+    Statistics(bool enabled, bool print_on_exit) : enabled(enabled), print_on_exit(print_on_exit) {}
 
     void write(std::string backend_name, std::string filename, std::ostream &out) {
         if (filename == "") {

@@ -314,9 +314,11 @@ def cond_scatter(out, ary, indexes, mask):
 
     ufunc("cond_scatter", out, ary, indexes, mask)
 
+
 def message(msg):
     """ Send and receive a message through the component stack """
-    return bhc.message(msg)
+    return "%s" % (bhc.message(msg))
+
 
 @atexit.register
 def shutdown():
