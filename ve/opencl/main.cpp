@@ -111,7 +111,7 @@ extern "C" void destroy(ComponentImpl* self) {
 }
 
 Impl::~Impl() {
-    if (stat.enabled) {
+    if (stat.print_on_exit) {
         stat.write("OpenCL", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }
