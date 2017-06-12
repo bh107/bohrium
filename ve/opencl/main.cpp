@@ -100,6 +100,17 @@ public:
         }
         return threaded_blocks;
     }
+
+    // Handle messages from parent
+    string message(const string &msg) {
+        stringstream ss;
+        if (msg == "statistic_enable_and_reset") {
+            stat = Statistics(true, config.defaultGet("prof", false));
+        } else if (msg == "statistic") {
+            stat.write("OpenCL", "", ss);
+        }
+        return ss.str() + child.message(msg);
+    }
 };
 }
 

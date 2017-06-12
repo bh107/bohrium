@@ -92,6 +92,13 @@ class Impl : public ComponentImpl {
 
     // Handle messages from parent
     string message(const string &msg) {
+        if (msg == "statistic_enable_and_reset") {
+            stat = Statistics(true, config.defaultGet("prof", false));
+        } else if (msg == "statistic") {
+            stringstream ss;
+            stat.write("OpenMP", "", ss);
+            return ss.str();
+        }
         return "";
     }
 };
