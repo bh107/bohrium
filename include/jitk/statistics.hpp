@@ -45,7 +45,7 @@ std::string pprint_ratio(uint64_t a, uint64_t b) {
 
 class Statistics {
   public:
-    const bool enabled;
+    bool enabled;
     uint64_t num_base_arrays           = 0;
     uint64_t num_temp_arrays           = 0;
     uint64_t num_syncs                 = 0;
@@ -76,7 +76,7 @@ class Statistics {
         if (filename == "") {
             pprint(backend_name, out);
         } else {
-            export_json(backend_name, filename);
+            export_yaml(backend_name, filename);
         }
     }
 
@@ -115,7 +115,8 @@ class Statistics {
         }
     }
 
-    void export_json(std::string backend_name, std::string filename) {
+    // Export statistic using the YAML format <http://yaml.org>
+    void export_yaml(std::string backend_name, std::string filename) {
         using namespace std;
 
         if (enabled) {
