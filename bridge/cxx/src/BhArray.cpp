@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bhxx/BhArray.hpp>
 #include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
+#include <bhxx/util.hpp>
 
 using namespace std;
 
@@ -68,8 +69,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
     }
 
     // Let's makes sure that the data we are reading is contiguous
-    BhArray<T> contiguous{shape};
-    identity(contiguous, *this);
+    BhArray<T> contiguous = as_contiguous(*this);
     sync(contiguous);
     Runtime::instance().flush();
 
