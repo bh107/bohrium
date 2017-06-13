@@ -82,7 +82,7 @@ class BhBase : public bh_base {
     template <typename T>
     BhBase(T dummy, size_t nelem_) : m_own_memory(true) {
         data  = nullptr;
-        nelem = static_cast<bh_index>(nelem_);
+        nelem = nelem_;
         set_type<T>();
 
         // The dummy is a dummy argument and should always be identical zero.
