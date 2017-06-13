@@ -115,7 +115,7 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     // Notice that the case where both and lhs and rhs have rank 1
     // is also covered, since then both branches will be executed
     // leading to a result_shape of {1}.
-    Shape result_shape(lhs.shape.front(), rhs.shape.back());
+    Shape result_shape{lhs.shape.front(), rhs.shape.back()};
     if (lhs.rank() == 1) {
         result_shape = {rhs.shape.back()};
         lhs          = reshape(std::move(lhs), {1, lhs.n_elem()});
