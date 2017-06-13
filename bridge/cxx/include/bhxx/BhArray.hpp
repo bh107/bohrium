@@ -71,8 +71,7 @@ class BhArray {
     }
 
     /** Create a new view (contiguous stride, row-major) */
-    BhArray(Shape shape, const size_t offset = 0)
-          : BhArray(shape, contiguous_stride(shape), offset) {}
+    BhArray(Shape shape) : BhArray(shape, contiguous_stride(shape), 0) {}
 
     /** Create a view that points to the given base
      *
@@ -99,8 +98,8 @@ class BhArray {
      *        construct a BhBase object, use the make_base_ptr
      *        helper function.
      */
-    BhArray(std::shared_ptr<BhBase> base, Shape shape, const size_t offset = 0)
-          : BhArray(std::move(base), shape, contiguous_stride(shape), offset) {
+    BhArray(std::shared_ptr<BhBase> base, Shape shape)
+          : BhArray(std::move(base), shape, contiguous_stride(shape), 0) {
         assert(n_elem() == shape.prod());
     }
 
