@@ -68,6 +68,7 @@ class BhArray {
             stride(std::move(stride_)),
             base(make_base_ptr(T(0), shape_.prod())) {
         assert(shape.size() == stride.size());
+        assert(shape.prod() > 0);
     }
 
     /** Create a new view (contiguous stride, row-major) */
@@ -88,6 +89,7 @@ class BhArray {
             stride(std::move(stride_)),
             base(std::move(base_)) {
         assert(shape.size() == stride.size());
+        assert(shape.prod() > 0);
     }
 
     /** Create a view that points to the given base (contiguous stride, row-major)
@@ -100,7 +102,7 @@ class BhArray {
      */
     BhArray(std::shared_ptr<BhBase> base, Shape shape)
           : BhArray(std::move(base), shape, contiguous_stride(shape), 0) {
-        assert(n_elem() == shape.prod());
+        assert(base->nelem == shape.prod());
     }
 
     //
