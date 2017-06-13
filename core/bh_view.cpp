@@ -465,7 +465,7 @@ bool bh_is_contiguous(const bh_view* a)
 
     int64_t weight = 1;
     for(int64_t dim = a->ndim-1; dim >= 0; --dim) {
-        if (a->stride[dim] != weight) {
+        if (a->shape[dim] > 1 && a->stride[dim] != weight) {
             return false;
         }
 

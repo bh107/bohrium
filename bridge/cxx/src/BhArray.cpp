@@ -50,7 +50,7 @@ bool BhArray<T>::is_contiguous() const {
 
     int64_t acc = 1;
     for (; itstride != stride.rend(); ++itstride, ++itshape) {
-        if (acc != *itstride) return false;
+        if (*itstride > 1 && acc != *itstride) return false;
         acc *= static_cast<int64_t>(*itshape);
     }
 
