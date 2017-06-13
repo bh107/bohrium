@@ -125,19 +125,28 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
         rhs          = reshape(std::move(rhs), {rhs.n_elem(), 1});
     }
 
-    // Broadcast lhs and a transposed rhs
-    Shape      broad_shape{lhs.shape.front(), rhs.shape.back(), rhs.shape.front()};
-    BhArray<T> rhs_trans = transpose(std::move(rhs));
-    BhArray<T> lhs_broad = broadcast(std::move(lhs), 1, broad_shape[1]);
-    BhArray<T> rhs_broad = broadcast(std::move(rhs_trans), 0, broad_shape[0]);
-    assert(lhs_broad.shape == rhs_broad.shape);
-    assert(lhs_broad.shape == broad_shape);
+    BhArray<T> result({lhs.shape.front(), rhs.shape.back()});
+    try {
+        lhs = as_contiguous(std::move(lhs));
+        rhs = as_contiguous(std::move(rhs));
+        Runtime::instance().enqueue_extmethod("blas_gemm", result, lhs, rhs);
+    } catch (...) {
+        // No blas could be found.
+        // TODO Use check function once it is available
 
-    // Multiply and reduce
-    BhArray<T> tmp(broad_shape);
-    multiply(tmp, lhs_broad, rhs_broad);
-    BhArray<T> result({broad_shape[0], broad_shape[1]});
-    add_reduce(result, tmp, 2);
+        // Broadcast lhs and a transposed rhs
+        Shape      broad_shape{lhs.shape.front(), rhs.shape.back(), rhs.shape.front()};
+        BhArray<T> rhs_trans = transpose(std::move(rhs));
+        BhArray<T> lhs_broad = broadcast(std::move(lhs), 1, broad_shape[1]);
+        BhArray<T> rhs_broad = broadcast(std::move(rhs_trans), 0, broad_shape[0]);
+        assert(lhs_broad.shape == rhs_broad.shape);
+        assert(lhs_broad.shape == broad_shape);
+
+        // Multiply and reduce
+        BhArray<T> tmp(broad_shape);
+        multiply(tmp, lhs_broad, rhs_broad);
+        add_reduce(result, tmp, 2);
+    }
 
     return reshape(std::move(result), result_shape);
 }
