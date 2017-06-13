@@ -115,7 +115,7 @@ class BhArray {
     }
 
     /** Return the number of elements */
-    size_t n_elem() const { return static_cast<size_t>(base->nelem); }
+    size_t n_elem() const { return shape.prod(); }
 
     /** Return whether the view is contiguous and row-major */
     bool is_contiguous() const;
