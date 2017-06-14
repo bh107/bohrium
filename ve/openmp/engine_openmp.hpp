@@ -82,6 +82,9 @@ class EngineOpenMP {
     void copyToDevice(T &base_list) {}
     template <typename T>
     void delBuffer(T &base) {}
+
+    // Return a YAML string describing this component
+    std::string info() const;
 };
 
 

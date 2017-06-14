@@ -104,7 +104,6 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     }
 
     bool found = false;
-    cl::Platform platform;
     if (platform_no == -1) {
         for (auto pform : platforms) {
             // Pick first valid platform
@@ -281,6 +280,17 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
 
 void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
+}
+
+std::string EngineOpenCL::info() const {
+    stringstream ss;
+    ss << "----"                                                                        << "\n";
+    ss << "OpenCL:"                                                                     << "\n";
+    ss << "  Platform: \"" << platform.getInfo<CL_PLATFORM_NAME>()                      << "\"\n";
+    ss << "  Device:   \"" << device.getInfo<CL_DEVICE_NAME>() << " (" \
+                           << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()              << ")\"\n";
+    ss << "  Memory:   \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024 << " MB\"\n";
+    return ss.str();
 }
 
 } // bohrium

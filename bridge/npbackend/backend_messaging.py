@@ -24,3 +24,8 @@ def gpu_disable():
 def gpu_enable():
     """Enable the GPU backend in the current runtime stack"""
     return _backend_msg("GPU: enable")
+
+
+def runtime_info():
+    """Return a YAML string describing the current Bohrium runtime"""
+    return _backend_msg("info")
