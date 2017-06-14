@@ -44,6 +44,8 @@ private:
     cl::Context context;
     cl::Device device;
     cl::CommandQueue queue;
+    // We save the OpenCL platform object for later information retrieval
+    cl::Platform platform;
     // OpenCL work group sizes
     const cl_ulong work_group_size_1dx;
     const cl_ulong work_group_size_2dx;
@@ -142,6 +144,9 @@ public:
 
     // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+
+    // Return a YAML string describing this component
+    std::string info() const;
 
     // Retrieve a single buffer
     template <typename T>

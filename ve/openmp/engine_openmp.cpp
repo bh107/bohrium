@@ -27,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <dlfcn.h>
 #include <jitk/codegen_util.hpp>
+#include <thread>
 
 #include "engine_openmp.hpp"
 
@@ -195,5 +196,14 @@ void EngineOpenMP::set_constructor_flag(std::vector<bh_instruction*> &instr_list
     jitk::util_set_constructor_flag(instr_list, empty);
 }
 
+
+std::string EngineOpenMP::info() const {
+    stringstream ss;
+    ss << "----"                                                           << "\n";
+    ss << "OpenMP:"                                                        << "\n";
+    ss << "  Hardware threads: " << std::thread::hardware_concurrency()    << "\n";
+    ss << "  JIT Command: \"" << compiler.process_str("${OBJ}", "${SRC}")  << "\"\n";
+    return ss.str();
+}
 
 } // bohrium

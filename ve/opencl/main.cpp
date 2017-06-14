@@ -114,6 +114,8 @@ public:
             disabled = true;
         } else if (msg == "GPU: enable") {
             disabled = false;
+        } else if (msg == "info") {
+            ss << engine.info();
         }
         return ss.str() + child.message(msg);
     }
