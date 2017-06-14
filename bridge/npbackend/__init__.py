@@ -12,7 +12,6 @@ if 'numpy_force' not in sys.modules:
 from numpy_force import *
 
 from .array_create import *
-from .backend_messaging import *
 from .array_manipulation import *
 from .reorganization import *
 from .contexts import *
@@ -26,7 +25,8 @@ from .linalg import matmul, dot, tensordot
 from .summations import *
 from .disk_io import *
 from . import contexts
-from . import info
+from . import bh_info
+from . import backend_messaging
 from numpy_force import dtype
 asarray = array
 asanyarray = array
