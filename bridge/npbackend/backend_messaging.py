@@ -14,3 +14,13 @@ def statistic_enable_and_reset():
 def statistic():
     """Return a YAML string of Bohrium statistic"""
     return _backend_msg("statistic")
+
+
+def gpu_disable():
+    """Disable the GPU backend in the current runtime stack"""
+    return _backend_msg("GPU: disable")
+
+
+def gpu_enable():
+    """Enable the GPU backend in the current runtime stack"""
+    return _backend_msg("GPU: enable")

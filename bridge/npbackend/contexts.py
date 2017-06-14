@@ -46,3 +46,15 @@ class Profiling:
 
     def __exit__(self, *args):
         print(messaging.statistic())
+
+
+class DisableGPU:
+    """Disable the GPU backend within the context."""
+    def __init__(self):
+        pass
+
+    def __enter__(self):
+        messaging.gpu_disable()
+
+    def __exit__(self, *args):
+        messaging.gpu_enable()

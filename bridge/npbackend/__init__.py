@@ -25,7 +25,7 @@ from . import linalg
 from .linalg import matmul, dot, tensordot
 from .summations import *
 from .disk_io import *
-import contexts
+from . import contexts
 from numpy_force import dtype
 asarray = array
 asanyarray = array

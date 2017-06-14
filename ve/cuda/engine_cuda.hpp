@@ -184,6 +184,15 @@ public:
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
 
+    // Copy all bases to the host (ignoring bases that isn't on the device)
+    void allBasesToHost() {
+        std::vector<bh_base*> bases_on_device;
+        for(auto &buf_pair: buffers) {
+            bases_on_device.push_back(buf_pair.first);
+        }
+        copyToHost(bases_on_device);
+    }
+
     // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
 };
