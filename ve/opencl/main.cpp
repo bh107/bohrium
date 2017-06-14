@@ -59,6 +59,7 @@ class Impl : public ComponentImplWithChild {
     set<bh_opcode> child_extmethods;
     // The OpenCL engine
     EngineOpenCL engine;
+
 public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config.defaultGet("prof", false)),
                             fcache(stat), engine(config, stat) {}
@@ -108,6 +109,11 @@ public:
             stat = Statistics(true, config.defaultGet("prof", false));
         } else if (msg == "statistic") {
             stat.write("OpenCL", "", ss);
+        } else if (msg == "GPU: disable") {
+            engine.allBasesToHost();
+            disabled = true;
+        } else if (msg == "GPU: enable") {
+            disabled = false;
         }
         return ss.str() + child.message(msg);
     }
@@ -188,6 +194,11 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
 
 void Impl::execute(bh_ir *bhir) {
+    if (disabled) {
+        child.execute(bhir);
+        return;
+    }
+
     // Let's handle extension methods
     util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
 

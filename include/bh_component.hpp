@@ -147,10 +147,13 @@ class ComponentImplWithChild : public ComponentImpl {
 protected:
     // The interface of the child
     ComponentFace child;
+    // Flag that indicate whether the component is enabled or disabled.
+    // When disabled, the component should pass through instructions untouched to its child
+    bool disabled;
 public:
     ComponentImplWithChild(int stack_level)
             : ComponentImpl(stack_level),
-              child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
+              child(ComponentImpl::config.getChildLibraryPath(), stack_level+1), disabled(false) {}
     virtual ~ComponentImplWithChild() {};
     virtual void execute(bh_ir *bhir) {
         child.execute(bhir);
