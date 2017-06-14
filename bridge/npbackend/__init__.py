@@ -15,6 +15,7 @@ from .array_create import *
 from .backend_messaging import *
 from .array_manipulation import *
 from .reorganization import *
+from .contexts import *
 from .ufuncs import UFUNCS
 from .masking import *
 from .bhary import check, fix_biclass, in_bhmem
@@ -24,57 +25,19 @@ from . import linalg
 from .linalg import matmul, dot, tensordot
 from .summations import *
 from .disk_io import *
+import contexts
 from numpy_force import dtype
 asarray = array
 asanyarray = array
 
 
-class BohriumContext:
-    """Enable Bohrium within the context"""
-    def __init__(self):
-        self.__numpy        = sys.modules['numpy']
-        self.__numpy_random = sys.modules['numpy.random']
-        self.__numpy_linalg = sys.modules['numpy.linalg']
-
-        # Sub-module matlib has to be imported explicitly once in order to be available through bohrium
-        try:
-            import numpy.matlib
-        except ImportError:
-            pass
-
-    def __enter__(self):
-        import numpy
-        import bohrium
-        # Overwrite with Bohrium
-        sys.modules['numpy_force']  = numpy
-        sys.modules['numpy']        = bohrium
-        sys.modules['numpy.random'] = bohrium.random
-        sys.modules['numpy.linalg'] = bohrium.linalg
-
-    def __exit__(self, *args):
-        # Put NumPy back together
-        sys.modules.pop('numpy_force', None)
-        sys.modules['numpy']        = self.__numpy
-        sys.modules['numpy.random'] = self.__numpy_random
-        sys.modules['numpy.linalg'] = self.__numpy_linalg
-
-
 def replace_numpy(function):
     def wrapper(*args, **kwargs):
-        with BohriumContext():
+        with contexts.BohriumContext():
             # Run your function/program
             result = function(*args, **kwargs)
         return result
     return wrapper
-
-
-class Profiling:
-    """Profiling the Bohrium backend within the context"""
-    def __enter__(self):
-        statistic_enable_and_reset()
-
-    def __exit__(self, *args):
-        print(statistic())
 
 
 # Expose all ufuncs
