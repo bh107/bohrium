@@ -99,9 +99,7 @@ In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the
 Install From Source Package
 ---------------------------
 
-Visit https://github.com/bh107/bohrium/downloads and download a specific tarball release or the whole repository. Then build and install Bohrium as described in the following subsections.
-
-.. note:: Currently, no stable version of Bohrium has been released thus only the whole repository is available for download: https://github.com/bh107/bohrium/archive/master.zip
+Visit Bohrium on github.com and download the latest release: https://github.com/bh107/bohrium/releases/latest. Then build and install Bohrium as described in the following subsections.
 
 Python / NumPy
 ~~~~~~~~~~~~~~
@@ -112,7 +110,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev  zlib1g-dev
+  sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev zlib1g-dev
 
 And for python v3 support::
 
