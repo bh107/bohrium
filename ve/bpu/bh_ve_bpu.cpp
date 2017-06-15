@@ -18,19 +18,28 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
 #include <stdexcept>
 #include <bh.h>
+#include <map>
+#include <set>
+#include <assert.h>
+
 #include "bh_ve_bpu.h"
+#include "binary_serializer.hpp"
 
 #define OUTPUT_TAG "[BPU-VE] "
+
+#define NULLBUFFERSIZE (8*1024)
+static char NULLBUFFER[NULLBUFFERSIZE];
+
 
 // The self-reference
 bh_component component;
 
 bh_error bh_ve_bpu_init(const char *name)
 {
-    std::cout << "Initializing the BPU-VE" << std::endl;
+    std::cout << "Initializing the " << OUTPUT_TAG << std::endl;
+    memset(NULLBUFFER, 0, NULLBUFFERSIZE);
 
     bh_error err;
     if((err = bh_component_init(&component, name)) != BH_SUCCESS)
@@ -53,16 +62,19 @@ bh_error bh_ve_bpu_init(const char *name)
             return err;
     }
 
-    std::cout << OUTPUT_TAG << "Initialized the BPU-VE" << std::endl;
+    std::cout << OUTPUT_TAG << "Initialized the " << OUTPUT_TAG << std::endl;
     return BH_SUCCESS;
 }
+
 
 bh_error bh_ve_bpu_execute(bh_ir* bhir)
 {
 
     // Try to find a child that will execute this batch
 
-    std::cout << OUTPUT_TAG << "Got a batch with " << bhir->instr_list.size() << " instructions" << std::endl;
+    std::cout << OUTPUT_TAG << "Got a batch with " << bhir->kernel_list.size() << " kernels" << std::endl;
+
+    dump_bhir(bhir);
 
     bh_error ret_val = BH_ERROR;
     for (int i = 0; i < component.nchildren; ++i)
