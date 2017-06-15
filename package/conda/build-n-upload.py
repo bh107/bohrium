@@ -42,10 +42,14 @@ def main(args):
         return
     bash_cmd('git checkout %s' % args.branch, cwd=bh_dir)
 
+    # Since we use the binary API of NumPy, we have to build for a specific version.
+    #TODO: auto detect the newest NumPy version available in Anaconda
+    np_version = "1.13"
+
     # Build the conda package
     for py_version in ['2.7', '3.6']:
-        ret = bash_cmd('conda build --python %s -c http://conda.anaconda.org/bohrium '
-                       '--croot /tmp/conda_build_tmp %s' % (py_version, recipe))
+        ret = bash_cmd('conda build --python %s --numpy %s -c http://conda.anaconda.org/bohrium '
+                       '--croot /tmp/conda_build_tmp %s' % (py_version, np_version, recipe))
         res = re.search("anaconda upload (.*)", ret)
         if res is None:
             print ("anaconda upload not found in output:")
