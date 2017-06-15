@@ -151,7 +151,7 @@ string(REPLACE ";" ", " OPENCL_LIBS "${OPENCL_LIBS}")
 
 #############################
 # Install thirdparty headers
-install(DIRECTORY thirdparty/Random123-1.08/include/Random123
+install(DIRECTORY thirdparty/Random123-1.09/include/Random123
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
 #########################################
