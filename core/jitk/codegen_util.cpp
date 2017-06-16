@@ -56,6 +56,23 @@ string hash_filename(size_t hash, string extension) {
     return ss.str();
 }
 
+boost::filesystem::path write_source2file(const std::string &src,
+                                          const boost::filesystem::path &dir,
+                                          size_t hash,
+                                          const std::string &file_ext,
+                                          bool verbose) {
+    boost::filesystem::path srcfile = dir;
+    srcfile /= hash_filename(hash, file_ext);
+    ofstream ofs(srcfile.string());
+    ofs << src;
+    ofs.flush();
+    ofs.close();
+    if (verbose) {
+        cout << "Write source " << srcfile << endl;
+    }
+    return srcfile;
+}
+
 pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
     if (numeric_limits<uint32_t>::max() <= work_group_size or
         numeric_limits<uint32_t>::max() <= block_size or

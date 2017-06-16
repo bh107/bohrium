@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <sstream>
 #include <functional>
+#include <boost/filesystem/path.hpp>
 
 #include <bh_util.hpp>
 #include <bh_type.hpp>
@@ -50,6 +51,13 @@ void spaces(std::stringstream &out, int num);
 
 // Returns the filename of the given hash and file extension
 std::string hash_filename(size_t hash, std::string file_extension);
+
+// Write `src` to file in `dir` using `hash_filename()` to generate the filename
+boost::filesystem::path write_source2file(const std::string &src,
+                                          const boost::filesystem::path &dir,
+                                          size_t hash,
+                                          const std::string &file_ext,
+                                          bool verbose);
 
 // Calculate the work group sizes.
 // Return pair (global work size, local work size)
@@ -270,13 +278,6 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
             // Code generation
             stringstream ss;
             self.write_kernel(kernel, symbols, config, threaded_blocks, offset_strides, ss);
-
-            if (verbose) {
-                cout << '\n'
-                     << "************ Kernel Begin ************" << '\n'
-                     << ss.str()
-                     << "^^^^^^^^^^^^  Kernel End  ^^^^^^^^^^^^" << endl;
-            }
 
             // Create the constant vector
             vector<const bh_instruction*> constants;

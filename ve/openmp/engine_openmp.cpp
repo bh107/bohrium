@@ -96,15 +96,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
     // Write the source file and compile it (reading from disk)
     // NB: this is a nice debug option, but will hurt performance
     if (verbose) {
-        fs::path srcfile = source_dir;
-        {
-            srcfile /= jitk::hash_filename(hash, ".c");
-            ofstream ofs(srcfile.string());
-            ofs << source;
-            ofs.flush();
-            ofs.close();
-        }
-        cout << "Write source " << srcfile << endl;
+        fs::path srcfile = jitk::write_source2file(source, source_dir, hash, ".c", true);
         compiler.compile(objfile.string(), srcfile.string());
     } else {
         // Pipe the source directly into the compiler thus no source file is written
