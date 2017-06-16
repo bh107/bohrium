@@ -80,13 +80,6 @@ EngineOpenMP::~EngineOpenMP() {
     // }
 }
 
-// Returns the filename of the given 'hash'
-static string hash_filename(size_t hash, string extension=".so") {
-    stringstream ss;
-    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << hash << extension;
-    return ss.str();
-}
-
 KernelFunction EngineOpenMP::getFunction(const string &source) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
@@ -98,14 +91,14 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
     ++stat.kernel_cache_misses;
 
     // The object file path
-    fs::path objfile = object_dir / hash_filename(hash);
+    fs::path objfile = object_dir / jitk::hash_filename(hash, ".so");
 
     // Write the source file and compile it (reading from disk)
     // NB: this is a nice debug option, but will hurt performance
     if (verbose) {
         fs::path srcfile = source_dir;
         {
-            srcfile /= hash_filename(hash, ".c");
+            srcfile /= jitk::hash_filename(hash, ".c");
             ofstream ofs(srcfile.string());
             ofs << source;
             ofs.flush();
