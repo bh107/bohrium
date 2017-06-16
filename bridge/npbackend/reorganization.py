@@ -115,17 +115,23 @@ def take(a, indices, axis=None, out=None, mode='raise'):
     """
 
     if not bhary.check(a):
+        indices = array_create.array(indices, bohrium=False)
         numpy.take(a, indices, axis=axis, out=out, mode=mode)
 
     if mode != "raise":
         warnings.warn("Bohrium only supports the 'raise' mode not '%s', "
                       "it will be handled by the original NumPy." % mode, UserWarning, 2)
-        numpy.take(a, indices, axis=axis, out=out, mode=mode)
+        a = array_create.array(a, bohrium=False)
+        indices = array_create.array(indices, bohrium=False)
+        return numpy.take(a, indices, axis=axis, out=out, mode=mode)
+
 
     if axis is not None and a.ndim > 1:
         warnings.warn("Bohrium does not support the 'axis' argument, "
                       "it will be handled by the original NumPy.", UserWarning, 2)
-        numpy.take(a, indices, axis=axis, out=out, mode=mode)
+        a = array_create.array(a, bohrium=False)
+        indices = array_create.array(indices, bohrium=False)
+        return numpy.take(a, indices, axis=axis, out=out, mode=mode)
 
     ret = gather(a, indices)
     if out is not None:
