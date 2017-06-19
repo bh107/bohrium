@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <limits>
+#include <iomanip>
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
@@ -47,6 +48,29 @@ void spaces(std::stringstream &out, int num) {
     for (int i = 0; i < num; ++i) {
         out << " ";
     }
+}
+
+string hash_filename(size_t hash, string extension) {
+    stringstream ss;
+    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << hash << extension;
+    return ss.str();
+}
+
+boost::filesystem::path write_source2file(const std::string &src,
+                                          const boost::filesystem::path &dir,
+                                          size_t hash,
+                                          const std::string &file_ext,
+                                          bool verbose) {
+    boost::filesystem::path srcfile = dir;
+    srcfile /= hash_filename(hash, file_ext);
+    ofstream ofs(srcfile.string());
+    ofs << src;
+    ofs.flush();
+    ofs.close();
+    if (verbose) {
+        cout << "Write source " << srcfile << endl;
+    }
+    return srcfile;
 }
 
 pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {

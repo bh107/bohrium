@@ -69,6 +69,8 @@ private:
     jitk::Statistics &stat;
     // Record profiling statistics
     const bool prof;
+    // Path to the directory of the source files (only used in verbose mode)
+    const boost::filesystem::path source_dir;
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 

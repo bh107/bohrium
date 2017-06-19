@@ -123,14 +123,6 @@ pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > 
     }
 }
 
-// Returns the filename of the given 'hash'
-static string hash_filename(size_t hash, string extension=".cubin") {
-    stringstream ss;
-    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << hash << extension;
-    return ss.str();
-}
-
-
 void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
@@ -149,22 +141,12 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
         ++stat.kernel_cache_misses;
 
         // The object file path
-        fs::path objfile = object_dir / hash_filename(hash);
+        fs::path objfile = object_dir / jitk::hash_filename(hash, ".cubin");
 
         // Write the source file and compile it (reading from disk)
         // TODO: make nvcc read directly from stdin
         {
-            fs::path srcfile = source_dir;
-            {
-                srcfile /= hash_filename(hash, ".cu");
-                ofstream ofs(srcfile.string());
-                ofs << source;
-                ofs.flush();
-                ofs.close();
-            }
-            if (verbose) {
-                cout << "Write source " << srcfile << endl;
-            }
+            fs::path srcfile = jitk::write_source2file(source, source_dir, hash, ".cu", verbose);
             compiler.compile(objfile.string(), srcfile.string());
         }
         /* else {

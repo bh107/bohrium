@@ -21,11 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 #include <boost/functional/hash.hpp>
+#include <boost/filesystem.hpp>
 
 #include <jitk/kernel.hpp>
 
 #include "engine_opencl.hpp"
 
+namespace fs = boost::filesystem;
 using namespace std;
 
 namespace {
@@ -95,7 +97,8 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     platform_no(config.defaultGet<int>("platform_no", -1)),
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat),
-                                    prof(config.defaultGet<bool>("prof", false))
+                                    prof(config.defaultGet<bool>("prof", false)),
+                                    source_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%") / "src")
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -145,6 +148,9 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
 
     context = cl::Context(device);
     queue = cl::CommandQueue(context, device);
+
+    // Let's make sure that the directories exist
+    fs::create_directories(source_dir);
 }
 
 pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
@@ -191,12 +197,10 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
         program = cl::Program(context, source);
         try {
             if (verbose) {
-                cout << "********** Compile Flags **********" << endl \
-                << compile_flg.c_str() << endl \
-                << "************ Flags END ************" << endl << endl;
                 cout << "************ Build Log ************" << endl \
                  << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) \
                  << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
+                jitk::write_source2file(source, source_dir, hash, ".cl", true);
             }
             program.build({device}, compile_flg.c_str());
         } catch (cl::Error e) {
