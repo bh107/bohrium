@@ -376,17 +376,16 @@ void fuser_reshapable_first(vector<Block> &block_list, uint64_t min_threading) {
     block_list = ret;
 }
 
-void fuser_greedy(vector<Block> &block_list, uint64_t min_threading) {
+void fuser_greedy(vector<Block> &block_list, bool avoid_rank0_sweep) {
 
     graph::DAG dag = graph::from_block_list(block_list);
-    graph::greedy(dag, min_threading);
+    graph::greedy(dag, avoid_rank0_sweep);
     vector<Block> ret = graph::fill_block_list(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            // Notice that the 'min_threading' argument is set to zero for all sub-blocks
-            fuser_greedy(b.getLoop()._block_list, 0);
+            fuser_greedy(b.getLoop()._block_list, avoid_rank0_sweep);
         }
     }
     block_list = ret;

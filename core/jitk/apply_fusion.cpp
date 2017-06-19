@@ -41,7 +41,8 @@ vector<Block> apply_pre_fusion(const vector<bh_instruction*> &instr_list,
     }
 }
 
-void apply_transformers(vector<Block> &block_list, const vector<string> &transformer_names) {
+void apply_transformers(vector<Block> &block_list, const vector<string> &transformer_names,
+                        bool avoid_rank0_sweep) {
 
     for(auto it = transformer_names.begin(); it != transformer_names.end(); ++it) {
         if (*it == "push_reductions_inwards") {
@@ -57,7 +58,7 @@ void apply_transformers(vector<Block> &block_list, const vector<string> &transfo
         } else if (*it == "reshapable_first") {
             fuser_reshapable_first(block_list);
         } else if (*it == "greedy") {
-            fuser_greedy(block_list);
+            fuser_greedy(block_list, avoid_rank0_sweep);
         } else {
             cout << "Unknown transformer: \"" << *it << "\"" << endl;
             throw runtime_error("Unknown transformer!");
@@ -66,7 +67,7 @@ void apply_transformers(vector<Block> &block_list, const vector<string> &transfo
 }
 
 vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
-                             FuseCache &fcache, Statistics &stat) {
+                             FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep) {
 
     vector<Block> block_list;
 
@@ -88,7 +89,7 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
         const auto tfusion = chrono::steady_clock::now();
         stat.time_pre_fusion += tfusion - tpre_fusion;
         // Then we fuse fully
-        apply_transformers(block_list, config.defaultGetList("fuser_list", {"greedy"}));
+        apply_transformers(block_list, config.defaultGetList("fuser_list", {"greedy"}), avoid_rank0_sweep);
         stat.time_fusion += chrono::steady_clock::now() - tfusion;
         fcache.insert(instr_list, block_list);
     }
@@ -96,7 +97,7 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
     // Pretty printing the block
     if (config.defaultGet<bool>("graph", false)) {
         graph::DAG dag = graph::from_block_list(block_list);
-        graph::pprint(dag, "dag");
+        graph::pprint(dag, "dag", avoid_rank0_sweep);
     }
 
     return block_list;

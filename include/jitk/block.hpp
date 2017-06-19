@@ -288,7 +288,8 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int
 std::pair<std::vector<const LoopB *>, uint64_t> util_find_threaded_blocks(const LoopB &block);
 
 // Check if the two blocks 'b1' and 'b2' (in that order) are mergeable.
-bool mergeable(const Block &b1, const Block &b2);
+// 'avoid_rank0_sweep' will not allow fusion of sweeped and non-sweeped blocks at the root level
+bool mergeable(const Block &b1, const Block &b2, bool avoid_rank0_sweep);
 
 // Merges the two blocks 'a' and 'a' (in that order) if they are fusible.
 // 'min_threading' is the minimum amount of threading acceptable in the merged block (ignored if

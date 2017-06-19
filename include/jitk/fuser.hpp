@@ -54,8 +54,8 @@ void fuser_breadth_first(std::vector<Block> &block_list, uint64_t min_threading=
 void fuser_reshapable_first(std::vector<Block> &block_list, uint64_t min_threading=0);
 
 // Fuses 'block_list' greedily
-// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
-void fuser_greedy(std::vector<Block> &block_list, uint64_t min_threading=0);
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void fuser_greedy(std::vector<Block> &block_list, bool avoid_rank0_sweep);
 
 } // jit
 } // bohrium

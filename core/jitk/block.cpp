@@ -670,16 +670,25 @@ pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     return make_pair(Block(), false); // No match found
 }
 
-bool mergeable(const Block &b1, const Block &b2) {
+bool mergeable(const Block &b1, const Block &b2, bool avoid_rank0_sweep) {
     if (b1.isInstr() or b2.isInstr()) {
         return false;
     }
     const LoopB &l1 = b1.getLoop();
     const LoopB &l2 = b2.getLoop();
+
     // System-only blocks are very flexible because they array sizes does not have to match when reshaping.
     if (l2.isSystemOnly()) {
         return true;
     }
+
+    // We might have to avoid fusion when one of the (root) blocks are sweeping
+    if (avoid_rank0_sweep and l1.rank == 0 and l2.rank == 0) {
+        if ((l1._sweeps.size() > 0) != (l2._sweeps.size() > 0)) {
+            return false;
+        }
+    }
+
     // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
     if (sweeps_accessed_by_block(l1._sweeps, l2)) {
         return false;

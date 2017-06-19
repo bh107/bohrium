@@ -214,8 +214,9 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
         }
     }
 
-    // The cache system
-    const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat);
+    // Let's get the block list
+    // NB: 'avoid_rank0_sweep' is set to true when we have a child to offload to.
+    const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat, child != NULL);
 
     for(const Block &block: block_list) {
         assert(not block.isInstr());

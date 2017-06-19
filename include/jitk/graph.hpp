@@ -54,7 +54,7 @@ bool validate(DAG &dag);
  * Complexity: O(V)
  *
  */
-void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b=true, uint64_t min_threading=0);
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b=true);
 
 /* Transitive reduce the 'dag', i.e. remove all redundant edges,
  *
@@ -67,7 +67,7 @@ void transitive_reduction(DAG &dag);
 void merge_system_pendants(DAG &dag);
 
 // Pretty print the DAG. A "-<id>.dot" is append the filename.
-void pprint(const DAG &dag, const char *filename, uint64_t min_threading=0);
+void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep);
 
 // Create a dag based on the 'block_list'
 DAG from_block_list(const std::vector <Block> &block_list);
@@ -137,8 +137,8 @@ std::vector<Block> topological(DAG &dag, uint64_t min_threading=0) {
 }
 
 // Merges the vertices in 'dag' greedily.
-// 'min_threading' is the minimum amount of threading acceptable in the merged block
-void greedy(DAG &dag, uint64_t min_threading=0);
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void greedy(DAG &dag, bool avoid_rank0_sweep);
 
 } // graph
 } // jit
