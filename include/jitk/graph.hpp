@@ -115,10 +115,8 @@ std::vector<Block> topological(DAG &dag, bool avoid_rank0_sweep) {
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
             const Vertex v = roots.pop();
-            if (mergeable(block, dag[v], avoid_rank0_sweep)) {
-                const pair<Block, bool> res = merge_if_possible(block, dag[v]);
-                assert(res.second);
-                block = res.first;
+            if (!dag[v].isInstr() and mergeable(block, dag[v], avoid_rank0_sweep)) {
+                block = reshape_and_merge(block.getLoop(), dag[v].getLoop());
                 assert(block.validation());
 
                 // Add adjacent vertices and remove the block 'b' from 'dag'

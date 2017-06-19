@@ -283,10 +283,8 @@ void fuser_serial(vector<Block> &block_list, bool avoid_rank0_sweep) {
         }
         // Let's search for fusible blocks
         for (; it != block_list.end(); ++it) {
-            if (mergeable(cur, *it, avoid_rank0_sweep)) {
-                const pair<Block, bool> res = merge_if_possible(cur, *it);
-                assert(res.second);
-                cur = res.first;
+            if (!it->isInstr() and mergeable(cur, *it, avoid_rank0_sweep)) {
+                cur = reshape_and_merge(cur.getLoop(), it->getLoop());
             } else {
                 break; // We couldn't find any shape match
             }

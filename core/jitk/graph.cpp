@@ -161,9 +161,9 @@ bool validate(DAG &dag) {
 
 void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b) {
     // Let's merge the two blocks and save it in vertex 'a'
-    bool merge_possible;
-    tie(dag[a], merge_possible) = merge_if_possible(dag[a], dag[b]);
-    assert(merge_possible);
+    assert(not dag[a].isInstr());
+    assert(not dag[b].isInstr());
+    dag[a] = reshape_and_merge(dag[a].getLoop(), dag[b].getLoop());
     assert(dag[a].validation());
 
     // Add new children
