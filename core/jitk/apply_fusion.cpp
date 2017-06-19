@@ -52,11 +52,11 @@ void apply_transformers(vector<Block> &block_list, const vector<string> &transfo
         } else if (*it == "collapse_redundant_axes") {
             collapse_redundant_axes(block_list);
         } else if (*it == "serial") {
-            fuser_serial(block_list);
+            fuser_serial(block_list, avoid_rank0_sweep);
         } else if (*it == "breadth_first") {
-            fuser_breadth_first(block_list);
+            fuser_breadth_first(block_list, avoid_rank0_sweep);
         } else if (*it == "reshapable_first") {
-            fuser_reshapable_first(block_list);
+            fuser_reshapable_first(block_list, avoid_rank0_sweep);
         } else if (*it == "greedy") {
             fuser_greedy(block_list, avoid_rank0_sweep);
         } else {

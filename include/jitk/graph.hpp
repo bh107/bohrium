@@ -77,9 +77,9 @@ std::vector<Block> fill_block_list(const DAG &dag);
 
 // Merges the vertices in 'dag' topologically using 'Queue' as the Vertex queue.
 // 'Queue' is a collection of 'Vertex' that is constructed with the DAG and supports push(), pop(), and empty()
-// 'min_threading' is the minimum amount of threading acceptable in merged blocks
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 template <typename Queue>
-std::vector<Block> topological(DAG &dag, uint64_t min_threading=0) {
+std::vector<Block> topological(DAG &dag, bool avoid_rank0_sweep) {
     using namespace std;
     vector<Block> ret;
     Queue roots(dag); // The root vertices
@@ -115,8 +115,9 @@ std::vector<Block> topological(DAG &dag, uint64_t min_threading=0) {
         // Search for fusible blocks within the root blocks
         while (not roots.empty()) {
             const Vertex v = roots.pop();
-            const pair<Block, bool> res = merge_if_possible(block, dag[v], min_threading);
-            if (res.second) {
+            if (mergeable(block, dag[v], avoid_rank0_sweep)) {
+                const pair<Block, bool> res = merge_if_possible(block, dag[v]);
+                assert(res.second);
                 block = res.first;
                 assert(block.validation());
 

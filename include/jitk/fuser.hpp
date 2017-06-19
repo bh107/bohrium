@@ -42,16 +42,16 @@ std::vector<Block> pre_fuser_lossy(const std::vector<bh_instruction *> &instr_li
 std::vector<Block> fuser_singleton(const std::vector<bh_instruction *> &instr_list);
 
 // Fuses 'block_list' in a serial naive manner
-// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
-void fuser_serial(std::vector<Block> &block_list, uint64_t min_threading=0);
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void fuser_serial(std::vector<Block> &block_list, bool avoid_rank0_sweep);
 
 // Fuses 'block_list' in a topological breadth first manner
-// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
-void fuser_breadth_first(std::vector<Block> &block_list, uint64_t min_threading=0);
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void fuser_breadth_first(std::vector<Block> &block_list, bool avoid_rank0_sweep);
 
 // Fuses 'block_list' in a topological manner prioritizing fusion of reshapable blocks
-// 'min_threading' is the minimum amount of threading acceptable in the merged blocks
-void fuser_reshapable_first(std::vector<Block> &block_list, uint64_t min_threading=0);
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void fuser_reshapable_first(std::vector<Block> &block_list, bool avoid_rank0_sweep);
 
 // Fuses 'block_list' greedily
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
