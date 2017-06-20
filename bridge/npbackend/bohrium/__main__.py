@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-#In this module we implement an "as numpy" hack which makes it possible to
-#utilize Bohrium using the command line argument "python -m bohrium.as_numpy"
+# In this module we implement an "as numpy" hack which makes it possible to
+# utilize Bohrium using the command line argument "python -m bohrium.as_numpy"
 
 import sys
 import os
 import bohrium
+
 
 @bohrium.replace_numpy
 def execfile_wrapper(path):
@@ -18,6 +19,7 @@ def execfile_wrapper(path):
         import runpy
         return runpy.run_path(path, init_globals={}, run_name="__main__")
     return execfile(path, {"__name__": "__main__", "__file__": path})
+
 
 # Set the module search path to the dir of the script
 sys.argv.pop(0)

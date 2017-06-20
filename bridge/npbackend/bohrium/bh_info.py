@@ -27,4 +27,3 @@ def info():
         "runtime_info": runtime_info(),
         "statistics": statistic(),
     }
-

@@ -8,6 +8,7 @@ from . import bhary
 from . import _util
 from .bhary import fix_biclass_wrapper
 
+
 @fix_biclass_wrapper
 def flatten(ary, order='C', always_copy=True):
     """
@@ -197,7 +198,7 @@ def diagflat(d, k=0):
 
     """
     d = flatten(d)
-    size = d.size+abs(k)
+    size = d.size + abs(k)
     A = array_create.zeros((size, size), dtype=d.dtype, bohrium=bhary.check(d))
     Ad = diagonal(A, offset=k)
     Ad[...] = d
@@ -463,7 +464,7 @@ def broadcast_arrays(*args):
 
         # Common case where nothing needs to be broadcasted.
         bcast = numpy.broadcast(*args)
-        if all(array.shape == bcast.shape for array in args if not numpy.isscalar(array)):    
+        if all(array.shape == bcast.shape for array in args if not numpy.isscalar(array)):
             return (args, bcast.shape)
 
         ret = []
@@ -623,6 +624,6 @@ def concatenate(array_list, axis=0):
         axis_slice = "%d:%d+%d" % (len_count, len_count, array_list[i].shape[axis])
         cmd = slice.replace("AXIS", axis_slice)
         cmd += " = array_list[i]"
-        exec(cmd)
+        exec (cmd)
         len_count += array_list[i].shape[axis]
     return ret

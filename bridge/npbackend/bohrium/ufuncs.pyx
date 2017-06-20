@@ -24,7 +24,6 @@ def extmethod(name, out, in1, in2):
     assert in1.dtype == in2.dtype
     target.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
-
 def setitem(ary, loc, value):
     """
     Set the 'value' into 'ary' at the location specified through 'loc'.
@@ -45,14 +44,13 @@ def setitem(ary, loc, value):
         # 'slice' doesn't support negative start index
         if loc[0] < 0:
             loc[0] += ary.shape[0]
-        loc[0] = slice(loc[0], loc[0]+1)
+        loc[0] = slice(loc[0], loc[0] + 1)
 
     # Copy the 'value' to 'ary' using the 'loc'
     if ary.ndim == 0:
         assign(value, ary)
     else:
         assign(value, ary[tuple(loc)])
-
 
 def overlap_conflict(out, *inputs):
     """
@@ -69,11 +67,10 @@ def overlap_conflict(out, *inputs):
     for i in inputs:
         if not np.isscalar(i):
             if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
-                     out.strides == i.strides and out.shape == i.shape and \
-                     get_cdata(out) == get_cdata(i)):
+                                                                out.strides == i.strides and out.shape == i.shape and \
+                                                                get_cdata(out) == get_cdata(i)):
                 return True
     return False
-
 
 @fix_biclass_wrapper
 def assign(ary, out):
@@ -119,17 +116,15 @@ class Ufunc(object):
             # Scipy complains if '__name__' is unicode
             self.__name__ = info['name'].encode('latin_1')
 
-
     def __str__(self):
         return "<bohrium Ufunc '%s'>" % self.info['name']
-
 
     @fix_biclass_wrapper
     def __call__(self, *args, **kwargs):
         args = list(args)
 
         # Check number of array arguments
-        if len(args) != self.info['nop'] and len(args) != self.info['nop']-1:
+        if len(args) != self.info['nop'] and len(args) != self.info['nop'] - 1:
             raise ValueError("invalid number of array arguments")
 
         # Let's make sure that 'out' is always a positional argument
@@ -173,11 +168,11 @@ class Ufunc(object):
 
         if any([bhary.check(a) for a in args]):
             if out is not None and not bhary.check(out):
-                raise NotImplementedError("For now, the output must be a Bohrium "\
+                raise NotImplementedError("For now, the output must be a Bohrium " \
                                           "array when the input arrays are")
         elif not bhary.check(out):
             # All operands are regular NumPy arrays
-            func = eval("np.%s"%self.info['name'])
+            func = eval("np.%s" % self.info['name'])
             if out is not None:
                 args.append(out)
             return func(*args)
@@ -225,7 +220,6 @@ class Ufunc(object):
             # We need to convert the output type before returning
             assign(args[0], out)
             return out
-
 
     @fix_biclass_wrapper
     def reduce(self, ary, axis=0, out=None):
@@ -356,7 +350,7 @@ class Ufunc(object):
             else:
                 shape = tuple(s for i, s in enumerate(ary.shape) if i != axis)
                 if out is not None and out.shape != shape:
-                    raise ValueError("output dimension mismatch expect "\
+                    raise ValueError("output dimension mismatch expect " \
                                      "shape '%s' got '%s'" % (shape, out.shape))
 
             tmp = array_create.empty(shape, dtype=ary.dtype)
@@ -385,7 +379,6 @@ class Ufunc(object):
             else:
                 out = ary
             return out
-
 
     @fix_biclass_wrapper
     def accumulate(self, ary, axis=0, out=None):
@@ -465,7 +458,7 @@ class Ufunc(object):
                 if bhary.check(ary):
                     ary = ary.copy2numpy()
             if out.shape != ary.shape:
-                raise ValueError("output dimension mismatch expect "\
+                raise ValueError("output dimension mismatch expect " \
                                  "shape '%s' got '%s'" % (ary.shape, out.shape))
 
         # Check for out of bounds and convert negative axis values
@@ -489,6 +482,7 @@ class Ufunc(object):
         target.accumulate(self, get_bhc(out), get_bhc(ary), axis)
         return out
 
+
 #
 # Expose all ufuncs at the module-level.
 #
@@ -506,6 +500,7 @@ for op in _info.op.values():
 # We needs this reference because Python v3 uses "true" division
 UFUNCS["bh_divide"] = UFUNCS["divide"]
 
+
 # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
 #       such as "negative" which can be done like below.
 class Negative(Ufunc):
@@ -516,6 +511,8 @@ class Negative(Ufunc):
         else:
             out[...] = -1 * ary
             return out
+
+
 UFUNCS["negative"] = Negative({'name': 'negative'})
 
 
@@ -536,6 +533,8 @@ class TrueDivide(Ufunc):
         else:
             out[...] = ret
             return out
+
+
 UFUNCS["true_divide"] = TrueDivide({'name': 'true_divide'})
 
 
@@ -552,6 +551,8 @@ class FloorDivide(Ufunc):
         else:
             out[...] = ret
             return out
+
+
 UFUNCS["floor_divide"] = FloorDivide({'name': 'floor_divide'})
 
 # Python v3 uses "true" division
@@ -560,7 +561,7 @@ if sys.version_info.major >= 3:
 
 # Expose via their name.
 for name, ufunc in UFUNCS.items():
-    exec("%s = ufunc" % name)
+    exec ("%s = ufunc" % name)
 
 # We do not want to expose a function named "ufunc"
 del ufunc

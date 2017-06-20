@@ -19,6 +19,7 @@ class BhcAPI:
       have been deallocated! Thus, initially we will manually load all 'bhc' functions in order to make this script
       completely self-contained.
     """
+
     def __init__(self):
         def get_bhc_api():
             bhc_py_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "bhc.py")
@@ -37,7 +38,7 @@ class BhcAPI:
         # Load the bhc API
         for key, val in get_bhc_api().items():
             if key.startswith("bhc_"):
-                setattr(self, key[4:], val) # Save key without the "bhc_"
+                setattr(self, key[4:], val)  # Save key without the "bhc_"
 
     def __call__(self, name, *args, **kwargs):
         """Call the API function named `name` with the `*args` and `**kwargs`"""
@@ -47,6 +48,7 @@ class BhcAPI:
     def call_single_dtype(self, name, dtype_name, *args, **kwargs):
         """Call the API function with only a single type signature it its name."""
         return self("%s_A%s" % (name, dtype_name), *args, **kwargs)
+
 
 bhc = BhcAPI()
 
@@ -148,7 +150,7 @@ def ufunc(op, *args, **kwd):
     :rtype: None
     """
 
-    dtypes = kwd.get("dtypes", [None]*len(args))
+    dtypes = kwd.get("dtypes", [None] * len(args))
 
     # Make sure that 'op' is the operation name
     if hasattr(op, "info"):
@@ -172,14 +174,14 @@ def ufunc(op, *args, **kwd):
     for arg, dtype in zip(args, dtypes):
         if numpy.isscalar(arg):
             if dtype is None:
-                fname += "_K%s"%scalar_type
+                fname += "_K%s" % scalar_type
             else:
-                fname += "_K%s"%dtype_name(dtype)
+                fname += "_K%s" % dtype_name(dtype)
         else:
             if dtype is None:
-                fname += "_A%s"%dtype_name(arg)
+                fname += "_A%s" % dtype_name(arg)
             else:
-                fname += "_A%s"%dtype_name(dtype)
+                fname += "_A%s" % dtype_name(dtype)
 
     _bhc_exec(getattr(bhc, fname), *args)
 
@@ -209,7 +211,7 @@ def accumulate(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    ufunc("%s_accumulate" % op.info['name'], out, ary, axis, dtypes=[None,None,numpy.dtype("int64")])
+    ufunc("%s_accumulate" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
 
 
 def extmethod(name, out, in1, in2):
@@ -270,7 +272,7 @@ def random123(size, start_index, key):
 
     # And apply the range operation
     if size > 0:
-        ufunc("random123", ret, start_index, key, dtypes=[dtype]*3)
+        ufunc("random123", ret, start_index, key, dtypes=[dtype] * 3)
 
     return ret
 

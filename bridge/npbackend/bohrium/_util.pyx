@@ -92,7 +92,7 @@ def type_sig(op_name, inputs):
         if dtype == sig[1]:
             return (np.dtype(sig[0]), np.dtype(sig[1]))
 
-    raise TypeError("The ufunc bohrium.%s() does not support input data type: %s."%(op_name, dtype))
+    raise TypeError("The ufunc bohrium.%s() does not support input data type: %s." % (op_name, dtype))
 
 def dtype_support(dtype):
     """Returns True when Bohrium supports 'dtype' """

@@ -34,7 +34,7 @@ cdef union key_t:
     uint32_t ui
 
 cdef extern from "Python.h":
-    void* PyLong_AsVoidPtr(object)
+    void*PyLong_AsVoidPtr(object)
 
 cdef class RandomState:
     """
@@ -171,7 +171,6 @@ cdef class RandomState:
         except TypeError:
             raise ValueError("state is not a valid Random123 state")
 
-
     def random123(self, size=None, bohrium=True):
         """
         New array of uniform pseudo numbers based on the random123 philox2x32 algorithm.
@@ -189,7 +188,7 @@ cdef class RandomState:
         cdef ctr_t ctr
         cdef ctr_t rnd
         cdef key_t key
-        cdef uint64_t* array_data
+        cdef uint64_t*array_data
         cdef long length
         cdef long i
 
@@ -198,14 +197,14 @@ cdef class RandomState:
 
         if size is None:
             length = 1
-            rnd.c = philox2x32(ctr.c,key.k)
+            rnd.c = philox2x32(ctr.c, key.k)
             ret = rnd.ul
         elif bohrium is False:
-            ret = np.empty(size,dtype=np.uint64,bohrium=False)
+            ret = np.empty(size, dtype=np.uint64, bohrium=False)
             length = ret.size
             array_data = <uint64_t *> PyLong_AsVoidPtr(ret.ctypes.data)
             for i from 0 <= i < length:
-                rnd.c = philox2x32(ctr.c,key.k)
+                rnd.c = philox2x32(ctr.c, key.k)
                 array_data[i] = rnd.ul
                 ctr.ul += 1
         else:
@@ -253,7 +252,7 @@ cdef class RandomState:
                [-2.99091858, -0.79479508],
                [-1.23204345, -1.75224494]])
         """
-        dtype=np.dtype(dtype).type
+        dtype = np.dtype(dtype).type
         if not (dtype is np.float64 or dtype is np.float32):
             raise ValueError("dtype not supported for random_sample")
         #Generate random numbers as uint
@@ -310,7 +309,7 @@ cdef class RandomState:
                 [ True,  True]]], dtype=bool)
 
         """
-        r_uint = self.random123(size,bohrium) >> (64 - sys.maxint.bit_length())
+        r_uint = self.random123(size, bohrium) >> (64 - sys.maxint.bit_length())
         res = np.empty_like(r_uint, dtype=int)
         res[...] = r_uint
         return res
@@ -370,13 +369,13 @@ cdef class RandomState:
         if high is None:
             high = low
             low = 0
-        if low >= high :
+        if low >= high:
             raise ValueError("low >= high")
         diff = high - low
         if size is None:
-            return dtype(dtype(self.random123(size,bohrium=bohrium) % diff) + low)
+            return dtype(dtype(self.random123(size, bohrium=bohrium) % diff) + low)
         else:
-            return np.array(np.array(self.random123(size,bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low,
+            return np.array(np.array(self.random123(size, bohrium=bohrium) % diff, dtype=dtype, bohrium=bohrium) + low,
                             dtype=dtype, bohrium=bohrium)
 
     def uniform(self, low=0.0, high=1.0, size=None, dtype=float, bohrium=True):
@@ -633,7 +632,7 @@ cdef class RandomState:
         if high is None:
             high = low
             low = 1
-        return self.randint(low, high+1, size, dtype=dtype, bohrium=bohrium)
+        return self.randint(low, high + 1, size, dtype=dtype, bohrium=bohrium)
 
     # Complicated, continuous distributions:
     def standard_normal(self, size=None, dtype=float, bohrium=True):
@@ -695,9 +694,9 @@ cdef class RandomState:
             t = 2. * math.pi * u2
             z0 = r * np.cos(t)
             z1 = r * np.sin(t)
-            res = np.empty(hlength*2, dtype=dtype, bohrium=bohrium)
-            res[:hlength] = z0 # res[::2] = z0
-            res[hlength:] = z1 # res[1::2] = z1
+            res = np.empty(hlength * 2, dtype=dtype, bohrium=bohrium)
+            res[:hlength] = z0  # res[::2] = z0
+            res[hlength:] = z1  # res[1::2] = z1
             return res[:length].reshape(size)
 
     def normal(self, loc=0.0, scale=1.0, size=None, dtype=float, bohrium=True):
@@ -820,7 +819,7 @@ cdef class RandomState:
         """
         # We use -log(1-U) since U is [0, 1) */
         dtype = np.dtype(dtype).type
-        return dtype(-1) * np.log(dtype(1) - self.random_sample(size=size,dtype=dtype,bohrium=bohrium))
+        return dtype(-1) * np.log(dtype(1) - self.random_sample(size=size, dtype=dtype, bohrium=bohrium))
 
     def exponential(self, scale=1.0, size=None, dtype=float, bohrium=True):
         """
@@ -861,7 +860,7 @@ cdef class RandomState:
                http://en.wikipedia.org/wiki/Exponential_distribution
 
         """
-        dtype= np.dtype(dtype).type
+        dtype = np.dtype(dtype).type
         scale = dtype(scale)
         if scale <= dtype(0):
             raise ValueError("scale <= 0")
@@ -890,25 +889,24 @@ cdef class RandomState:
             shape = (shape,)
         dtype = np.dtype(dtype).type
         if dtype is np.bool:
-            res = self.random_integers(0,1,shape,bohrium=bohrium)
+            res = self.random_integers(0, 1, shape, bohrium=bohrium)
         elif dtype in [np.int8, np.uint8]:
-            res = self.random_integers(1,3,shape,bohrium=bohrium)
+            res = self.random_integers(1, 3, shape, bohrium=bohrium)
         elif dtype is np.int16:
-            res = self.random_integers(1,5,shape,bohrium=bohrium)
+            res = self.random_integers(1, 5, shape, bohrium=bohrium)
         elif dtype is np.uint16:
-            res = self.random_integers(1,6,shape,bohrium=bohrium)
+            res = self.random_integers(1, 6, shape, bohrium=bohrium)
         elif dtype in [np.float32, np.float64]:
-            res = self.random_sample(size=shape,bohrium=bohrium)
+            res = self.random_sample(size=shape, bohrium=bohrium)
         elif dtype in [np.complex64, np.complex128]:
-            res = self.random_sample(size=shape,bohrium=bohrium) + \
-                  self.random_sample(size=shape,bohrium=bohrium)*1j
+            res = self.random_sample(size=shape, bohrium=bohrium) + \
+                  self.random_sample(size=shape, bohrium=bohrium) * 1j
         else:
-            res = self.random_integers(1,8,size=shape,bohrium=bohrium)
-        if len(res.shape) == 0:#Make sure scalars is arrays.
-            res = np.asarray(res,bohrium=bohrium)
+            res = self.random_integers(1, 8, size=shape, bohrium=bohrium)
+        if len(res.shape) == 0:  #Make sure scalars is arrays.
+            res = np.asarray(res, bohrium=bohrium)
             res.shape = shape
-        return np.asarray(res, dtype=dtype,bohrium=bohrium)
-
+        return np.asarray(res, dtype=dtype, bohrium=bohrium)
 
 #The default random object
 _inst = RandomState()

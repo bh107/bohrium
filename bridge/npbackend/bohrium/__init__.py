@@ -3,12 +3,14 @@ The module initialization of npbackend/bohrium imports and exposes all methods
 required to become a drop-in replacement for numpy.
 """
 import sys
+
 if 'numpy_force' not in sys.modules:
     import numpy
+
     sys.modules['numpy_force'] = numpy
     del numpy
 
-#We import all of NumPy and overwrite with the objects we implement ourself
+# We import all of NumPy and overwrite with the objects we implement our self
 from numpy_force import *
 
 from .array_create import *
@@ -28,6 +30,7 @@ from . import contexts
 from . import bh_info
 from . import backend_messaging
 from numpy_force import dtype
+
 asarray = array
 asanyarray = array
 
@@ -38,12 +41,13 @@ def replace_numpy(function):
             # Run your function/program
             result = function(*args, **kwargs)
         return result
+
     return wrapper
 
 
 # Expose all ufuncs
 for _name, _f in UFUNCS.items():
-    exec("%s = _f" % _name)
+    exec ("%s = _f" % _name)
 
 # Aliases
 _aliases = [
@@ -51,27 +55,27 @@ _aliases = [
     ('round', 'round_')
 ]
 for _f, _t in _aliases:
-    exec("%s = %s" % (_f, _t))
+    exec ("%s = %s" % (_f, _t))
 cumsum = add.accumulate
 cumprod = multiply.accumulate
 
 # Expose all data types
 for _t in numpy_types:
-    exec("%s = numpy.%s" % (_t.__str__(), _t.__str__()))
+    exec ("%s = numpy.%s" % (_t.__str__(), _t.__str__()))
 
 # Type aliases
 _type_aliases = [
-    ('bool',    'bool'),
-    ('int',     'int'),
-    ('uint',    'numpy.uint64'),
-    ('float',   'float'),
+    ('bool', 'bool'),
+    ('int', 'int'),
+    ('uint', 'numpy.uint64'),
+    ('float', 'float'),
     ('complex', 'complex'),
-    ('fmod',    'mod'),
-    ('mod',     'remainder')
+    ('fmod', 'mod'),
+    ('mod', 'remainder')
 ]
 
 for _f, _t in _type_aliases:
-    exec("%s = %s" % (_f, _t))
+    exec ("%s = %s" % (_f, _t))
 
 # Note that the following modules needs ufuncs and dtypes
 from . import random123 as random
@@ -83,9 +87,12 @@ __all__ = [x for x in dir() if not x.startswith("_")]
 if sys.version_info[0] < 3:
     def set_printoptions(*args, **kwargs):
         numpy.core.arrayprint.set_printoptions(*args, **kwargs)
+
+
     def get_printoptions(*args, **kwargs):
         return numpy.core.arrayprint.get_printoptions()
 
 # Let's bohriumify the exposed API
 from . import bohriumify
+
 bohriumify.modules()

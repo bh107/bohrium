@@ -18,6 +18,7 @@ documented below:
 """
 from .._util import dtype_name
 
+
 class Base(object):
     """
     Abstract base array handle (an array has only one base)
@@ -26,6 +27,7 @@ class Base(object):
     :param int size: Number of elements in the array
     :param numpy.dtype dtype: Data type of the elements
     """
+
     def __init__(self, size, dtype):
         # Total number of elements
         self.size = size
@@ -33,6 +35,7 @@ class Base(object):
         self.dtype = dtype
         # Data type name
         self.dtype_name = dtype_name(dtype)
+
 
 class View(object):
     """
@@ -45,6 +48,7 @@ class View(object):
     :param tuple(int*ndim) strides: Stride for each dimension (in elements), converted to bytes upon construction.
     :param interface.Base base: Base associated with array.
     """
+
     def __init__(self, ndim, start, shape, strides, base):
         # Number of dimensions
         self.ndim = ndim

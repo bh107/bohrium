@@ -94,6 +94,7 @@ def sum(a, axis=None, dtype=None, out=None):
             a = array_create.array(a, dtype=dtype)
         return ufuncs.add.reduce(a, axis=axis, out=out)
 
+
 @bhary.fix_biclass_wrapper
 def prod(a, axis=None, dtype=None, out=None):
     """
@@ -161,6 +162,7 @@ def prod(a, axis=None, dtype=None, out=None):
         if dtype is not None:
             a = array_create.array(a, dtype=dtype)
         return ufuncs.multiply.reduce(a, axis=axis, out=out)
+
 
 @bhary.fix_biclass_wrapper
 def max(a, axis=None, out=None):
@@ -238,9 +240,10 @@ def max(a, axis=None, out=None):
     """
 
     if not bhary.check(a) and not bhary.check(out):
-        return numpy.max(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
+        return numpy.max(a, axis=axis, out=out)  # NumPy 1.6 doesn't support axis=None
     else:
         return ufuncs.maximum.reduce(a, axis=axis, out=out)
+
 
 @bhary.fix_biclass_wrapper
 def min(a, axis=None, out=None):
@@ -318,7 +321,7 @@ def min(a, axis=None, out=None):
     """
 
     if not bhary.check(a) and not bhary.check(out):
-        return numpy.min(a, axis=axis, out=out)#NumPy 1.6 doesn't support axis=None
+        return numpy.min(a, axis=axis, out=out)  # NumPy 1.6 doesn't support axis=None
     else:
         return ufuncs.minimum.reduce(a, axis=axis, out=out)
 

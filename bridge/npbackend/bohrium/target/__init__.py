@@ -18,6 +18,7 @@ import os
 
 DEFAULT_TARGET = "bhc"
 
+
 def _get_target():
     """ Returns the target backend module to use """
 
@@ -35,20 +36,21 @@ def _get_target():
             break
 
     target = target if target else DEFAULT_TARGET
-    target = "target_%s.py"%target
+    target = "target_%s.py" % target
 
     # Validate the target
     if target not in targets:
-        msg  = "Unsupported npbackend target: '%s'. "%target[len("target_"):-len(".py")]
+        msg = "Unsupported npbackend target: '%s'. " % target[len("target_"):-len(".py")]
         msg += "Use one of: "
 
         for t in targets:
-            msg += "'%s', "%t[len("target_"):-len(".py")]
+            msg += "'%s', " % t[len("target_"):-len(".py")]
 
-        msg = "%s."%msg[:-2]
+        msg = "%s." % msg[:-2]
         raise RuntimeError(msg)
 
     return target
+
 
 _target = _get_target()
 
@@ -56,7 +58,7 @@ _target = _get_target()
 from .interface import *
 
 # Then we import the target backend implementation
-exec("from .%s import *"%_target[:-len(".py")])
+exec ("from .%s import *" % _target[:-len(".py")])
 
 # Finally, we expose the chosen target name
 TARGET = _target[len("target_"):-len(".py")]

@@ -1,4 +1,4 @@
-#This module duplicates the NumPy API
+# This module duplicates the NumPy API
 
 from numpy_force.dual import *
 from numpy_force.dual import register_func, restore_func, restore_all

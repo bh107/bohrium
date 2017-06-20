@@ -36,12 +36,12 @@ class Base(interface.Base):
         else:
             s = "NULL"
 
-        return "<base memory at %s>"%s
+        return "<base memory at %s>" % s
 
     def __del__(self):
         if self.mmap_valid:
             if len(VCACHE) < VCACHE_SIZE:
-                VCACHE.append((self.size*self.dtype.itemsize, self.mmap))
+                VCACHE.append((self.size * self.dtype.itemsize, self.mmap))
                 return
 
         self.mmap.close()
@@ -98,9 +98,9 @@ def ufunc(op, *args):
     args = views2numpy(args)
     if op.info['name'] == "identity":
         if np.isscalar(args[1]):
-            exec("args[0][...] = args[1]")
+            exec ("args[0][...] = args[1]")
         else:
-            exec("args[0][...] = args[1][...]")
+            exec ("args[0][...] = args[1][...]")
     else:
         func = eval("np.%s" % op.info['name'])
         func(*args[1:], out=args[0])
