@@ -140,11 +140,12 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
                 ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
             except ValueError as msg:
                 if str(msg).find("setting an array element with a sequence.") != -1:
-                    for i in range(len(ary)): # Converting 1-element Bohrium arrays to NumPy scalars
+                    for i in range(len(ary)):  # Converting 1-element Bohrium arrays to NumPy scalars
                         if bhary.check(ary[i]) and ary[i].size == 1:
                             ary[i] = ary[i].copy2numpy()
 
-                    ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
+                    ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin,
+                                      fix_biclass=False)
 
             # In any case, the array must meet some requirements
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
@@ -731,7 +732,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
 
     """
     if not bohrium:
-        #TODO: add copy=False to .astype()
+        # TODO: add copy=False to .astype()
         return numpy.linspace(start, stop, num=num, endpoint=endpoint, retstep=retstep).astype(dtype)
 
     num = int(num)
@@ -741,12 +742,12 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=float, boh
     if endpoint:
         if num == 1:
             return array([numpy.dtype(dtype).type(start)])
-        step = (stop-start)/float((num-1))
+        step = (stop - start) / float((num - 1))
     else:
-        step = (stop-start)/float(num)
+        step = (stop - start) / float(num)
 
     y = arange(num, dtype=dtype)
-    if  step != 1: y *= step
+    if step != 1: y *= step
     if start != 0: y += start
 
     if retstep:

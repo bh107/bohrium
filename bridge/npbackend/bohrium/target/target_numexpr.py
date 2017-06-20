@@ -11,6 +11,7 @@ import os
 import ctypes
 from . import target_numpy
 
+
 class Base(target_numpy.Base):
     """ Base array handle """
     pass
@@ -47,13 +48,13 @@ print("using numexpr target with %d threads" % int(os.getenv('OMP_NUM_THREADS', 
 
 UFUNC_CMDS = {
     'identity': "i1",
-    'add':      "i1 + i2",
+    'add': "i1 + i2",
     'subtract': "i1 - i2",
     'multiply': "i1 * i2",
-    'divide':   "i1 / i2",
-    'power':    "i1**i2",
+    'divide': "i1 / i2",
+    'power': "i1**i2",
     'absolute': "abs(i1)",
-    'sqrt':     "sqrt(i1)"
+    'sqrt': "sqrt(i1)"
 }
 
 
@@ -85,7 +86,7 @@ def reduce(op, out, ary, axis):
     elif op.info['name'] == 'multiply':
         numexpr.evaluate("prod(ary, %d)" % axis, out=out, casting='unsafe')
     else:
-        print ("WARNING: reduce '%s' not compiled" % op.info['name'])
+        print("WARNING: reduce '%s' not compiled" % op.info['name'])
         func = eval("np.%s.reduce" % op.info['name'])
         keepdims = ary.ndim == 1
         func(ary, axis=axis, out=out, keepdims=keepdims)
@@ -114,6 +115,7 @@ def arange(size, dtype):
     raise NotImplementedError()
     return np.arange((size,), dtype=dtype)
 
+
 def random123(size, start_index, key):
     """
     Create a new random array using the random123 algorithm.
@@ -124,6 +126,8 @@ def random123(size, start_index, key):
 
 
 import atexit
+
+
 @atexit.register
 def shutdown():
     pass

@@ -7,6 +7,7 @@ import bohrium as np
 from sys import stderr
 from . import ufuncs
 
+
 def __threshold(name, a, thresh, maxval):
     b = np.array([thresh, maxval], dtype=a.dtype)
     c = np.empty_like(a)
@@ -17,17 +18,22 @@ def __threshold(name, a, thresh, maxval):
 def threshold(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_b", a, thresh, maxval)
 
+
 def threshold_b(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_b", a, thresh, maxval)
+
 
 def threshold_bi(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_bi", a, thresh, maxval)
 
+
 def threshold_t(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_t", a, thresh, maxval)
 
+
 def threshold_tz(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_tz", a, thresh, maxval)
+
 
 def threshold_tzi(a, thresh=127, maxval=255):
     return __threshold("opencv_threshold_tzi", a, thresh, maxval)
@@ -38,6 +44,7 @@ def connected_components(a, connectivity=8):
     c = np.zeros_like(a)
     ufuncs.extmethod("opencv_connected_components", c, a, b)
     return c
+
 
 def erode(a, b=None, c=None):
     if b is None:

@@ -59,7 +59,7 @@ def check_biclass_np_over_bh(ary):
     except AttributeError:
         return False
 
-    from . import _bh #We import locally in order to avoid import cycle
+    from . import _bh  #We import locally in order to avoid import cycle
     return not isinstance(ary, _bh.ndarray)
 
 def check_biclass_bh_over_np(ary):
@@ -107,7 +107,7 @@ def fix_biclass_wrapper(func):
     try:
         #Flag that this function has been handled
         setattr(inner, "_wrapped_fix_biclass", True)
-    except:#In older versions of cython, this is not possible
+    except:  #In older versions of cython, this is not possible
         pass
     return inner
 
@@ -117,7 +117,7 @@ def new(shape, dtype, bhc_ary=None):
     Use a new Bohrium-C array when 'bhc_ary' is None.
     """
 
-    from . import _bh #We import locally in order to avoid import cycle
+    from . import _bh  #We import locally in order to avoid import cycle
     ret = _bh.ndarray(shape, dtype=dtype)
     if bhc_ary is None:
         new_bhc_base(ret)
@@ -229,7 +229,7 @@ def get_bhc(ary):
     if not dtype_equal(ary, base):
         # If 'ary' is real or imag view of 'base', we will convert the view into a real base array
         if dtype_in(ary.dtype, [numpy.float32, numpy.float64]) and \
-                    dtype_in(base.dtype, [numpy.complex64, numpy.complex128]):
+                dtype_in(base.dtype, [numpy.complex64, numpy.complex128]):
 
             # All this is simply a hack to reinterpret 'ary' as a complex view of the 'base'
             offset = (get_cdata(ary) - get_cdata(base)) // base.itemsize
@@ -243,14 +243,14 @@ def get_bhc(ary):
                 ary = ufuncs.real(cary)
             else:
                 ary = ufuncs.imag(cary)
-            base = ary # 'ary' is now itself a base array
+            base = ary  # 'ary' is now itself a base array
         else:
             raise ValueError("Bohrium base and view must have same data type")
     if not dtype_support(ary.dtype):
         raise ValueError("Bohrium does not support the data type: %s" % ary.dtype)
 
-    if 0 in ary.shape:#Lets use a dummy strides and offset for zero-sized views
-        strides = [0]*ary.ndim
+    if 0 in ary.shape:  #Lets use a dummy strides and offset for zero-sized views
+        strides = [0] * ary.ndim
         offset = 0
     else:
         if not get_cdata(base) <= get_cdata(ary) < get_cdata(base) + base.nbytes:
@@ -321,4 +321,3 @@ def set_bhc_data_from_ary(self, ary):
         raise ValueError("Input array must be C-style contiguous")
 
     target.set_bhc_data_from_ary(get_bhc(self), ary)
-

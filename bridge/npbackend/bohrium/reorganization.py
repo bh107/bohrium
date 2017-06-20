@@ -125,7 +125,6 @@ def take(a, indices, axis=None, out=None, mode='raise'):
         indices = array_create.array(indices, bohrium=False)
         return numpy.take(a, indices, axis=axis, out=out, mode=mode)
 
-
     if axis is not None and a.ndim > 1:
         warnings.warn("Bohrium does not support the 'axis' argument, "
                       "it will be handled by the original NumPy.", UserWarning, 2)
@@ -196,7 +195,7 @@ def take_using_index_tuple(a, index_tuple, out=None):
     # Let's find the absolute index
     abs_index = index_list[-1].copy()
     stride = a.shape[-1]
-    for i in range(len(index_list)-2, -1, -1): # Iterate backwards from index_list[-2]
+    for i in range(len(index_list) - 2, -1, -1):  # Iterate backwards from index_list[-2]
         abs_index += index_list[i] * stride
         stride *= a.shape[i]
 
@@ -420,9 +419,9 @@ def cond_scatter(ary, indexes, values, mask):
     target.cond_scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes), get_bhc(mask))
     ary[...] = flat.reshape(ary.shape)
 
+
 @fix_biclass_wrapper
 def pack(ary, mask):
-
     """
     pack(ary, mask)
 
@@ -569,4 +568,3 @@ def nonzero(a):
         ret.append(tmp)
         nz -= tmp * stride
     return ret
-

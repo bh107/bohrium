@@ -8,6 +8,7 @@ import numpy_force as numpy
 from . import array_create
 from .bhary import fix_biclass_wrapper
 
+
 @fix_biclass_wrapper
 def load(file, mmap_mode=None, allow_pickle=True, fix_imports=True, encoding='ASCII', bohrium=True):
     """
@@ -177,7 +178,6 @@ def save(file, arr, allow_pickle=True, fix_imports=True):
 
 @fix_biclass_wrapper
 def _savez(file, args, kwds, compress, allow_pickle=True, pickle_kwargs=None):
-
     ary_list = []
     for a in args:
         ary_list.append(array_create.array(a, bohrium=False))
@@ -446,6 +446,7 @@ def loadtxt(fname, dtype=float, comments='#', delimiter=None,
 
     f = numpy.loadtxt(fname, dtype, comments, delimiter, converters, skiprows, usecols, unpack, ndmin)
     return array_create.array(f, bohrium=bohrium)
+
 
 @fix_biclass_wrapper
 def savetxt(fname, X, fmt='%.18e', delimiter=' ', newline='\n', header='',

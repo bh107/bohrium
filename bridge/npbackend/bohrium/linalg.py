@@ -20,15 +20,16 @@ from . import array_create
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper
 
+
 @fix_biclass_wrapper
 def gauss(a):
     """
     Performe Gausian elimination on matrix a without pivoting
     """
-    for c in range(1,a.shape[0]):
-        a[c:,c-1:] = a[c:,c-1:] - (a[c:,c-1]/a[c-1,c-1:c])[:,None] * a[c-1,c-1:]
+    for c in range(1, a.shape[0]):
+        a[c:, c - 1:] = a[c:, c - 1:] - (a[c:, c - 1] / a[c - 1, c - 1:c])[:, None] * a[c - 1, c - 1:]
         np.flush(a)
-    a /= np.diagonal(a)[:,None]
+    a /= np.diagonal(a)[:, None]
     return a
 
 
@@ -40,11 +41,11 @@ def lu(a):
     u = a.copy()
     l = np.zeros_like(a)
     np.diagonal(l)[:] = 1.0
-    for c in range(1,u.shape[0]):
-        l[c:,c-1] = (u[c:,c-1]/u[c-1,c-1:c])
-        u[c:,c-1:] = u[c:,c-1:] - l[c:,c-1][:,None] * u[c-1,c-1:]
+    for c in range(1, u.shape[0]):
+        l[c:, c - 1] = (u[c:, c - 1] / u[c - 1, c - 1:c])
+        u[c:, c - 1:] = u[c:, c - 1:] - l[c:, c - 1][:, None] * u[c - 1, c - 1:]
         np.flush(u)
-    return (l,u)
+    return (l, u)
 
 
 @fix_biclass_wrapper
@@ -81,11 +82,11 @@ def solve(a, b):
     if not (len(a.shape) == 2 and a.shape[0] == a.shape[1]):
         raise la.LinAlgError("a is not square")
 
-    w = gauss(np.hstack((a,b[:,np.newaxis])))
-    lc = w.shape[1]-1
-    x = w[:,lc].copy()
-    for c in range(lc-1,0,-1):
-        x[:c] -= w[:c,c] * x[c:c+1]
+    w = gauss(np.hstack((a, b[:, np.newaxis])))
+    lc = w.shape[1] - 1
+    x = w[:, lc].copy()
+    for c in range(lc - 1, 0, -1):
+        x[:c] -= w[:c, c] * x[c:c + 1]
         np.flush(x)
     return x
 
@@ -122,15 +123,15 @@ def jacobi(a, b, tol=0.0005):
     True
     """
     x = np.ones_like(b)
-    D = 1/np.diag(a)
+    D = 1 / np.diag(a)
     R = np.diag(np.diag(a)) - a
-    T = D[:,np.newaxis]*R
-    C = D*b
+    T = D[:, np.newaxis] * R
+    C = D * b
     error = tol + 1
     while error > tol:
         xo = x
-        x = np.add.reduce(T*x,-1) + C
-        error = norm(x-xo)/norm(x)
+        x = np.add.reduce(T * x, -1) + C
+        error = norm(x - xo) / norm(x)
     return x
 
 
@@ -167,7 +168,7 @@ def matmul(a, b, no_blas=False):
     array([[19, 22],
            [43, 50]])
     """
-    if not dtype_equal(a,b):
+    if not dtype_equal(a, b):
         raise ValueError("Input must be of same type")
 
     if a.ndim != 2 and b.ndim != 2:
@@ -286,7 +287,7 @@ def norm(x, ord=None, axis=None):
     if axis != None:
         raise NotImplementedError("Unsupported value of param ord=%s" % axis)
 
-    r = np.sum(x*x)
+    r = np.sum(x * x)
     if issubclass(np.dtype(r.dtype).type, np.integer):
         r_f32 = np.empty(r.shape, dtype=np.float32)
         r_f32[:] = r
@@ -432,7 +433,8 @@ def tensordot(a, b, axes=2):
     bs = b.shape
     ndb = len(b.shape)
     equal = True
-    if (na != nb): equal = False
+    if (na != nb):
+        equal = False
     else:
         for k in range(na):
             if as_[axes_a[k]] != bs[axes_b[k]]:
@@ -503,10 +505,10 @@ def solve_tridiagonal(a, b, c, rhs):
     system_size = out_shape[-1]
 
     diagonals = array_create.empty((3, num_systems, system_size), dtype=rhs.dtype, bohrium=True)
-    diagonals[0] = a.reshape(num_systems,system_size)
-    diagonals[1] = b.reshape(num_systems,system_size)
-    diagonals[2] = c.reshape(num_systems,system_size)
-    rhs = rhs.reshape(num_systems,system_size)
+    diagonals[0] = a.reshape(num_systems, system_size)
+    diagonals[1] = b.reshape(num_systems, system_size)
+    diagonals[2] = c.reshape(num_systems, system_size)
+    rhs = rhs.reshape(num_systems, system_size)
     out = array_create.zeros_like(rhs)
     ufuncs.extmethod("tdma", out, diagonals, rhs)
     return out.reshape(out_shape)

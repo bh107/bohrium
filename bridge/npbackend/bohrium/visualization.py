@@ -9,7 +9,6 @@ from . import ufuncs, bhary, array_create
 
 
 def plot_surface(ary, mode, colormap, lowerbound, upperbound):
-
     mode = mode.lower()
 
     ranks = [2, 3]
@@ -37,17 +36,16 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
     else:
         raise ValueError("Unsupported mode '%s' " % mode)
 
-    if bhary.check(ary):                          # Must be a Bohrium array
+    if bhary.check(ary):  # Must be a Bohrium array
         ary = array_create.array(ary)
 
-    args = array_create.array([                     # Construct arguments
-            np.float32(colormap),
-            np.float32(flat),
-            np.float32(cube),
-            np.float32(lowerbound),
-            np.float32(upperbound)
-        ],
+    args = array_create.array([  # Construct arguments
+        np.float32(colormap),
+        np.float32(flat),
+        np.float32(cube),
+        np.float32(lowerbound),
+        np.float32(upperbound)
+    ],
         bohrium=True
     )
-    ufuncs.extmethod("visualizer", ary, args, ary)   # Send to extension
-
+    ufuncs.extmethod("visualizer", ary, args, ary)  # Send to extension

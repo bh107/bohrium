@@ -8,8 +8,9 @@ from . import backend_messaging as messaging
 
 class BohriumContext:
     """Enable Bohrium within the context"""
+
     def __init__(self):
-        self.__numpy        = sys.modules['numpy']
+        self.__numpy = sys.modules['numpy']
         self.__numpy_random = sys.modules['numpy.random']
         self.__numpy_linalg = sys.modules['numpy.linalg']
 
@@ -23,21 +24,22 @@ class BohriumContext:
         import numpy
         import bohrium
         # Overwrite with Bohrium
-        sys.modules['numpy_force']  = numpy
-        sys.modules['numpy']        = bohrium
+        sys.modules['numpy_force'] = numpy
+        sys.modules['numpy'] = bohrium
         sys.modules['numpy.random'] = bohrium.random
         sys.modules['numpy.linalg'] = bohrium.linalg
 
     def __exit__(self, *args):
         # Put NumPy back together
         sys.modules.pop('numpy_force', None)
-        sys.modules['numpy']        = self.__numpy
+        sys.modules['numpy'] = self.__numpy
         sys.modules['numpy.random'] = self.__numpy_random
         sys.modules['numpy.linalg'] = self.__numpy_linalg
 
 
 class Profiling:
     """Profiling the Bohrium backends within the context."""
+
     def __init__(self):
         pass
 
@@ -50,6 +52,7 @@ class Profiling:
 
 class DisableGPU:
     """Disable the GPU backend within the context."""
+
     def __init__(self):
         pass
 

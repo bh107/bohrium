@@ -4,6 +4,7 @@ import inspect
 import importlib
 from . import bhary
 
+
 def _target_modules(targets):
     mods = []
 
@@ -18,10 +19,13 @@ def _target_modules(targets):
 
     return ret
 
+
 # We will ignore the numpy.core module
 IGNORE_MODULES = '[numpy|numpy_force]\.core'
 
 pattern_return_ndarray = re.compile("Return.*ndarray", re.DOTALL)
+
+
 def modules(targets=["numpy", "numpy_force"], regex_to_exclude=IGNORE_MODULES):
     for m_name in _target_modules(targets):
         if m_name == "numpy":
@@ -40,4 +44,4 @@ def modules(targets=["numpy", "numpy_force"], regex_to_exclude=IGNORE_MODULES):
             if not hasattr(val, "_wrapped_fix_biclass"):
                 if hasattr(val, "__doc__") and val.__doc__ is not None:
                     if pattern_return_ndarray.search(val.__doc__) is not None:
-                        setattr(m_obj,name, bhary.fix_biclass_wrapper(val))
+                        setattr(m_obj, name, bhary.fix_biclass_wrapper(val))

@@ -13,6 +13,7 @@ from . import summations
 import numpy_force as numpy
 from .bhary import fix_biclass_wrapper
 
+
 @fix_biclass_wrapper
 def where(condition, x=None, y=None):
     """
@@ -110,7 +111,7 @@ def where(condition, x=None, y=None):
     # Find appropriate output type
     array_types = []
     scalar_types = []
-    for v in (x,y):
+    for v in (x, y):
         if numpy.isscalar(v):
             scalar_types.append(type(v))
         else:
