@@ -41,11 +41,14 @@ std::vector<Block> apply_pre_fusion(const std::vector<bh_instruction*> &instr_li
                                     const std::string &transformer_name);
 
 // Apply the list of tranformers specified by the names in 'transformer_names'
-void apply_transformers(std::vector<Block> &block_list, const std::vector<std::string> &transformer_names);
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void apply_transformers(std::vector<Block> &block_list, const std::vector<std::string> &transformer_names,
+                        bool avoid_rank0_sweep);
 
 // Create a block list based on 'instr_list' and what is in the 'config' and 'fcache'
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 std::vector<Block> get_block_list(const std::vector<bh_instruction*> &instr_list, const ConfigParser &config,
-                                  FuseCache &fcache, Statistics &stat);
+                                  FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep);
 
 } // jitk
 } // bohrium

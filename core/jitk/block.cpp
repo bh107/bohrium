@@ -628,7 +628,6 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
     }
     return false;
 }
-} // Unnamed namespace
 
 // Reshape 'l1' to match 'size_of_rank_dim' at 'l1.rank'
 Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
@@ -639,47 +638,49 @@ Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
     }
     return create_nested_block(instr_list, l1.rank);
 }
+} // Unnamed namespace
+
 
 // Reshape and merges the two loop blocks 'l1' and 'l2' (in that order).
-// Returns a new block and a flag indicating whether the merge were possible
-pair<Block, bool> reshape_and_merge(const LoopB &l1, const LoopB &l2) {
+// NB: the loop blocks must be mergeable!
+Block reshape_and_merge(const LoopB &l1, const LoopB &l2) {
     // Check for perfect match, which is directly mergeable
     if (l1.size == l2.size) {
-        if (data_parallel_compatible(l1, l2)) {
-            return make_pair(Block(merge(l1, l2)), true);
-        } else {
-            return make_pair(Block(), false);
-        }
+        return Block(merge(l1, l2));
     }
     // Let's try to reshape 'l2' to see if it can match the shape of 'l1'
     if (l2._reshapable && l2.size % l1.size == 0) {
         const LoopB new_l2 = reshape(l2, l1.size).getLoop();
-        if (data_parallel_compatible(l1, new_l2)) {
-            assert(data_parallel_compatible(l1, l2));
-            return make_pair(Block(merge(l1, new_l2)), true);
-        }
+        return Block(merge(l1, new_l2));
     }
     // Let's try to reshape 'l1' to see if it can match the shape of 'l2'
     if (l1._reshapable && l1.size % l2.size == 0) {
         const LoopB new_l1 = reshape(l1, l2.size).getLoop();
-        if (data_parallel_compatible(new_l1, l2)) {
-            assert(data_parallel_compatible(l1, l2));
-            return make_pair(Block(merge(new_l1, l2)), true);
-        }
+        return Block(merge(new_l1, l2));
     }
-    return make_pair(Block(), false); // No match found
+    throw runtime_error("reshape_and_merge: the blocks are not mergeable!");
 }
 
-bool mergeable(const Block &b1, const Block &b2) {
+
+bool mergeable(const Block &b1, const Block &b2, bool avoid_rank0_sweep) {
     if (b1.isInstr() or b2.isInstr()) {
         return false;
     }
     const LoopB &l1 = b1.getLoop();
     const LoopB &l2 = b2.getLoop();
+
     // System-only blocks are very flexible because they array sizes does not have to match when reshaping.
     if (l2.isSystemOnly()) {
         return true;
     }
+
+    // We might have to avoid fusion when one of the (root) blocks are sweeping
+    if (avoid_rank0_sweep and l1.rank == 0 and l2.rank == 0) {
+        if ((l1._sweeps.size() > 0) != (l2._sweeps.size() > 0)) {
+            return false;
+        }
+    }
+
     // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
     if (sweeps_accessed_by_block(l1._sweeps, l2)) {
         return false;
@@ -691,50 +692,6 @@ bool mergeable(const Block &b1, const Block &b2) {
         return data_parallel_compatible(l1, l2);
     } else {
         return false;
-    }
-}
-
-pair<Block, bool> merge_if_possible(const Block &b1, const Block &b2, uint64_t min_threading) {
-    if (b1.isInstr() or b2.isInstr()) {
-        return make_pair(Block(), false);
-    }
-    const LoopB &l1 = b1.getLoop();
-    const LoopB &l2 = b2.getLoop();
-    // System-only blocks are very flexible because they array sizes does not have to match when reshaping
-    // thus we can simply append system instructions without further checks.
-    if (l2.isSystemOnly()) {
-        LoopB block(l1);
-        for (const InstrPtr instr: l2.getAllInstr()) {
-            if (instr->operand.size() > 0) {
-                block.insert_system_after(instr, instr->operand[0].base);
-            }
-        }
-        return make_pair(Block(std::move(block)), true);
-    }
-    // If instructions in 'b2' reads the sweep output of 'b1' than we cannot merge them
-    if (sweeps_accessed_by_block(l1._sweeps, l2)) {
-        return make_pair(Block(), false);
-    }
-
-    // Minimum threading is disable
-    if (min_threading == 0) {
-        return reshape_and_merge(l1, l2);
-    }
-
-    // Let's check that the returned Block has the minimum threading amount
-    // However there is a exception: if both 'l1' and 'l2' does not have the minimum threading amount
-    // the returned block does not have to have either.
-    pair<Block, bool> ret = reshape_and_merge(l1, l2);
-    if (not ret.second) {
-        return ret;
-    }
-    const uint64_t l1_thds = l1.localThreading();
-    const uint64_t l2_thds = l2.localThreading();
-    const uint64_t ret_thds = ret.first.getLoop().localThreading();
-    if (ret_thds >= min_threading or (l1_thds < min_threading and l2_thds < min_threading)) {
-        return ret;
-    } else {
-        return make_pair(Block(), false);
     }
 }
 

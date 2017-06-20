@@ -159,11 +159,11 @@ bool validate(DAG &dag) {
     return true;
 }
 
-void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b, uint64_t min_threading) {
+void merge_vertices(DAG &dag, Vertex a, Vertex b, const bool remove_b) {
     // Let's merge the two blocks and save it in vertex 'a'
-    bool merge_possible;
-    tie(dag[a], merge_possible) = merge_if_possible(dag[a], dag[b], min_threading);
-    assert(merge_possible);
+    assert(not dag[a].isInstr());
+    assert(not dag[b].isInstr());
+    dag[a] = reshape_and_merge(dag[a].getLoop(), dag[b].getLoop());
     assert(dag[a].validation());
 
     // Add new children
@@ -227,7 +227,7 @@ void merge_system_pendants(DAG &dag) {
     assert(validate(dag));
 }
 
-void pprint(const DAG &dag, const char *filename, uint64_t min_threading) {
+void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep) {
 
     //We define a graph and a kernel writer for graphviz
     struct graph_writer {
@@ -275,14 +275,14 @@ void pprint(const DAG &dag, const char *filename, uint64_t min_threading) {
     };
     struct edge_writer {
         const DAG &graph;
-        const uint64_t thds;
-        edge_writer(const DAG &g, uint64_t thds) : graph(g), thds(thds) {};
+        const bool avoid_sweep;
+        edge_writer(const DAG &g, bool avoid_sweep) : graph(g), avoid_sweep(avoid_sweep) {};
         void operator()(std::ostream& out, const Edge& e) const {
             Vertex src = source(e, graph);
             Vertex dst = target(e, graph);
             out << "[label=\" ";
             out << (double) weight(graph[src], graph[dst]) << " bytes\"";
-            if (not mergeable(graph[src], graph[dst])) {
+            if (not mergeable(graph[src], graph[dst], avoid_sweep)) {
                 out << " color=red";
             }
             out << "]";
@@ -295,13 +295,12 @@ void pprint(const DAG &dag, const char *filename, uint64_t min_threading) {
     ofstream file;
     cout << ss.str() << endl;
     file.open(ss.str());
-    boost::write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag, min_threading), graph_writer(dag));
+    boost::write_graphviz(file, dag, kernel_writer(dag), edge_writer(dag, avoid_rank0_sweep), graph_writer(dag));
     file.close();
 }
 
-void greedy(DAG &dag, uint64_t min_threading) {
+void greedy(DAG &dag, bool avoid_rank0_sweep) {
     while(1) {
-    //    pprint(dag, "merge", min_threading);
         // First we find all fusible edges
         vector<Edge> fusibles;
         {
@@ -314,7 +313,9 @@ void greedy(DAG &dag, uint64_t min_threading) {
                 if(path_exist(v1, v2, dag, true)) {
                     boost::remove_edge(e, dag);
                 } else {
-                    if (mergeable(dag[source(e, dag)], dag[target(e, dag)])) {
+                    const Block &b1 = dag[v1];
+                    const Block &b2 = dag[v2];
+                    if (mergeable(b1, b2, avoid_rank0_sweep)) {
                         fusibles.push_back(e);
                     }
                 }
@@ -341,7 +342,7 @@ void greedy(DAG &dag, uint64_t min_threading) {
 
         assert(not path_exist(v1, v2, dag, true)); // Transitive edges should have been removed by now
 
-        merge_vertices(dag, v1, v2, true, min_threading);
+        merge_vertices(dag, v1, v2, true);
     }
     assert(validate(dag));
 }

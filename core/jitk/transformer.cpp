@@ -155,6 +155,7 @@ void push_reductions_inwards(vector<Block> &block_list) {
             ret.push_back(b);
         }
     }
+    block_list = ret;
 }
 
 void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
@@ -175,7 +176,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint
                     max_nelem = nelem;
             }
         }
-        if (loop._block_list.size() > 1 // We need minimum two blocks in order to split!
+        if (loop._block_list.size() > 1 // We need minimum two blocks (instructions) in order to split!
             and max_nelem > min_threading // Is it even possible to achieve our goal?
             and util_find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
 
@@ -213,11 +214,11 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint
             ret.push_back(block);
         }
     }
+    block_list = ret;
 }
 
 void collapse_redundant_axes(vector<Block> &block_list) {
-    vector<Block> block_list2(block_list);
-    for(Block &b: block_list2) {
+    for(Block &b: block_list) {
         if (not b.isInstr()) {
             collapse_redundant_axes(b.getLoop()._block_list);
         }
@@ -235,6 +236,7 @@ void collapse_redundant_axes(vector<Block> &block_list) {
             ret.push_back(block);
         }
     }
+    block_list = ret;
 }
 } // jitk
 } // bohrium
