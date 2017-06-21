@@ -90,11 +90,6 @@ class BhArray {
             base(std::move(base_)) {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
-
-        // Only if we have a broadcast, we are allowed to have less elements
-        // in the base array than the product of the shapes.
-        const bool is_broadcast = stride.prod() == 0;
-        assert(is_broadcast || static_cast<size_t>(base->nelem) >= shape.prod());
     }
 
     /** Create a view that points to the given base (contiguous stride, row-major)
