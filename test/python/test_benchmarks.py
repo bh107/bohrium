@@ -183,7 +183,7 @@ class test_lu(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.01
+        self.config['maxerror'] = 0.02
         self.size = 100
 
         # Benchmark parameters
