@@ -9,17 +9,22 @@ import imp
 import numpy
 import bohrium
 
+# basestring is not available in Python 3
+try:
+  basestring
+except NameError:
+  basestring = str
+
 # Never run test with the '-m bohrium' switch
 assert (numpy != bohrium)
 
-
 # Terminal colors
-HEADER  = '\033[35m'
-OKBLUE  = '\033[34m'
+HEADER = '\033[35m'
+OKBLUE = '\033[34m'
 OKGREEN = '\033[32m'
 WARNING = '\033[33m'
-FAIL    = '\033[31m'
-ENDC    = '\033[0m'
+FAIL = '\033[31m'
+ENDC = '\033[0m'
 
 
 def get_test_object_names(obj):
@@ -31,6 +36,31 @@ def get_test_object_names(obj):
             ret.append(o)
 
     return ret
+
+
+def is_scalar(a):
+    """Is `a` a scalar type or 0-dim array?"""
+    return numpy.isscalar(a) or a.ndim == 0
+
+
+def check_result(res_np, res_bh):
+    if isinstance(res_np, type):
+        return res_np is res_bh
+    if isinstance(res_np, basestring):
+        return res_np == res_bh
+
+    if is_scalar(res_np):
+        if not is_scalar(res_bh):
+            return False
+    elif res_bh.size == 0 and res_bh.size == 0:
+        return True  # Empty arrays are considered equal
+    elif res_bh.shape != res_np.shape:
+        return False
+    try:
+        return numpy.allclose(res_np, res_bh, equal_nan=True)
+    except TypeError:
+        # Old versions of NumPy do not have the 'equal_nan' option
+        return numpy.allclose(res_np, res_bh)
 
 
 def run(args):
@@ -83,40 +113,25 @@ def run(args):
 
                     # Let's execute the two commands
                     env = {"np": numpy, "bh": bohrium}
-                    exec(cmd_np, env)
-                    assert(not bohrium.check(env['res']))
+                    exec (cmd_np, env)
+                    assert (not bohrium.check(env['res']))
 
                     res_np = env['res']
-                    env = { "np": numpy, "bh": bohrium }
-                    exec(cmd_bh, env)
+                    env = {"np": numpy, "bh": bohrium}
+                    exec (cmd_bh, env)
 
                     if bohrium.check(env['res']):
                         res_bh = env['res'].copy2numpy()
                     else:
                         res_bh = env['res']
 
-                    try:
-                        if numpy.isscalar(res_np) != numpy.isscalar(res_bh):
-                            similar = False
-                        elif res_bh.shape != res_np.shape:
-                            similar = False
-                        else:
-                            try:
-                                similar = numpy.allclose(res_np, res_bh, equal_nan=True)
-                            except TypeError:
-                                # Old versions of NumPy do not have the 'equal_nan' option
-                                similar = numpy.allclose(res_np, res_bh)
-                    except AttributeError:
-                        # If the results isn't scalars or arrays (e.g. types), we check for perfect match
-                        similar = res_np == res_bh or res_np is res_bh
-
-                    if not similar:
+                    if not check_result(res_np, res_bh):
                         print("\n")
-                        print("%s  [Error]  %s%s"  % (FAIL,    name,   ENDC))
-                        print("%s  [NP CMD] %s%s"  % (OKBLUE,  cmd_np, ENDC))
+                        print("%s  [Error]  %s%s" % (FAIL, name, ENDC))
+                        print("%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
                         print("%s  [NP RES]\n%s%s" % (OKGREEN, res_np, ENDC))
-                        print("%s  [BH CMD] %s%s"  % (OKBLUE,  cmd_bh, ENDC))
-                        print("%s  [BH RES]\n%s%s" % (FAIL,    res_bh, ENDC))
+                        print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_bh, ENDC))
+                        print("%s  [BH RES]\n%s%s" % (FAIL, res_bh, ENDC))
 
                         if not args.cont_on_error:
                             sys.exit(1)
