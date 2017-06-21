@@ -96,7 +96,7 @@ class test_gauss_20x20(BenchHelper, numpytest):
 
     def __init__(self):
         numpytest.__init__(self)
-        self.config['maxerror'] = 0.002
+        self.config['maxerror'] = 0.007
         self.size = 20
 
         # Benchmark parameters
@@ -403,4 +403,3 @@ class test_jacobi_module(numpytest):
         jacobi = eval("la.jacobi")
         res = jacobi(a[0],a[1])
         return (res,"res = la.jacobi(a[0],a[1]);")
-
