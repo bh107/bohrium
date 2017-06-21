@@ -4,38 +4,39 @@ import random
 import operator
 import functools
 
+
 class TYPES:
-    NORMAL_INT   = ['np.int32', 'np.int64', 'np.uint32', 'np.uint64']
-    ALL_INT      = NORMAL_INT + ['np.int8', 'np.int16', 'np.uint8', 'np.uint16']
-    SIGNED_INT   = ['np.int8', 'np.int16', 'np.int32', 'np.int64']
+    NORMAL_INT = ['np.int32', 'np.int64', 'np.uint32', 'np.uint64']
+    ALL_INT = NORMAL_INT + ['np.int8', 'np.int16', 'np.uint8', 'np.uint16']
+    SIGNED_INT = ['np.int8', 'np.int16', 'np.int32', 'np.int64']
     UNSIGNED_INT = list(set(ALL_INT) - set(SIGNED_INT))
-    COMPLEX      = ['np.complex64', 'np.complex128']
-    FLOAT        = ['np.float32', 'np.float64']
-    ALL_SIGNED   = SIGNED_INT + FLOAT + COMPLEX
-    NORMAL       = NORMAL_INT + FLOAT
-    ALL          = ALL_INT + FLOAT + COMPLEX
+    COMPLEX = ['np.complex64', 'np.complex128']
+    FLOAT = ['np.float32', 'np.float64']
+    ALL_SIGNED = SIGNED_INT + FLOAT + COMPLEX
+    NORMAL = NORMAL_INT + FLOAT
+    ALL = ALL_INT + FLOAT + COMPLEX
 
 
 def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
-    for ndim in range(min_ndim, max_ndim+1):
+    for ndim in range(min_ndim, max_ndim + 1):
         shape = [1] * ndim
 
         if iters:
             # Min shape
             yield shape
             # Max shape
-            yield [max_dim]*(ndim)
+            yield [max_dim] * (ndim)
 
             for _ in range(iters):
                 for d in range(len(shape)):
-                    shape[d] = np.random.randint(1,max_dim)
+                    shape[d] = np.random.randint(1, max_dim)
                 yield shape
         else:
             finished = False
             while not finished:
                 yield shape
                 # Find next shape
-                d = ndim-1
+                d = ndim - 1
                 while True:
                     shape[d] += 1
                     if shape[d] > max_dim:
@@ -48,7 +49,8 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
                         break
 
 
-def gen_arrays(random_state_name, max_ndim, max_dim=10, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32", bh_arg="BH"):
+def gen_arrays(random_state_name, max_ndim, max_dim=10, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32",
+               bh_arg="BH"):
     for shape in gen_shapes(max_ndim, max_dim, samples_in_each_ndim, min_ndim):
         cmd = "%s.random(%s, dtype=%s, bohrium=%s)" % (random_state_name, shape, dtype, bh_arg)
         yield (cmd, shape)
@@ -59,7 +61,6 @@ class ViewOfDim:
         self.start = start
         self.step = step
         self.end = end
-
 
     def size(self):
         ret = 0
@@ -97,16 +98,16 @@ def random_subscription(shape):
     view_shape = []
 
     for dim in shape:
-        start = random.randint(0, dim-1)
+        start = random.randint(0, dim - 1)
         if dim > 3:
-            step = random.randint(1, dim//3)
+            step = random.randint(1, dim // 3)
         else:
             step = 1
 
-        if start+1 < dim-1:
-            end = random.randint(start+1, dim-1)
+        if start + 1 < dim - 1:
+            end = random.randint(start + 1, dim - 1)
         else:
-            end = start+1
+            end = start + 1
 
         # Let's reverse the stride sometimes
         if random.randint(0, 2) == 0:

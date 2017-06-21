@@ -96,13 +96,19 @@ def run(args):
                         res_bh = env['res']
 
                     try:
-                        similar = numpy.allclose(res_np, res_bh, equal_nan=True)
-                    except TypeError as err:
-                        try:
-                            # Old versions of NumPy do not have the 'equal_nan' option
-                            similar = numpy.allclose(res_np, res_bh)
-                        except:
-                            similar = res_np == res_bh or res_np is res_bh
+                        if numpy.isscalar(res_np) != numpy.isscalar(res_bh):
+                            similar = False
+                        elif res_bh.shape != res_np.shape:
+                            similar = False
+                        else:
+                            try:
+                                similar = numpy.allclose(res_np, res_bh, equal_nan=True)
+                            except TypeError:
+                                # Old versions of NumPy do not have the 'equal_nan' option
+                                similar = numpy.allclose(res_np, res_bh)
+                    except AttributeError:
+                        # If the results isn't scalars or arrays (e.g. types), we check for perfect match
+                        similar = res_np == res_bh or res_np is res_bh
 
                     if not similar:
                         print("\n")
