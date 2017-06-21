@@ -601,7 +601,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
         swap_back = True
 
     if start >= stop:
-        return empty([], dtype=dtype, bohrium=bohrium)
+        return array([], dtype=dtype, bohrium=bohrium)
 
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
     if dtype is None:
