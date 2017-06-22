@@ -38,19 +38,14 @@ def get_test_object_names(obj):
     return ret
 
 
-def is_scalar(a):
-    """Is `a` a scalar type or 0-dim array?"""
-    return numpy.isscalar(a) or a.ndim == 0
-
-
 def check_result(res_np, res_bh):
     if isinstance(res_np, type):
         return res_np is res_bh
     if isinstance(res_np, basestring):
         return res_np == res_bh
 
-    if is_scalar(res_np):
-        if not is_scalar(res_bh):
+    if bohrium.is_scalar(res_np):
+        if not bohrium.is_scalar(res_bh):
             return False
     elif res_bh.size == 0 and res_bh.size == 0:
         return True  # Empty arrays are considered equal

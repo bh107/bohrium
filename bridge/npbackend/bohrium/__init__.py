@@ -21,7 +21,7 @@ from .ufuncs import UFUNCS
 from .masking import *
 from .bhary import check, fix_biclass, in_bhmem
 from ._info import numpy_types
-from ._util import flush
+from ._util import flush, is_scalar
 from . import linalg
 from .linalg import matmul, dot, tensordot
 from .summations import *
