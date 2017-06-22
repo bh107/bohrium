@@ -6,7 +6,7 @@ import warnings
 import numpy_force as numpy
 from numpy.lib.stride_tricks import as_strided
 from . import bhary
-from . import _util
+from ._util import is_scalar
 from .bhary import fix_biclass_wrapper, get_bhc
 from . import target
 from . import array_create
@@ -38,11 +38,14 @@ def gather(ary, indexes):
 
     ary = array_manipulation.flatten(array_create.array(ary))
 
+    # Convert a scalar index to a 1-element array
+    if is_scalar(indexes):
+        indexes = [indexes]
+        
     indexes = array_create.array(indexes, dtype=numpy.uint64, bohrium=True)
     ret = array_create.empty(indexes.shape, dtype=ary.dtype, bohrium=True)
-
     if ary.size == 0 or indexes.size == 0:
-        return array_create.empty([])
+        return array_create.array([])
 
     target.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes))
     return ret
@@ -177,7 +180,7 @@ def take_using_index_tuple(a, index_tuple, out=None):
     assert len(index_tuple) == a.ndim
 
     if a.size == 0:
-        return array_create.empty((0,), dtype=a.dtype)
+        return array_create.array([], dtype=a.dtype)
 
     if a.ndim == 1:
         return take(a, index_tuple[0], out=out)
