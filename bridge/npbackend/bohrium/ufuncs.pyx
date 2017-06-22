@@ -83,6 +83,14 @@ def assign(ary, out):
                 bhary.identical_views(ary, out):
             return
 
+    # Assigning empty arrays doesn't do anything
+    if hasattr(ary, "size"):
+        if ary.size == 0:
+            return
+    if hasattr(out, "size"):
+        if out.size == 0:
+            return
+
     # We use a tmp array if the in-/out-put has memory conflicts
     if overlap_conflict(out, ary):
         tmp = array_create.empty_like(out)

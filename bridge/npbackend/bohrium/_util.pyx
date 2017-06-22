@@ -112,3 +112,7 @@ def totalsize(array_like):
         return sum(totalsize(item) for item in array_like)
     else:
         return 1
+
+def is_scalar(a):
+    """Is `a` a scalar type or 0-dim array?"""
+    return np.isscalar(a) or a.ndim == 0
