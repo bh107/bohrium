@@ -5,6 +5,7 @@ Summations and products
 Common linear algebra functions
 
 """
+import warnings
 from . import ufuncs
 from . import array_create
 from . import bhary
@@ -392,9 +393,16 @@ def argmax(a, axis=None, out=None):
     1
     """
 
-    if axis is None:
+    if not bhary.check(a):
+        return numpy.argmax(a, axis=axis, out=out)
+
+    if axis is None or (a.ndim == 1 and axis == 0):
         a = array_manipulation.flatten(a, always_copy=False)
         ret = reorganization.flatnonzero(a == max(a))[0]
+    else:
+        warnings.warn("Bohrium does not support the 'axis' argument, "
+                      "it will be handled by the original NumPy.", UserWarning, 2)
+        return numpy.argmax(a.copy2numpy(), axis=axis)
 
     if out is None:
         return ret
@@ -451,9 +459,16 @@ def argmin(a, axis=None, out=None):
     0
     """
 
-    if axis is None:
+    if not bhary.check(a):
+        return numpy.argmin(a, axis=axis, out=out)
+
+    if axis is None or (a.ndim == 1 and axis == 0):
         a = array_manipulation.flatten(a, always_copy=False)
         ret = reorganization.flatnonzero(a == min(a))[0]
+    else:
+        warnings.warn("Bohrium does not support the 'axis' argument, "
+                      "it will be handled by the original NumPy.", UserWarning, 2)
+        return numpy.argmin(a.copy2numpy(), axis=axis)
 
     if out is None:
         return ret
