@@ -681,6 +681,14 @@ static PyObject* BhArray_max(PyObject *self, PyObject *args, PyObject *kwds) {
     return method2function("max", self, args, kwds);
 }
 
+static PyObject* BhArray_argmin(PyObject *self, PyObject *args, PyObject *kwds) {
+    return method2function("argmin", self, args, kwds);
+}
+
+static PyObject* BhArray_argmax(PyObject *self, PyObject *args, PyObject *kwds) {
+    return method2function("argmax", self, args, kwds);
+}
+
 static PyObject* BhArray_astype(PyObject *self, PyObject *args, PyObject *kwds) {
     return method2function("array", self, args, kwds);
 }
@@ -724,6 +732,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"all",                (PyCFunction) BhArray_all,           METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
     {"min",                (PyCFunction) BhArray_min,           METH_VARARGS | METH_KEYWORDS, "a.min(axis=None, out=None)\n\nReturn the minimum along a given axis.\n\nRefer to numpy.amin for full documentation."},
     {"max",                (PyCFunction) BhArray_max,           METH_VARARGS | METH_KEYWORDS, "a.max(axis=None, out=None)\n\nReturn the maximum along a given axis.\n\nRefer to numpy.amax for full documentation."},
+    {"argmin",             (PyCFunction) BhArray_argmin,        METH_VARARGS | METH_KEYWORDS, "a.argmin(axis=None, out=None)\n\nReturns the indices of the minimum values along an axis.\n\nRefer to numpy.argmin for full documentation."},
+    {"argmax",             (PyCFunction) BhArray_argmax,        METH_VARARGS | METH_KEYWORDS, "a.argmax(axis=None, out=None)\n\nReturns the indices of the maximum values along an axis.\n\nRefer to numpy.argmax for full documentation."},
     {"astype",             (PyCFunction) BhArray_astype,        METH_VARARGS | METH_KEYWORDS, "a.astype(dtype, order='C', subok=True, copy=True)\n\nCopy of the array, cast to a specified type."},
     {"fill",               (PyCFunction) BhArray_fill,          METH_VARARGS | METH_KEYWORDS, "a.fill(value)\n\nFill the array with a scalar value."},
     {"trace",              (PyCFunction) BhArray_trace,         METH_VARARGS | METH_KEYWORDS, "a.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)\n\nReturn the sum along diagonals of the array."},

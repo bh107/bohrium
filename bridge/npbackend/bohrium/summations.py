@@ -5,10 +5,13 @@ Summations and products
 Common linear algebra functions
 
 """
+import warnings
 from . import ufuncs
 from . import array_create
-import numpy_force as numpy
 from . import bhary
+from . import reorganization
+from . import array_manipulation
+import numpy_force as numpy
 
 
 @bhary.fix_biclass_wrapper
@@ -340,3 +343,135 @@ def all(a, axis=None, out=None, keepdims=None):
         return numpy.all(a, axis=axis, out=out)
     else:
         return ufuncs.logical_and.reduce(a.astype(bool), axis=axis, out=out)
+
+
+@bhary.fix_biclass_wrapper
+def argmax(a, axis=None, out=None):
+    """
+    Returns the indices of the maximum values along an axis.
+    Parameters
+    ----------
+    a : array_like
+        Input array.
+    axis : int, optional
+        By default, the index is into the flattened array, otherwise
+        along the specified axis.
+    out : array, optional
+        If provided, the result will be inserted into this array. It should
+        be of the appropriate shape and dtype.
+    Returns
+    -------
+    index_array : ndarray of ints
+        Array of indices into the array. It has the same shape as `a.shape`
+        with the dimension along `axis` removed.
+    See Also
+    --------
+    ndarray.argmax, argmin
+    amax : The maximum value along a given axis.
+    unravel_index : Convert a flat index into an index tuple.
+    Notes
+    -----
+    In case of multiple occurrences of the maximum values, the indices
+    corresponding to the first occurrence are returned.
+    Examples
+    --------
+    >>> a = np.arange(6).reshape(2,3)
+    >>> a
+    array([[0, 1, 2],
+           [3, 4, 5]])
+    >>> np.argmax(a)
+    5
+    >>> np.argmax(a, axis=0)
+    array([1, 1, 1])
+    >>> np.argmax(a, axis=1)
+    array([2, 2])
+    >>> b = np.arange(6)
+    >>> b[1] = 5
+    >>> b
+    array([0, 5, 2, 3, 4, 5])
+    >>> np.argmax(b) # Only the first occurrence is returned.
+    1
+    """
+
+    if not bhary.check(a):
+        return numpy.argmax(a, axis=axis, out=out)
+
+    if axis is None or (a.ndim == 1 and axis == 0):
+        a = array_manipulation.flatten(a, always_copy=False)
+        ret = reorganization.flatnonzero(a == max(a))[0]
+    else:
+        warnings.warn("Bohrium does not support the 'axis' argument, "
+                      "it will be handled by the original NumPy.", UserWarning, 2)
+        return numpy.argmax(a.copy2numpy(), axis=axis)
+
+    if out is None:
+        return ret
+    else:
+        out[...] = ret
+        return out
+
+
+@bhary.fix_biclass_wrapper
+def argmin(a, axis=None, out=None):
+    """
+    Returns the indices of the minimum values along an axis.
+    Parameters
+    ----------
+    a : array_like
+        Input array.
+    axis : int, optional
+        By default, the index is into the flattened array, otherwise
+        along the specified axis.
+    out : array, optional
+        If provided, the result will be inserted into this array. It should
+        be of the appropriate shape and dtype.
+    Returns
+    -------
+    index_array : ndarray of ints
+        Array of indices into the array. It has the same shape as `a.shape`
+        with the dimension along `axis` removed.
+    See Also
+    --------
+    ndarray.argmin, argmax
+    amin : The minimum value along a given axis.
+    unravel_index : Convert a flat index into an index tuple.
+    Notes
+    -----
+    In case of multiple occurrences of the minimum values, the indices
+    corresponding to the first occurrence are returned.
+    Examples
+    --------
+    >>> a = np.arange(6).reshape(2,3)
+    >>> a
+    array([[0, 1, 2],
+           [3, 4, 5]])
+    >>> np.argmin(a)
+    0
+    >>> np.argmin(a, axis=0)
+    array([0, 0, 0])
+    >>> np.argmin(a, axis=1)
+    array([0, 0])
+    >>> b = np.arange(6)
+    >>> b[4] = 0
+    >>> b
+    array([0, 1, 2, 3, 0, 5])
+    >>> np.argmin(b) # Only the first occurrence is returned.
+    0
+    """
+
+    if not bhary.check(a):
+        return numpy.argmin(a, axis=axis, out=out)
+
+    if axis is None or (a.ndim == 1 and axis == 0):
+        a = array_manipulation.flatten(a, always_copy=False)
+        ret = reorganization.flatnonzero(a == min(a))[0]
+    else:
+        warnings.warn("Bohrium does not support the 'axis' argument, "
+                      "it will be handled by the original NumPy.", UserWarning, 2)
+        return numpy.argmin(a.copy2numpy(), axis=axis)
+
+    if out is None:
+        return ret
+    else:
+        out[...] = ret
+        return out
