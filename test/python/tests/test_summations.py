@@ -36,11 +36,14 @@ class test_argminmax:
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
             nelem = functools.reduce(operator.mul, shape)
             if nelem > 0:
-                yield (cmd)
+                for op in ['argmin', 'argmax']:
+                    yield (cmd, op)
 
-    def test_min(self, cmd):
-        return cmd + "res = M.argmin(a)"
+    def test_func(self, args):
+        (cmd, op) = args
+        return cmd + "res = M.%s(a)" % op
 
-    def test_max(self, cmd):
-        return cmd + "res = M.argmax(a)"
+    def test_method(self, args):
+        (cmd, op) = args
+        return cmd + "res = a.%s()" % op
 

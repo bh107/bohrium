@@ -394,7 +394,13 @@ def argmax(a, axis=None, out=None):
 
     if axis is None:
         a = array_manipulation.flatten(a, always_copy=False)
-        return reorganization.flatnonzero(a == max(a))[0]
+        ret = reorganization.flatnonzero(a == max(a))[0]
+
+    if out is None:
+        return ret
+    else:
+        out[...] = ret
+        return out
 
 
 @bhary.fix_biclass_wrapper
@@ -447,5 +453,10 @@ def argmin(a, axis=None, out=None):
 
     if axis is None:
         a = array_manipulation.flatten(a, always_copy=False)
-        return reorganization.flatnonzero(a == min(a))[0]
+        ret = reorganization.flatnonzero(a == min(a))[0]
 
+    if out is None:
+        return ret
+    else:
+        out[...] = ret
+        return out
