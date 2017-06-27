@@ -19,7 +19,11 @@ And if you want Python v3 support::
 
   sudo apt-get install bohrium3
 
-Now the basic installation should work. Try running the NumPy test suite::
+Now the basic installation should work. Check the current runtime stack::
+  
+  python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
+
+And try running the NumPy test suite::
 
   BH_OPENMP_VOLATILE=true python /usr/share/bohrium/test/python/run.py /usr/share/bohrium/test/python/tests/test_*.py
 
