@@ -45,6 +45,7 @@ source activate bh
 
 On MacOS use [Homebrew](https://brew.sh):
 ```
+python -m pip install cython # This dependency cannot be installed via brew.
 brew install bh107/homebrew-bohrium/bohrium
 ```
 
