@@ -10,6 +10,25 @@ class EnableBohrium:
     """Enable Bohrium within the context"""
 
     def __init__(self):
+        # In order to avoid complications, we import common libraries BEFORE enabling Bohrium
+        try:
+            import matplotlib
+            import matplotlib.pyplot
+            import matplotlib.pylab
+        except ImportError:
+            pass
+        try:
+            import scipy
+            import scipy.sparse
+            import scipy.io
+        except ImportError:
+            pass
+        try:
+            import netCDF4
+        except ImportError:
+            pass
+
+        # Let's save to real NumPy module
         self.__numpy = sys.modules['numpy']
         self.__numpy_random = sys.modules['numpy.random']
         self.__numpy_linalg = sys.modules['numpy.linalg']
