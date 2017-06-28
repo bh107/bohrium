@@ -123,7 +123,7 @@ set(OPENCL_LIBS "")
 
 add_subdirectory(core)
 add_subdirectory(vem/node)
-add_subdirectory(vem/proxy)
+#add_subdirectory(vem/proxy) TODO: fix and enable
 add_subdirectory(filter/pprint)
 add_subdirectory(filter/bccon)
 add_subdirectory(filter/bcexp)
