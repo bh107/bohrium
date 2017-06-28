@@ -4,7 +4,6 @@ Welcome!
 ========
 
 Bohrium provides automatic acceleration of array operations in Python/NumPy, C, and C++ targeting multi-core CPUs and GP-GPUs.
-
 Forget handcrafting CUDA/OpenCL to utilize your GPU and forget threading, mutexes and locks to utilize your multi-core CPU just use Bohrium!
 
 Features
@@ -15,9 +14,9 @@ Features
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
 |           | Multi-Core CPU  | Many-Core GPU   | Python2/NumPy | Python3/NumPy | C   | C++  |
 +===========+=================+=================+===============+===============+=====+======+
-| Linux     | X               |  X              | X             | X             | X   |  X   |
+| Linux     | ✓               |  ✓              | ✓             | ✓             | ✓   |  ✓   |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
-| MacOSX    | X               |  X              | X             |               | X   |  X   |
+| MacOSX    | ✓               |  ✓              | ✓             |               | ✓   |  ✓   |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
 | Windows   |                 |                 |               |               |     |      |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
@@ -26,11 +25,14 @@ Features
 - **Views** Bohrium supports NumPy views fully thus operating on array slices does not involve data copying.
 - **Loop Fusion**, Bohrium uses a `fusion algorithm <http://dl.acm.org/citation.cfm?id=2967945>`_ that fuses (or merges) array operations into the same computation kernel that are then JIT-compiled and executed. However, Bohrium can only fuse operations that have some common sized dimension and no horizontal data conflicts.
 - **Lazy CPU/GPU Communiction**, Bohrium only move data between the host and the GPU when the data is accessed directly by Python or a Python C-extension.
+- **python -m bohrium**, automatic makes ``import numpy`` use Bohrium.
+- `Jupyter Support <http://jupyter.org/>`_, you can use the magic command ``%%bohrium`` to achieve the same result.
 
 
 Please note:
     * Bohrium is a 64bit project exclusively.
     * We are working on a Windows version.
+    * Source code available here: https://github.com/bh107/bohrium
 
 Get Started!
 ------------
