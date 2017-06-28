@@ -3,9 +3,9 @@
 Welcome!
 ========
 
-Bohrium provides a runtime environment for efficiently executing vectorized applications using your favorite programming language Python/NumPy, C#, F# on Linux, Windows and MacOSX.
+Bohrium provides automatic acceleration of array operations in Python/NumPy, C, and C++ targeting multi-core CPUs and GP-GPUs.
 
-Forget handcrafting CUDA/OpenCL to utilize your GPU, forget threading, mutexes and locks to utilize your multi-core CPU and forget about MPI to program your cluster just Bohrium!
+Forget handcrafting CUDA/OpenCL to utilize your GPU and forget threading, mutexes and locks to utilize your multi-core CPU just use Bohrium!
 
 Features
 --------
@@ -13,11 +13,11 @@ Features
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
 |           |     Architecture Support          |           Frontends                        |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
-|           | Multi-Core CPU  | Many-Core GPU   | Python2/NumPy | Python3/NumPy | C++ | .NET |
+|           | Multi-Core CPU  | Many-Core GPU   | Python2/NumPy | Python3/NumPy | C   | C++  |
 +===========+=================+=================+===============+===============+=====+======+
 | Linux     | X               |  X              | X             | X             | X   |  X   |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
-| MacOSX    | X               |  X              | X             |               |     |  X   |
+| MacOSX    | X               |  X              | X             |               | X   |  X   |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
 | Windows   |                 |                 |               |               |     |      |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
@@ -30,7 +30,7 @@ Features
 
 Please note:
     * Bohrium is a 64bit project exclusively.
-    * We are working on a Windows version that uses the .NET frontend and CPU backend.
+    * We are working on a Windows version.
 
 Get Started!
 ------------

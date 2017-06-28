@@ -3,13 +3,12 @@
 Installation
 ============
 
-Bohrium supports linux, Mac OSX and Windows.
+Bohrium supports linux and Mac OSX.
 
 .. toctree::
    :maxdepth: 2
 
    linux
    osx
-   windows
    nonpriv
 

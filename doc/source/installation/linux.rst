@@ -1,112 +1,65 @@
 Linux
 =====
 
-The following instruct you on how to get going on the Ubuntu Linux distribution. There should however only be slight differences to other distributions such as which command to execute to install software packages.
+On Ubuntu use apt-get::
 
-Install From Ubuntu Package
----------------------------
+    sudo add-apt-repository ppa:bohrium/nightly
+    sudo apt-get update
+    sudo apt-get install bohrium
+    # Optionals
+    sudo apt-get install bohrium-opencl # GPU support
+    sudo apt-get install bohrium-visualizer # data visualizing
+    sudo apt-get install bohrium3 # Python3 support
 
-To install Bohrium on Ubuntu simply add the nightly build repository to your system::
+On Linux-64 use `Anaconda <https://www.continuum.io/downloads>`_ (currently, no GPU support)::
 
-  sudo add-apt-repository ppa:bohrium/nightly
+    # Create a new environment 'bh' with the 'bohrium' package from the 'bohrium' channel:
+    conda create -n bh -c bohrium bohrium
+    # And source the new environment:
+    source activate bh
 
-And then install the package::
+Check installation by printing the current runtime stack::
 
-  sudo apt-get update
-  sudo apt-get install bohrium
+    python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
 
-And if you want Python v3 support::
+And try running the test suite::
 
-  sudo apt-get install bohrium3
+      # Installed through apt-get:
+      BH_OPENMP_VOLATILE=true python /usr/share/bohrium/test/python/run.py /usr/share/bohrium/test/python/tests/test_*.py
 
-Now the basic installation should work. Check the current runtime stack::
-  
-  python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
-
-And try running the NumPy test suite::
-
-  BH_OPENMP_VOLATILE=true python /usr/share/bohrium/test/python/run.py /usr/share/bohrium/test/python/tests/test_*.py
+      # Install through Anaconda:
+      BH_OPENMP_VOLATILE=true python $CONDA_PREFIX/share/bohrium/test/python/run.py  $CONDA_PREFIX/share/bohrium/test/python/tests/test_*.py
 
 And you should see a result similar to this::
 
-  Testing test/python/tests/test_array_create.py/array_create/ones (0.84s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/random (3.11s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/zeros (0.72s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal/diagonal (4.65s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal_axis/diagonal (27.84s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten (6.15s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten_self (6.29s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/ravel (5.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/add (0.35s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/identity (0.08s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/doubletranspose (4.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/transpose (1.97s) ✓
-  Testing test/python/tests/test_emptiness.py/empty/add (0.00s) ✓
-  <string>:1: RuntimeWarning: invalid value encountered in arccosh
-  <string>:1: RuntimeWarning: invalid value encountered in arccosh
-  Testing test/python/tests/test_primitives.py/bh_opcodes/ufunc (67.92s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_primitives/vector (3.21s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
+      Testing test/python/tests/test_array_create.py/array_create/ones (0.84s) ✓
+      Testing test/python/tests/test_array_create.py/array_create/random (3.11s) ✓
+      Testing test/python/tests/test_array_create.py/array_create/zeros (0.72s) ✓
+      Testing test/python/tests/test_array_manipulation.py/diagonal/diagonal (4.65s) ✓
+      Testing test/python/tests/test_array_manipulation.py/diagonal_axis/diagonal (27.84s) ✓
+      Testing test/python/tests/test_array_manipulation.py/flatten/flatten (6.15s) ✓
+      Testing test/python/tests/test_array_manipulation.py/flatten/flatten_self (6.29s) ✓
+      Testing test/python/tests/test_array_manipulation.py/flatten/ravel (5.94s) ✓
+      Testing test/python/tests/test_array_manipulation.py/overlapping/add (0.35s) ✓
+      Testing test/python/tests/test_array_manipulation.py/overlapping/identity (0.08s) ✓
+      Testing test/python/tests/test_array_manipulation.py/transpose/doubletranspose (4.94s) ✓
+      Testing test/python/tests/test_array_manipulation.py/transpose/transpose (1.97s) ✓
+      Testing test/python/tests/test_emptiness.py/empty/add (0.00s) ✓
+      <string>:1: RuntimeWarning: invalid value encountered in arccosh
+      <string>:1: RuntimeWarning: invalid value encountered in arccosh
+      Testing test/python/tests/test_primitives.py/bh_opcodes/ufunc (67.92s) ✓
+      Testing test/python/tests/test_reduce.py/reduce_primitives/vector (3.21s) ✓
+      Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
+      Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
+      Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
 
 .. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
-
-Visualizer (matplotlib alternative)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In order to use the Bohrium visualizer install the Bohrium Visualizer package::
-
-    sudo apt-get install bohrium-visualizer
-
-NumCIL (.NET) Support
-~~~~~~~~~~~~~~~~~~~~~
-
-In order to use NumCIL as the Bohrium frontend install the Bohrium NumCIL package::
-
-    sudo apt-get install bohrium-numcil
-
-GPU Support
-~~~~~~~~~~~
-
-In order to utilize GPUs you need an OpenCL 1.2 compatible graphics card and the Bohrium GPU package::
-
-  sudo apt-get install bohrium-opencl
-
-.. note:: On Nvidia Optimus architectures, remember to install and use bumblebee (``optirun``) when calling Bohrium.
-
-
-.. Cluster Support
-.. ~~~~~~~~~~~~~~~
-..
-.. In order to utilize a Cluster of machines you must choose between the two supported MPI libraries::
-..
-..   sudo apt-get install bohrium-openmpi
-..                 or
-..   sudo apt-get install bohrium-mpich
-..
-.. Now execute using MPI::
-..
-..   mpiexec -np 1 <user application> : -np 3 /usr/bin/bh_vem_cluster_slave
-..
-.. Where one process executes the user application and multiple processes executes the slave binary.
-..
-.. For example, the following utilize eight cluster nodes::
-..
-..   mpiexec -np 1 python /usr/share/bohrium/test/numpy/numpytest.py : -np 7 /usr/bin/bh_vem_cluster_slave
-..
-.. When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
-..
-.. .. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
 
 
 Install From Source Package
 ---------------------------
 
 Visit Bohrium on github.com and download the latest release: https://github.com/bh107/bohrium/releases/latest. Then build and install Bohrium as described in the following subsections.
-
-Python / NumPy
-~~~~~~~~~~~~~~
 
 You need to install all packages required to build NumPy::
 
@@ -184,117 +137,3 @@ And you should see a result similar to this::
 
 .. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
 
-C / C++
-~~~~~~~
-
-See the installation process for `Python / NumPy`_, the C and C++ bridge requires no additional tasks.
-
-
-Mono / .NET
-~~~~~~~~~~~
-
-In addition to the installation process for `Python / NumPy`_, the .NET bridge requires Mono::
-
-  sudo apt-get install mono-devel
-  #This minimal version should work too:
-  #sudo apt-get install mono-xbuild mono-dmcs libmono2.0-cil
-
-Build and install::
-
-  cd <path to unpacked source directory>
-  mkdir build
-  cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
-  make
-  make install
-
-.. note:: The default install directory is ~/.local
-
-The NumCIL libraries are installed in your install dir, together with the documentation. You can reference the libraries from here, or register them in the GAC::
-
-   gacutil -i <install dir>/NumCIL.dll
-   gacutil -i <install dir>/NumCIL.Unsafe.dll
-   gacutil -i <install dir>/NumCIL.Bohrium.dll
-   #Example
-   gacutil -i /opt/bohrium/NumCIL.dll
-   gacutil -i /opt/bohrium/NumCIL.Unsafe.dll
-   gacutil -i /opt/bohrium/NumCIL.Bohrium.dll
-
-You can now try an example and test the installation::
-
-  xbuild /property:Configuration=Release test/CIL/Unittest.sln
-  mono test/CIL/UnitTest/bin/Release/UnitTest.exe
-
-And you should see a result similar to this::
-
-   Running basic tests
-   Basic tests: 0,098881
-   Running Lookup tests
-   Lookup tests: 0,00813
-   ...
-   Running benchmark tests - Bohrium
-   benchmark tests: 0,44233
-
-
-OpenCL / GPU Engine
-~~~~~~~~~~~~~~~~~~~
-
-The GPU vector engine requires OpenCL compatible hardware as well as functioning drivers.
-Configuring your GPU with you operating system is out of scope of this documentation.
-
-Assuming that your GPU-hardware is functioning correctly you need to install an OpenCL SDK and some additional packages before building Bohrium::
-
-  sudo apt-get install opencl-dev libopencl1 libgl-dev
-
-You should now have everything you need to utilize the GPU engine. Build Bohrium, set ``BH_STACK=opencl``, and try running the NumPy test suite::
-
-  BH_STACK=opencl python test/python/run.py  test/python/tests/test_*.py
-
-And you should see a result similar to this::
-
-  Using platform: AMD Accelerated Parallel Processing
-  Using device: Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz
-  Testing test/python/tests/test_array_create.py/array_create/ones (0.84s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/random (3.11s) ✓
-  Testing test/python/tests/test_array_create.py/array_create/zeros (0.72s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal/diagonal (4.65s) ✓
-  Testing test/python/tests/test_array_manipulation.py/diagonal_axis/diagonal (27.84s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten (6.15s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/flatten_self (6.29s) ✓
-  Testing test/python/tests/test_array_manipulation.py/flatten/ravel (5.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/add (0.35s) ✓
-  Testing test/python/tests/test_array_manipulation.py/overlapping/identity (0.08s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/doubletranspose (4.94s) ✓
-  Testing test/python/tests/test_array_manipulation.py/transpose/transpose (1.97s) ✓
-  Testing test/python/tests/test_emptiness.py/empty/add (0.00s) ✓
-  Testing test/python/tests/test_primitives.py/bh_opcodes/ufunc (67.92s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_primitives/vector (3.21s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/func (13.38s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_sum/method (9.81s) ✓
-  Testing test/python/tests/test_reduce.py/reduce_views/reduce (20.55s) ✓
-
-
-
-.. MPI / Cluster Engine
-.. ~~~~~~~~~~~~~~~~~~~~
-..
-.. In order to utilize a computer clusters, you need to install mpich2 or OpenMPI before building Bohrium::
-..
-..   sudo apt-get install mpich2 libmpich2-dev
-..                     or
-..   sudo apt-get install libopenmpi-dev openmpi-bin
-..
-.. And execute using mpi::
-..
-..   mpiexec -np 1 <user application> : -np 3 <install dir>/bh_vem_cluster_slave
-..
-.. Where one process executes the user application and multiple processes executes the slave binary from the installation directory.
-..
-.. For example, the following utilize eight cluster nodes::
-..
-..   mpiexec -np 1 python numpytest.py : -np 7 .local/bh_vem_cluster_slave
-..
-.. When using OpenMPI you might have to set ``export LD_PRELOAD=/usr/lib/libmpi.so``.
-..
-..
-.. .. warning:: The cluster engine is in a significantly less developed state than both the CPU and GPU engine.
