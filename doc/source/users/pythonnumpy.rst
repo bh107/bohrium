@@ -6,7 +6,7 @@ Bohrium implements a new python module ``bohrium`` that introduces a new array c
 The following example is a heat-equation solver that uses Bohrium. Note that the only different between Bohrium code and NumPy code is the first line where we import bohrium as np instead of numpy as np::
 
     import bohrium as np
-    def heat2d(height, width, epsilon=0.005):
+    def heat2d(height, width, epsilon=42):
       G = np.zeros((height+2,width+2),dtype=np.float64)
       G[:,0]  = -273.15
       G[:,-1] = -273.15
@@ -51,11 +51,13 @@ Matplotlib’s ``matshow()`` function is example of a function Bohrium cannot ac
    :scale: 80 %
    :align: center
 
-Beside producing the image, the execution will raise a Python warning informing you that matplotlib function is handled like a regular NumPy::
+Beside producing the image (after approx. 1 min), the execution will raise a Python warning informing you that matplotlib function is handled like a regular NumPy::
 
     /usr/lib/python2.7/site-packages/matplotlib/cbook.py:1506: RuntimeWarning:
     Encountering an operation not supported by Bohrium. It will be handled by the original NumPy.
     x = np.array(x, subok=True, copy=copy)
+
+.. note:: Increasing the problem size will improve the performance of Bohrium significantly!
 
 
 Convert between Bohrium and NumPy
@@ -76,3 +78,4 @@ Copy a bohrium array into a new NumPy array::
     npy2 = bh_ary.copy2numpy()
 
 
+    python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
