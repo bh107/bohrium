@@ -142,8 +142,6 @@ add_subdirectory(extmethods/opencv)
 add_subdirectory(bridge/cxx)
 add_subdirectory(bridge/c)
 add_subdirectory(bridge/npbackend)
-add_subdirectory(bridge/NumCIL)
-add_subdirectory(bridge/cil)
 add_subdirectory(test)
 
 string(REPLACE ";" ", " OPENMP_LIBS "${OPENMP_LIBS}")

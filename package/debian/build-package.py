@@ -16,7 +16,7 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-dev, python-numpy, cython, python3-dev, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, mono-devel, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev, libopenblas-dev, liblapack-dev, liblapacke-dev
+Build-Depends: python-dev, python-numpy, cython, python3-dev, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev, libopenblas-dev, liblapack-dev, liblapacke-dev
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
@@ -24,22 +24,15 @@ Package: bohrium
 Architecture: amd64
 Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.8), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, libopenblas-dev, liblapack-dev
 Recommends:
-Suggests: bohrium-numcil, bohrium-opencl, bohrium-visualizer, ipython,
-Description:  Bohrium Runtime System: Automatic Vector Parallelization in C, C++, CIL, and Python
+Suggests: bohrium-opencl, bohrium-visualizer, ipython,
+Description:  Bohrium Runtime System: Automatic Array Parallelization in C, C++, and Python
 
 Package: bohrium3
 Architecture: amd64
 Depends: bohrium, python3 (>= 3.4), python3-numpy (>= 1.8)
 Recommends:
-Suggests: bohrium-numcil, bohrium-opencl, bohrium-visualizer, ipython,
+Suggests: bohrium-opencl, bohrium-visualizer, ipython,
 Description:  The Python v3 frontend for the Bohrium Runtime System
-
-Package: bohrium-numcil
-Architecture: amd64
-Depends: bohrium, mono-mcs, mono-xbuild, libmono-system-numerics4.0-cil, libmono-microsoft-build-tasks-v4.0-4.0-cil
-Recommends: mono-devel
-Suggests:
-Description: The NumCIL (.NET) frontend for the Bohrium Runtime System
 
 Package: bohrium-opencl
 Architecture: amd64
@@ -84,15 +77,6 @@ binary-core3: build
 	dpkg-gencontrol -pbohrium3 -Pdebian/core3
 	dpkg --build debian/core3 ..
 
-binary-numcil: build
-	cd b; cmake -DCOMPONENT=bohrium-numcil -DCMAKE_INSTALL_PREFIX=../debian/numcil/usr -P cmake_install.cmake
-	mkdir -p debian/numcil/DEBIAN
-	cp -p debian/postinst_numcil debian/numcil/DEBIAN/postinst
-	cp -p debian/postrm_numcil debian/numcil/DEBIAN/postrm
-	dpkg-gensymbols -q -pbohrium-numcil -Pdebian/numcil
-	dpkg-gencontrol -pbohrium-numcil -Pdebian/numcil -Tdebian/bohrium-numcil.substvars
-	dpkg --build debian/numcil ..
-
 binary-opencl: build
 	cd b; cmake -DCOMPONENT=bohrium-opencl -DCMAKE_INSTALL_PREFIX=../debian/opencl/usr -P cmake_install.cmake
 	mkdir -p debian/opencl/DEBIAN
@@ -111,7 +95,7 @@ binary: binary-indep binary-arch
 
 binary-indep: build
 
-binary-arch: binary-core binary-core3 binary-numcil binary-opencl binary-visualizer
+binary-arch: binary-core binary-core3 binary-opencl binary-visualizer
 
 clean:
 	rm -f build
@@ -133,23 +117,6 @@ rm -fR /usr/var/bohrium/object/*
 exit 0
 """
 
-CIL_GLOBAL_DLL_CACHE_INSTALL = """\
-#!/bin/sh
-
-gacutil -i /usr/lib/mono/NumCIL.Bohrium.dll
-gacutil -i /usr/lib/mono/NumCIL.dll
-gacutil -i /usr/lib/mono/NumCIL.Unsafe.dll
-exit 0
-"""
-
-CIL_GLOBAL_DLL_CACHE_UNINSTALL = """\
-#!/bin/sh
-
-gacutil -u NumCIL.Bohrium
-gacutil -u NumCIL
-gacutil -u NumCIL.Unsafe
-exit 0
-"""
 
 UBUNTU_RELEASES = ['trusty', 'xenial', 'yakkety', 'zesty']
 
@@ -203,16 +170,6 @@ def build_src_dir(args, bh_version, release="trusty"):
     with open("%s/prerm"%deb_src_dir, "w") as f:
         f.write(REMOVE_CACHEFILES)
     bash_cmd("chmod +x %s/prerm"%deb_src_dir)
-
-    #debian/postinst_numcil
-    with open("%s/postinst_numcil"%deb_src_dir, "w") as f:
-        f.write(CIL_GLOBAL_DLL_CACHE_INSTALL)
-    bash_cmd("chmod +x %s/postinst_numcil"%deb_src_dir)
-
-    #debian/postrm_numcil
-    with open("%s/postrm_numcil"%deb_src_dir, "w") as f:
-        f.write(CIL_GLOBAL_DLL_CACHE_UNINSTALL)
-    bash_cmd("chmod +x %s/postrm_numcil"%deb_src_dir)
 
     #debian/source/format
     os.makedirs(path.join(deb_src_dir,"source"))
