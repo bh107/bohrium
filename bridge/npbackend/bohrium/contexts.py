@@ -6,10 +6,29 @@ import sys
 from . import backend_messaging as messaging
 
 
-class BohriumContext:
+class EnableBohrium:
     """Enable Bohrium within the context"""
 
     def __init__(self):
+        # In order to avoid complications, we import common libraries BEFORE enabling Bohrium
+        try:
+            import matplotlib
+            import matplotlib.pyplot
+            import matplotlib.pylab
+        except ImportError:
+            pass
+        try:
+            import scipy
+            import scipy.sparse
+            import scipy.io
+        except ImportError:
+            pass
+        try:
+            import netCDF4
+        except ImportError:
+            pass
+
+        # Let's save to real NumPy module
         self.__numpy = sys.modules['numpy']
         self.__numpy_random = sys.modules['numpy.random']
         self.__numpy_linalg = sys.modules['numpy.linalg']
@@ -35,6 +54,25 @@ class BohriumContext:
         sys.modules['numpy'] = self.__numpy
         sys.modules['numpy.random'] = self.__numpy_random
         sys.modules['numpy.linalg'] = self.__numpy_linalg
+
+
+class DisableBohrium:
+    """Disable Bohrium within the context"""
+
+    def __enter__(self):
+        # Save current state
+        import numpy
+        self._numpy = sys.modules['numpy']
+        self._numpy_random = sys.modules['numpy.random']
+        self._numpy_linalg = sys.modules['numpy.linalg']
+        # Make sure that numpy points to numpy (and not Bohrium)
+        sys.modules['numpy'] = sys.modules.get("numpy_force", "numpy")
+
+    def __exit__(self, *args):
+        # Load the state before entering context
+        sys.modules['numpy'] = self._numpy
+        sys.modules['numpy.random'] = self._numpy_random
+        sys.modules['numpy.linalg'] = self._numpy_linalg
 
 
 class Profiling:

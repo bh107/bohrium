@@ -39,7 +39,7 @@ asanyarray = array
 
 def replace_numpy(function):
     def wrapper(*args, **kwargs):
-        with contexts.BohriumContext():
+        with contexts.EnableBohrium():
             # Run your function/program
             result = function(*args, **kwargs)
         return result
