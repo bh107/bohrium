@@ -10,17 +10,18 @@ Install with Homebrew
 
 Start by `installing Homebrew as explained on their website <http://brew.sh/>`_ ::
 
-  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 Then install Bohrium::
 
-  python -m pip install cython # This dependency cannot be installed via brew.
-  brew install bh107/homebrew-bohrium/bohrium
-  
-Check the current runtime stack::
-  
-  python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
+  pip install cython # This dependency cannot be installed via brew.
+  brew tap bh107/bohrium
+  brew tap homebrew/science # for clblas and the likes
+  brew install bohrium # you can add additional options, see `brew info bohrium`
 
+Check the current runtime stack::
+
+  python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
 
 Manual install from source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
