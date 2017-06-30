@@ -25,12 +25,17 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <Random123/philox.h>
 
+philox2x32_ctr_t philox2x32_R(unsigned int R, philox2x32_ctr_t ctr, philox2x32_key_t key);
 
 uint64_t random123(uint64_t start, uint64_t key, uint64_t index) {
-    union {philox2x32_ctr_t c; uint64_t ul;} ctr, res;
-    ctr.ul = start + index;
-    res.c = philox2x32(ctr.c, (philox2x32_key_t){{key}});
-    return res.ul;
+    uint64_t i = start + index;
+
+    philox2x32_ctr_t _index = *((philox2x32_ctr_t*)&i);
+    philox2x32_key_t _key   = *((philox2x32_key_t*)&key);
+
+    philox2x32_ctr_t result = philox2x32_R(philox2x32_rounds, _index, _key);
+
+    return *((uint64_t*)&result);
 }
 
 #endif
