@@ -21,14 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #ifndef __BH_JITK_KERNEL_DEPENDENCIES_INTEGER_OPERATIONS_H
 #define __BH_JITK_KERNEL_DEPENDENCIES_INTEGER_OPERATIONS_H
 
-#define IPOW(r,b,e) {                         \
-                    r = 1;                    \
-                    while (e)                 \
-                    {                         \
-                        if (e & 1)            \
-                            r *= b;           \
-                        e >>= 1;              \
-                        b *= b;               \
-                    }                         \
+#define IPOW(r,b,e) r = 1;                     \
+                    while(e) {                 \
+                        if (e & 1) { r *= b; } \
+                        e >>= 1;               \
+                        b *= b;                \
                     }
 #endif
