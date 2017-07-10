@@ -32,7 +32,7 @@ Features
 Please note:
     * Bohrium is a 64bit project exclusively.
     * We are working on a Windows version.
-    * Source code available here: https://github.com/bh107/bohrium
+    * Source code is available here: https://github.com/bh107/bohrium
 
 Get Started!
 ------------
