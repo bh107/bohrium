@@ -82,6 +82,18 @@ class ComponentImpl {
      * Throws exceptions on error
      */
     virtual std::string message(const std::string &msg) = 0;
+
+    /* Get data pointer from the first VE in the runtime stack
+     * NB: this doesn't include a flush
+     *
+     * @base         The base array that owns the data
+     * @copy2host    Always copy the memory to main memory
+     * @force_alloc  Force memory allocation
+     * @nullify      Set the data pointer to NULL after returning
+     * @return       The data pointer (NB: might point to device memory)
+     * Throws exceptions on error
+     */
+    virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
 };
 
 // Representation of a component interface, which consist of a create()
@@ -138,6 +150,21 @@ class ComponentFace {
         assert(_implementation != NULL);
         return _implementation->message(msg);
     }
+
+    /* Get data pointer from the first VE in the runtime stack
+     * NB: this doesn't include a flush
+     *
+     * @base         The base array that owns the data
+     * @copy2host    Always copy the memory to main memory
+     * @force_alloc  Force memory allocation
+     * @nullify      Set the data pointer to NULL after returning
+     * @return       The data pointer (NB: might point to device memory)
+     * Throws exceptions on error
+     */
+    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        assert(_implementation != NULL);
+        return _implementation->get_mem_ptr(base, copy2host, force_alloc, nullify);
+    }
 };
 
 // Representation of a component implementation that has a child.
@@ -164,6 +191,9 @@ public:
     virtual std::string message(const std::string &msg) {
         return child.message(msg);
     }
+    virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        return child.get_mem_ptr(base, copy2host, force_alloc, nullify);
+    };
 };
 
 }} //namespace bohrium::component

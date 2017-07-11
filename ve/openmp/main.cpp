@@ -103,6 +103,18 @@ class Impl : public ComponentImpl {
         }
         return ss.str();
     }
+
+    // Handle memory pointer retrieval
+    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        if (force_alloc) {
+            bh_data_malloc(&base);
+        }
+        void *ret = base.data;
+        if (nullify) {
+            base.data = NULL;
+        }
+        return ret;
+    }
 };
 }
 

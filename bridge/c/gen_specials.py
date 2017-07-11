@@ -99,19 +99,8 @@ def main(args):
         impl += "%s"%decl
         impl += """\
 {
-    bhxx::BhBase* b = ((bhxx::BhArray<%(cpp)s>*)ary)->base.get();
-
-    if(force_alloc) {
-        bh_data_malloc(b);
-    }
-
-    void* ret = (%(bhc)s*)(b->data);
-
-    if(nullify) {
-        b->data = NULL;
-    }
-
-    return ret;
+    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+    return bhxx::Runtime::instance().get_mem_ptr(b, true, force_alloc, nullify);
 }
 """%t
 

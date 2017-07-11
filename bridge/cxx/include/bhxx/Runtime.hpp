@@ -70,6 +70,18 @@ class Runtime {
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
 
+    /* Get data pointer from the first VE in the runtime stack
+     * NB: this doesn't include a flush.
+     *
+     * @base         The base array that owns the data for retrieval
+     * @copy2host    Always copy the memory to main memory
+     * @force_alloc  Force memory allocation
+     * @nullify      Set the data pointer to NULL after returning
+     * @return       The data pointer (NB: might point to device memory)
+     * Throws exceptions on error
+     */
+    void* get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
+
     ~Runtime() { flush(); }
 
     Runtime(Runtime&&) = default;
