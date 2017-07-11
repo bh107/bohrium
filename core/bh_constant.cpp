@@ -112,8 +112,6 @@ double bh_constant::get_double() const
             return static_cast<double>(value.complex128.real);
         case bh_type::R123:
             throw overflow_error("R123 cannot be converted to double");
-        default:
-            throw runtime_error("Unknown constant type in get_double");
     }
 }
 
@@ -163,8 +161,6 @@ void bh_constant::set_double(double value)
             return;
         case bh_type::R123:
             throw overflow_error("double to R123 isn't possible");
-        default:
-            throw runtime_error("Unknown constant type in set_double");
     }
 }
 
@@ -204,8 +200,6 @@ bool bh_constant::operator==(const bh_constant& other) const
         case bh_type::R123:
             return other.value.r123.start == value.r123.start &&
                    other.value.r123.key == value.r123.key;
-        default:
-            return false;
     }
 }
 
