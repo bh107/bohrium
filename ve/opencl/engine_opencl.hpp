@@ -151,27 +151,25 @@ public:
     std::string info() const;
 
     // Retrieve a single buffer
-    template <typename T>
-    cl::Buffer* getBuffer(T &base) {
+    cl::Buffer* getBuffer(bh_base* base) {
         if(buffers.find(base) == buffers.end()) {
-            std::vector<T> vec = {base};
+            std::vector<bh_base*> vec = {base};
             copyToDevice(vec);
         }
         return &(*buffers[base]);
     }
 
     // Delete a buffer
-    template <typename T>
-    void delBuffer(T &base) {
+    void delBuffer(bh_base* base) {
         buffers.erase(base);
     }
 
     // Get C buffer from wrapped C++ object
-    template <typename T>
-    cl_mem getCBuffer(T &base) {
+    cl_mem getCBuffer(bh_base* base) {
         return (*getBuffer(base))();
     }
 
+    // Get the OpenCL command queue object
     cl::CommandQueue* getQueue() {
         return &queue;
     }
