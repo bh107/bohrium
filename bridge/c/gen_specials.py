@@ -46,6 +46,18 @@ def main(args):
 }
 """
 
+    doc = "\n//Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack.\n"
+    doc += "//If the first VE isn't a device, NULL is returned.\n"
+    impl += doc; head += doc
+    decl = "void* bhc_get_device_context(void)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{
+    return bhxx::Runtime::instance().get_device_context();
+}
+"""
+
     doc = "\n//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.items():

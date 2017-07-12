@@ -131,6 +131,11 @@ def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     return int(data)
 
 
+def get_device_context():
+    """Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack."""
+    return int(bhc.get_device_context())
+
+
 def set_bhc_data_from_ary(self, ary):
     """ Assigns the data using memmove """
 

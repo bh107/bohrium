@@ -167,6 +167,11 @@ public:
         return (*getBuffer(base))();
     }
 
+    // Get C context from wrapped C++ object
+    cl_context getCContext() {
+        return context();
+    }
+
     // Get the OpenCL command queue object
     cl::CommandQueue* getQueue() {
         return &queue;

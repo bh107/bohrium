@@ -82,6 +82,14 @@ class Runtime {
      */
     void* get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
 
+    /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
+     * If the first VE isn't a device, NULL is returned.
+     *
+     * @return  The device handle
+     * Throws exceptions on error
+     */
+    void* get_device_context();
+
     ~Runtime() { flush(); }
 
     Runtime(Runtime&&) = default;

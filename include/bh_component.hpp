@@ -94,6 +94,14 @@ class ComponentImpl {
      * Throws exceptions on error
      */
     virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
+
+    /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
+     * If the first VE isn't a device, NULL is returned.
+     *
+     * @return  The device handle
+     * Throws exceptions on error
+     */
+    virtual void* get_device_context() = 0;
 };
 
 // Representation of a component interface, which consist of a create()
@@ -135,6 +143,10 @@ class ComponentFace {
         assert(_implementation != NULL);
         return _implementation->get_mem_ptr(base, copy2host, force_alloc, nullify);
     }
+    void* get_device_context() {
+        assert(_implementation != NULL);
+        return _implementation->get_device_context();
+    };
 };
 
 // Representation of a component implementation that has a child.
@@ -163,6 +175,9 @@ public:
     }
     virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         return child.get_mem_ptr(base, copy2host, force_alloc, nullify);
+    };
+    virtual void* get_device_context() {
+        return child.get_device_context();
     };
 };
 

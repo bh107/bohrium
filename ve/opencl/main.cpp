@@ -123,7 +123,7 @@ public:
     // Handle memory pointer retrieval
     void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         bh_base *b = &base;
-        // Let's copy sync'ed arrays back to the host
+        cout << "OpenCL get_mem_ptr" <<  copy2host << endl;
         if (copy2host) {
             bh_base* t[1] = {b};
             engine.copyToHost(t);
@@ -140,6 +140,11 @@ public:
             return engine.getCBuffer(b);
         }
     }
+
+    // Handle the OpenCL context retrieval
+    void* get_device_context() {
+        return engine.getCContext();
+    };
 };
 }
 

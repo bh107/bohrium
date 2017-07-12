@@ -115,6 +115,11 @@ class Impl : public ComponentImpl {
         }
         return ret;
     }
+
+    // We have no context so returning NULL
+    void* get_device_context() {
+        return nullptr;
+    };
 };
 }
 

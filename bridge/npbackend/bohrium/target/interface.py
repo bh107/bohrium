@@ -92,6 +92,11 @@ def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     raise NotImplementedError()
 
 
+def get_device_context():
+    """Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack."""
+    raise NotImplementedError()
+
+
 def set_bhc_data_from_ary(self, ary):
     """
     Copy data from 'ary' into the array 'self'

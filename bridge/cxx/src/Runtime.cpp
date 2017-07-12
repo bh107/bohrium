@@ -89,4 +89,8 @@ void* Runtime::get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool f
     return runtime.get_mem_ptr(*base, copy2host, force_alloc, nullify);
 }
 
+void* Runtime::get_device_context() {
+    return runtime.get_device_context();
+}
+
 }  // namespace bhxx
