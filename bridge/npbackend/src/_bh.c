@@ -82,7 +82,7 @@ static int64_t ary_nbytes(const BhArray *ary) {
 
 // Help function to retrieve the Bohrium-C data pointer
 // Return -1 on error
-static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify, void **out_data)
+static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocation, int nullify, void **out_data)
 {
     if(((BhArray*) ary)->mmap_allocated == 0) {
         PyErr_SetString(
@@ -92,7 +92,7 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
         return -1;
     }
 
-    PyObject *data = PyObject_CallMethod(bhary, "get_bhc_data_pointer", "Oii", ary, force_allocation, nullify);
+    PyObject *data = PyObject_CallMethod(bhary, "get_bhc_data_pointer", "Oiii", ary, copy2host, force_allocation, nullify);
     if(data == NULL) {
         return -1;
     }
@@ -494,7 +494,7 @@ static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args) {
     if(bhc_exist(base)) {
         // Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
         void *d = NULL;
-        get_bhc_data_pointer(base, 0, 1, &d);
+        get_bhc_data_pointer(base, 1, 0, 1, &d);
 
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base), ary_nbytes((BhArray*) base));

@@ -120,20 +120,21 @@ public:
     // Handle memory pointer retrieval
     void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         bh_base *b = &base;
-        // Let's copy sync'ed arrays back to the host
         if (copy2host) {
-            std::array<bh_base*, 1> t{b};
+            bh_base* t[1] = {b};
             engine.copyToHost(t);
             engine.delBuffer(b);
+            if (force_alloc) {
+                bh_data_malloc(b);
+            }
+            void *ret = base.data;
+            if (nullify) {
+                base.data = NULL;
+            }
+            return ret;
+        } else {
+            return engine.getBuffer(b);
         }
-        if (force_alloc) {
-            bh_data_malloc(b);
-        }
-        void *ret = base.data;
-        if (nullify) {
-            base.data = NULL;
-        }
-        return ret;
     }
 };
 }

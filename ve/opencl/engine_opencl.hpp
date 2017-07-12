@@ -74,8 +74,6 @@ private:
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 
-
-
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,

@@ -90,17 +90,18 @@ def main(args):
 """%t
 
     doc = "\n//Get data pointer and:\n"
+    doc += "//  if 'copy2host', always copy the memory to main memory\n"
     doc += "//  if 'force_alloc', force memory allocation before returning the data pointer\n"
     doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool force_alloc, bhc_bool nullify)"%(t['name'], t['bhc_ary'])
+        decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s"%decl
         impl += """\
 {
     std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
-    return bhxx::Runtime::instance().get_mem_ptr(b, true, force_alloc, nullify);
+    return bhxx::Runtime::instance().get_mem_ptr(b, copy2host, force_alloc, nullify);
 }
 """%t
 

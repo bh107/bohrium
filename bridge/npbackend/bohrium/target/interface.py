@@ -76,13 +76,14 @@ def tally():
     pass
 
 
-def get_data_pointer(ary, allocate=False, nullify=False):
+def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     """
     Return a C-pointer to the array data (represented as a Python integer).
 
     .. note:: One way of implementing this would be to return a ndarray.ctypes.data.
 
     :param Mixed ary: The array to retrieve a data-pointer for.
+    :param bool copy2host: When true always copy the memory to main memory.
     :param bool allocate: When true the target is expected to allocate the data prior to returning.
     :param bool nullify: TODO
     :returns: A pointer to memory associated with the given 'ary'

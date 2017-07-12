@@ -294,7 +294,7 @@ def del_bhc(ary):
     else:
         base.bhc_ary_version += 1
 
-def get_bhc_data_pointer(ary, allocate=False, nullify=False):
+def get_bhc_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     """
     Return the Bohrium-C data pointer (represented by a Python integer)
     When allocate is True, it allocates memory instead of returning None
@@ -304,7 +304,7 @@ def get_bhc_data_pointer(ary, allocate=False, nullify=False):
     if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)
-    return target.get_data_pointer(get_bhc(ary), allocate, nullify)
+    return target.get_data_pointer(get_bhc(ary), copy2host, allocate, nullify)
 
 def set_bhc_data_from_ary(self, ary):
     """

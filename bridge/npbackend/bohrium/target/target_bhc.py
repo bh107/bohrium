@@ -111,7 +111,7 @@ def tally():
     pass
 
 
-def get_data_pointer(ary, allocate=False, nullify=False):
+def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     """ Retrieves the data pointer from Bohrium Runtime. """
     if ary.size == 0 or ary.base.size == 0:
         return 0
@@ -122,7 +122,7 @@ def get_data_pointer(ary, allocate=False, nullify=False):
     bhc.call_single_dtype("sync", dtype, ary)
     runtime_flush()
 
-    data = bhc.call_single_dtype("data_get", dtype, ary, allocate, nullify)
+    data = bhc.call_single_dtype("data_get", dtype, ary, copy2host, allocate, nullify)
     if data is None:
         if not allocate:
             return 0

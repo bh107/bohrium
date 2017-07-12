@@ -128,15 +128,17 @@ public:
             bh_base* t[1] = {b};
             engine.copyToHost(t);
             engine.delBuffer(b);
+            if (force_alloc) {
+                bh_data_malloc(b);
+            }
+            void *ret = base.data;
+            if (nullify) {
+                base.data = NULL;
+            }
+            return ret;
+        } else {
+            return engine.getCBuffer(b);
         }
-        if (force_alloc) {
-            bh_data_malloc(b);
-        }
-        void *ret = base.data;
-        if (nullify) {
-            base.data = NULL;
-        }
-        return ret;
     }
 };
 }

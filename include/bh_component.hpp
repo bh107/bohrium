@@ -119,48 +119,18 @@ class ComponentFace {
     ComponentFace(const ComponentFace &other) = delete;
     ComponentFace(ComponentFace &&other) = delete;
 
-    /* Execute a BhIR (graph of instructions)
-     *
-     * @bhir  The BhIR to execute
-     * Throws exceptions on error
-     */
     void execute(bh_ir *bhir) {
         assert(_implementation != NULL);
         _implementation->execute(bhir);
     };
-
-    /* Register a new extension method.
-     *
-     * @name   Name of the function
-     * @opcode Opcode for the new function.
-     * Throws exceptions on error
-     */
     void extmethod(const std::string &name, bh_opcode opcode) {
         assert(_implementation != NULL);
         _implementation->extmethod(name, opcode);
     };
-
-    /* Send and receive a message through the component stack
-     *
-     * @msg    The message to send
-     * @return The received message
-     * Throws exceptions on error
-     */
     std::string message(const std::string &msg) {
         assert(_implementation != NULL);
         return _implementation->message(msg);
     }
-
-    /* Get data pointer from the first VE in the runtime stack
-     * NB: this doesn't include a flush
-     *
-     * @base         The base array that owns the data
-     * @copy2host    Always copy the memory to main memory
-     * @force_alloc  Force memory allocation
-     * @nullify      Set the data pointer to NULL after returning
-     * @return       The data pointer (NB: might point to device memory)
-     * Throws exceptions on error
-     */
     void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         assert(_implementation != NULL);
         return _implementation->get_mem_ptr(base, copy2host, force_alloc, nullify);
