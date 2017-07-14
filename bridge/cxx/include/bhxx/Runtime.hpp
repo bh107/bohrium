@@ -82,6 +82,18 @@ class Runtime {
      */
     void* get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
 
+    /* Set data pointer in the first VE in the runtime stack
+     * NB: The component will deallocate the memory when encountering a BH_FREE.
+     *     Also, this doesn't include a flush
+     *
+     * @base      The base array that will own the data
+     * @host_ptr  The pointer points to the host memory (main memory) as opposed to device memory
+     * @mem       The data pointer
+     * Throws exceptions on error
+     */
+    void set_mem_ptr(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
+
+
     /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
      *

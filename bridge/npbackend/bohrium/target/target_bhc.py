@@ -131,6 +131,20 @@ def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     return int(data)
 
 
+def set_data_pointer(ary, mem_ptr_as_int, host_ptr=True):
+    """ Set the data pointer `mem_ptr_as_int` in the Bohrium Runtime. """
+    if ary.size == 0 or ary.base.size == 0:
+        return 0
+
+    dtype = dtype_name(ary)
+    ary = ary.bhc_obj
+
+    bhc.call_single_dtype("sync", dtype, ary)
+    runtime_flush()
+
+    bhc.call_single_dtype("data_set", dtype, ary, host_ptr, mem_ptr_as_int)
+
+
 def get_device_context():
     """Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack."""
     return int(bhc.get_device_context())
