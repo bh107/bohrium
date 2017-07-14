@@ -141,6 +141,19 @@ public:
         }
     }
 
+    // Handle memory pointer obtainment
+    void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        cout << "OpenCL set_mem_ptr" <<  host_ptr << endl;
+        if (host_ptr) {
+            bh_base* t[1] = {base};
+            engine.copyToHost(t);
+            engine.delBuffer(base);
+            base->data = mem;
+        } else {
+            engine.createBuffer(base, mem);
+        }
+    }
+
     // Handle the OpenCL context retrieval
     void* get_device_context() {
         return engine.getCContext();

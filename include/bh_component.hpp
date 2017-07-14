@@ -95,6 +95,17 @@ class ComponentImpl {
      */
     virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
 
+    /* Set data pointer in the first VE in the runtime stack
+     * NB: The component will deallocate the memory when encountering a BH_FREE.
+     *     Also, this doesn't include a flush
+     *
+     * @base      The base array that will own the data
+     * @host_ptr  The pointer points to the host memory (main memory) as opposed to device memory
+     * @mem       The data pointer
+     * Throws exceptions on error
+     */
+    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) = 0;
+
     /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
      *
@@ -143,6 +154,10 @@ class ComponentFace {
         assert(_implementation != NULL);
         return _implementation->get_mem_ptr(base, copy2host, force_alloc, nullify);
     }
+    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        assert(_implementation != NULL);
+        return _implementation->set_mem_ptr(base, host_ptr, mem);
+    }
     void* get_device_context() {
         assert(_implementation != NULL);
         return _implementation->get_device_context();
@@ -176,6 +191,9 @@ public:
     virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         return child.get_mem_ptr(base, copy2host, force_alloc, nullify);
     };
+    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        return child.set_mem_ptr(base, host_ptr, mem);
+    }
     virtual void* get_device_context() {
         return child.get_device_context();
     };

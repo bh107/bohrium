@@ -101,6 +101,24 @@ public:
         stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
     }
 
+    cl::Buffer *createBuffer(bh_base *base) {
+        cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+        buffers[base].reset(buf);
+        return buf;
+    }
+
+    cl::Buffer *createBuffer(bh_base *base, void* opencl_mem_ptr) {
+        cl::Buffer *buf = new cl::Buffer();
+        cl_mem _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
+        cl_int err = clRetainMemObject(_mem); // Increments the memory object reference count
+        if (err != CL_SUCCESS) {
+            throw std::runtime_error("OpenCL - clRetainMemObject(): failed");
+        }
+        (*buf) = _mem;
+        buffers[base].reset(buf);
+        return buf;
+    }
+
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
     template <typename T>
     void copyToDevice(T &base_list) {
@@ -117,8 +135,7 @@ public:
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                buffers[base].reset(buf);
+                cl::Buffer *buf = createBuffer(base);
 
                 // If the host data is non-null we should copy it to the device
                 if (base->data != NULL) {
