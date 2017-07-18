@@ -29,7 +29,10 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
 
             for _ in range(iters):
                 for d in range(len(shape)):
-                    shape[d] = np.random.randint(1, max_dim)
+                    if max_dim == 1:
+                        shape[d] = 1
+                    else:
+                        shape[d] = np.random.randint(1, max_dim)
                 yield shape
         else:
             finished = False
