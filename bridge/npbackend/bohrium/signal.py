@@ -236,7 +236,7 @@ def convolve(a, v, mode='full'):
     if not bhary.check(a) and not bhary.check(v):
         raise TypeError("convolveNd: Expects Bohrium arrays")
 
-    if a.size > v.size:
+    if (a.size>v.size) or (mode=='same'):
         Array = a
         Filter = _invertArr(v)
     else:
@@ -250,7 +250,7 @@ def correlate(a, v, mode='valid'):
     if not bhary.check(a) and not bhary.check(v):
         raise TypeError("correlateNd: Expects Bohrium arrays")
 
-    if a.size > v.size:
+    if (a.size>v.size) or (mode=='same'):
         Array = a
         Filter = v
     else:
