@@ -31,8 +31,7 @@ from . import bh_info
 from . import interop_pyopencl
 from . import interop_numpy
 from . import backend_messaging
-from .signal import convolve1d as convolve
-from .signal import correlate1d as correlate
+from .signal import convolve, correlate, correlate1d, convolve1d
 from .nobh import bincount
 
 from numpy_force import dtype
