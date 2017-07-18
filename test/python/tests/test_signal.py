@@ -1,7 +1,7 @@
 import util
 
 
-class test_vector:
+class test_1d:
     def init(self):
         for mode in ['same', 'valid', 'full']:
             for dtype in util.TYPES.FLOAT:
@@ -11,12 +11,26 @@ class test_vector:
                             cmd = "R = bh.random.RandomState(42); a=%s; v=%s;" % (cmd1, cmd2)
                             yield (cmd, mode)
 
+    def test_correlate1d(self, args):
+        (cmd, mode) = args
+        np_cmd = cmd + "res = M.correlate(a, v, mode='%s')" % mode
+        bh_cmd = cmd + "res = M.correlate1d(a, v, mode='%s')" % mode
+        return (np_cmd, bh_cmd)
+
+    def test_convolve1d(self, args):
+        (cmd, mode) = args
+        np_cmd = cmd + "res = M.convolve(a, v, mode='%s')" % mode
+        bh_cmd = cmd + "res = M.convolve1d(a, v, mode='%s')" % mode
+        return (np_cmd, bh_cmd)
+
     def test_correlate(self, args):
         (cmd, mode) = args
-        cmd += "res = M.correlate(a, v, mode='%s')" % mode
-        return cmd
+        np_cmd = cmd + "res = M.correlate(a, v, mode='%s')" % mode
+        bh_cmd = cmd + "res = M.correlate(a, v, mode='%s')" % mode
+        return (np_cmd, bh_cmd)
 
     def test_convolve(self, args):
         (cmd, mode) = args
-        cmd += "res = M.convolve(a, v, mode='%s')" % mode
-        return cmd
+        np_cmd = cmd + "res = M.convolve(a, v, mode='%s')" % mode
+        bh_cmd = cmd + "res = M.convolve(a, v, mode='%s')" % mode
+        return (np_cmd, bh_cmd)
