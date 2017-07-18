@@ -134,3 +134,8 @@ def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, sampl
                 if sub not in sub_tried:
                     yield ("%s%s" % (cmd, sub), vshape)
                     sub_tried.add(sub)
+
+
+def prod(a):
+    """Returns the product of the elements in `a`"""
+    return functools.reduce(operator.mul, a)
