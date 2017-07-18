@@ -31,11 +31,14 @@ from . import bh_info
 from . import interop_pyopencl
 from . import interop_numpy
 from . import backend_messaging
-from .signal import convolve, correlate, correlate1d, convolve1d
 from .nobh import bincount
 
-from numpy_force import dtype
+# In NumPy `correlate` and `convolve` only handles 1D arrays whereas in SciPy they handles ND arrays.
+# However, NumPy and SciPy's functionality differ! Thus, the ND version cannot replace NumPy's 1D version.
+from .signal import correlate1d as correlate, convolve1d as convolve
+from .signal import correlate as correlate_scipy, convolve as convolve_scipy
 
+from numpy_force import dtype
 asarray = array
 asanyarray = array
 
