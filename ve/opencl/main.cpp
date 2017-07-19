@@ -123,7 +123,6 @@ public:
     // Handle memory pointer retrieval
     void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         bh_base *b = &base;
-        cout << "OpenCL get_mem_ptr" <<  copy2host << endl;
         if (copy2host) {
             bh_base* t[1] = {b};
             engine.copyToHost(t);
@@ -143,7 +142,6 @@ public:
 
     // Handle memory pointer obtainment
     void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
-        cout << "OpenCL set_mem_ptr" <<  host_ptr << endl;
         if (host_ptr) {
             bh_base* t[1] = {base};
             engine.copyToHost(t);
