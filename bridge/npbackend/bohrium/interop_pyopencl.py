@@ -93,3 +93,32 @@ def max_local_memory(opencl_device):
     """Returns the maximum allowed local memory on `opencl_device`"""
     cl = _import_pyopencl_module()
     return opencl_device.get_info(cl.device_info.LOCAL_MEM_SIZE)
+
+
+def type_np2opencl_str(np_type):
+    """Converts a NumPy type to a OpenCL type string"""
+    import numpy as np
+    if np_type == np.bool:
+        return "bool"
+    elif np_type == np.int8:
+        return "char"
+    elif np_type == np.int16:
+        return "short"
+    if np_type == np.int32:
+        return "int"
+    elif np_type == np.int64:
+        return "long"
+    elif np_type == np.uint8:
+        return "uchar"
+    elif np_type == np.uint16:
+        return "ushort"
+    elif np_type == np.uint32:
+        return "uint"
+    elif np_type == np.uint64:
+        return "ulong"
+    elif np_type == np.float32:
+        return "float"
+    elif np_type == np.float64:
+        return "double"
+    else:
+        return "UNKNOWN"
