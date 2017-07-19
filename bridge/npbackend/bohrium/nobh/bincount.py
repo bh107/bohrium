@@ -110,15 +110,15 @@ def bincount_pyopencl(x, minlength=None):
         raise NotImplementedError("OpenCL: max element is too large for the GPU")
 
     # Let's create the output array and retrieve the in-/output OpenCL buffers
-    ret = array_create.empty((x_max, ), dtype=x.dtype)
+    ret = array_create.empty((x_max+1, ), dtype=x.dtype)
     x_buf = interop_pyopencl.get_buffer(x)
     ret_buf = interop_pyopencl.get_buffer(ret)
 
     # OpenCL kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi at al.
-    prg = cl.Program(ctx, """
+    source = """
     kernel void histogram_partial(
-    	global uint *input,
-    	global uint *partial_histo,
+    	global DTYPE *input,
+    	global DTYPE *partial_histo,
     	uint input_size
     ){
     	int local_size = (int)get_local_size(0);
@@ -166,9 +166,9 @@ def bincount_pyopencl(x, minlength=None):
     }
 
     kernel void histogram_sum_partial_results(
-    	global uint *partial_histogram,
+    	global DTYPE *partial_histogram,
     	int num_groups,
-    	global uint *histogram
+    	global DTYPE *histogram
     ){
     	int gid = (int)get_global_id(0);
     	int group_indx; 
@@ -183,7 +183,10 @@ def bincount_pyopencl(x, minlength=None):
     	}
     	histogram[gid] = tmp_histogram[gid];
     }
-    """.replace("HISTO_SIZE", "%d" % ret.shape[0])).build()
+    """
+    source = source.replace("HISTO_SIZE", "%d" % ret.shape[0])
+    source = source.replace("DTYPE", interop_pyopencl.type_np2opencl_str(x.dtype))
+    prg = cl.Program(ctx, source).build()
 
     # Calculate sizes for the kernel execution
     local_size = interop_pyopencl.kernel_info(prg.histogram_partial, queue)[0]  # Max work-group size
