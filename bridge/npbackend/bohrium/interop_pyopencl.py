@@ -29,6 +29,17 @@ def _import_pyopencl_module():
     return pyopencl
 
 
+def available():
+    """Is PyOpenCL available?"""
+    try:
+        _import_pyopencl_module()
+        return True
+    except ImportError:
+        return False
+    except RuntimeError:
+        return False
+
+
 def get_context():
     """Return a PyOpenCL context"""
     pyopencl = _import_pyopencl_module()
@@ -55,3 +66,30 @@ def get_array(bh_ary, queue):
     _import_pyopencl_module()
     from pyopencl import array as clarray
     return clarray.Array(queue, bh_ary.shape, bh_ary.dtype, data=get_buffer(bh_ary))
+
+
+def kernel_info(opencl_kernel, queue):
+    """Info about the `opencl_kernel`
+    Returns 4-tuple:
+            - Max work-group size
+            - Recommended work-group multiple
+            - Local mem used by kernel
+            - Private mem used by kernel
+    """
+    cl = _import_pyopencl_module()
+    info = cl.kernel_work_group_info
+    # Max work-group size
+    wg_size = opencl_kernel.get_work_group_info(info.WORK_GROUP_SIZE, queue.device)
+    # Recommended work-group multiple
+    wg_multiple = opencl_kernel.get_work_group_info(info.PREFERRED_WORK_GROUP_SIZE_MULTIPLE, queue.device)
+    # Local mem used by kernel
+    local_usage = opencl_kernel.get_work_group_info(info.LOCAL_MEM_SIZE, queue.device)
+    # Private mem used by kernel
+    private_usage = opencl_kernel.get_work_group_info(info.PRIVATE_MEM_SIZE, queue.device)
+    return (wg_size, wg_multiple, local_usage, private_usage)
+
+
+def max_local_memory(opencl_device):
+    """Returns the maximum allowed local memory on `opencl_device`"""
+    cl = _import_pyopencl_module()
+    return opencl_device.get_info(cl.device_info.LOCAL_MEM_SIZE)
