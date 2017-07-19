@@ -95,13 +95,14 @@ def bincount_pyopencl(x, minlength=None):
         raise NotImplementedError("OpenCL not available")
 
     import pyopencl as cl
-
     ctx = interop_pyopencl.get_context()
     queue = cl.CommandQueue(ctx)
 
     x_max = int(x.max())
     if x_max < 0:
         raise RuntimeError("bincount(): first argument must be a 1 dimension, non-negative int array")
+    if x_max > np.iinfo(np.uint32):
+        raise NotImplementedError("OpenCL: the elements in the first argument must fit in a 32bit integer")
     if minlength is not None:
         x_max = max(x_max, minlength)
 
@@ -110,78 +111,79 @@ def bincount_pyopencl(x, minlength=None):
         raise NotImplementedError("OpenCL: max element is too large for the GPU")
 
     # Let's create the output array and retrieve the in-/output OpenCL buffers
-    ret = array_create.empty((x_max+1, ), dtype=x.dtype)
+    # NB: we always return uint32 array
+    ret = array_create.empty((x_max+1, ), dtype=np.uint32)
     x_buf = interop_pyopencl.get_buffer(x)
     ret_buf = interop_pyopencl.get_buffer(ret)
 
     # OpenCL kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi at al.
     source = """
     kernel void histogram_partial(
-    	global DTYPE *input,
-    	global DTYPE *partial_histo,
-    	uint input_size
+        global DTYPE *input,
+        global uint *partial_histo,
+        uint input_size
     ){
-    	int local_size = (int)get_local_size(0);
-    	int group_indx = get_group_id(0) * HISTO_SIZE;
-    	int	gid = get_global_id(0);
-    	int	tid = get_local_id(0);
+        int local_size = (int)get_local_size(0);
+        int group_indx = get_group_id(0) * HISTO_SIZE;
+        int gid = get_global_id(0);
+        int tid = get_local_id(0);
 
-    	local uint tmp_histogram[HISTO_SIZE];
+        local uint tmp_histogram[HISTO_SIZE];
 
-    	int j = HISTO_SIZE; 
-    	int	indx = 0;
+        int j = HISTO_SIZE;
+        int indx = 0;
 
-    	// clear the local buffer that will generate the partial histogram
-    	do {
-    		if (tid < j)
-    			tmp_histogram[indx+tid] = 0;
-    		j -= local_size;
-    		indx += local_size; 
-    	} while (j > 0);
+        // clear the local buffer that will generate the partial histogram
+        do {
+            if (tid < j)
+                tmp_histogram[indx+tid] = 0;
+            j -= local_size;
+            indx += local_size;
+        } while (j > 0);
 
-    	barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
 
-    	if (gid < input_size) {
-    		tmp_histogram[input[gid]]++;
-    	}
+        if (gid < input_size) {
+            atomic_inc(&tmp_histogram[input[gid]]);
+        }
 
-    	barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_LOCAL_MEM_FENCE);
 
-    	// copy the partial histogram to appropriate location in 
-    	// histogram given by group_indx
-    	if (local_size >= HISTO_SIZE){
-    		if (tid < HISTO_SIZE)
-    			partial_histo[group_indx + tid] = tmp_histogram[tid];
-    	}else{
-    		j = HISTO_SIZE; 
-    		indx = 0; 
-    		do {
-    			if (tid < j)
-    				partial_histo[group_indx + indx + tid] = tmp_histogram[indx + tid];
+        // copy the partial histogram to appropriate location in
+        // histogram given by group_indx
+        if (local_size >= HISTO_SIZE){
+            if (tid < HISTO_SIZE)
+                partial_histo[group_indx + tid] = tmp_histogram[tid];
+        }else{
+            j = HISTO_SIZE;
+            indx = 0;
+            do {
+                if (tid < j)
+                    partial_histo[group_indx + indx + tid] = tmp_histogram[indx + tid];
 
-    			j -= local_size;
-    			indx += local_size;
-    		} while (j > 0);
-    	}
+                j -= local_size;
+                indx += local_size;
+            } while (j > 0);
+        }
     }
 
     kernel void histogram_sum_partial_results(
-    	global DTYPE *partial_histogram,
-    	int num_groups,
-    	global DTYPE *histogram
+        global uint *partial_histogram,
+        int num_groups,
+        global uint *histogram
     ){
-    	int gid = (int)get_global_id(0);
-    	int group_indx; 
-    	int	n = num_groups; 
-    	local uint tmp_histogram[HISTO_SIZE];
+        int gid = (int)get_global_id(0);
+        int group_indx;
+        int n = num_groups;
+        local uint tmp_histogram[HISTO_SIZE];
 
-    	tmp_histogram[gid] = partial_histogram[gid];
-    	group_indx = HISTO_SIZE; 
-    	while (--n > 0) {
-    		tmp_histogram[gid] += partial_histogram[group_indx + gid]; 
-    		group_indx += HISTO_SIZE;
-    	}
-    	histogram[gid] = tmp_histogram[gid];
+        tmp_histogram[gid] = partial_histogram[gid];
+        group_indx = HISTO_SIZE;
+        while (--n > 0) {
+            tmp_histogram[gid] += partial_histogram[group_indx + gid];
+            group_indx += HISTO_SIZE;
+        }
+        histogram[gid] = tmp_histogram[gid];
     }
     """
     source = source.replace("HISTO_SIZE", "%d" % ret.shape[0])
