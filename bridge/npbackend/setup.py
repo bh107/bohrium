@@ -169,6 +169,7 @@ shutil.copy2(srcpath('bohrium', 'random123.pyx'), buildpath('random123.pyx'))
 shutil.copy2(srcpath('bohrium', 'bhary.pyx'), buildpath('bhary.pyx'))
 shutil.copy2(srcpath('bohrium', '_util.pyx'), buildpath('_util.pyx'))
 shutil.copy2(srcpath('bohrium', 'ufuncs.pyx'), buildpath('ufuncs.pyx'))
+shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
 
 setup(name='Bohrium',
       version=_version,
@@ -222,6 +223,12 @@ setup(name='Bohrium',
                              ),
                    Extension(name='ufuncs',
                              sources=[buildpath('ufuncs.pyx')],
+                             include_dirs=[srcpath('.')],
+                             libraries=[],
+                             library_dirs=[],
+                             ),
+                   Extension(name='nobh.bincount_cython',
+                             sources=[buildpath("nobh", 'bincount_cython.pyx')],
                              include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],

@@ -3,6 +3,7 @@ import numpy_force as np
 
 from .. import interop_pyopencl
 from .. import array_create
+from .bincount_cython import bincount_cython
 
 
 def bincount(x, weights=None, minlength=None):
@@ -85,7 +86,13 @@ def bincount(x, weights=None, minlength=None):
             raise NotImplementedError("OpenCL doesn't support the `weights` argument")
         return bincount_pyopencl(x, minlength=minlength)
     except NotImplementedError:
-        return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
+        try:
+            if weights is not None:
+                raise NotImplementedError("Cython doesn't support the `weights` argument")
+            return bincount_cython(x, minlength=minlength)
+        except NotImplementedError:
+            return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
+
 
 
 def bincount_pyopencl(x, minlength=None):
@@ -101,7 +108,7 @@ def bincount_pyopencl(x, minlength=None):
     x_max = int(x.max())
     if x_max < 0:
         raise RuntimeError("bincount(): first argument must be a 1 dimension, non-negative int array")
-    if x_max > np.iinfo(np.uint32).max:
+    if x_max > np.iinfo(np.uint32):
         raise NotImplementedError("OpenCL: the elements in the first argument must fit in a 32bit integer")
     if minlength is not None:
         x_max = max(x_max, minlength)
