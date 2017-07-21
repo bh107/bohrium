@@ -39,21 +39,26 @@ parser.add_argument(
     '--buildpath',
     help='Path to the build directory.'
 )
-(args, argv) = parser.parse_known_args()
-sys.argv = [sys.argv[0]] + argv # Write the remaining arguments back to `sys.argv` for distutils to read
+parser.add_argument(
+    '--openmp-flag',
+    default="",
+    help='OpenMP flag for the Cython builds'
+)
+(args_extra, argv) = parser.parse_known_args()
+sys.argv = [sys.argv[0]] + argv  # Write the remaining arguments back to `sys.argv` for distutils to read
 
 
 def buildpath(*paths):
-    if args.buildpath is None:
+    if args_extra.buildpath is None:
         return os.path.join(*paths)
     else:
-        return os.path.join(args.buildpath, *paths)
+        return os.path.join(args_extra.buildpath, *paths)
 
 
-def srcpath(*args):
+def srcpath(*paths):
     prefix = os.path.abspath(os.path.dirname(__file__))
     assert len(prefix) > 0
-    return os.path.join(prefix, *args)
+    return os.path.join(prefix, *paths)
 
 
 def get_timestamp(f):
@@ -238,8 +243,7 @@ setup(name='Bohrium',
                              include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],
-                             extra_compile_args=['-fopenmp'],
-                             extra_link_args=['-fopenmp'],
-                             )
+                             extra_compile_args=[args_extra.openmp_flag],
+                             extra_link_args=[args_extra.openmp_flag])
                    ]
       )
