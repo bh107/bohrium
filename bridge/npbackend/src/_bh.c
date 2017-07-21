@@ -606,6 +606,23 @@ static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     return ret;
 }
 
+static PyObject* BhArray_numpy_wrapper(PyObject *self, PyObject *args) {
+    assert(args == NULL);
+    assert(BhArray_CheckExact(self));
+    PyArrayObject *s = (PyArrayObject*) self;
+    if(!PyArray_IS_C_CONTIGUOUS((PyArrayObject*) s)) {
+        PyErr_Format(PyExc_RuntimeError, "Array must be C-style contiguous.");
+        return NULL;
+    }
+    void *data;
+    if (get_bhc_data_pointer(self, 1, 1, 0, &data) != 0) {
+        return NULL;
+    }
+    return PyArray_SimpleNewFromData(PyArray_NDIM(s), PyArray_DIMS(s), PyArray_TYPE(s), data);
+}
+
+
+
 static PyObject* BhArray_resize(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_NotImplementedError, "Bohrium arrays doesn't support resize");
     return NULL;
@@ -719,6 +736,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
     {"copy2numpy",         BhArray_copy2numpy,                  METH_NOARGS,                  "Copy the array in C-style memory layout to a regular NumPy array"},
+    {"_numpy_wrapper",     BhArray_numpy_wrapper,               METH_NOARGS,                  "Returns a NumPy array that wraps the data of this array. NB: no flush or data management!"},
     {"resize",             BhArray_resize,                      METH_VARARGS,                 "Change shape and size of array in-place"},
     {"copy",               (PyCFunction) BhArray_copy,          METH_VARARGS | METH_KEYWORDS, "a.copy(order='C')\n\nReturn a copy of the array."},
     {"reshape",            (PyCFunction) BhArray_reshape,       METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},
