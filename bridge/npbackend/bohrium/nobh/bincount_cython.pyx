@@ -5,11 +5,9 @@ from ..interop_numpy import get_array
 import cython
 from cython.parallel import prange, parallel
 import numpy_force as np
-cimport numpy as cnp
 
 from libc.stdlib cimport abort, malloc, free
-from libc.stdio cimport printf
-
+cimport numpy as cnp
 ctypedef cnp.uint64_t uint64
 
 IF UNAME_SYSNAME != "Darwin":
@@ -50,7 +48,6 @@ cdef _count(uint64[:] x, uint64[:] out):
     ELSE:
         for i in range(out.shape[0]):
             out[x[i]] += 1
-
 
 
 def bincount_cython(x, minlength=None):
