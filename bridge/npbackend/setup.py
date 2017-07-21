@@ -232,6 +232,8 @@ setup(name='Bohrium',
                              include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],
+                             extra_compile_args=['-fopenmp'],
+                             extra_link_args=['-fopenmp'],
                              )
                    ]
       )

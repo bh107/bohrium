@@ -1,17 +1,48 @@
-import cython
 from .. import array_create
 from .._util import flush
-import numpy_force as np
-cimport numpy as cnp
 from ..interop_numpy import get_array
 
+import cython
+cimport openmp
+from cython.parallel import prange, parallel
+import numpy_force as np
+cimport numpy as cnp
+
+from libc.stdlib cimport abort, malloc, free
+from libc.stdio cimport printf
+
+ctypedef cnp.uint64_t uint64
 
 @cython.boundscheck(False) # turn off bounds-checking
 @cython.cdivision(True) # turn off division-by-zero checking
-cdef _count(cnp.uint64_t[:] x, cnp.uint64_t[:] out):
-    cdef int i
-    for i in range(x.shape[0]):
-        out[x[i]] += 1
+cdef _count(uint64[:] x, uint64[:] out):
+    cdef int num_threads, thds_id
+    cdef uint64 i, start, end
+    cdef uint64* local_histo
+
+    with nogil, parallel():
+        num_threads = openmp.omp_get_num_threads()
+        thds_id = openmp.omp_get_thread_num()
+        start = (x.shape[0] / num_threads) * thds_id
+        if thds_id == num_threads-1:
+            end = x.shape[0]
+        else:
+            end = start + (x.shape[0] / num_threads)
+
+        if not(thds_id < num_threads-1 and x.shape[0] < num_threads):
+            local_histo = <uint64 *> malloc(sizeof(uint64) * out.shape[0])
+            if local_histo == NULL:
+                abort()
+            for i in range(out.shape[0]):
+                local_histo[i] = 0
+
+            for i in range(start, end):
+                local_histo[x[i]] += 1
+
+            with gil:
+                for i in range(out.shape[0]):
+                    out[i] += local_histo[i]
+            free(local_histo)
 
 
 def bincount_cython(x, minlength=None):
