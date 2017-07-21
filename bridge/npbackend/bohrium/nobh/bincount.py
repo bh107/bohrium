@@ -94,7 +94,6 @@ def bincount(x, weights=None, minlength=None):
             return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
 
 
-
 def bincount_pyopencl(x, minlength=None):
     """PyOpenCL implementation of `bincount()`"""
 
@@ -107,7 +106,7 @@ def bincount_pyopencl(x, minlength=None):
 
     x_max = int(x.max())
     if x_max < 0:
-        raise RuntimeError("bincount(): first argument must be a 1 dimension, non-negative int array")
+        raise RuntimeError("bincount(): first argument must be a 1 dimensional, non-negative int array")
     if x_max > np.iinfo(np.uint32):
         raise NotImplementedError("OpenCL: the elements in the first argument must fit in a 32bit integer")
     if minlength is not None:
