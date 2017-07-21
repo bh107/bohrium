@@ -19,7 +19,7 @@ set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the P
 if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
 
     # Get the OpenMP flag for the Cython OpenMP builds
-    if(${VE_OPENMP_COMPILER_OPENMP})
+    if(${VE_OPENMP_COMPILER_OPENMP} AND NOT APPLE)
         set(OPENMP_ARG "--openmp-flag=\"${OpenMP_C_FLAGS}\"")
     else()
         set(OPENMP_ARG "")
@@ -42,6 +42,7 @@ else()
     else()
         message(STATUS "The Python/NumPy bridge cannot be built")
     endif()
+    return()
 endif()
 
 set(NO_PYTHON3 false CACHE BOOL "Never try to do a Python3 build alongside a Python2 build.")

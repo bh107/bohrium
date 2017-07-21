@@ -3,7 +3,6 @@ from .._util import flush
 from ..interop_numpy import get_array
 
 import cython
-cimport openmp
 from cython.parallel import prange, parallel
 import numpy_force as np
 cimport numpy as cnp
@@ -13,6 +12,10 @@ from libc.stdio cimport printf
 
 ctypedef cnp.uint64_t uint64
 
+IF UNAME_SYSNAME != "Darwin":
+    cimport openmp
+
+
 @cython.boundscheck(False) # turn off bounds-checking
 @cython.cdivision(True) # turn off division-by-zero checking
 cdef _count(uint64[:] x, uint64[:] out):
@@ -20,29 +23,34 @@ cdef _count(uint64[:] x, uint64[:] out):
     cdef uint64 i, start, end
     cdef uint64* local_histo
 
-    with nogil, parallel():
-        num_threads = openmp.omp_get_num_threads()
-        thds_id = openmp.omp_get_thread_num()
-        start = (x.shape[0] / num_threads) * thds_id
-        if thds_id == num_threads-1:
-            end = x.shape[0]
-        else:
-            end = start + (x.shape[0] / num_threads)
+    IF UNAME_SYSNAME != "Darwin": # TODO: parallelize on OSX
+        with nogil, parallel():
+            num_threads = openmp.omp_get_num_threads()
+            thds_id = openmp.omp_get_thread_num()
+            start = (x.shape[0] / num_threads) * thds_id
+            if thds_id == num_threads-1:
+                end = x.shape[0]
+            else:
+                end = start + (x.shape[0] / num_threads)
 
-        if not(thds_id < num_threads-1 and x.shape[0] < num_threads):
-            local_histo = <uint64 *> malloc(sizeof(uint64) * out.shape[0])
-            if local_histo == NULL:
-                abort()
-            for i in range(out.shape[0]):
-                local_histo[i] = 0
-
-            for i in range(start, end):
-                local_histo[x[i]] += 1
-
-            with gil:
+            if not(thds_id < num_threads-1 and x.shape[0] < num_threads):
+                local_histo = <uint64 *> malloc(sizeof(uint64) * out.shape[0])
+                if local_histo == NULL:
+                    abort()
                 for i in range(out.shape[0]):
-                    out[i] += local_histo[i]
-            free(local_histo)
+                    local_histo[i] = 0
+
+                for i in range(start, end):
+                    local_histo[x[i]] += 1
+
+                with gil:
+                    for i in range(out.shape[0]):
+                        out[i] += local_histo[i]
+                free(local_histo)
+    ELSE:
+        for i in range(out.shape[0]):
+            out[x[i]] += 1
+
 
 
 def bincount_cython(x, minlength=None):
