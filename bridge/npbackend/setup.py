@@ -29,23 +29,25 @@ import stat
 import pprint
 import json
 import shutil
+import argparse
 import numpy as np
 from Cython.Distutils import build_ext
 
-# We overload the setup.py with a 'buildpath=' argument that
-# points to the root of the current build
-build_path = None
-for i, arg in enumerate(sys.argv):
-    if arg.startswith("buildpath="):
-        build_path = arg[len("buildpath="):]
-        sys.argv.pop(i)
+# We overload the setup.py with some extra arguments
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--buildpath',
+    help='Path to the build directory.'
+)
+(args, argv) = parser.parse_known_args()
+sys.argv = [sys.argv[0]] + argv # Write the remaining arguments back to `sys.argv` for distutils to read
 
 
-def buildpath(*args):
-    if build_path is None:
-        return os.path.join(*args)
+def buildpath(*paths):
+    if args.buildpath is None:
+        return os.path.join(*paths)
     else:
-        return os.path.join(build_path, *args)
+        return os.path.join(args.buildpath, *paths)
 
 
 def srcpath(*args):
