@@ -169,6 +169,10 @@ shutil.copy2(srcpath('bohrium', 'random123.pyx'), buildpath('random123.pyx'))
 shutil.copy2(srcpath('bohrium', 'bhary.pyx'), buildpath('bhary.pyx'))
 shutil.copy2(srcpath('bohrium', '_util.pyx'), buildpath('_util.pyx'))
 shutil.copy2(srcpath('bohrium', 'ufuncs.pyx'), buildpath('ufuncs.pyx'))
+try:
+    os.makedirs(buildpath('nobh'))
+except OSError:
+    pass
 shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
 
 setup(name='Bohrium',
