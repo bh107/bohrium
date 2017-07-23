@@ -107,7 +107,7 @@ def bincount_pyopencl(x, minlength=None):
     x_max = int(x.max())
     if x_max < 0:
         raise RuntimeError("bincount(): first argument must be a 1 dimensional, non-negative int array")
-    if x_max > np.iinfo(np.uint32):
+    if x_max > np.iinfo(np.uint32).max:
         raise NotImplementedError("OpenCL: the elements in the first argument must fit in a 32bit integer")
     if minlength is not None:
         x_max = max(x_max, minlength)
