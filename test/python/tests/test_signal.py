@@ -49,7 +49,7 @@ class _test_scipy:
     def test_convolve(self, args):
         (cmd, mode) = args
         scipy_cmd = cmd + "from scipy import signal; res = signal.convolve(a, v, mode='%s')" % mode
-        bh_cmd = cmd + "res = M.convolve_scipy(a, v, mode='%s')" % mode
+        bh_cmd = cmd + "res = bh.convolve_scipy(a, v, mode='%s')" % mode
         return (scipy_cmd, bh_cmd)
 
 try:
