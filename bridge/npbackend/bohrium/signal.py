@@ -167,9 +167,23 @@ def _findValid(Array, FilterSize):
 
 
 def _invertArr(Array):
-    # Returns a view of array with all dimensions reversed
+    """Reverse all elements in each axis"""
+
+    def flip(m, axis):
+        """Copy of `numpy.flip()`, which were introduced in NumPy v1.12"""
+        if not hasattr(m, 'ndim'):
+            m = array_create.array(m)
+        indexer = [slice(None)] * m.ndim
+        try:
+            indexer[axis] = slice(None, None, -1)
+        except IndexError:
+            raise ValueError("axis=%i is invalid for the %i-dimensional input array"
+                             % (axis, m.ndim))
+        return m[tuple(indexer)]
+
+    # Flip all axises
     for i in range(len(Array.shape)):
-        Array = np.flip(Array, axis=i)
+        Array = flip(Array, axis=i)
     return Array
 
 
@@ -236,7 +250,7 @@ def convolve(a, v, mode='full'):
     if not bhary.check(a) and not bhary.check(v):
         raise TypeError("convolveNd: Expects Bohrium arrays")
 
-    if (a.size>v.size) or (mode=='same'):
+    if (a.size > v.size) or (mode == 'same'):
         Array = a
         Filter = _invertArr(v)
     else:
@@ -250,7 +264,7 @@ def correlate(a, v, mode='valid'):
     if not bhary.check(a) and not bhary.check(v):
         raise TypeError("correlateNd: Expects Bohrium arrays")
 
-    if (a.size>v.size) or (mode=='same'):
+    if (a.size > v.size) or (mode == 'same'):
         Array = a
         Filter = v
     else:
