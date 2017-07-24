@@ -46,8 +46,9 @@ cdef _count(uint64[:] x, uint64[:] out):
                         out[i] += local_histo[i]
                 free(local_histo)
     ELSE:
-        for i in range(out.shape[0]):
-            out[x[i]] += 1
+        with nogil:
+            for i in range(x.shape[0]):
+                out[x[i]] += 1
 
 
 def bincount_cython(x, minlength=None):
@@ -59,8 +60,8 @@ def bincount_cython(x, minlength=None):
     if minlength is not None:
         x_max = max(x_max, minlength)
 
-    flush()
     x = array_create.array(x, dtype=np.uint64)
     ret = array_create.zeros((x_max+1, ), dtype=x.dtype)
+    flush()
     _count(get_array(x), get_array(ret))
     return ret
