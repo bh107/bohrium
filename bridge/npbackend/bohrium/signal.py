@@ -5,13 +5,13 @@ Signal Processing
 Common signal processing functions, which often handle multiple dimension
 
 """
-import bohrium as np
 import numpy_force as numpy
 from numpy_force.lib.stride_tricks import as_strided
 from . import array_create
 from . import bhary
 from . import ufuncs
 from . import linalg
+from . import summations
 
 
 # 1d
@@ -96,25 +96,25 @@ def convolve1d(a, v, mode='full'):
 def _findIndices(ArrSize, FilterSize):
     N = FilterSize.shape[0]
     n = int(FilterSize.prod())
-    CumSizeArr = np.ones([N], dtype=np.int32)
+    CumSizeArr = array_create.ones([N], dtype=numpy.int32)
     CumSizeArr[1:N] = ArrSize[0:N - 1].cumprod()
-    CumSize = np.ones([N], dtype=np.int32)
+    CumSize = array_create.ones([N], dtype=numpy.int32)
     CumSize[1:N] = FilterSize[0:N - 1].cumprod()
 
-    vals = np.empty((n, N), dtype=np.int32)
+    vals = array_create.empty((n, N), dtype=numpy.int32)
     for i in range(N):
-        vals[:, i] = np.linspace(0, n - 1, n)
+        vals[:, i] = array_create.linspace(0, n - 1, n)
 
     vals = vals // CumSize
     vals = vals % FilterSize
-    CurrPos = np.sum(vals * CumSizeArr, axis=1)
+    CurrPos = summations.sum(vals * CumSizeArr, axis=1)
 
-    return CurrPos.astype(np.int32)
+    return CurrPos.astype(numpy.int32)
 
 
 def _addZerosNd(Array, FilterSize, dtype):
     # Introduces zero padding for Column major flattening
-    PaddedSize = np.asarray(Array.shape, dtype=np.int32)
+    PaddedSize = array_create.array(Array.shape, dtype=numpy.int32)
     N = FilterSize.shape[0]
     PaddedSize[0:N] += FilterSize - 1
     cut = '['
@@ -127,7 +127,7 @@ def _addZerosNd(Array, FilterSize, dtype):
             maxpos = Array.shape[i]
         cut += str(minpos) + ':' + str(maxpos) + ','
     cut = cut[:-1] + ']'
-    Padded = np.zeros(PaddedSize, dtype=dtype)
+    Padded = array_create.zeros(PaddedSize, dtype=dtype)
     exec ('Padded' + cut + '=Array')
     return Padded
 
@@ -166,7 +166,7 @@ def _findValid(Array, FilterSize):
     return res
 
 
-def _invertArr(Array):
+def _invert_ary(a):
     """Reverse all elements in each axis"""
 
     def flip(m, axis):
@@ -182,9 +182,9 @@ def _invertArr(Array):
         return m[tuple(indexer)]
 
     # Flip all axises
-    for i in range(len(Array.shape)):
-        Array = flip(Array, axis=i)
-    return Array
+    for i in range(len(a.shape)):
+        a = flip(a, axis=i)
+    return a
 
 
 def _correlate_kernel(Array, Filter, mode):
@@ -197,13 +197,13 @@ def _correlate_kernel(Array, Filter, mode):
         Filter = numpy.conj(Filter)
 
     # Get sizes as arrays for easier manipulation
-    ArrSize = np.asarray(Array.shape, dtype=np.int32)
-    FilterSize = np.asarray(Filter.shape, dtype=np.int32)
+    ArrSize = array_create.array(Array.shape, dtype=numpy.int32)
+    FilterSize = array_create.array(Filter.shape, dtype=numpy.int32)
 
     # Check that mode='valid' is allowed given the array sizes
     if mode == 'valid':
         diffSize = ArrSize[:FilterSize.size] - FilterSize
-        nSmaller = np.sum(diffSize < 0)
+        nSmaller = summations.sum(diffSize < 0)
         if nSmaller > 0:
             raise ValueError(
                 "correlateNd: For 'valid' mode, one must be at least as large as the other in every dimension")
@@ -213,7 +213,7 @@ def _correlate_kernel(Array, Filter, mode):
 
     # Add zeros along relevant dimensions
     Padded = _addZerosNd(Array, FilterSize, dtype)
-    PaddedSize = np.asarray(Padded.shape, dtype=np.int32)
+    PaddedSize = array_create.array(Padded.shape, dtype=numpy.int32)
 
     # Get positions of first view
     IndiVec = _findIndices(PaddedSize, FilterSize)
@@ -223,7 +223,7 @@ def _correlate_kernel(Array, Filter, mode):
     nPost = IndiVec[Filter.size - 1] - nPre
     n = Padded.size
     nTot = n + nPre + nPost  # Total size after pre/post padding
-    V = np.empty([nTot], dtype=dtype)
+    V = array_create.empty([nTot], dtype=dtype)
     V[nPre:n + nPre] = Padded.flatten(order='F')
     V[:nPre] = 0
     V[n + nPre:] = 0
@@ -252,10 +252,10 @@ def convolve(a, v, mode='full'):
 
     if (a.size > v.size) or (mode == 'same'):
         Array = a
-        Filter = _invertArr(v)
+        Filter = _invert_ary(v)
     else:
         Array = v
-        Filter = _invertArr(a)
+        Filter = _invert_ary(a)
     return _correlate_kernel(Array, Filter, mode)
 
 
@@ -268,6 +268,6 @@ def correlate(a, v, mode='valid'):
         Array = a
         Filter = v
     else:
-        Array = _invertArr(v)
-        Filter = _invertArr(a)
+        Array = _invert_ary(v)
+        Filter = _invert_ary(a)
     return _correlate_kernel(Array, Filter, mode)
