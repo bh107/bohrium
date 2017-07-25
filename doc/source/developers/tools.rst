@@ -55,7 +55,7 @@ However, both Python and NumPy floods the valgrind output with memory errors - i
   rm v$VERSION.tar.gz
 
 Build Bohrium with custom Python
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Build and install Bohrium (with some components deactivated)::
 

@@ -62,6 +62,5 @@ Get Started!
    faq
    bugs
    publications
-   contact
    license
 
