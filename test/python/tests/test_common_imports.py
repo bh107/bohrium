@@ -28,7 +28,7 @@ class _test_matplotlib:
         yield None
 
     def test_matplotlib(self, _):
-        cmd = "import matplotlib; res = M.ones(10)"
+        cmd = "import matplotlib as mpl; mpl.use('Agg'); res = M.ones(10)"
         return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
     def test_pyplot(self, _):
@@ -39,8 +39,9 @@ class _test_matplotlib:
 try:
     if sys.version_info[0] >= 3:
         print("Matplotlib not supported in Python 3")
-    else :
-        import matplotlib
+    else:
+        import matplotlib as mpl;
+        mpl.use('Agg');
         test_matplotlib = _test_matplotlib
 except ImportError:
     print("Matplotlib not found, ignoring some tests")
