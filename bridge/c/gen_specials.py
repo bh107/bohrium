@@ -46,6 +46,18 @@ def main(args):
 }
 """
 
+    doc = "\n//Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack.\n"
+    doc += "//If the first VE isn't a device, NULL is returned.\n"
+    impl += doc; head += doc
+    decl = "void* bhc_get_device_context(void)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{
+    return bhxx::Runtime::instance().get_device_context();
+}
+"""
+
     doc = "\n//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.items():
@@ -89,41 +101,34 @@ def main(args):
 }
 """%t
 
-    doc = "\n//Get data pointer and:\n"
+    doc = "\n//Get data pointer from the first VE in the runtime stack\n"
+    doc += "//  if 'copy2host', always copy the memory to main memory\n"
     doc += "//  if 'force_alloc', force memory allocation before returning the data pointer\n"
     doc += "//  if 'nullify', set the data pointer to NULL after returning the data pointer\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool force_alloc, bhc_bool nullify)"%(t['name'], t['bhc_ary'])
+        decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify)"%(t['name'], t['bhc_ary'])
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s"%decl
         impl += """\
 {
-    bhxx::BhBase* b = ((bhxx::BhArray<%(cpp)s>*)ary)->base.get();
-
-    if(force_alloc) {
-        bh_data_malloc(b);
-    }
-
-    void* ret = (%(bhc)s*)(b->data);
-
-    if(nullify) {
-        b->data = NULL;
-    }
-
-    return ret;
+    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+    return bhxx::Runtime::instance().get_mem_ptr(b, copy2host, force_alloc, nullify);
 }
 """%t
 
-    doc = "\n//Set data pointer\n"
+    doc = "\n//Set data pointer in the first VE in the runtime stack\n"
+    doc += "//NB: The component will deallocate the memory when encountering a BH_FREE\n"
+    doc += "//  if 'host_ptr', the pointer points to the host memory (main memory) as opposed to device memory\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "void bhc_data_set_A%(name)s(const %(bhc_ary)s ary, %(bhc)s *data)"%t
+        decl = "void bhc_data_set_A%(name)s(const %(bhc_ary)s ary, bhc_bool host_ptr, %(bhc)s *data)"%t
         head += "DLLEXPORT %s;\n"%decl
         impl += "%s"%decl
         impl += """\
 {
-    ((bhxx::BhArray<%(cpp)s>*)ary)->base->data = data;
+   std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+   bhxx::Runtime::instance().set_mem_ptr(b, host_ptr, data);
 }
 """%t
 

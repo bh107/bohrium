@@ -82,6 +82,37 @@ class ComponentImpl {
      * Throws exceptions on error
      */
     virtual std::string message(const std::string &msg) = 0;
+
+    /* Get data pointer from the first VE in the runtime stack
+     * NB: this doesn't include a flush
+     *
+     * @base         The base array that owns the data
+     * @copy2host    Always copy the memory to main memory
+     * @force_alloc  Force memory allocation
+     * @nullify      Set the data pointer to NULL after returning
+     * @return       The data pointer (NB: might point to device memory)
+     * Throws exceptions on error
+     */
+    virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
+
+    /* Set data pointer in the first VE in the runtime stack
+     * NB: The component will deallocate the memory when encountering a BH_FREE.
+     *     Also, this doesn't include a flush
+     *
+     * @base      The base array that will own the data
+     * @host_ptr  The pointer points to the host memory (main memory) as opposed to device memory
+     * @mem       The data pointer
+     * Throws exceptions on error
+     */
+    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) = 0;
+
+    /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
+     * If the first VE isn't a device, NULL is returned.
+     *
+     * @return  The device handle
+     * Throws exceptions on error
+     */
+    virtual void* get_device_context() = 0;
 };
 
 // Representation of a component interface, which consist of a create()
@@ -107,37 +138,30 @@ class ComponentFace {
     ComponentFace(const ComponentFace &other) = delete;
     ComponentFace(ComponentFace &&other) = delete;
 
-    /* Execute a BhIR (graph of instructions)
-     *
-     * @bhir  The BhIR to execute
-     * Throws exceptions on error
-     */
     void execute(bh_ir *bhir) {
         assert(_implementation != NULL);
         _implementation->execute(bhir);
     };
-
-    /* Register a new extension method.
-     *
-     * @name   Name of the function
-     * @opcode Opcode for the new function.
-     * Throws exceptions on error
-     */
     void extmethod(const std::string &name, bh_opcode opcode) {
         assert(_implementation != NULL);
         _implementation->extmethod(name, opcode);
     };
-
-    /* Send and receive a message through the component stack
-     *
-     * @msg    The message to send
-     * @return The received message
-     * Throws exceptions on error
-     */
     std::string message(const std::string &msg) {
         assert(_implementation != NULL);
         return _implementation->message(msg);
     }
+    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        assert(_implementation != NULL);
+        return _implementation->get_mem_ptr(base, copy2host, force_alloc, nullify);
+    }
+    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        assert(_implementation != NULL);
+        return _implementation->set_mem_ptr(base, host_ptr, mem);
+    }
+    void* get_device_context() {
+        assert(_implementation != NULL);
+        return _implementation->get_device_context();
+    };
 };
 
 // Representation of a component implementation that has a child.
@@ -164,6 +188,15 @@ public:
     virtual std::string message(const std::string &msg) {
         return child.message(msg);
     }
+    virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        return child.get_mem_ptr(base, copy2host, force_alloc, nullify);
+    };
+    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        return child.set_mem_ptr(base, host_ptr, mem);
+    }
+    virtual void* get_device_context() {
+        return child.get_device_context();
+    };
 };
 
 }} //namespace bohrium::component

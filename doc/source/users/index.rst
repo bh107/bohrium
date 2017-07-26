@@ -3,7 +3,7 @@ User Guide
 
 .. toctree::
 
-   pythonnumpy
+   python/index
    cpp
    c
    config

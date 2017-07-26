@@ -1,0 +1,124 @@
+"""
+Interop PyOpenCL
+~~~~~~~~~~~~~~~~
+"""
+from .bhary import get_bhc
+from .target import get_data_pointer, get_device_context, set_data_pointer
+from .backend_messaging import runtime_info
+
+_opencl_is_in_stack = None
+
+
+def _is_opencl_in_stack():
+    global _opencl_is_in_stack
+    if _opencl_is_in_stack is None:
+        _opencl_is_in_stack = "OpenCL" in runtime_info()
+    return _opencl_is_in_stack
+
+
+def _import_pyopencl_module():
+    """Help function to import PyOpenCL and checks that a OpenCL backend is present"""
+    try:
+        import pyopencl
+    except ImportError:
+        raise ImportError("Failed to import the `pyopencl` module, please install PyOpenCL")
+
+    if not _is_opencl_in_stack():
+        raise RuntimeError("No OpenCL device in the Bohrium stack! "
+                           "Try defining the environment variable `BH_STACK=opencl`.")
+    return pyopencl
+
+
+def available():
+    """Is PyOpenCL available?"""
+    try:
+        _import_pyopencl_module()
+        return True
+    except ImportError:
+        return False
+    except RuntimeError:
+        return False
+
+
+def get_context():
+    """Return a PyOpenCL context"""
+    pyopencl = _import_pyopencl_module()
+    cxt = get_device_context()
+    if cxt is None:
+        raise RuntimeError("No OpenCL device in the Bohrium stack! "
+                           "Try defining the environment variable `BH_STACK=opencl`.")
+    return pyopencl.Context.from_int_ptr(cxt)
+
+
+def get_buffer(bh_ary):
+    """Return a OpenCL Buffer object wrapping the Bohrium array `ary`"""
+    pyopencl = _import_pyopencl_module()
+    cl_mem = get_data_pointer(get_bhc(bh_ary), copy2host=False)
+    return pyopencl.Buffer.from_int_ptr(cl_mem)
+
+
+def set_buffer(ary, buffer):
+    """Assign a OpenCL Buffer object to a Bohrium array `ary`"""
+    set_data_pointer(get_bhc(ary), buffer.int_ptr, host_ptr=False)
+
+
+def get_array(bh_ary, queue):
+    _import_pyopencl_module()
+    from pyopencl import array as clarray
+    return clarray.Array(queue, bh_ary.shape, bh_ary.dtype, data=get_buffer(bh_ary))
+
+
+def kernel_info(opencl_kernel, queue):
+    """Info about the `opencl_kernel`
+    Returns 4-tuple:
+            - Max work-group size
+            - Recommended work-group multiple
+            - Local mem used by kernel
+            - Private mem used by kernel
+    """
+    cl = _import_pyopencl_module()
+    info = cl.kernel_work_group_info
+    # Max work-group size
+    wg_size = opencl_kernel.get_work_group_info(info.WORK_GROUP_SIZE, queue.device)
+    # Recommended work-group multiple
+    wg_multiple = opencl_kernel.get_work_group_info(info.PREFERRED_WORK_GROUP_SIZE_MULTIPLE, queue.device)
+    # Local mem used by kernel
+    local_usage = opencl_kernel.get_work_group_info(info.LOCAL_MEM_SIZE, queue.device)
+    # Private mem used by kernel
+    private_usage = opencl_kernel.get_work_group_info(info.PRIVATE_MEM_SIZE, queue.device)
+    return (wg_size, wg_multiple, local_usage, private_usage)
+
+
+def max_local_memory(opencl_device):
+    """Returns the maximum allowed local memory on `opencl_device`"""
+    cl = _import_pyopencl_module()
+    return opencl_device.get_info(cl.device_info.LOCAL_MEM_SIZE)
+
+
+def type_np2opencl_str(np_type):
+    """Converts a NumPy type to a OpenCL type string"""
+    import numpy as np
+    if np_type == np.bool:
+        return "bool"
+    elif np_type == np.int8:
+        return "char"
+    elif np_type == np.int16:
+        return "short"
+    if np_type == np.int32:
+        return "int"
+    elif np_type == np.int64:
+        return "long"
+    elif np_type == np.uint8:
+        return "uchar"
+    elif np_type == np.uint16:
+        return "ushort"
+    elif np_type == np.uint32:
+        return "uint"
+    elif np_type == np.uint64:
+        return "ulong"
+    elif np_type == np.float32:
+        return "float"
+    elif np_type == np.float64:
+        return "double"
+    else:
+        return "UNKNOWN"

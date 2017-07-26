@@ -82,7 +82,7 @@ static int64_t ary_nbytes(const BhArray *ary) {
 
 // Help function to retrieve the Bohrium-C data pointer
 // Return -1 on error
-static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify, void **out_data)
+static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocation, int nullify, void **out_data)
 {
     if(((BhArray*) ary)->mmap_allocated == 0) {
         PyErr_SetString(
@@ -92,7 +92,7 @@ static int get_bhc_data_pointer(PyObject *ary, int force_allocation, int nullify
         return -1;
     }
 
-    PyObject *data = PyObject_CallMethod(bhary, "get_bhc_data_pointer", "Oii", ary, force_allocation, nullify);
+    PyObject *data = PyObject_CallMethod(bhary, "get_bhc_data_pointer", "Oiii", ary, copy2host, force_allocation, nullify);
     if(data == NULL) {
         return -1;
     }
@@ -494,7 +494,7 @@ static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args) {
     if(bhc_exist(base)) {
         // Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
         void *d = NULL;
-        get_bhc_data_pointer(base, 0, 1, &d);
+        get_bhc_data_pointer(base, 1, 0, 1, &d);
 
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base), ary_nbytes((BhArray*) base));
@@ -605,6 +605,23 @@ static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     Py_DECREF(err);
     return ret;
 }
+
+static PyObject* BhArray_numpy_wrapper(PyObject *self, PyObject *args) {
+    assert(args == NULL);
+    assert(BhArray_CheckExact(self));
+    PyArrayObject *s = (PyArrayObject*) self;
+    if(!PyArray_IS_C_CONTIGUOUS((PyArrayObject*) s)) {
+        PyErr_Format(PyExc_RuntimeError, "Array must be C-style contiguous.");
+        return NULL;
+    }
+    void *data;
+    if (get_bhc_data_pointer(self, 1, 1, 0, &data) != 0) {
+        return NULL;
+    }
+    return PyArray_SimpleNewFromData(PyArray_NDIM(s), PyArray_DIMS(s), PyArray_TYPE(s), data);
+}
+
+
 
 static PyObject* BhArray_resize(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_NotImplementedError, "Bohrium arrays doesn't support resize");
@@ -719,6 +736,7 @@ static PyMethodDef BhArrayMethods[] = {
     {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
     {"copy2numpy",         BhArray_copy2numpy,                  METH_NOARGS,                  "Copy the array in C-style memory layout to a regular NumPy array"},
+    {"_numpy_wrapper",     BhArray_numpy_wrapper,               METH_NOARGS,                  "Returns a NumPy array that wraps the data of this array. NB: no flush or data management!"},
     {"resize",             BhArray_resize,                      METH_VARARGS,                 "Change shape and size of array in-place"},
     {"copy",               (PyCFunction) BhArray_copy,          METH_VARARGS | METH_KEYWORDS, "a.copy(order='C')\n\nReturn a copy of the array."},
     {"reshape",            (PyCFunction) BhArray_reshape,       METH_VARARGS | METH_KEYWORDS, "a.reshape(shape)\n\nReturns an array containing the same data with a new shape.\n\nRefer to `bohrium.reshape` for full documentation."},

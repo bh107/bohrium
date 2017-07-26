@@ -70,6 +70,38 @@ class Runtime {
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
 
+    /* Get data pointer from the first VE in the runtime stack
+     * NB: this doesn't include a flush.
+     *
+     * @base         The base array that owns the data for retrieval
+     * @copy2host    Always copy the memory to main memory
+     * @force_alloc  Force memory allocation
+     * @nullify      Set the data pointer to NULL after returning
+     * @return       The data pointer (NB: might point to device memory)
+     * Throws exceptions on error
+     */
+    void* get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
+
+    /* Set data pointer in the first VE in the runtime stack
+     * NB: The component will deallocate the memory when encountering a BH_FREE.
+     *     Also, this doesn't include a flush
+     *
+     * @base      The base array that will own the data
+     * @host_ptr  The pointer points to the host memory (main memory) as opposed to device memory
+     * @mem       The data pointer
+     * Throws exceptions on error
+     */
+    void set_mem_ptr(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
+
+
+    /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
+     * If the first VE isn't a device, NULL is returned.
+     *
+     * @return  The device handle
+     * Throws exceptions on error
+     */
+    void* get_device_context();
+
     ~Runtime() { flush(); }
 
     Runtime(Runtime&&) = default;

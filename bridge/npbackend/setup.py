@@ -29,29 +29,36 @@ import stat
 import pprint
 import json
 import shutil
+import argparse
 import numpy as np
 from Cython.Distutils import build_ext
 
-# We overload the setup.py with a 'buildpath=' argument that
-# points to the root of the current build
-build_path = None
-for i, arg in enumerate(sys.argv):
-    if arg.startswith("buildpath="):
-        build_path = arg[len("buildpath="):]
-        sys.argv.pop(i)
+# We overload the setup.py with some extra arguments
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--buildpath',
+    help='Path to the build directory.'
+)
+parser.add_argument(
+    '--openmp-flag',
+    default="",
+    help='OpenMP flag for the Cython builds'
+)
+(args_extra, argv) = parser.parse_known_args()
+sys.argv = [sys.argv[0]] + argv  # Write the remaining arguments back to `sys.argv` for distutils to read
 
 
-def buildpath(*args):
-    if build_path is None:
-        return os.path.join(*args)
+def buildpath(*paths):
+    if args_extra.buildpath is None:
+        return os.path.join(*paths)
     else:
-        return os.path.join(build_path, *args)
+        return os.path.join(args_extra.buildpath, *paths)
 
 
-def srcpath(*args):
+def srcpath(*paths):
     prefix = os.path.abspath(os.path.dirname(__file__))
     assert len(prefix) > 0
-    return os.path.join(prefix, *args)
+    return os.path.join(prefix, *paths)
 
 
 def get_timestamp(f):
@@ -169,6 +176,11 @@ shutil.copy2(srcpath('bohrium', 'random123.pyx'), buildpath('random123.pyx'))
 shutil.copy2(srcpath('bohrium', 'bhary.pyx'), buildpath('bhary.pyx'))
 shutil.copy2(srcpath('bohrium', '_util.pyx'), buildpath('_util.pyx'))
 shutil.copy2(srcpath('bohrium', 'ufuncs.pyx'), buildpath('ufuncs.pyx'))
+try:
+    os.makedirs(buildpath('nobh'))
+except OSError:
+    pass
+shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
 
 setup(name='Bohrium',
       version=_version,
@@ -181,7 +193,7 @@ setup(name='Bohrium',
       platforms='Linux, OSX',
       cmdclass={'build': CustomBuild, 'build_ext': build_ext},
       package_dir={'bohrium': srcpath('bohrium')},
-      packages=['bohrium', 'bohrium.target'],
+      packages=['bohrium', 'bohrium.target', 'bohrium.nobh'],
       ext_package='bohrium',
       ext_modules=[Extension(name='_bh',
                              sources=[srcpath('src', '_bh.c')],
@@ -225,6 +237,13 @@ setup(name='Bohrium',
                              include_dirs=[srcpath('.')],
                              libraries=[],
                              library_dirs=[],
-                             )
+                             ),
+                   Extension(name='nobh.bincount_cython',
+                             sources=[buildpath("nobh", 'bincount_cython.pyx')],
+                             include_dirs=[srcpath('.')],
+                             libraries=[],
+                             library_dirs=[],
+                             extra_compile_args=[args_extra.openmp_flag],
+                             extra_link_args=[args_extra.openmp_flag])
                    ]
       )

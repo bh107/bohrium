@@ -119,6 +119,43 @@ public:
         }
         return ss.str() + child.message(msg);
     }
+
+    // Handle memory pointer retrieval
+    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        bh_base *b = &base;
+        if (copy2host) {
+            bh_base* t[1] = {b};
+            engine.copyToHost(t);
+            engine.delBuffer(b);
+            if (force_alloc) {
+                bh_data_malloc(b);
+            }
+            void *ret = base.data;
+            if (nullify) {
+                base.data = NULL;
+            }
+            return ret;
+        } else {
+            return engine.getCBuffer(b);
+        }
+    }
+
+    // Handle memory pointer obtainment
+    void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        if (host_ptr) {
+            bh_base* t[1] = {base};
+            engine.copyToHost(t);
+            engine.delBuffer(base);
+            base->data = mem;
+        } else {
+            engine.createBuffer(base, mem);
+        }
+    }
+
+    // Handle the OpenCL context retrieval
+    void* get_device_context() {
+        return engine.getCContext();
+    };
 };
 }
 

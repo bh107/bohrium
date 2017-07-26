@@ -85,4 +85,16 @@ std::string Runtime::message(const std::string &msg) {
     return runtime.message(msg);
 }
 
+void* Runtime::get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify) {
+    return runtime.get_mem_ptr(*base, copy2host, force_alloc, nullify);
+}
+
+void Runtime::set_mem_ptr(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem) {
+    return runtime.set_mem_ptr(base.get(), host_ptr, mem);
+}
+
+void* Runtime::get_device_context() {
+    return runtime.get_device_context();
+}
+
 }  // namespace bhxx

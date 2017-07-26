@@ -24,6 +24,7 @@ RUN apt-get -qq install python3 python3-numpy python3-dev cython3 > /dev/null
 RUN apt-get -qq install python2.7-scipy python3-scipy > /dev/null
 RUN apt-get -qq install python-matplotlib python3-matplotlib > /dev/null
 RUN apt-get -qq install python-netcdf4 python3-netcdf4 > /dev/null
+RUN apt-get -qq install python-pyopencl python3-pyopencl > /dev/null
 
 # Install OpenCV 3
 ADD https://github.com/opencv/opencv/archive/3.2.0.zip .

@@ -28,9 +28,13 @@ from .summations import *
 from .disk_io import *
 from . import contexts
 from . import bh_info
+from . import interop_pyopencl
+from . import interop_numpy
 from . import backend_messaging
 from .signal import convolve1d as convolve
 from .signal import correlate1d as correlate
+from .nobh import bincount
+
 from numpy_force import dtype
 
 asarray = array

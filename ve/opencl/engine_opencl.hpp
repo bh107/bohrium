@@ -74,8 +74,6 @@ private:
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 
-
-
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
@@ -103,6 +101,24 @@ public:
         stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
     }
 
+    cl::Buffer *createBuffer(bh_base *base) {
+        cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+        buffers[base].reset(buf);
+        return buf;
+    }
+
+    cl::Buffer *createBuffer(bh_base *base, void* opencl_mem_ptr) {
+        cl::Buffer *buf = new cl::Buffer();
+        cl_mem _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
+        cl_int err = clRetainMemObject(_mem); // Increments the memory object reference count
+        if (err != CL_SUCCESS) {
+            throw std::runtime_error("OpenCL - clRetainMemObject(): failed");
+        }
+        (*buf) = _mem;
+        buffers[base].reset(buf);
+        return buf;
+    }
+
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
     template <typename T>
     void copyToDevice(T &base_list) {
@@ -119,8 +135,7 @@ public:
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-                buffers[base].reset(buf);
+                cl::Buffer *buf = createBuffer(base);
 
                 // If the host data is non-null we should copy it to the device
                 if (base->data != NULL) {
@@ -151,27 +166,30 @@ public:
     std::string info() const;
 
     // Retrieve a single buffer
-    template <typename T>
-    cl::Buffer* getBuffer(T &base) {
+    cl::Buffer* getBuffer(bh_base* base) {
         if(buffers.find(base) == buffers.end()) {
-            std::vector<T> vec = {base};
+            std::vector<bh_base*> vec = {base};
             copyToDevice(vec);
         }
         return &(*buffers[base]);
     }
 
     // Delete a buffer
-    template <typename T>
-    void delBuffer(T &base) {
+    void delBuffer(bh_base* base) {
         buffers.erase(base);
     }
 
     // Get C buffer from wrapped C++ object
-    template <typename T>
-    cl_mem getCBuffer(T &base) {
+    cl_mem getCBuffer(bh_base* base) {
         return (*getBuffer(base))();
     }
 
+    // Get C context from wrapped C++ object
+    cl_context getCContext() {
+        return context();
+    }
+
+    // Get the OpenCL command queue object
     cl::CommandQueue* getQueue() {
         return &queue;
     }

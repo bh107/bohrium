@@ -18,10 +18,17 @@ set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the P
 
 if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
 
+    # Get the OpenMP flag for the Cython OpenMP builds
+    if(${VE_OPENMP_COMPILER_OPENMP} AND NOT APPLE)
+        set(OPENMP_ARG "--openmp-flag=\"${OpenMP_C_FLAGS}\"")
+    else()
+        set(OPENMP_ARG "")
+    endif()
+
     # Generate distutils package and install it
     add_custom_target(
         bhpy ALL
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} --buildpath=${CMAKE_CURRENT_BINARY_DIR} ${OPENMP_ARG} && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS bhc
     )
@@ -35,6 +42,7 @@ else()
     else()
         message(STATUS "The Python/NumPy bridge cannot be built")
     endif()
+    return()
 endif()
 
 set(NO_PYTHON3 false CACHE BOOL "Never try to do a Python3 build alongside a Python2 build.")
@@ -68,7 +76,7 @@ if(${PYTHON_VERSION_MAJOR} EQUAL "2")
         # Generate distutils package and install it
         add_custom_target(
                 bhpy3 ALL
-                COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} buildpath=${CMAKE_CURRENT_BINARY_DIR} && ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib3
+                COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} --buildpath=${CMAKE_CURRENT_BINARY_DIR} ${OPENMP_ARG} && ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib3
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 DEPENDS bhc
         )

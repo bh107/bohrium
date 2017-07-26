@@ -7,10 +7,10 @@
 #     The bridge is never part of the list                               #
 ##########################################################################
 [stacks]
-default    = bcexp, bccon, node, openmp
-openmp     = bcexp, bccon, node, openmp
-opencl     = bcexp, bccon, node, opencl, openmp
-cuda       = bcexp, bccon, node, cuda, openmp
+default    = bcexp_cpu, bccon, node, openmp
+openmp     = bcexp_cpu, bccon, node, openmp
+opencl     = bcexp_gpu, bccon, node, opencl, openmp
+cuda       = bcexp_gpu, bccon, node, cuda, openmp
 
 ############
 # Managers #
@@ -44,11 +44,21 @@ find_repeats = false
 timing = false
 verbose = false
 
-[bcexp]
+[bcexp_cpu]
 impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
 powk = true
 sign = false
 repeat = false
+reduce1d = 0
+timing = false
+verbose = false
+
+[bcexp_gpu]
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_filter_bcexp${CMAKE_SHARED_LIBRARY_SUFFIX}
+powk = true
+sign = false
+repeat = false
+# Transform 1d reductions into 2d reductions by array reshaping
 reduce1d = 32000
 timing = false
 verbose = false

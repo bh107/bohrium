@@ -26,6 +26,8 @@ import sys, os
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    'matplotlib.sphinxext.only_directives',
+    'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.todo',
@@ -122,7 +124,7 @@ html_theme_path = ['../themes/']
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "../themes/bohrium/_static/bohrium_logo.png"
+html_logo = "../themes/bohrium/static/bohrium_logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
