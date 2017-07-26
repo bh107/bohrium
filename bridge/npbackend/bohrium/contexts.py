@@ -3,6 +3,7 @@ Bohrium Contexts
 ================
 """
 import sys
+import os
 from . import backend_messaging as messaging
 
 
@@ -13,6 +14,8 @@ class EnableBohrium:
         # In order to avoid complications, we import common libraries BEFORE enabling Bohrium
         try:
             import matplotlib
+            if os.environ.get("DISPLAY", "") == "":
+                matplotlib.use('Agg')  # When no DISPLAY, we assume a headless marplotlib is used
             import matplotlib.pyplot
             import matplotlib.pylab
         except ImportError:
