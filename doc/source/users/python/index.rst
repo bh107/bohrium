@@ -306,6 +306,9 @@ In order to avoid coping data between host and device memory, we use `bohrium.in
 Performance Comparison
 ----------------------
 
+Finally, let’s us compare the performance of the difference approaches. We run on a *Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz* with 4 CPU-cores and a *GeForce GTX Titan X (maxwell)*.
+The timing is wall clock thus includes anything and in particular the host/device communication overhead.
+
 .. plot::
 
     import matplotlib.pyplot as plt
@@ -326,3 +329,7 @@ Performance Comparison
     plt.show()
 
 
+Conclusion
+----------
+
+Interoperability makes it possible to accelerate code that Bohrium doesn’t accelerate automatically. The Bohrium teams works constantly on improving the performance and increase the number of NumPy operations automatically accelerated but in some cases we simply have to give the user full control.
