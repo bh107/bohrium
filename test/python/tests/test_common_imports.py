@@ -1,22 +1,20 @@
 import sys
 
-NP_AS_BH = "import sys; sys.modules['numpy'] = bh; "
-
 class _test_scipy:
     def init(self):
-        yield (NP_AS_BH)
+        yield None
 
-    def test_scpy(self, cmd):
-        cmd += "import scipy; res = M.ones(10)"
-        return cmd
+    def test_scpy(self, _):
+        cmd = "import scipy; res = M.ones(10)"
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
-    def test_sparse(self, cmd):
-        cmd += "import scipy.sparse; res = M.ones(10)"
-        return cmd
+    def test_sparse(self, _):
+        cmd = "import scipy.sparse; res = M.ones(10)"
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
-    def test_io(self, cmd):
-        cmd += "import scipy.io; res = M.ones(10)"
-        return cmd
+    def test_io(self, _):
+        cmd = "import scipy.io; res = M.ones(10)"
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
 try:
     import scipy
@@ -27,16 +25,16 @@ except ImportError:
 
 class _test_matplotlib:
     def init(self):
-        yield (NP_AS_BH)
+        yield None
 
-    def test_matplotlib(self, cmd):
-        cmd += "import matplotlib; res = M.ones(10)"
-        return cmd
+    def test_matplotlib(self, _):
+        cmd = "import matplotlib; res = M.ones(10)"
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
-    def test_pyplot(self, cmd):
-        cmd += "import matplotlib as mpl; mpl.use('Agg'); import matplotlib.pyplot as plt; " \
+    def test_pyplot(self, _):
+        cmd = "import matplotlib as mpl; mpl.use('Agg'); import matplotlib.pyplot as plt; " \
               "res = M.ones(10).reshape((2,5)); plt.imshow(res)"
-        return cmd
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
 try:
     if sys.version_info[0] >= 3:
@@ -50,15 +48,15 @@ except ImportError:
 
 class _test_netCDF4:
     def init(self):
-        yield (NP_AS_BH)
+        yield None
 
-    def test_netCDF4(self, cmd):
-        cmd += "import netCDF4; res = M.ones(10)"
-        return cmd
+    def test_netCDF4(self, _):
+        cmd = "import netCDF4; res = M.ones(10)"
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
-    def test_Dataset(self, cmd):
-        cmd += "from netCDF4 import Dataset; res = M.ones(10);"
-        return cmd
+    def test_Dataset(self, _):
+        cmd = "from netCDF4 import Dataset; res = M.ones(10);"
+        return (cmd, "with bh.EnableBohrium(): %s" % cmd)
 
 try:
     import netCDF4
