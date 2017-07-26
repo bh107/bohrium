@@ -29,7 +29,10 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
 
             for _ in range(iters):
                 for d in range(len(shape)):
-                    shape[d] = np.random.randint(1, max_dim)
+                    if max_dim == 1:
+                        shape[d] = 1
+                    else:
+                        shape[d] = np.random.randint(1, max_dim)
                 yield shape
         else:
             finished = False
@@ -134,3 +137,8 @@ def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, sampl
                 if sub not in sub_tried:
                     yield ("%s%s" % (cmd, sub), vshape)
                     sub_tried.add(sub)
+
+
+def prod(a):
+    """Returns the product of the elements in `a`"""
+    return functools.reduce(operator.mul, a)

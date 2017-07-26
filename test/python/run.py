@@ -109,9 +109,15 @@ def run(args):
                     # Let's execute the two commands
                     env = {"np": numpy, "bh": bohrium}
                     exec (cmd_np, env)
-                    assert (not bohrium.check(env['res']))
-
                     res_np = env['res']
+                    if bohrium.check(res_np):
+                        print("\n")
+                        print("%s  [Error]  The NumPy command returns a Bohrium array!%s" % (FAIL, ENDC))
+                        print("%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
+                        print("%s  [NP RES]\n%s%s" % (OKGREEN, res_np, ENDC))
+                        if not args.cont_on_error:
+                            sys.exit(1)
+
                     env = {"np": numpy, "bh": bohrium}
                     exec (cmd_bh, env)
 
