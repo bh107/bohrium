@@ -118,7 +118,9 @@ In this case, we use `bohrium.copy2numpy()` and `bohrium.array()` to copy the Bo
 Cython
 ------
 
-In order to parallelize `bincount()` for a multi-core CPU, one can use Cython::
+In order to parallelize `bincount()` for a multi-core CPU, one can use Cython:
+
+.. code-block:: cython
 
     import numpy as np
     import bohrium
