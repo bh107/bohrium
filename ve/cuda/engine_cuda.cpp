@@ -205,4 +205,21 @@ void EngineCUDA::set_constructor_flag(std::vector<bh_instruction*> &instr_list) 
     jitk::util_set_constructor_flag(instr_list, buffers);
 }
 
+std::string EngineCUDA::info() const {
+
+    char device_name[1000];
+    cuDeviceGetName(device_name, 1000, device);
+    int major = 0, minor = 0;
+    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+    size_t totalGlobalMem;
+    checkCudaErrors(cuDeviceTotalMem(&totalGlobalMem, device));
+
+    stringstream ss;
+    ss << "----"                                                                        << "\n";
+    ss << "CUDA:"                                                                       << "\n";
+    ss << "  Device: \"" << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
+    ss << "  Memory: \"" <<totalGlobalMem / 1024 / 1024 << " MB\"\n";
+    return ss.str();
+}
+
 } // bohrium

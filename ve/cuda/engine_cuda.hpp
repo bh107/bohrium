@@ -195,6 +195,9 @@ public:
 
     // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+
+    // Return a YAML string describing this component
+    std::string info() const;
 };
 
 } // bohrium
