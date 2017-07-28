@@ -1,0 +1,104 @@
+"""
+Interop PyCUDA
+~~~~~~~~~~~~~~
+"""
+from .bhary import get_bhc
+from .target import get_data_pointer, get_device_context, set_data_pointer
+from .backend_messaging import runtime_info, cuda_use_current_context
+from ._util import flush
+
+_cuda_is_in_stack = None
+_iniziated = False
+
+
+def _is_cuda_in_stack():
+    global _cuda_is_in_stack
+    if _cuda_is_in_stack is None:
+        _cuda_is_in_stack = "CUDA" in runtime_info()
+    return _cuda_is_in_stack
+
+
+def _import_pycuda_module():
+    """Help function to import PyCUDA and checks that a CUDA backend is present"""
+    try:
+        import pycuda
+    except ImportError:
+        raise ImportError("Failed to import the `pycuda` module, please install PyCUDA")
+
+    if not _is_cuda_in_stack():
+        raise RuntimeError("No CUDA device in the Bohrium stack! "
+                           "Try defining the environment variable `BH_STACK=cuda`.")
+    return pycuda
+
+
+def available():
+    """Is CUDA available?"""
+    try:
+        _import_pycuda_module()
+        return True
+    except ImportError:
+        return False
+    except RuntimeError:
+        return False
+
+
+def init():
+    """Initiate the PyCUDA module. Must be called before any other PyCUDA calls and
+    preferable also before any Bohrium operations"""
+    global _iniziated
+    if _iniziated:
+        return
+    if not available():
+        return
+    flush()
+    import pycuda
+    import pycuda.autoinit
+    pycuda.driver.mem_alloc(1)  # Force PyCUDA to activate the context as "current context"
+    cuda_use_current_context()  # And then tell Bohrium to use that context
+
+
+def get_gpuarray(bh_ary):
+    """Return a PyCUDA GPUArray object that points to the same device memory as `bh_ary`"""
+    _import_pycuda_module()
+    from pycuda import gpuarray
+    dev_ptr = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
+    return gpuarray.GPUArray(bh_ary.shape, bh_ary.dtype, gpudata=dev_ptr)
+
+
+def max_local_memory(cuda_device=None):
+    """Returns the maximum allowed local memory (memory per block) on `cuda_device`.
+       If `cuda_device` is None, use current device"""
+
+    pycuda = _import_pycuda_module()
+    if cuda_device is None:
+        cuda_device = pycuda.driver.Context.get_device()
+    return cuda_device.get_attributes()[pycuda.driver.device_attribute.MAX_SHARED_MEMORY_PER_BLOCK]
+
+
+def type_np2cuda_str(np_type):
+    """Converts a NumPy type to a CUDA type string"""
+    import numpy as np
+    if np_type == np.bool:
+        return "bool"
+    elif np_type == np.int8:
+        return "char"
+    elif np_type == np.int16:
+        return "short"
+    if np_type == np.int32:
+        return "int"
+    elif np_type == np.int64:
+        return "long"
+    elif np_type == np.uint8:
+        return "uchar"
+    elif np_type == np.uint16:
+        return "ushort"
+    elif np_type == np.uint32:
+        return "uint"
+    elif np_type == np.uint64:
+        return "ulong"
+    elif np_type == np.float32:
+        return "float"
+    elif np_type == np.float64:
+        return "double"
+    else:
+        return "UNKNOWN"
