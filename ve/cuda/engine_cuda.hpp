@@ -193,6 +193,23 @@ public:
         copyToHost(bases_on_device);
     }
 
+    // Tell the engine to use the current CUDA context
+    void useCurrentContext() {
+        CUcontext new_context;
+        checkCudaErrors(cuCtxGetCurrent(&new_context));
+        if (new_context == nullptr or new_context == context) {
+            return; // Nothing to do
+        }
+
+        // Empty the context for buffers and deallocate it
+        allBasesToHost();
+        cuCtxDetach(context);
+
+        // Save and attach (increase the refcount) the new context
+        context = new_context;
+        cuCtxAttach(&context, 0);
+    }
+
     // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
 

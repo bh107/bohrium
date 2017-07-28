@@ -113,6 +113,8 @@ public:
             disabled = true;
         } else if (msg == "GPU: enable") {
             disabled = false;
+        } else if (msg == "CUDA: use current context") {
+            engine.useCurrentContext();
         } else if (msg == "info") {
             ss << engine.info();
         }
