@@ -137,7 +137,7 @@ public:
             }
             return ret;
         } else {
-            return engine.getBuffer(b);
+            return (void*) (*engine.getBuffer(b));
         }
     }
 };
