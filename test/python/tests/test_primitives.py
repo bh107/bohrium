@@ -1,5 +1,5 @@
 import bohrium
-import util
+
 
 class test_bh_opcodes:
     def init(self):
@@ -42,4 +42,19 @@ class test_extra_binary_ops:
         cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
         cmd += "res = M.%s(a0, a1)"%op
 
+        return cmd
+
+
+class test_power:
+    def init(self):
+        for op in ["power"]:
+            for dtype in ["float32", "float64"]:
+                yield (op, dtype)
+
+    def test_ufunc(self, arg):
+        (op, dtype) = arg
+
+        cmd =  "R = bh.random.RandomState(42); "
+        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
+        cmd += "res = M.%s(a0, 1.42)"%op
         return cmd
