@@ -210,9 +210,21 @@ bool bh_constant::operator==(const bh_constant& other) const
 }
 
 namespace {
-    template<typename T>
     // Print float while handling nan and inf
-    void ppfloat(T value, ostream& out) {
+    void ppfloat(float value, ostream& out) {
+        if (value != value) {
+            out << "NAN";
+        } else if (std::isinf(value)) {
+            if (signbit(value)) {
+                out << "(-INFINITY)";
+            } else {
+                out << "INFINITY";
+            }
+        } else {
+            out << value << "f";
+        }
+    }
+    void ppfloat(double value, ostream& out) {
         if (value != value) {
             out << "NAN";
         } else if (std::isinf(value)) {
@@ -232,6 +244,7 @@ void bh_constant::pprint(ostream& out, bool opencl) const
     if (type == bh_type::BOOL) {
         out << get_int64();
     } else if (bh_type_is_integer(type)) {
+        out << std::defaultfloat;
         if (bh_type_is_signed_integer(type)) {
             out << get_int64();
         } else {
@@ -239,6 +252,7 @@ void bh_constant::pprint(ostream& out, bool opencl) const
         }
     } else {
         out.precision(numeric_limits<double>::max_digits10);
+        out << std::scientific;
         switch(type) {
             case bh_type::FLOAT32:
                 ppfloat(value.float32, out);
