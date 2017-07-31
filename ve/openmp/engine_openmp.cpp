@@ -38,10 +38,26 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
+namespace {
+// Help function that returns the path to the tmp dir
+fs::path get_tmp_path(const ConfigParser &config) {
+    fs::path tmp_path;
+    const string tmp_dir = config.defaultGet<string>("tmp_dir", "");
+    if (tmp_dir.empty()) {
+        tmp_path = fs::temp_directory_path();
+    } else {
+        tmp_path = fs::path(tmp_dir);
+    }
+    return tmp_path / fs::unique_path("bh_%%%%");
+
+}
+}
+
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-                                           tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
-                                           source_dir(tmp_dir / "src"),
-                                           object_dir(tmp_dir / "obj"),
+                                           tmp_dir(get_tmp_path(config)),
+                                           tmp_src_dir(tmp_dir / "src"),
+                                           tmp_bin_dir(tmp_dir / "obj"),
+                                           cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", ""))),
                                            compiler(config.defaultGet<string>("compiler_cmd", "/usr/bin/cc"),
                                                     config.defaultGet<string>("compiler_inc", ""),
                                                     config.defaultGet<string>("compiler_lib", "-lm"),
@@ -51,11 +67,29 @@ EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
                                            stat(stat)
 {
     // Let's make sure that the directories exist
-    fs::create_directories(source_dir);
-    fs::create_directories(object_dir);
+    fs::create_directories(tmp_src_dir);
+    fs::create_directories(tmp_bin_dir);
+    if (not cache_bin_dir.empty()) {
+        fs::create_directories(cache_bin_dir);
+    }
 }
 
 EngineOpenMP::~EngineOpenMP() {
+
+    // Move JIT kernels to the cache dir
+    if (not cache_bin_dir.empty()) {
+     //   cout << "filling cache_bin_dir: " << cache_bin_dir.string() << endl;
+        for (auto kernel: _functions) {
+            const fs::path src = tmp_bin_dir / jitk::hash_filename(kernel.first, ".so");
+            if (fs::exists(src)) {
+                const fs::path dst = cache_bin_dir / jitk::hash_filename(kernel.first, ".so");
+                if (not fs::exists(dst)) {
+                    fs::copy_file(src, dst);
+                }
+            }
+        }
+    }
+
     // If this cleanup is enabled, the application segfaults
     // on destruction of the EngineOpenMP class.
     //
@@ -88,24 +122,32 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
     if (_functions.find(hash) != _functions.end()) {
         return _functions.at(hash);
     }
-    ++stat.kernel_cache_misses;
 
-    // The object file path
-    fs::path objfile = object_dir / jitk::hash_filename(hash, ".so");
+    fs::path binfile = cache_bin_dir / jitk::hash_filename(hash, ".so");
 
-    // Write the source file and compile it (reading from disk)
-    // NB: this is a nice debug option, but will hurt performance
-    if (verbose) {
-        fs::path srcfile = jitk::write_source2file(source, source_dir, hash, ".c", true);
-        compiler.compile(objfile.string(), srcfile.string());
+    // If the binary file of the kernel doesn't exist we create it
+    if (binfile.empty() or not fs::exists(binfile)) {
+        ++stat.kernel_cache_misses;
+
+        // We create the binary file in the tmp dir
+        binfile = tmp_bin_dir / jitk::hash_filename(hash, ".so");
+
+        // Write the source file and compile it (reading from disk)
+        // NB: this is a nice debug option, but will hurt performance
+        if (verbose) {
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, hash, ".c", true);
+            compiler.compile(binfile.string(), srcfile.string());
+        } else {
+            // Pipe the source directly into the compiler thus no source file is written
+            compiler.compile(binfile.string(), source.c_str(), source.size());
+        }
     } else {
-        // Pipe the source directly into the compiler thus no source file is written
-        compiler.compile(objfile.string(), source.c_str(), source.size());
+        cout << "Found kernel in cache dir!" << endl;
     }
 
     // Load the shared library
-    void *lib_handle = dlopen(objfile.string().c_str(), RTLD_NOW);
-    if (lib_handle == NULL) {
+    void *lib_handle = dlopen(binfile.string().c_str(), RTLD_NOW);
+    if (lib_handle == nullptr) {
         cerr << "Cannot load library: " << dlerror() << endl;
         throw runtime_error("VE-OPENMP: Cannot load library");
     }
@@ -117,11 +159,10 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
     dlerror(); // Reset errors
     *(void **) (&_functions[hash]) = dlsym(lib_handle, "launcher");
     const char* dlsym_error = dlerror();
-    if (dlsym_error) {
+    if (dlsym_error != nullptr) {
         cerr << "Cannot load function launcher(): " << dlsym_error << endl;
         throw runtime_error("VE-OPENMP: Cannot load function launcher()");
     }
-
     return _functions.at(hash);
 }
 

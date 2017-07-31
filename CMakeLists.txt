@@ -163,6 +163,8 @@ install(PROGRAMS misc/bh-info DESTINATION bin COMPONENT bohrium)
 
 #############################
 # Bohrium configuration file
+set(BIN_KERNEL_CACHE_DIR ${CMAKE_INSTALL_PREFIX}/var/bohrium/cache CACHE PATH "Path to the directory of the persistent JIT kernel cache")
+
 configure_file(${CMAKE_SOURCE_DIR}/config.ini.in ${CMAKE_BINARY_DIR}/config.ini)    # Fill out the config-template
 
 set(FORCE_CONFIG_PATH "OFF" CACHE STRING "Manually setting the install path of the config (ini) file")

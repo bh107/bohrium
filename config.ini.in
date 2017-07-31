@@ -79,6 +79,11 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
+# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
+tmp_dir =
+# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+cache_dir = ${BIN_KERNEL_CACHE_DIR}
+# JIT compile options
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD}"
 compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 compiler_lib = "${VE_OPENMP_COMPILER_LIB}"
