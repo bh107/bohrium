@@ -151,6 +151,14 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
 
     // Let's make sure that the directories exist
     fs::create_directories(source_dir);
+
+    // Write the compilation hash
+    stringstream ss;
+    ss << compile_flg
+       << platform.getInfo<CL_PLATFORM_NAME>()
+       << device.getInfo<CL_DEVICE_NAME>()
+       << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+    compilation_hash = hasher(ss.str());
 }
 
 pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
@@ -200,10 +208,10 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
                 cout << "************ Build Log ************" << endl \
                  << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) \
                  << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
-                jitk::write_source2file(source, source_dir, hash, ".cl", true);
+                jitk::write_source2file(source, source_dir, jitk::hash_filename(compilation_hash, hash, ".cl"), true);
             }
             program.build({device}, compile_flg.c_str());
-        } catch (cl::Error e) {
+        } catch (cl::Error &e) {
             cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
             throw;
         }

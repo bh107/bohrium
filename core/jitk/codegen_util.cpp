@@ -50,19 +50,18 @@ void spaces(std::stringstream &out, int num) {
     }
 }
 
-string hash_filename(size_t hash, string extension) {
+string hash_filename(size_t compilation_hash, size_t source_hash, string extension) {
     stringstream ss;
-    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << hash << extension;
+    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << compilation_hash << "_"<< source_hash << extension;
     return ss.str();
 }
 
 boost::filesystem::path write_source2file(const std::string &src,
                                           const boost::filesystem::path &dir,
-                                          size_t hash,
-                                          const std::string &file_ext,
+                                          const std::string &filename,
                                           bool verbose) {
     boost::filesystem::path srcfile = dir;
-    srcfile /= hash_filename(hash, file_ext);
+    srcfile /= filename;
     ofstream ofs(srcfile.string());
     ofs << src;
     ofs.flush();

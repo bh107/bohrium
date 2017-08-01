@@ -80,6 +80,9 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     // Let's make sure that the directories exist
     fs::create_directories(source_dir);
     fs::create_directories(object_dir);
+
+    // Write the compilation hash
+    compilation_hash = hasher("info()");
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
@@ -125,12 +128,13 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
         ++stat.kernel_cache_misses;
 
         // The object file path
-        fs::path objfile = object_dir / jitk::hash_filename(hash, ".cubin");
+        fs::path objfile = object_dir / jitk::hash_filename(compilation_hash, hash, ".cubin");
 
         // Write the source file and compile it (reading from disk)
         // TODO: make nvcc read directly from stdin
         {
-            fs::path srcfile = jitk::write_source2file(source, source_dir, hash, ".cu", verbose);
+            fs::path srcfile = jitk::write_source2file(source, source_dir,
+                                                       jitk::hash_filename(compilation_hash, hash, ".cu"), verbose);
             compiler.compile(objfile.string(), srcfile.string());
         }
         /* else {

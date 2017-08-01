@@ -71,6 +71,8 @@ private:
     const bool prof;
     // Path to the directory of the source files (only used in verbose mode)
     const boost::filesystem::path source_dir;
+    // The hash of the JIT compilation command
+    size_t compilation_hash;
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
 

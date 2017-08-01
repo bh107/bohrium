@@ -58,6 +58,9 @@ class EngineOpenMP {
     // The compiler to use when function doesn't exist
     const Compiler compiler;
 
+    // The hash of the JIT compilation command
+    const size_t compilation_hash;
+
     // Verbose flag
     const bool verbose;
 

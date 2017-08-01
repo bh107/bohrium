@@ -63,6 +63,7 @@ EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
                                                     config.defaultGet<string>("compiler_lib", "-lm"),
                                                     config.defaultGet<string>("compiler_flg", ""),
                                                     config.defaultGet<string>("compiler_ext", "")),
+                                           compilation_hash(hasher(compiler.text())),
                                            verbose(config.defaultGet<bool>("verbose", false)),
                                            stat(stat)
 {
@@ -80,9 +81,9 @@ EngineOpenMP::~EngineOpenMP() {
     if (not cache_bin_dir.empty()) {
      //   cout << "filling cache_bin_dir: " << cache_bin_dir.string() << endl;
         for (auto kernel: _functions) {
-            const fs::path src = tmp_bin_dir / jitk::hash_filename(kernel.first, ".so");
+            const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
             if (fs::exists(src)) {
-                const fs::path dst = cache_bin_dir / jitk::hash_filename(kernel.first, ".so");
+                const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
                 if (not fs::exists(dst)) {
                     fs::copy_file(src, dst);
                 }
@@ -123,26 +124,26 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
         return _functions.at(hash);
     }
 
-    fs::path binfile = cache_bin_dir / jitk::hash_filename(hash, ".so");
+    fs::path binfile = cache_bin_dir / jitk::hash_filename(compilation_hash, hash, ".so");
 
     // If the binary file of the kernel doesn't exist we create it
     if (binfile.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
 
         // We create the binary file in the tmp dir
-        binfile = tmp_bin_dir / jitk::hash_filename(hash, ".so");
+        binfile = tmp_bin_dir / jitk::hash_filename(compilation_hash, hash, ".so");
 
         // Write the source file and compile it (reading from disk)
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
-            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, hash, ".c", true);
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
+                                                       jitk::hash_filename(compilation_hash, hash, ".c"),
+                                                       true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {
             // Pipe the source directly into the compiler thus no source file is written
             compiler.compile(binfile.string(), source.c_str(), source.size());
         }
-    } else {
-        cout << "Found kernel in cache dir!" << endl;
     }
 
     // Load the shared library
