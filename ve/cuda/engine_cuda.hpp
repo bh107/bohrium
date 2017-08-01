@@ -208,6 +208,11 @@ public:
         // Save and attach (increase the refcount) the new context
         context = new_context;
         cuCtxAttach(&context, 0);
+
+        // We have to clean all kernels compiled with the old context
+        // Notice, the removed kernels are leaked when useCurrentContext()
+        // isn't called as the first think (not really a big deal)
+        _programs.clear();
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
