@@ -80,7 +80,7 @@ EngineOpenMP::~EngineOpenMP() {
     // Move JIT kernels to the cache dir
     if (not cache_bin_dir.empty()) {
      //   cout << "filling cache_bin_dir: " << cache_bin_dir.string() << endl;
-        for (auto kernel: _functions) {
+        for (const auto &kernel: _functions) {
             const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
             if (fs::exists(src)) {
                 const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");

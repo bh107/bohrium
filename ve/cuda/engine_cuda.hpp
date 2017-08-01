@@ -59,7 +59,7 @@ namespace bohrium {
 class EngineCUDA {
 private:
     // Map of all compiled OpenCL programs
-    std::map<uint64_t, CUfunction> _programs;
+    std::map<uint64_t, CUfunction> _functions;
     // The CUDA context and device used throughout the execution
     CUdevice   device;
     CUcontext  context;
@@ -90,11 +90,14 @@ private:
     // Path to a temporary directory for the source and object files
     const boost::filesystem::path tmp_dir;
 
-    // Path to the directory of the source files
-    const boost::filesystem::path source_dir;
+    // Path to the temporary directory of the source files
+    const boost::filesystem::path tmp_src_dir;
 
-    // Path to the directory of the object files
-    const boost::filesystem::path object_dir;
+    // Path to the temporary directory of the binary files (e.g. .so or .cubin files)
+    const boost::filesystem::path tmp_bin_dir;
+
+    // Path to the directory of the cached binary files (e.g. .so or .cubin files)
+    const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
     const Compiler compiler;
@@ -111,9 +114,7 @@ private:
 
 public:
     EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
-    ~EngineCUDA() {
-        cuCtxDetach(context);
-    }
+    ~EngineCUDA();
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
@@ -218,7 +219,7 @@ public:
         // We have to clean all kernels compiled with the old context
         // Notice, the removed kernels are leaked when useCurrentContext()
         // isn't called as the first think (not really a big deal)
-        _programs.clear();
+        _functions.clear();
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
