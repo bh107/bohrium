@@ -82,7 +82,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     fs::create_directories(object_dir);
 
     // Write the compilation hash
-    compilation_hash = hasher("info()");
+    compilation_hash = hasher(info());
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
