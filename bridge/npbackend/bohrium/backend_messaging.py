@@ -29,3 +29,8 @@ def gpu_enable():
 def runtime_info():
     """Return a YAML string describing the current Bohrium runtime"""
     return _backend_msg("info")
+
+
+def cuda_use_current_context():
+    """Tell the CUDA backend to use the current CUDA context (useful for PyCUDA interop)"""
+    return _backend_msg("CUDA: use current context")

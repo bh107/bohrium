@@ -193,8 +193,33 @@ public:
         copyToHost(bases_on_device);
     }
 
+    // Tell the engine to use the current CUDA context
+    void useCurrentContext() {
+        CUcontext new_context;
+        checkCudaErrors(cuCtxGetCurrent(&new_context));
+        if (new_context == nullptr or new_context == context) {
+            return; // Nothing to do
+        }
+
+        // Empty the context for buffers and deallocate it
+        allBasesToHost();
+        cuCtxDetach(context);
+
+        // Save and attach (increase the refcount) the new context
+        context = new_context;
+        cuCtxAttach(&context, 0);
+
+        // We have to clean all kernels compiled with the old context
+        // Notice, the removed kernels are leaked when useCurrentContext()
+        // isn't called as the first think (not really a big deal)
+        _programs.clear();
+    }
+
     // Sets the constructor flag of each instruction in 'instr_list'
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+
+    // Return a YAML string describing this component
+    std::string info() const;
 };
 
 } // bohrium

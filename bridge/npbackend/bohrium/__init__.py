@@ -29,6 +29,7 @@ from .disk_io import *
 from . import contexts
 from . import bh_info
 from . import interop_pyopencl
+from . import interop_pycuda
 from . import interop_numpy
 from . import backend_messaging
 from .nobh import bincount

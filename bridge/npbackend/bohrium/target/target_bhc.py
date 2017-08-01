@@ -121,7 +121,7 @@ def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
 
     if copy2host:
         bhc.call_single_dtype("sync", dtype, ary)
-        runtime_flush()
+    runtime_flush()
 
     data = bhc.call_single_dtype("data_get", dtype, ary, copy2host, allocate, nullify)
     if data is None:

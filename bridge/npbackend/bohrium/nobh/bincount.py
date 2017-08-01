@@ -2,6 +2,7 @@ import math
 import numpy_force as np
 
 from .. import interop_pyopencl
+from .. import interop_pycuda
 from .. import array_create
 from .bincount_cython import bincount_cython
 
@@ -88,10 +89,15 @@ def bincount(x, weights=None, minlength=None):
     except NotImplementedError:
         try:
             if weights is not None:
-                raise NotImplementedError("Cython doesn't support the `weights` argument")
-            return bincount_cython(x, minlength=minlength)
+                raise NotImplementedError("CUDA doesn't support the `weights` argument")
+            return bincount_pycuda(x, minlength=minlength)
         except NotImplementedError:
-            return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
+            try:
+                if weights is not None:
+                    raise NotImplementedError("Cython doesn't support the `weights` argument")
+                return bincount_cython(x, minlength=minlength)
+            except NotImplementedError:
+                return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
 
 
 def bincount_pyopencl(x, minlength=None):
@@ -208,3 +214,124 @@ def bincount_pyopencl(x, minlength=None):
     # Then we sum the partial histograms into the final histogram
     prg.histogram_sum_partial_results(queue, ret.shape, None, partial_res_g, np.uint32(num_groups), ret_buf)
     return ret
+
+
+def bincount_pycuda(x, minlength=None):
+    """PyCUDA implementation of `bincount()`"""
+
+    if not interop_pycuda.available():
+        raise NotImplementedError("CUDA not available")
+
+    import pycuda
+    from pycuda.compiler import SourceModule
+
+    interop_pycuda.init()
+
+    x_max = int(x.max())
+    if x_max < 0:
+        raise RuntimeError("bincount(): first argument must be a 1 dimensional, non-negative int array")
+    if x_max > np.iinfo(np.uint32).max:
+        raise NotImplementedError("CUDA: the elements in the first argument must fit in a 32bit integer")
+    if minlength is not None:
+        x_max = max(x_max, minlength)
+
+    # TODO: handle large max element by running multiple bincount() on a range
+    if x_max >= interop_pycuda.max_local_memory() // x.itemsize:
+        raise NotImplementedError("CUDA: max element is too large for the GPU")
+
+    # Let's create the output array and retrieve the in-/output OpenCL buffers
+    # NB: we always return uint32 array
+    ret = array_create.ones((x_max+1, ), dtype=np.uint32)
+    x_buf = interop_pycuda.get_gpuarray(x)
+    ret_buf = interop_pycuda.get_gpuarray(ret)
+
+    # CUDA kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi at al.
+    source = """
+    __global__ void histogram_partial(
+        DTYPE *input,
+        uint *partial_histo,
+        uint input_size
+    ){
+        int local_size = blockDim.x;
+        int group_indx = blockIdx.x * HISTO_SIZE;
+        int gid = (blockIdx.x * blockDim.x + threadIdx.x);
+        int tid = threadIdx.x;
+
+        __shared__ uint tmp_histogram[HISTO_SIZE];
+
+        int j = HISTO_SIZE;
+        int indx = 0;
+
+        // clear the local buffer that will generate the partial histogram
+        do {
+            if (tid < j)
+                tmp_histogram[indx+tid] = 0;
+            j -= local_size;
+            indx += local_size;
+        } while (j > 0);
+
+        __syncthreads();
+
+        if (gid < input_size) {
+            atomicAdd(&tmp_histogram[input[gid]], 1);
+        }
+
+        __syncthreads();
+
+        // copy the partial histogram to appropriate location in
+        // histogram given by group_indx
+        if (local_size >= HISTO_SIZE){
+            if (tid < HISTO_SIZE)
+                partial_histo[group_indx + tid] = tmp_histogram[tid];
+        }else{
+            j = HISTO_SIZE;
+            indx = 0;
+            do {
+                if (tid < j)
+                    partial_histo[group_indx + indx + tid] = tmp_histogram[indx + tid];
+
+                j -= local_size;
+                indx += local_size;
+            } while (j > 0);
+        }
+    }
+
+    __global__ void histogram_sum_partial_results(
+        uint *partial_histogram,
+        int num_groups,
+        uint *histogram
+    ){
+        int gid = (blockIdx.x * blockDim.x + threadIdx.x);
+        int group_indx;
+        int n = num_groups;
+        __shared__ uint tmp_histogram[HISTO_SIZE];
+
+        tmp_histogram[gid] = partial_histogram[gid];
+        group_indx = HISTO_SIZE;
+        while (--n > 0) {
+            tmp_histogram[gid] += partial_histogram[group_indx + gid];
+            group_indx += HISTO_SIZE;
+        }
+        histogram[gid] = tmp_histogram[gid];
+    }
+    """
+    source = source.replace("HISTO_SIZE", "%d" % ret.shape[0])
+    source = source.replace("DTYPE", interop_pycuda.type_np2cuda_str(x.dtype))
+    prg = SourceModule(source)
+
+    # Calculate sizes for the kernel execution
+    kernel = prg.get_function("histogram_partial")
+    local_size = kernel.get_attribute(pycuda.driver.function_attribute.MAX_THREADS_PER_BLOCK)  # Max work-group size
+    num_groups = int(math.ceil(x.shape[0] / float(local_size)))
+    global_size = local_size * num_groups
+
+    # First we compute the partial histograms
+    partial_res_g = pycuda.driver.mem_alloc(num_groups * ret.nbytes)
+    kernel(x_buf, partial_res_g, np.uint32(x.shape[0]), block=(local_size, 1, 1), grid=(num_groups, 1))
+
+    # Then we sum the partial histograms into the final histogram
+    kernel = prg.get_function("histogram_sum_partial_results")
+    kernel(partial_res_g, np.uint32(num_groups), ret_buf, block=(ret.shape[0], 1, 1), grid=(num_groups, 1))
+    return ret  
+
+

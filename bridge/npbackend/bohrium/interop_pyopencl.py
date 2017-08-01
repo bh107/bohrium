@@ -53,7 +53,7 @@ def get_context():
 def get_buffer(bh_ary):
     """Return a OpenCL Buffer object wrapping the Bohrium array `ary`"""
     pyopencl = _import_pyopencl_module()
-    cl_mem = get_data_pointer(get_bhc(bh_ary), copy2host=False)
+    cl_mem = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
     return pyopencl.Buffer.from_int_ptr(cl_mem)
 
 

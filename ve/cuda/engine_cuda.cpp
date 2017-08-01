@@ -56,10 +56,8 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                              config.defaultGet<string>("compiler_flg", ""),
                                              config.defaultGet<string>("compiler_ext", ""))
 {
-    size_t     totalGlobalMem;
     int deviceCount = 0;
     CUresult err = cuInit(0);
-    int major = 0, minor = 0;
 
     if (err == CUDA_SUCCESS)
         checkCudaErrors(cuDeviceGetCount(&deviceCount));
@@ -71,20 +69,6 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     // get first CUDA device
     checkCudaErrors(cuDeviceGet(&device, 0));
-    char name[100];
-    cuDeviceGetName(name, 100, device);
-    printf("> Using device 0: %s\n", name);
-
-    // get compute capabilities and the devicename
-    checkCudaErrors( cuDeviceComputeCapability(&major, &minor, device) );
-    printf("> GPU Device has SM %d.%d compute capability\n", major, minor);
-
-    checkCudaErrors( cuDeviceTotalMem(&totalGlobalMem, device) );
-    printf("  Total amount of global memory:   %llu bytes\n",
-           (unsigned long long)totalGlobalMem);
-    printf("  64-bit Memory Address:           %s\n",
-           (totalGlobalMem > (unsigned long long)4*1024*1024*1024L)?
-           "YES" : "NO");
 
     err = cuCtxCreate(&context, 0, device);
     if (err != CUDA_SUCCESS) {
@@ -158,15 +142,22 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
         CUmodule module;
         CUresult err = cuModuleLoad(&module, objfile.string().c_str());
         if (err != CUDA_SUCCESS) {
-            cout << "Error loading the module " << objfile.string() << " CODE: " << err << endl;
+            const char *err_name, *err_desc;
+            cuGetErrorName(err, &err_name);
+            cuGetErrorString(err, &err_desc);
+            cout << "Error loading the module \"" << objfile.string()
+                 << "\", " << err_name << ": \"" << err_desc << "\"." << endl;
             cuCtxDetach(context);
             throw runtime_error("cuModuleLoad() failed");
         }
 
         err = cuModuleGetFunction(&program, module, "execute");
         if (err != CUDA_SUCCESS) {
-            cout << "Error getting kernel function 'execute' CODE: " << err << endl;
-            cuCtxDetach(context);
+            const char *err_name, *err_desc;
+            cuGetErrorName(err, &err_name);
+            cuGetErrorString(err, &err_desc);
+            cout << "Error getting kernel function 'execute' \"" << objfile.string()
+                 << "\", " << err_name << ": \"" << err_desc << "\"." << endl;
             throw runtime_error("cuModuleGetFunction() failed");
         }
         _programs[hash] = program;
@@ -189,7 +180,6 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
 
     auto texec = chrono::steady_clock::now();
 
-
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
     tie(blocks, threads) = NDRanges(threaded_blocks);
 
@@ -197,12 +187,30 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
                                    get<0>(blocks), get<1>(blocks), get<2>(blocks),  // NxNxN blocks
                                    get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
                                    0, 0, &args[0], 0));
+    checkCudaErrors(cuCtxSynchronize());
 
     stat.time_exec += chrono::steady_clock::now() - texec;
 }
 
 void EngineCUDA::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
+}
+
+std::string EngineCUDA::info() const {
+
+    char device_name[1000];
+    cuDeviceGetName(device_name, 1000, device);
+    int major = 0, minor = 0;
+    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+    size_t totalGlobalMem;
+    checkCudaErrors(cuDeviceTotalMem(&totalGlobalMem, device));
+
+    stringstream ss;
+    ss << "----"                                                                        << "\n";
+    ss << "CUDA:"                                                                       << "\n";
+    ss << "  Device: \"" << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
+    ss << "  Memory: \"" <<totalGlobalMem / 1024 / 1024 << " MB\"\n";
+    return ss.str();
 }
 
 } // bohrium
