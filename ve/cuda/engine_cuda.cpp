@@ -56,10 +56,8 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                              config.defaultGet<string>("compiler_flg", ""),
                                              config.defaultGet<string>("compiler_ext", ""))
 {
-    size_t totalGlobalMem;
     int deviceCount = 0;
     CUresult err = cuInit(0);
-    int major = 0, minor = 0;
 
     if (err == CUDA_SUCCESS)
         checkCudaErrors(cuDeviceGetCount(&deviceCount));
@@ -71,18 +69,6 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     // get first CUDA device
     checkCudaErrors(cuDeviceGet(&device, 0));
-    char name[100];
-    cuDeviceGetName(name, 100, device);
-    printf("> Using device 0: %s\n", name);
-
-    // get compute capabilities and the device name
-    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
-    printf("> GPU Device has SM %d.%d compute capability\n", major, minor);
-
-    checkCudaErrors(cuDeviceTotalMem(&totalGlobalMem, device));
-    printf("  Total amount of global memory:   %llu bytes\n", (unsigned long long)totalGlobalMem);
-    printf("  64-bit Memory Address:           %s\n",
-           (totalGlobalMem > (unsigned long long)4*1024*1024*1024L)? "YES" : "NO");
 
     err = cuCtxCreate(&context, 0, device);
     if (err != CUDA_SUCCESS) {
