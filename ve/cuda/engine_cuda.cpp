@@ -201,6 +201,7 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
                                    get<0>(blocks), get<1>(blocks), get<2>(blocks),  // NxNxN blocks
                                    get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
                                    0, 0, &args[0], 0));
+    checkCudaErrors(cuCtxSynchronize());
 
     stat.time_exec += chrono::steady_clock::now() - texec;
 }
