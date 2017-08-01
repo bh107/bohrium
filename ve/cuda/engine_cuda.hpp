@@ -106,6 +106,9 @@ private:
     std::pair<std::tuple<uint32_t, uint32_t, uint32_t>, std::tuple<uint32_t, uint32_t, uint32_t> >
         NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
 
+    // Return a kernel function based on the given 'source'
+    CUfunction getFunction(const std::string &source);
+
 public:
     EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
     ~EngineCUDA() {

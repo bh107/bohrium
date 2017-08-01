@@ -110,19 +110,13 @@ pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > 
     }
 }
 
-void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
-                           const vector<const jitk::LoopB*> &threaded_blocks,
-                           const vector<const bh_view*> &offset_strides,
-                           const vector<const bh_instruction*> &constants) {
+CUfunction EngineCUDA::getFunction(const string &source) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
-    CUfunction program;
-
-    auto tcompile = chrono::steady_clock::now();
 
     // Do we have the program already?
     if (_programs.find(hash) != _programs.end()) {
-        program = _programs.at(hash);
+        return _programs.at(hash);
     } else {
         // Or do we have to compile it
         ++stat.kernel_cache_misses;
@@ -155,6 +149,7 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
             throw runtime_error("cuModuleLoad() failed");
         }
 
+        CUfunction program;
         err = cuModuleGetFunction(&program, module, "execute");
         if (err != CUDA_SUCCESS) {
             const char *err_name, *err_desc;
@@ -165,7 +160,17 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
             throw runtime_error("cuModuleGetFunction() failed");
         }
         _programs[hash] = program;
+        return program;
     }
+}
+
+void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
+                           const vector<const jitk::LoopB*> &threaded_blocks,
+                           const vector<const bh_view*> &offset_strides,
+                           const vector<const bh_instruction*> &constants) {
+
+    auto tcompile = chrono::steady_clock::now();
+    CUfunction program = getFunction(source);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the CUDA kernel
