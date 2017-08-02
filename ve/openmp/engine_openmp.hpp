@@ -49,10 +49,10 @@ class EngineOpenMP {
     // Path to the temporary directory of the source files
     const boost::filesystem::path tmp_src_dir;
 
-    // Path to the temporary directory of the binary files (e.g. .so or .cubin files)
+    // Path to the temporary directory of the binary files (e.g. .so files)
     const boost::filesystem::path tmp_bin_dir;
 
-    // Path to the directory of the cached binary files (e.g. .so or .cubin files)
+    // Path to the directory of the cached binary files (e.g. .so files)
     const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
