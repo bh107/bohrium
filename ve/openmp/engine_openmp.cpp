@@ -38,23 +38,8 @@ namespace bohrium {
 
 static boost::hash<string> hasher;
 
-namespace {
-// Help function that returns the path to the tmp dir
-fs::path get_tmp_path(const ConfigParser &config) {
-    fs::path tmp_path;
-    const string tmp_dir = config.defaultGet<string>("tmp_dir", "");
-    if (tmp_dir.empty()) {
-        tmp_path = fs::temp_directory_path();
-    } else {
-        tmp_path = fs::path(tmp_dir);
-    }
-    return tmp_path / fs::unique_path("bh_%%%%");
-
-}
-}
-
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-                                           tmp_dir(get_tmp_path(config)),
+                                           tmp_dir(jitk::get_tmp_path(config)),
                                            tmp_src_dir(tmp_dir / "src"),
                                            tmp_bin_dir(tmp_dir / "obj"),
                                            cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", ""))),

@@ -59,6 +59,9 @@ boost::filesystem::path write_source2file(const std::string &src,
                                           const std::string &filename,
                                           bool verbose);
 
+// Returns the path to the tmp dir
+boost::filesystem::path get_tmp_path(const ConfigParser &config);
+
 // Calculate the work group sizes.
 // Return pair (global work size, local work size)
 std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size);

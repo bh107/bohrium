@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <limits>
 #include <iomanip>
+#include <boost/filesystem/operations.hpp>
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
@@ -70,6 +71,17 @@ boost::filesystem::path write_source2file(const std::string &src,
         cout << "Write source " << srcfile << endl;
     }
     return srcfile;
+}
+
+boost::filesystem::path get_tmp_path(const ConfigParser &config) {
+    boost::filesystem::path tmp_path;
+    const string tmp_dir = config.defaultGet<string>("tmp_dir", "");
+    if (tmp_dir.empty()) {
+        tmp_path = boost::filesystem::temp_directory_path();
+    } else {
+        tmp_path = boost::filesystem::path(tmp_dir);
+    }
+    return tmp_path / boost::filesystem::unique_path("bh_%%%%");
 }
 
 pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
