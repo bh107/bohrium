@@ -97,7 +97,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat),
                                     prof(config.defaultGet<bool>("prof", false)),
-                                    tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
+                                    tmp_dir(jitk::get_tmp_path(config)),
                                     tmp_src_dir(tmp_dir / "src"),
                                     tmp_bin_dir(tmp_dir / "obj"),
                                     cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", "")))
