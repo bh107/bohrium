@@ -47,7 +47,7 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
     vector<cl::Device> device_list;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
 
-    if(device_list.size() == 0){
+    if(device_list.empty()){
         throw runtime_error("No OpenCL device found");
     }
 
@@ -76,7 +76,6 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
             }
         }
     }
-
     throw runtime_error("No OpenCL device of usable type found");
 }
 }
@@ -98,11 +97,14 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat),
                                     prof(config.defaultGet<bool>("prof", false)),
-                                    source_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%") / "src")
+                                    tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
+                                    tmp_src_dir(tmp_dir / "src"),
+                                    tmp_bin_dir(tmp_dir / "obj"),
+                                    cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", "")))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
-    if(platforms.size() == 0) {
+    if(platforms.empty()) {
         throw runtime_error("No OpenCL platforms found");
     }
 
@@ -150,7 +152,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     queue = cl::CommandQueue(context, device);
 
     // Let's make sure that the directories exist
-    fs::create_directories(source_dir);
+    fs::create_directories(tmp_src_dir);
 
     // Write the compilation hash
     stringstream ss;
@@ -159,6 +161,36 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
     compilation_hash = hasher(ss.str());
+}
+
+EngineOpenCL::~EngineOpenCL() {
+    // Move JIT kernels to the cache dir
+    if (not cache_bin_dir.empty()) {
+        for (const auto &kernel: _programs) {
+            const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".clbin");
+            if (not fs::exists(dst)) {
+                cl_uint ndevs;
+                kernel.second.getInfo(CL_PROGRAM_NUM_DEVICES, &ndevs);
+                if (ndevs > 1) {
+                    cout << "OpenCL warning: too many devices for caching." << endl;
+                    return;
+                }
+                size_t bin_sizes[1];
+                kernel.second.getInfo(CL_PROGRAM_BINARY_SIZES, bin_sizes);
+                if (bin_sizes[0] == 0) {
+                    cout << "OpenCL warning: no caching since the binary isn't available for the device." << endl;
+                } else {
+                    // Get the CL_PROGRAM_BINARIES and write it to a file
+                    vector<unsigned char> bin(bin_sizes[0]);
+                    unsigned char *bin_list[1] = {&bin[0]};
+                    kernel.second.getInfo(CL_PROGRAM_BINARIES, bin_list);
+                    ofstream binfile(dst.string(), ofstream::out | ofstream::binary);
+                    binfile.write((const char*)&bin[0], bin.size());
+                    binfile.close();
+                }
+            }
+        }
+    }
 }
 
 pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
@@ -186,37 +218,70 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
     }
 }
 
+
+cl::Program EngineOpenCL::getFunction(const string &source) {
+    size_t hash = hasher(source);
+    ++stat.kernel_cache_lookups;
+
+    // Do we have the program already?
+    if (_programs.find(hash) != _programs.end()) {
+        return _programs.at(hash);
+    }
+
+    fs::path binfile = cache_bin_dir / jitk::hash_filename(compilation_hash, hash, ".clbin");
+    cl::Program program;
+
+    // If the binary file of the kernel doesn't exist we compile the source
+    if (verbose or binfile.empty() or not fs::exists(binfile)) {
+        ++stat.kernel_cache_misses;
+        program = cl::Program(context, source);
+        if (verbose) {
+            const string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+            if (not log.empty()) {
+                cout << "************ Build Log ************" << endl
+                     << log
+                     << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
+            }
+        }
+    } else { // If the binary file exist we load the binary into the program
+
+        // First we load the binary into an vector
+        vector<char> bin;
+        {
+            ifstream f(binfile.string(), ifstream::in | ifstream::binary);
+            if (!f.is_open() or f.eof() or f.fail()) {
+                throw runtime_error("Failed loading binary cache file");
+            }
+            f.seekg(0, std::ios_base::end);
+            const std::streampos file_size = f.tellg();
+            bin.resize(file_size);
+            f.seekg(0, std::ios_base::beg);
+            f.read(&bin[0], file_size);
+        }
+
+        // And then we load the binary into a program
+        const vector<cl::Device> dev_list = {device};
+        const cl::Program::Binaries bin_list = {make_pair(&bin[0], bin.size())};
+        program = cl::Program(context, dev_list, bin_list);
+    }
+
+    // Finally, we build, save, and return the program
+    try {
+        program.build({device}, compile_flg.c_str());
+    } catch (cl::Error &e) {
+        cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
+        throw;
+    }
+    _programs[hash] = program;
+    return program;
+}
+
 void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel,
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
-    size_t hash = hasher(source);
-    ++stat.kernel_cache_lookups;
-    cl::Program program;
-
     auto tcompile = chrono::steady_clock::now();
-
-    // Do we have the program already?
-    if (_programs.find(hash) != _programs.end()) {
-        program = _programs.at(hash);
-    } else {
-        // Or do we have to compile it
-        ++stat.kernel_cache_misses;
-        program = cl::Program(context, source);
-        try {
-            if (verbose) {
-                cout << "************ Build Log ************" << endl \
-                 << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) \
-                 << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
-                jitk::write_source2file(source, source_dir, jitk::hash_filename(compilation_hash, hash, ".cl"), true);
-            }
-            program.build({device}, compile_flg.c_str());
-        } catch (cl::Error &e) {
-            cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
-            throw;
-        }
-        _programs[hash] = program;
-    }
+    cl::Program program = getFunction(source);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the OpenCL kernel
