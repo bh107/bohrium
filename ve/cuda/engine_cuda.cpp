@@ -50,12 +50,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                     tmp_dir(jitk::get_tmp_path(config)),
                                     tmp_src_dir(tmp_dir / "src"),
                                     tmp_bin_dir(tmp_dir / "obj"),
-                                    cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", ""))),
-                                    compiler(config.defaultGet<string>("compiler_cmd", "nvcc"),
-                                             config.defaultGet<string>("compiler_inc", ""),
-                                             config.defaultGet<string>("compiler_lib", ""),
-                                             config.defaultGet<string>("compiler_flg", ""),
-                                             config.defaultGet<string>("compiler_ext", ""))
+                                    cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", "")))
 {
     int deviceCount = 0;
     CUresult err = cuInit(0);
@@ -87,6 +82,26 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     // Write the compilation hash
     compilation_hash = hasher(info());
+
+    // Get the compiler flag and replace {MAJOR} and {MINOR} with the SM versions
+    string compiler_flg = config.defaultGet<string>("compiler_flg", "--cubin -m64 -arch=sm_{MAJOR}{MINOR}");
+    {
+        int major = 0, minor = 0;
+        checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+        if (compiler_flg.find("{MAJOR}") != string::npos) {
+            compiler_flg.replace(compiler_flg.find("{MAJOR}"), string("{MAJOR}").size(), std::to_string(major));
+        }
+        if (compiler_flg.find("{MINOR}") != string::npos) {
+            compiler_flg.replace(compiler_flg.find("{MINOR}"), string("{MINOR}").size(), std::to_string(minor));
+        }
+    }
+
+    // Init the compiler
+    compiler = Compiler(config.defaultGet<string>("compiler_cmd", "nvcc"),
+                        config.defaultGet<string>("compiler_inc", ""),
+                        config.defaultGet<string>("compiler_lib", ""),
+                        compiler_flg,
+                        config.defaultGet<string>("compiler_ext", ""));
 }
 
 EngineCUDA::~EngineCUDA() {

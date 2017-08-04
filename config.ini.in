@@ -149,9 +149,10 @@ graph = false
 tmp_dir =
 # Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
-# Additional options given to the cuda compiler.
+# The command to execute the compiler
 compiler_cmd = "${CUDA_NVCC_EXECUTABLE}"
-compiler_flg = "--cubin -arch=sm_30 -m64"
+# The compile flags where {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
+compiler_flg = "--cubin -m64 -arch=sm_{MAJOR}{MINOR}"
 compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${CUDA_LIBS}

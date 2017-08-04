@@ -100,7 +100,7 @@ private:
     const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
-    const Compiler compiler;
+    Compiler compiler;
 
     // The hash of the JIT compilation command
     size_t compilation_hash;

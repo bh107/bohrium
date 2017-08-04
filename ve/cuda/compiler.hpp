@@ -44,6 +44,7 @@ public:
 	 *  Compiler gcc("gcc", "", "-lm", "-O2 -march=core2", "-fPIC -x c -shared");
 	 *
 	 */
+    Compiler() {};
     Compiler(std::string cmd, std::string inc, std::string lib, std::string flg, std::string ext);
 
     std::string text() const;
