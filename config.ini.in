@@ -152,7 +152,7 @@ cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # The command to execute the compiler
 compiler_cmd = "${CUDA_NVCC_EXECUTABLE}"
 # The compile flags where {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
-compiler_flg = "--cubin -m64 -arch=sm_{MAJOR}{MINOR}"
+compiler_flg = "--cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3"
 compiler_inc = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
 libs = ${CUDA_LIBS}
