@@ -59,8 +59,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
         checkCudaErrors(cuDeviceGetCount(&deviceCount));
 
     if (deviceCount == 0) {
-        fprintf(stderr, "Error: no devices supporting CUDA\n");
-        exit(-1);
+        throw runtime_error("Error: no devices supporting CUDA");
     }
 
     // get first CUDA device
@@ -68,9 +67,8 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     err = cuCtxCreate(&context, 0, device);
     if (err != CUDA_SUCCESS) {
-        fprintf(stderr, "* Error initializing the CUDA context.\n");
         cuCtxDetach(context);
-        exit(-1);
+        throw runtime_error("Error initializing the CUDA context.");
     }
 
     // Let's make sure that the directories exist

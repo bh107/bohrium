@@ -49,7 +49,7 @@ namespace {
             fprintf(stderr,
                     "CUDA Driver API error = %04d from file <%s>, line %i.\n",
                     err, file, line );
-            exit(-1);
+            throw std::runtime_error("CUDA API call fail");
         }
     }
 }
