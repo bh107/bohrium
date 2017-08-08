@@ -244,7 +244,6 @@ void bh_constant::pprint(ostream& out, bool opencl) const
     if (type == bh_type::BOOL) {
         out << get_int64();
     } else if (bh_type_is_integer(type)) {
-        out << std::defaultfloat;
         if (bh_type_is_signed_integer(type)) {
             out << get_int64();
         } else {
@@ -296,6 +295,7 @@ void bh_constant::pprint(ostream& out, bool opencl) const
             default:
                 out << "?";
         }
+        out.unsetf(std::ios_base::floatfield); // Resetting the float formatting
     }
 }
 
