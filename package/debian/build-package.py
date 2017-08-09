@@ -118,7 +118,7 @@ exit 0
 """
 
 
-UBUNTU_RELEASES = ['trusty', 'xenial', 'yakkety', 'zesty']
+UBUNTU_RELEASES = ['trusty', 'xenial', 'zesty']
 
 
 SRC = path.join(path.dirname(os.path.realpath(__file__)),"..","..")
