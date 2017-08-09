@@ -49,6 +49,7 @@ def init():
     global _iniziated
     if _iniziated:
         return
+    _initiated = True
     if not available():
         return
     flush()
