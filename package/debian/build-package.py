@@ -22,7 +22,7 @@ Homepage: http://www.bh107.org
 
 Package: bohrium
 Architecture: amd64
-Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.8), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, libopenblas-dev, liblapack-dev
+Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.8), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, libopenblas-dev, liblapack-dev, liblapacke-dev
 Recommends:
 Suggests: bohrium-opencl, bohrium-visualizer, ipython,
 Description:  Bohrium Runtime System: Automatic Array Parallelization in C, C++, and Python
