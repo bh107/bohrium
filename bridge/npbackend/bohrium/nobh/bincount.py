@@ -331,7 +331,7 @@ def bincount_pycuda(x, minlength=None):
 
     # Then we sum the partial histograms into the final histogram
     kernel = prg.get_function("histogram_sum_partial_results")
-    kernel(partial_res_g, np.uint32(num_groups), ret_buf, block=(ret.shape[0], 1, 1), grid=(num_groups, 1))
+    kernel(partial_res_g, np.uint32(num_groups), ret_buf, block=(1, 1, 1), grid=(ret.shape[0], 1))
     return ret  
 
 
