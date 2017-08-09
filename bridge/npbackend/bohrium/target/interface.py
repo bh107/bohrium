@@ -102,6 +102,11 @@ def get_device_context():
     raise NotImplementedError()
 
 
+def set_device_context(device_context):
+    """Set the device context, such as CUDA's cl_context, of the first VE in the runtime stack."""
+    raise NotImplementedError()
+
+
 def set_bhc_data_from_ary(self, ary):
     """
     Copy data from 'ary' into the array 'self'

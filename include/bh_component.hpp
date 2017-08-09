@@ -113,6 +113,14 @@ class ComponentImpl {
      * Throws exceptions on error
      */
     virtual void* get_device_context() = 0;
+
+    /* Set the device context, such as CUDA's context, of the first VE in the runtime stack.
+     * If the first VE isn't a device, nothing happens
+     *
+     * @device_context  The new device context
+     * Throws exceptions on error
+     */
+    virtual void set_device_context(void* device_context) = 0;
 };
 
 // Representation of a component interface, which consist of a create()
@@ -162,6 +170,10 @@ class ComponentFace {
         assert(_implementation != NULL);
         return _implementation->get_device_context();
     };
+    void set_device_context(void* device_context) {
+        assert(_implementation != NULL);
+        _implementation->set_device_context(device_context);
+    };
 };
 
 // Representation of a component implementation that has a child.
@@ -196,6 +208,9 @@ public:
     }
     virtual void* get_device_context() {
         return child.get_device_context();
+    };
+    virtual void set_device_context(void* device_context) {
+        child.set_device_context(device_context);
     };
 };
 

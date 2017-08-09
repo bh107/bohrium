@@ -102,6 +102,14 @@ class Runtime {
      */
     void* get_device_context();
 
+    /* Set the device context, such as CUDA's context, of the first VE in the runtime stack.
+     * If the first VE isn't a device, nothing happens
+     *
+     * @device_context  The new device context
+     * Throws exceptions on error
+     */
+    void set_device_context(void *device_context);
+
     ~Runtime() { flush(); }
 
     Runtime(Runtime&&) = default;

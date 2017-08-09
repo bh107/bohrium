@@ -58,6 +58,18 @@ def main(args):
 }
 """
 
+    doc = "\n//Set the context handle, such as CUDA's context, of the first VE in the runtime stack.\n"
+    doc += "//If the first VE isn't a device, nothing happens.\n"
+    impl += doc; head += doc
+    decl = "void bhc_set_device_context(uint64_t device_context)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{
+    bhxx::Runtime::instance().set_device_context((void*)device_context);
+}
+"""
+
     doc = "\n//Create new flat array\n"
     impl += doc; head += doc
     for key, t in type_map.items():
