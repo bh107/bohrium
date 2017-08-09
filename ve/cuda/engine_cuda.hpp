@@ -46,9 +46,13 @@ namespace {
     inline void __checkCudaErrors( CUresult err, const char *file, const int line )
     {
         if( CUDA_SUCCESS != err) {
+            const char* err_name;
+            cuGetErrorName(err, &err_name);
+            const char* err_desc;
+            cuGetErrorString(err, &err_desc);
+
             fprintf(stderr,
-                    "CUDA Driver API error = %04d from file <%s>, line %i.\n",
-                    err, file, line );
+                    "CUDA Error: %s \"%s\" from file <%s>, line %i.\n", err_name, err_desc, file, line);
             throw std::runtime_error("CUDA API call fail");
         }
     }
