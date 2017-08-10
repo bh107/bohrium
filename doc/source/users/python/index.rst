@@ -92,6 +92,8 @@ Print the current Bohrium runtime stack::
     python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
 
 
+.. _interop:
+
 Interoperability
 ~~~~~~~~~~~~~~~~
 
