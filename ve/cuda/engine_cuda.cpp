@@ -72,10 +72,10 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     }
 
     // Let's make sure that the directories exist
-    fs::create_directories(tmp_src_dir);
-    fs::create_directories(tmp_bin_dir);
+    jitk::create_directories(tmp_src_dir);
+    jitk::create_directories(tmp_bin_dir);
     if (not cache_bin_dir.empty()) {
-        fs::create_directories(cache_bin_dir);
+        jitk::create_directories(cache_bin_dir);
     }
 
     // Write the compilation hash

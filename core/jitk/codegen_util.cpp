@@ -84,6 +84,21 @@ boost::filesystem::path get_tmp_path(const ConfigParser &config) {
     return tmp_path / boost::filesystem::unique_path("bh_%%%%");
 }
 
+void create_directories(const boost::filesystem::path &path) {
+    constexpr int tries = 5;
+    for (int i = 1; i <= tries; ++i) {
+        try {
+            boost::filesystem::create_directories(path);
+            return;
+        } catch (boost::filesystem::filesystem_error &e) {
+            if (i == tries) {
+                throw;
+            }
+            cout << "Warning: " << e.what() << " (" << i << " attempt)" << endl;
+        }
+    }
+}
+
 pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
     if (numeric_limits<uint32_t>::max() <= work_group_size or
         numeric_limits<uint32_t>::max() <= block_size or

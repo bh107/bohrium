@@ -62,6 +62,10 @@ boost::filesystem::path write_source2file(const std::string &src,
 // Returns the path to the tmp dir
 boost::filesystem::path get_tmp_path(const ConfigParser &config);
 
+// Tries five times to create directories recursively
+// Useful when multiple processes runs on the same filesystem
+void create_directories(const boost::filesystem::path &path);
+
 // Calculate the work group sizes.
 // Return pair (global work size, local work size)
 std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size);

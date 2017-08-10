@@ -53,10 +53,10 @@ EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
                                            stat(stat)
 {
     // Let's make sure that the directories exist
-    fs::create_directories(tmp_src_dir);
-    fs::create_directories(tmp_bin_dir);
+    jitk::create_directories(tmp_src_dir);
+    jitk::create_directories(tmp_bin_dir);
     if (not cache_bin_dir.empty()) {
-        fs::create_directories(cache_bin_dir);
+        jitk::create_directories(cache_bin_dir);
     }
 }
 
@@ -75,7 +75,7 @@ EngineOpenMP::~EngineOpenMP() {
             }
         }
     }
-    
+
     // File clean up
     if (verbose) {
         cout << "removing temporary dir: " << tmp_src_dir << endl;

@@ -152,7 +152,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     queue = cl::CommandQueue(context, device);
 
     // Let's make sure that the directories exist
-    fs::create_directories(tmp_src_dir);
+    jitk::create_directories(tmp_src_dir);
 
     // Write the compilation hash
     stringstream ss;
