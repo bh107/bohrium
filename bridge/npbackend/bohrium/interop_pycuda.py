@@ -3,7 +3,7 @@ Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
 from .bhary import get_bhc
-from .target import get_data_pointer, get_device_context, set_data_pointer
+from .target import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
 from ._util import flush
 from . import contexts

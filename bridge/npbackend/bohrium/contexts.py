@@ -15,7 +15,7 @@ class EnableBohrium:
         try:
             import matplotlib
             if os.environ.get("DISPLAY", "") == "":
-                matplotlib.use('Agg')  # When no DISPLAY, we assume a headless marplotlib is used
+                matplotlib.use('Agg')  # When no DISPLAY, we assume a headless matplotlib is used
             import matplotlib.pyplot
             import matplotlib.pylab
         except ImportError:
@@ -69,7 +69,7 @@ class DisableBohrium:
         self._numpy_random = sys.modules['numpy.random']
         self._numpy_linalg = sys.modules['numpy.linalg']
         # Make sure that numpy points to numpy (and not Bohrium)
-        sys.modules['numpy'] = sys.modules.get("numpy_force", "numpy")
+        sys.modules['numpy'] = sys.modules.get("numpy_force", self._numpy)
 
     def __exit__(self, *args):
         # Load the state before entering context
