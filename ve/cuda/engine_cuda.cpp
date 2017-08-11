@@ -47,14 +47,10 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                     verbose(config.defaultGet<bool>("verbose", false)),
                                     stat(stat),
                                     prof(config.defaultGet<bool>("prof", false)),
-                                    tmp_dir(fs::temp_directory_path() / fs::unique_path("bohrium_%%%%")),
-                                    source_dir(tmp_dir / "src"),
-                                    object_dir(tmp_dir / "obj"),
-                                    compiler(config.defaultGet<string>("compiler_cmd", "nvcc"),
-                                             config.defaultGet<string>("compiler_inc", ""),
-                                             config.defaultGet<string>("compiler_lib", ""),
-                                             config.defaultGet<string>("compiler_flg", ""),
-                                             config.defaultGet<string>("compiler_ext", ""))
+                                    tmp_dir(jitk::get_tmp_path(config)),
+                                    tmp_src_dir(tmp_dir / "src"),
+                                    tmp_bin_dir(tmp_dir / "obj"),
+                                    cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", "")))
 {
     int deviceCount = 0;
     CUresult err = cuInit(0);
@@ -63,8 +59,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
         checkCudaErrors(cuDeviceGetCount(&deviceCount));
 
     if (deviceCount == 0) {
-        fprintf(stderr, "Error: no devices supporting CUDA\n");
-        exit(-1);
+        throw runtime_error("Error: no devices supporting CUDA");
     }
 
     // get first CUDA device
@@ -72,14 +67,62 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     err = cuCtxCreate(&context, 0, device);
     if (err != CUDA_SUCCESS) {
-        fprintf(stderr, "* Error initializing the CUDA context.\n");
         cuCtxDetach(context);
-        exit(-1);
+        throw runtime_error("Error initializing the CUDA context.");
     }
 
     // Let's make sure that the directories exist
-    fs::create_directories(source_dir);
-    fs::create_directories(object_dir);
+    jitk::create_directories(tmp_src_dir);
+    jitk::create_directories(tmp_bin_dir);
+    if (not cache_bin_dir.empty()) {
+        jitk::create_directories(cache_bin_dir);
+    }
+
+    // Write the compilation hash
+    compilation_hash = hasher(info());
+
+    // Get the compiler flag and replace {MAJOR} and {MINOR} with the SM versions
+    string compiler_flg = config.defaultGet<string>("compiler_flg", "--cubin -m64 -arch=sm_{MAJOR}{MINOR}");
+    {
+        int major = 0, minor = 0;
+        checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+        if (compiler_flg.find("{MAJOR}") != string::npos) {
+            compiler_flg.replace(compiler_flg.find("{MAJOR}"), string("{MAJOR}").size(), std::to_string(major));
+        }
+        if (compiler_flg.find("{MINOR}") != string::npos) {
+            compiler_flg.replace(compiler_flg.find("{MINOR}"), string("{MINOR}").size(), std::to_string(minor));
+        }
+    }
+
+    // Init the compiler
+    compiler = Compiler(config.defaultGet<string>("compiler_cmd", "nvcc"),
+                        config.defaultGet<string>("compiler_inc", ""),
+                        config.defaultGet<string>("compiler_lib", ""),
+                        compiler_flg,
+                        config.defaultGet<string>("compiler_ext", ""));
+}
+
+EngineCUDA::~EngineCUDA() {
+    cuCtxDetach(context);
+
+    // Move JIT kernels to the cache dir
+    if (not cache_bin_dir.empty()) {
+        for (const auto &kernel: _functions) {
+            const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".cubin");
+            if (fs::exists(src)) {
+                const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".cubin");
+                if (not fs::exists(dst)) {
+                    fs::copy_file(src, dst);
+                }
+            }
+        }
+    }
+
+    // File clean up
+    if (verbose) {
+        cout << "removing temporary dir: " << tmp_src_dir << endl;
+    }
+    fs::remove_all(tmp_src_dir);
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
@@ -107,61 +150,71 @@ pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > 
     }
 }
 
-void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
-                           const vector<const jitk::LoopB*> &threaded_blocks,
-                           const vector<const bh_view*> &offset_strides,
-                           const vector<const bh_instruction*> &constants) {
+CUfunction EngineCUDA::getFunction(const string &source) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
-    CUfunction program;
-
-    auto tcompile = chrono::steady_clock::now();
 
     // Do we have the program already?
-    if (_programs.find(hash) != _programs.end()) {
-        program = _programs.at(hash);
-    } else {
-        // Or do we have to compile it
+    if (_functions.find(hash) != _functions.end()) {
+        return _functions.at(hash);
+    }
+
+    fs::path binfile = cache_bin_dir / jitk::hash_filename(compilation_hash, hash, ".cubin");
+
+    // If the binary file of the kernel doesn't exist we create it
+    if (verbose or binfile.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
 
-        // The object file path
-        fs::path objfile = object_dir / jitk::hash_filename(hash, ".cubin");
+        // We create the binary file in the tmp dir
+        binfile = tmp_bin_dir / jitk::hash_filename(compilation_hash, hash, ".cubin");
 
         // Write the source file and compile it (reading from disk)
         // TODO: make nvcc read directly from stdin
         {
-            fs::path srcfile = jitk::write_source2file(source, source_dir, hash, ".cu", verbose);
-            compiler.compile(objfile.string(), srcfile.string());
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
+                                                       jitk::hash_filename(compilation_hash, hash, ".cu"), verbose);
+            compiler.compile(binfile.string(), srcfile.string());
         }
         /* else {
             // Pipe the source directly into the compiler thus no source file is written
-            compiler.compile(objfile.string(), source.c_str(), source.size());
+            compiler.compile(binfile.string(), source.c_str(), source.size());
         }
        */
-
-        CUmodule module;
-        CUresult err = cuModuleLoad(&module, objfile.string().c_str());
-        if (err != CUDA_SUCCESS) {
-            const char *err_name, *err_desc;
-            cuGetErrorName(err, &err_name);
-            cuGetErrorString(err, &err_desc);
-            cout << "Error loading the module \"" << objfile.string()
-                 << "\", " << err_name << ": \"" << err_desc << "\"." << endl;
-            cuCtxDetach(context);
-            throw runtime_error("cuModuleLoad() failed");
-        }
-
-        err = cuModuleGetFunction(&program, module, "execute");
-        if (err != CUDA_SUCCESS) {
-            const char *err_name, *err_desc;
-            cuGetErrorName(err, &err_name);
-            cuGetErrorString(err, &err_desc);
-            cout << "Error getting kernel function 'execute' \"" << objfile.string()
-                 << "\", " << err_name << ": \"" << err_desc << "\"." << endl;
-            throw runtime_error("cuModuleGetFunction() failed");
-        }
-        _programs[hash] = program;
     }
+
+    CUmodule module;
+    CUresult err = cuModuleLoad(&module, binfile.string().c_str());
+    if (err != CUDA_SUCCESS) {
+        const char *err_name, *err_desc;
+        cuGetErrorName(err, &err_name);
+        cuGetErrorString(err, &err_desc);
+        cout << "Error loading the module \"" << binfile.string()
+             << "\", " << err_name << ": \"" << err_desc << "\"." << endl;
+        cuCtxDetach(context);
+        throw runtime_error("cuModuleLoad() failed");
+    }
+
+    CUfunction program;
+    err = cuModuleGetFunction(&program, module, "execute");
+    if (err != CUDA_SUCCESS) {
+        const char *err_name, *err_desc;
+        cuGetErrorName(err, &err_name);
+        cuGetErrorString(err, &err_desc);
+        cout << "Error getting kernel function 'execute' \"" << binfile.string()
+             << "\", " << err_name << ": \"" << err_desc << "\"." << endl;
+        throw runtime_error("cuModuleGetFunction() failed");
+    }
+    _functions[hash] = program;
+    return program;
+}
+
+void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
+                           const vector<const jitk::LoopB*> &threaded_blocks,
+                           const vector<const bh_view*> &offset_strides,
+                           const vector<const bh_instruction*> &constants) {
+
+    auto tcompile = chrono::steady_clock::now();
+    CUfunction program = getFunction(source);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the CUDA kernel

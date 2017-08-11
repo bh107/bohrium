@@ -26,7 +26,12 @@ Features
 - **Loop Fusion**, Bohrium uses a `fusion algorithm <http://dl.acm.org/citation.cfm?id=2967945>`_ that fuses (or merges) array operations into the same computation kernel that are then JIT-compiled and executed. However, Bohrium can only fuse operations that have some common sized dimension and no horizontal data conflicts.
 - **Lazy CPU/GPU Communiction**, Bohrium only move data between the host and the GPU when the data is accessed directly by Python or a Python C-extension.
 - **python -m bohrium**, automatic makes ``import numpy`` use Bohrium.
-- `Jupyter Support <http://jupyter.org/>`_, you can use the magic command ``%%bohrium`` to achieve the same result.
+- `Jupyter Support <http://jupyter.org/>`_, you can use the magic command ``%%bohrium`` to automatically use Bohrium as NumPy.
+- **Zero-copy** :ref:`interop` **with:**
+    - `NumPy <http://www.numpy.org/>`_
+    - `Cython <http://cython.org/>`_
+    - `PyOpenCL <https://mathema.tician.de/software/pyopencl/>`_
+    - `PyCUDA <https://mathema.tician.de/software/pycuda/>`_
 
 
 Please note:

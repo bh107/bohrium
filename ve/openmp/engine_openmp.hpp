@@ -46,14 +46,20 @@ class EngineOpenMP {
     // Path to a temporary directory for the source and object files
     const boost::filesystem::path tmp_dir;
 
-    // Path to the directory of the source files
-    const boost::filesystem::path source_dir;
+    // Path to the temporary directory of the source files
+    const boost::filesystem::path tmp_src_dir;
 
-    // Path to the directory of the object files
-    const boost::filesystem::path object_dir;
+    // Path to the temporary directory of the binary files (e.g. .so files)
+    const boost::filesystem::path tmp_bin_dir;
+
+    // Path to the directory of the cached binary files (e.g. .so files)
+    const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
     const Compiler compiler;
+
+    // The hash of the JIT compilation command
+    const size_t compilation_hash;
 
     // Verbose flag
     const bool verbose;

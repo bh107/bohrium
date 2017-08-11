@@ -46,10 +46,14 @@ namespace {
     inline void __checkCudaErrors( CUresult err, const char *file, const int line )
     {
         if( CUDA_SUCCESS != err) {
+            const char* err_name;
+            cuGetErrorName(err, &err_name);
+            const char* err_desc;
+            cuGetErrorString(err, &err_desc);
+
             fprintf(stderr,
-                    "CUDA Driver API error = %04d from file <%s>, line %i.\n",
-                    err, file, line );
-            exit(-1);
+                    "CUDA Error: %s \"%s\" from file <%s>, line %i.\n", err_name, err_desc, file, line);
+            throw std::runtime_error("CUDA API call fail");
         }
     }
 }
@@ -59,7 +63,7 @@ namespace bohrium {
 class EngineCUDA {
 private:
     // Map of all compiled OpenCL programs
-    std::map<uint64_t, CUfunction> _programs;
+    std::map<uint64_t, CUfunction> _functions;
     // The CUDA context and device used throughout the execution
     CUdevice   device;
     CUcontext  context;
@@ -90,24 +94,31 @@ private:
     // Path to a temporary directory for the source and object files
     const boost::filesystem::path tmp_dir;
 
-    // Path to the directory of the source files
-    const boost::filesystem::path source_dir;
+    // Path to the temporary directory of the source files
+    const boost::filesystem::path tmp_src_dir;
 
-    // Path to the directory of the object files
-    const boost::filesystem::path object_dir;
+    // Path to the temporary directory of the binary files (e.g. .so or .cubin files)
+    const boost::filesystem::path tmp_bin_dir;
+
+    // Path to the directory of the cached binary files (e.g. .so or .cubin files)
+    const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
-    const Compiler compiler;
+    Compiler compiler;
+
+    // The hash of the JIT compilation command
+    size_t compilation_hash;
 
     // Returns the block and thread sizes based on the 'threaded_blocks'
     std::pair<std::tuple<uint32_t, uint32_t, uint32_t>, std::tuple<uint32_t, uint32_t, uint32_t> >
         NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
 
+    // Return a kernel function based on the given 'source'
+    CUfunction getFunction(const std::string &source);
+
 public:
     EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
-    ~EngineCUDA() {
-        cuCtxDetach(context);
-    }
+    ~EngineCUDA();
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,
@@ -212,7 +223,7 @@ public:
         // We have to clean all kernels compiled with the old context
         // Notice, the removed kernels are leaked when useCurrentContext()
         // isn't called as the first think (not really a big deal)
-        _programs.clear();
+        _functions.clear();
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'

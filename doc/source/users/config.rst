@@ -76,8 +76,8 @@ The default configuration file looks similar to the config below::
   #
   [openmp]
   impl = /usr/lib/libbh_ve_openmp.so
-  object_dir = /usr/var/bohrium/object
-  source_dir = /usr/var/bohrium/source
+  tmp_bin_dir = /usr/var/bohrium/object
+  tmp_src_dir = /usr/var/bohrium/source
   dump_src = true
   verbose = false
   prof = false #Profiling statistics

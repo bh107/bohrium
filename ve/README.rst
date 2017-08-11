@@ -6,4 +6,5 @@ Here goes::
 
     openmp - the OpenMP backend
     opencl - the OpenCL backend
+    cuda   - the CUDA backend
 

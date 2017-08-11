@@ -69,10 +69,21 @@ private:
     jitk::Statistics &stat;
     // Record profiling statistics
     const bool prof;
-    // Path to the directory of the source files (only used in verbose mode)
-    const boost::filesystem::path source_dir;
+    // Path to a temporary directory for the source and object files
+    const boost::filesystem::path tmp_dir;
+    // Path to the temporary directory of the source files
+    const boost::filesystem::path tmp_src_dir;
+    // Path to the temporary directory of the binary files (e.g. .clbin files)
+    const boost::filesystem::path tmp_bin_dir;
+    // Path to the directory of the cached binary files (e.g. .clbin files)
+    const boost::filesystem::path cache_bin_dir;
+    // The hash of the JIT compilation command
+    size_t compilation_hash;
+    // Return a kernel function based on the given 'source'
+    cl::Program getFunction(const std::string &source);
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
+    ~EngineOpenCL();
 
     // Execute the 'source'
     void execute(const std::string &source, const jitk::Kernel &kernel,

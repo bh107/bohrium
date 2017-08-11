@@ -49,15 +49,22 @@ namespace jitk {
 // Write 'num' of spaces to 'out'
 void spaces(std::stringstream &out, int num);
 
-// Returns the filename of the given hash and file extension
-std::string hash_filename(size_t hash, std::string file_extension);
+// Returns the filename of a the given hashes and file extension
+// compilation_hash is the hash of the compile command and source_hash is the hash of the source code
+std::string hash_filename(size_t compilation_hash, size_t source_hash, std::string file_extension);
 
-// Write `src` to file in `dir` using `hash_filename()` to generate the filename
+// Write `src` to file in `dir` using `filename`
 boost::filesystem::path write_source2file(const std::string &src,
                                           const boost::filesystem::path &dir,
-                                          size_t hash,
-                                          const std::string &file_ext,
+                                          const std::string &filename,
                                           bool verbose);
+
+// Returns the path to the tmp dir
+boost::filesystem::path get_tmp_path(const ConfigParser &config);
+
+// Tries five times to create directories recursively
+// Useful when multiple processes runs on the same filesystem
+void create_directories(const boost::filesystem::path &path);
 
 // Calculate the work group sizes.
 // Return pair (global work size, local work size)

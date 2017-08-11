@@ -3,9 +3,10 @@ Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
 from .bhary import get_bhc
-from .target import get_data_pointer, get_device_context, set_data_pointer
+from .target import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
 from ._util import flush
+from . import contexts
 
 _cuda_is_in_stack = None
 _iniziated = False
@@ -48,6 +49,7 @@ def init():
     global _iniziated
     if _iniziated:
         return
+    _initiated = True
     if not available():
         return
     flush()
@@ -59,10 +61,11 @@ def init():
 
 def get_gpuarray(bh_ary):
     """Return a PyCUDA GPUArray object that points to the same device memory as `bh_ary`"""
-    _import_pycuda_module()
-    from pycuda import gpuarray
-    dev_ptr = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
-    return gpuarray.GPUArray(bh_ary.shape, bh_ary.dtype, gpudata=dev_ptr)
+    with contexts.DisableBohrium():
+        _import_pycuda_module()
+        from pycuda import gpuarray
+        dev_ptr = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
+        return gpuarray.GPUArray(bh_ary.shape, bh_ary.dtype, gpudata=dev_ptr)
 
 
 def max_local_memory(cuda_device=None):

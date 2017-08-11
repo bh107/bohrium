@@ -97,4 +97,8 @@ void* Runtime::get_device_context() {
     return runtime.get_device_context();
 }
 
+void Runtime::set_device_context(void *device_context) {
+    runtime.set_device_context(device_context);
+}
+
 }  // namespace bhxx

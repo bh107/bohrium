@@ -134,6 +134,9 @@ class Impl : public ComponentImpl {
     void* get_device_context() {
         return nullptr;
     };
+
+    // We have no context so doing nothing
+    void set_device_context(void* device_context) {};
 };
 }
 

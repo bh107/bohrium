@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <limits>
 #include <iomanip>
+#include <boost/filesystem/operations.hpp>
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
@@ -50,19 +51,18 @@ void spaces(std::stringstream &out, int num) {
     }
 }
 
-string hash_filename(size_t hash, string extension) {
+string hash_filename(size_t compilation_hash, size_t source_hash, string extension) {
     stringstream ss;
-    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << hash << extension;
+    ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << compilation_hash << "_"<< source_hash << extension;
     return ss.str();
 }
 
 boost::filesystem::path write_source2file(const std::string &src,
                                           const boost::filesystem::path &dir,
-                                          size_t hash,
-                                          const std::string &file_ext,
+                                          const std::string &filename,
                                           bool verbose) {
     boost::filesystem::path srcfile = dir;
-    srcfile /= hash_filename(hash, file_ext);
+    srcfile /= filename;
     ofstream ofs(srcfile.string());
     ofs << src;
     ofs.flush();
@@ -71,6 +71,32 @@ boost::filesystem::path write_source2file(const std::string &src,
         cout << "Write source " << srcfile << endl;
     }
     return srcfile;
+}
+
+boost::filesystem::path get_tmp_path(const ConfigParser &config) {
+    boost::filesystem::path tmp_path;
+    const string tmp_dir = config.defaultGet<string>("tmp_dir", "");
+    if (tmp_dir.empty()) {
+        tmp_path = boost::filesystem::temp_directory_path();
+    } else {
+        tmp_path = boost::filesystem::path(tmp_dir);
+    }
+    return tmp_path / boost::filesystem::unique_path("bh_%%%%");
+}
+
+void create_directories(const boost::filesystem::path &path) {
+    constexpr int tries = 5;
+    for (int i = 1; i <= tries; ++i) {
+        try {
+            boost::filesystem::create_directories(path);
+            return;
+        } catch (boost::filesystem::filesystem_error &e) {
+            if (i == tries) {
+                throw;
+            }
+            cout << "Warning: " << e.what() << " (" << i << " attempt)" << endl;
+        }
+    }
 }
 
 pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {

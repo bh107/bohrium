@@ -151,6 +151,11 @@ def get_device_context():
     return int(bhc.get_device_context())
 
 
+def set_device_context(device_context):
+    """Set the device context, such as CUDA's cl_context, of the first VE in the runtime stack."""
+    bhc.set_device_context(device_context)
+
+
 def set_bhc_data_from_ary(self, ary):
     """ Assigns the data using memmove """
 
