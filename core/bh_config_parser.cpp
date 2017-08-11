@@ -18,6 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
+#include <algorithm>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/exceptions.hpp>
@@ -175,6 +177,8 @@ string get_config_path() {
 string lookup_env(const string &section, const string &option) {
     string s = "BH_" + section + "_" + option;
     to_upper(s);
+    std::replace(s.begin(), s.end(), '-', '_'); // replace all '-' to '_'
+    std::replace(s.begin(), s.end(), ' ', '_'); // replace all ' ' to '_'
     const char *env = getenv(s.c_str());
 
     if (env == NULL) {
