@@ -77,11 +77,9 @@ EngineOpenMP::~EngineOpenMP() {
     }
 
     // File clean up
-    if (verbose) {
-        cout << "removing temporary dir: " << tmp_src_dir << endl;
+    if (not verbose) {
+        fs::remove_all(tmp_src_dir);
     }
-    fs::remove_all(tmp_src_dir);
-
 
     // If this cleanup is enabled, the application segfaults
     // on destruction of the EngineOpenMP class.

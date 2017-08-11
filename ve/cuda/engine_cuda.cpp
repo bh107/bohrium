@@ -119,10 +119,9 @@ EngineCUDA::~EngineCUDA() {
     }
 
     // File clean up
-    if (verbose) {
-        cout << "removing temporary dir: " << tmp_src_dir << endl;
+    if (not verbose) {
+        fs::remove_all(tmp_src_dir);
     }
-    fs::remove_all(tmp_src_dir);
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
