@@ -238,7 +238,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     cl::Program program;
 
     // If the binary file of the kernel doesn't exist we compile the source
-    if (verbose or binfile.empty() or not fs::exists(binfile)) {
+    if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
         program = cl::Program(context, source);
         if (verbose) {

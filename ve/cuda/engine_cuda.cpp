@@ -162,7 +162,7 @@ CUfunction EngineCUDA::getFunction(const string &source) {
     fs::path binfile = cache_bin_dir / jitk::hash_filename(compilation_hash, hash, ".cubin");
 
     // If the binary file of the kernel doesn't exist we create it
-    if (verbose or binfile.empty() or not fs::exists(binfile)) {
+    if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
 
         // We create the binary file in the tmp dir
