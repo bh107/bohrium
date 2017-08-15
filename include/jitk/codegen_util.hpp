@@ -187,10 +187,12 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
                       FuseCache &fcache, component::ComponentFace *child) {
     using namespace std;
 
-    auto texecution = chrono::steady_clock::now();
+    const auto texecution = chrono::steady_clock::now();
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+    const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
+    const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
 
     // Some statistics
     stat.record(bhir->instr_list);
@@ -231,9 +233,7 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
         //Let's create a kernel
         Kernel kernel = create_kernel_object(block, verbose, stat);
 
-        const SymbolTable symbols(kernel.getAllInstr(),
-                                  config.defaultGet("index_as_var", true),
-                                  config.defaultGet("const_as_var", true));
+        const SymbolTable symbols(kernel.getAllInstr(), index_as_var, const_as_var);
 
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not kernel.block.isSystemOnly();
@@ -294,7 +294,7 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
                 constants.push_back(&(*instr));
             }
 
-            // Let's execute the OpenCL kernel
+            // Let's execute the kernel
             engine.execute(ss.str(), kernel, threaded_blocks, offset_strides, constants);
         }
 

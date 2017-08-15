@@ -158,7 +158,7 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     if (not config.defaultGet<bool>("compiler_openmp", false)) {
         return;
     }
-    bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
+    const bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     vector<InstrPtr> openmp_reductions;
@@ -168,7 +168,7 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     if (block.rank == 0 and openmp_compatible(block)) {
         ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
-        for (const InstrPtr instr: block._sweeps) {
+        for (const InstrPtr &instr: block._sweeps) {
             assert(instr->operand.size() == 3);
             const bh_view &view = instr->operand[0];
             if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
@@ -254,7 +254,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
-    write_loop_block(symbols, NULL, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
+    write_loop_block(symbols, nullptr, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
@@ -306,5 +306,5 @@ void Impl::execute(bh_ir *bhir) {
     util_handle_extmethod(this, bhir, extmethods);
 
     // And then the regular instructions
-    handle_execution(*this, bhir, engine, config, stat, fcache, NULL);
+    handle_execution(*this, bhir, engine, config, stat, fcache, nullptr);
 }
