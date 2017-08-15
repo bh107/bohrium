@@ -176,14 +176,104 @@ void util_handle_extmethod(component::ComponentImpl *self,
  *     - void write_kernel(...)
  * 'EngineType' most be a engine implementation that exposes:
  *     - set_constructor_flag(...)
+ */
+template<typename SelfType, typename EngineType>
+void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
+                          FuseCache &fcache) {
+    using namespace std;
+
+    const auto texecution = chrono::steady_clock::now();
+
+    const bool verbose = config.defaultGet<bool>("verbose", false);
+    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+    const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
+    const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
+
+    // Some statistics
+    stat.record(bhir->instr_list);
+
+    // Let's start by cleanup the instructions from the 'bhir'
+    vector<bh_instruction*> instr_list;
+    {
+        set<bh_base*> syncs;
+        set<bh_base*> frees;
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
+
+        // Let's free device buffers and array memory
+        for(bh_base *base: frees) {
+            bh_data_free(base);
+        }
+    }
+
+    // Set the constructor flag
+    if (config.defaultGet<bool>("array_contraction", true)) {
+        engine.set_constructor_flag(instr_list);
+    } else {
+        for (bh_instruction *instr: instr_list) {
+            instr->constructor = false;
+        }
+    }
+
+    // Let's get the block list
+    const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat, false);
+
+    for(const Block &block: block_list) {
+        assert(not block.isInstr());
+
+        //Let's create a kernel
+        Kernel kernel = create_kernel_object(block, verbose, stat);
+
+        const SymbolTable symbols(kernel.getAllInstr(), strides_as_variables, index_as_var, const_as_var);
+
+        // We can skip a lot of steps if the kernel does no computation
+        const bool kernel_is_computing = not kernel.block.isSystemOnly();
+
+        // Find the parallel blocks
+        const vector<const LoopB*> threaded_blocks = self.find_threaded_blocks(kernel);
+
+        if (threaded_blocks.size() == 0 and kernel_is_computing) {
+            throw runtime_error("handle_cpu_execution(): threaded_blocks cannot be empty on the CPU!");
+        }
+
+        // Let's execute the kernel
+        if (kernel_is_computing) {
+            // Code generation
+            stringstream ss;
+            self.write_kernel(kernel, symbols, config, threaded_blocks, ss);
+
+            // Create the constant vector
+            vector<const bh_instruction*> constants;
+            constants.reserve(symbols.constIDs().size());
+            for (const InstrPtr &instr: symbols.constIDs()) {
+                constants.push_back(&(*instr));
+            }
+
+            // Let's execute the kernel
+            engine.execute(ss.str(), kernel, threaded_blocks, symbols.offsetStrideViews(), constants);
+        }
+
+        // Finally, let's cleanup
+        for(bh_base *base: kernel.getFrees()) {
+            bh_data_free(base);
+        }
+    }
+    stat.time_total_execution += chrono::steady_clock::now() - texecution;
+}
+
+/* Handle execution of regular instructions
+ * 'SelfType' most be a component implementation that exposes:
+ *     - find_threaded_blocks(...)
+ *     - void write_kernel(...)
+ * 'EngineType' most be a engine implementation that exposes:
+ *     - set_constructor_flag(...)
  *     - void copyToHost(...)
  *     - void copyToDevice(...)
  *     - void delBuffer(...)
  * 'child' can only be NULL when find_threaded_blocks() always returns one or more blocks
  */
 template<typename SelfType, typename EngineType>
-void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
-                      FuseCache &fcache, component::ComponentFace *child) {
+void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
+                          FuseCache &fcache, component::ComponentFace *child) {
     using namespace std;
 
     const auto texecution = chrono::steady_clock::now();

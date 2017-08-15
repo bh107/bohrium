@@ -77,7 +77,7 @@ class Impl : public ComponentImpl {
         util_handle_extmethod(this, bhir, extmethods);
     }
 
-    // The following methods implements the methods required by jitk::handle_execution()
+    // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
     void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
@@ -302,5 +302,5 @@ void Impl::execute(bh_ir *bhir) {
     util_handle_extmethod(this, bhir, extmethods);
 
     // And then the regular instructions
-    handle_execution(*this, bhir, engine, config, stat, fcache, nullptr);
+    handle_cpu_execution(*this, bhir, engine, config, stat, fcache);
 }

@@ -74,20 +74,13 @@ class EngineOpenMP {
     EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
     ~EngineOpenMP();
 
-    // The following methods implements the methods required by jitk::handle_execution()
+    // The following methods implements the methods required by jitk::handle_cpu_execution()
 
     void execute(const std::string &source, const jitk::Kernel &kernel,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
-    // Notice, OpenMP has no device thus the device methods does nothing
-    template <typename T>
-    void copyToHost(T &bases) {}
-    template <typename T>
-    void copyToDevice(T &base_list) {}
-    template <typename T>
-    void delBuffer(T &base) {}
 
     // Return a YAML string describing this component
     std::string info() const;

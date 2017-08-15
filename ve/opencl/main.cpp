@@ -240,5 +240,5 @@ void Impl::execute(bh_ir *bhir) {
     util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
 
     // And then the regular instructions
-    handle_execution(*this, bhir, engine, config, stat, fcache, &child);
+    handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
 }
