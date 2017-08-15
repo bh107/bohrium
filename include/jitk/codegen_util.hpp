@@ -73,7 +73,8 @@ std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t bloc
 // Write the kernel function arguments.
 // The function 'type_writer' should write the backend specific data type names.
 // The string 'array_type_prefix' specifies the type prefix for array pointers (e.g. "__global" in OpenCL)
-void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
+void write_kernel_function_arguments(const SymbolTable &symbols,
+                                     const std::vector<bh_base*> &non_temps,
                                      std::function<const char *(bh_type type)> type_writer,
                                      std::stringstream &ss, const char *array_type_prefix,
                                      const bool all_pointers);

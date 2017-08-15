@@ -207,7 +207,8 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
     // Write the header of the execute function
     ss << "__kernel void execute";
-    write_kernel_function_arguments(kernel, symbols, write_opencl_type, ss, "__global", false);
+    write_kernel_function_arguments(symbols, kernel.getNonTemps(), write_opencl_type, ss,
+                                    "__global", false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks
@@ -224,7 +225,8 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, NULL, kernel.block, config, threaded_blocks, true, write_opencl_type, loop_head_writer, ss);
+    write_loop_block(symbols, nullptr, kernel.block, config, threaded_blocks, true, write_opencl_type,
+                     loop_head_writer, ss);
 
     ss << "}\n\n";
 }

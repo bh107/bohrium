@@ -248,7 +248,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
 
     // Write the header of the execute function
     ss << "void execute";
-    write_kernel_function_arguments(kernel, symbols, write_c99_type, ss, NULL, false);
+    write_kernel_function_arguments(symbols, kernel.getNonTemps(), write_c99_type, ss, nullptr, false);
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";

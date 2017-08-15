@@ -203,11 +203,11 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
     // Write the header of the execute function
     ss << "extern \"C\" __global__ void execute";
-    write_kernel_function_arguments(kernel, symbols, write_cuda_type, ss, NULL, false);
+    write_kernel_function_arguments(symbols, kernel.getNonTemps(), write_cuda_type, ss, nullptr, false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks
-    if (threaded_blocks.size() > 0) {
+    if (not threaded_blocks.empty()) {
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
@@ -220,8 +220,8 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, NULL, kernel.block, config, threaded_blocks, true, write_cuda_type, loop_head_writer, ss);
-
+    write_loop_block(symbols, nullptr, kernel.block, config, threaded_blocks, true, write_cuda_type,
+                     loop_head_writer, ss);
     ss << "}\n\n";
 }
 
