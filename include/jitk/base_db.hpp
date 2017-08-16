@@ -93,7 +93,8 @@ private:
     std::set<const bh_base*> _array_always; // Sets of base arrays that should always be arrays
 
 public:
-    SymbolTable(const std::vector<InstrPtr> &instr_list, bool index_as_var, bool const_as_var) {
+    SymbolTable(const std::vector<InstrPtr> &instr_list, bool strides_as_variables, bool index_as_var,
+                bool const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -121,9 +122,11 @@ public:
                 _array_always.insert(instr->operand[0].base);
             }
         }
-        _offset_stride_views.reserve(_offset_strides_map.size());
-        for(auto &v: _offset_strides_map) {
-            _offset_stride_views.push_back(&v.first);
+        if (strides_as_variables) {
+            _offset_stride_views.reserve(_offset_strides_map.size());
+            for(auto &v: _offset_strides_map) {
+                _offset_stride_views.push_back(&v.first);
+            }
         }
     };
     // Get the ID of 'base', throws exception if 'base' doesn't exist

@@ -112,7 +112,6 @@ pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_siz
 }
 
 void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
-                                     const vector<const bh_view*> &offset_strides,
                                      std::function<const char *(bh_type type)> type_writer,
                                      stringstream &ss,
                                      const char *array_type_prefix,

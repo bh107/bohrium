@@ -74,7 +74,6 @@ std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t bloc
 // The function 'type_writer' should write the backend specific data type names.
 // The string 'array_type_prefix' specifies the type prefix for array pointers (e.g. "__global" in OpenCL)
 void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
-                                     const std::vector<const bh_view*> &offset_strides,
                                      std::function<const char *(bh_type type)> type_writer,
                                      std::stringstream &ss, const char *array_type_prefix,
                                      const bool all_pointers);
@@ -233,7 +232,7 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
         //Let's create a kernel
         Kernel kernel = create_kernel_object(block, verbose, stat);
 
-        const SymbolTable symbols(kernel.getAllInstr(), index_as_var, const_as_var);
+        const SymbolTable symbols(kernel.getAllInstr(), strides_as_variables, index_as_var, const_as_var);
 
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not kernel.block.isSystemOnly();
@@ -277,15 +276,9 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
             // We need a memory buffer on the device for each non-temporary array in the kernel
             engine.copyToDevice(kernel.getNonTemps());
 
-            // Get the offset and strides (an empty 'offset_strides' deactivate "strides as variables")
-            vector<const bh_view*> offset_strides;
-            if (strides_as_variables) {
-                offset_strides = kernel.getOffsetAndStrides();
-            }
-
             // Code generation
             stringstream ss;
-            self.write_kernel(kernel, symbols, config, threaded_blocks, offset_strides, ss);
+            self.write_kernel(kernel, symbols, config, threaded_blocks, ss);
 
             // Create the constant vector
             vector<const bh_instruction*> constants;

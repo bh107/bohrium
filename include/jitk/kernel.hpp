@@ -89,24 +89,6 @@ public:
         getAllTemps(ret);
         return ret;
     }
-
-    // Returns all offset-and-strides of all non-temporary arrays in the order the appear in the instruction list
-    std::vector<const bh_view*> getOffsetAndStrides() const {
-        std::vector<const bh_view*> ret;
-        {
-            std::set<bh_view, OffsetAndStrides_less> offset_strides_set;
-            for (const InstrPtr instr: getAllInstr()) {
-                for (const bh_view *view: instr->get_views()) {
-                    if (util::exist_linearly(getNonTemps(), view->base) and
-                        not util::exist(offset_strides_set, *view)) {
-                        ret.push_back(view);
-                        offset_strides_set.insert(*view);
-                    }
-                }
-            }
-        }
-        return ret;
-    }
 };
 
 // Create a new Kernel object including statistics and verbosity

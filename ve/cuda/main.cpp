@@ -78,8 +78,7 @@ public:
 
     // Write an CUDA kernel
     void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks,
-                      const vector<const bh_view*> &offset_strides, stringstream &ss);
+                      const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Implement the handle of extension methods
     void handle_extmethod(bh_ir *bhir) {
@@ -192,8 +191,7 @@ const char *write_thread_id(unsigned int dim) {
 }
 
 void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks,
-                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
+                        const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <kernel_dependencies/complex_cuda.h>\n";
@@ -205,7 +203,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
     // Write the header of the execute function
     ss << "extern \"C\" __global__ void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_cuda_type, ss, NULL, false);
+    write_kernel_function_arguments(kernel, symbols, write_cuda_type, ss, NULL, false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks

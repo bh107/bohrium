@@ -81,8 +81,7 @@ class Impl : public ComponentImpl {
 
     // Write the OpenMP kernel
     void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks,
-                      const vector<const bh_view*> &offset_strides, stringstream &ss);
+                      const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
     vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
@@ -232,8 +231,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
 }
 
 void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks,
-                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
+                        const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -250,7 +248,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
 
     // Write the header of the execute function
     ss << "void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_c99_type, ss, NULL, false);
+    write_kernel_function_arguments(kernel, symbols, write_c99_type, ss, NULL, false);
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";

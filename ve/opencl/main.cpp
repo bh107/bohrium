@@ -79,8 +79,7 @@ public:
 
     // Write an OpenCL kernel
     void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks,
-                      const vector<const bh_view*> &offset_strides, stringstream &ss);
+                      const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Implement the handle of extension methods
     void handle_extmethod(bh_ir *bhir) {
@@ -195,8 +194,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
 }
 
 void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks,
-                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
+                        const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -209,7 +207,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
 
     // Write the header of the execute function
     ss << "__kernel void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_opencl_type, ss, "__global", false);
+    write_kernel_function_arguments(kernel, symbols, write_opencl_type, ss, "__global", false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks
