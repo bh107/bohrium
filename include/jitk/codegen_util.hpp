@@ -295,7 +295,7 @@ void handle_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const Con
             }
 
             // Let's execute the kernel
-            engine.execute(ss.str(), kernel, threaded_blocks, offset_strides, constants);
+            engine.execute(ss.str(), kernel, threaded_blocks, symbols.offsetStrideViews(), constants);
         }
 
         // Let's copy sync'ed arrays back to the host

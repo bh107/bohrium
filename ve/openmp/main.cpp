@@ -276,7 +276,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
             stmp << "a" << symbols.baseID(b) << ", ";
         }
         uint64_t count=0;
-        for (const bh_view *view: offset_strides) {
+        for (const bh_view *view: symbols.offsetStrideViews()) {
             stmp << "offset_strides[" << count++ << "], ";
             for (int i=0; i<view->ndim; ++i) {
                 stmp << "offset_strides[" << count++ << "], ";

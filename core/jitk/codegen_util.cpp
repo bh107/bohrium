@@ -126,7 +126,7 @@ void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &sy
         }
         stmp << type_writer(b->type) << " *a" << symbols.baseID(b) << ", ";
     }
-    for (const bh_view *view: offset_strides) {
+    for (const bh_view *view: symbols.offsetStrideViews()) {
         stmp << type_writer(bh_type::UINT64);
         if (all_pointers)
             stmp << "*";

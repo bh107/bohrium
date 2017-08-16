@@ -88,6 +88,7 @@ private:
     std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
+    std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
     std::set<InstrPtr, Constant_less> _constant_set; // Sets of instructions to a constant ID
     std::set<const bh_base*> _array_always; // Sets of base arrays that should always be arrays
 
@@ -120,6 +121,10 @@ public:
                 _array_always.insert(instr->operand[0].base);
             }
         }
+        _offset_stride_views.reserve(_offset_strides_map.size());
+        for(auto &v: _offset_strides_map) {
+            _offset_stride_views.push_back(&v.first);
+        }
     };
     // Get the ID of 'base', throws exception if 'base' doesn't exist
     size_t baseID(const bh_base *base) const {
@@ -143,6 +148,9 @@ public:
     }
     bool existOffsetStridesID(const bh_view &view) const {
         return util::exist(_offset_strides_map,view);
+    }
+    const std::vector<const bh_view*> &offsetStrideViews() const {
+        return _offset_stride_views;
     }
     // Get the set of constants
     const std::set<InstrPtr, Constant_less> &constIDs() const {
