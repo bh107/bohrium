@@ -269,32 +269,30 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
         }
         spaces(ss, 4);
         ss << "execute(";
+        // We create the comma separated list of args and saves it in `stmp`
+        stringstream stmp;
         for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
             bh_base *b = kernel.getNonTemps()[i];
-            ss << "a" << symbols.baseID(b);
-            if (i+1 < kernel.getNonTemps().size()) {
-                ss << ", ";
-            }
+            stmp << "a" << symbols.baseID(b) << ", ";
         }
         uint64_t count=0;
         for (const bh_view *view: offset_strides) {
-            ss << ", offset_strides[" << count++ << "]";
+            stmp << "offset_strides[" << count++ << "], ";
             for (int i=0; i<view->ndim; ++i) {
-                ss << ", offset_strides[" << count++ << "]";
+                stmp << "offset_strides[" << count++ << "], ";
             }
         }
         if (symbols.constIDs().size() > 0) {
-            if (kernel.getNonTemps().size() > 0) {
-                ss << ", "; // If any args were written before us, we need a comma
-            }
             uint64_t i=0;
-            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
                 const InstrPtr &instr = *it;
-                ss << "constants[" << i++ << "]." << bh_type_text(instr->constant.type);
-                if (++it != symbols.constIDs().end()) { // Not the last iteration
-                    ss << ", ";
-                }
+                stmp << "constants[" << i++ << "]." << bh_type_text(instr->constant.type) << ", ";
             }
+        }
+        // And then we write `stmp` into `ss` excluding the last comma
+        const string strtmp = stmp.str();
+        if (not strtmp.empty()) {
+            ss << strtmp.substr(0, strtmp.size()-2);
         }
         ss << ");\n";
         ss << "}\n";

@@ -117,45 +117,45 @@ void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &sy
                                      stringstream &ss,
                                      const char *array_type_prefix,
                                      const bool all_pointers) {
-    ss << "(";
-    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+    // We create the comma separated list of args and saves it in `stmp`
+    stringstream stmp;
+    for (size_t i=0; i < kernel.getNonTemps().size(); ++i) {
         bh_base *b = kernel.getNonTemps()[i];
-        if(array_type_prefix != nullptr) {
-            ss << array_type_prefix << " ";
+        if (array_type_prefix != nullptr) {
+            stmp << array_type_prefix << " ";
         }
-        ss << type_writer(b->type) << " *a" << symbols.baseID(b);
-        if (i+1 < kernel.getNonTemps().size()) {
-            ss << ", ";
-        }
+        stmp << type_writer(b->type) << " *a" << symbols.baseID(b) << ", ";
     }
     for (const bh_view *view: offset_strides) {
-        ss << ", " << type_writer(bh_type::UINT64);
+        stmp << type_writer(bh_type::UINT64);
         if (all_pointers)
-            ss << "*";
-        ss << " vo" << symbols.offsetStridesID(*view);
+            stmp << "*";
+        stmp << " vo" << symbols.offsetStridesID(*view) << ", ";
         for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << type_writer(bh_type::UINT64);
+            stmp << type_writer(bh_type::UINT64);
             if (all_pointers)
-                ss << "*";
-            ss << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+                stmp << "*";
+            stmp << " vs" << symbols.offsetStridesID(*view) << "_" << i << ", ";
         }
     }
     if (not symbols.constIDs().empty()) {
-        if (not kernel.getNonTemps().empty()) {
-            ss << ", "; // If any args were written before us, we need a comma
-        }
-        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
             const InstrPtr &instr = *it;
-            ss << "const " << type_writer(instr->constant.type);
+            stmp << "const " << type_writer(instr->constant.type);
             if (all_pointers)
-                ss << "*";
-            ss << " c" << symbols.constID(*instr);
-            if (++it != symbols.constIDs().end()) { // Not the last iteration
-                ss << ", ";
-            }
+                stmp << "*";
+            stmp << " c" << symbols.constID(*instr) << ", ";
         }
     }
-    ss << ")";
+    // And then we write `stmp` into `ss` excluding the last comma
+    const string strtmp = stmp.str();
+    if (strtmp.empty()) {
+        ss << "()";
+    } else {
+        ss << "(";
+        ss << strtmp.substr(0, strtmp.size()-2); // Excluding the last comma
+        ss << ")";
+    }
 }
 
 
