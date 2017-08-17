@@ -217,7 +217,7 @@ void write_loop_block(const SymbolTable &symbols,
                 const bh_view &input = instr->operand[i];
                 if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
                     if (local_tmps.find(input.base) == local_tmps.end() and
-                        (parent_scope == NULL or parent_scope->isArray(input))) {
+                        (parent_scope == nullptr or parent_scope->isArray(input))) {
                         if (util::exist(candidates, input)) { // 'input' is used multiple times
                             scalar_replaced_input_only.push_back(&input);
                         } else {

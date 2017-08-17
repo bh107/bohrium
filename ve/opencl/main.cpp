@@ -212,7 +212,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     ss << "{\n";
 
     // Write the IDs of the threaded blocks
-    if (threaded_blocks.size() > 0) {
+    if (not threaded_blocks.empty()) {
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
