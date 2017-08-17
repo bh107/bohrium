@@ -81,7 +81,7 @@ class Impl : public ComponentImpl {
 
     // Write the OpenMP kernel
     void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks, stringstream &ss);
+                      vector<bh_base*> non_temps, stringstream &ss);
 
     // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
     vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
@@ -230,8 +230,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
+void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config, vector<bh_base*> non_temps, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";

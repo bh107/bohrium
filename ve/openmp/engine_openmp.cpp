@@ -158,13 +158,12 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
 }
 
 
-void EngineOpenMP::execute(const std::string &source, const jitk::Kernel &kernel,
-                           const std::vector<const jitk::LoopB*> &threaded_blocks,
+void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
                            const std::vector<const bh_view*> &offset_strides,
                            const std::vector<const bh_instruction*> &constants) {
 
     // Make sure all arrays are allocated
-    for (bh_base *base: kernel.getNonTemps()) {
+    for (bh_base *base: non_temps) {
         bh_data_malloc(base);
     }
 
@@ -176,8 +175,8 @@ void EngineOpenMP::execute(const std::string &source, const jitk::Kernel &kernel
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(kernel.getNonTemps().size());
-    for(bh_base *base: kernel.getNonTemps()) {
+    data_list.reserve(non_temps.size());
+    for(bh_base *base: non_temps) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }

@@ -229,18 +229,11 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not kernel.block.isSystemOnly();
 
-        // Find the parallel blocks
-        const vector<const LoopB*> threaded_blocks = self.find_threaded_blocks(kernel);
-
-        if (threaded_blocks.size() == 0 and kernel_is_computing) {
-            throw runtime_error("handle_cpu_execution(): threaded_blocks cannot be empty on the CPU!");
-        }
-
         // Let's execute the kernel
         if (kernel_is_computing) {
             // Code generation
             stringstream ss;
-            self.write_kernel(kernel, symbols, config, threaded_blocks, ss);
+            self.write_kernel(kernel, symbols, config, kernel.getNonTemps(), ss);
 
             // Create the constant vector
             vector<const bh_instruction*> constants;
@@ -250,7 +243,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             }
 
             // Let's execute the kernel
-            engine.execute(ss.str(), kernel, threaded_blocks, symbols.offsetStrideViews(), constants);
+            engine.execute(ss.str(), kernel.getNonTemps(), symbols.offsetStrideViews(), constants);
         }
 
         // Finally, let's cleanup
