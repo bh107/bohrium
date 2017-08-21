@@ -196,14 +196,14 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     // Write the need includes
     ss << "#include <kernel_dependencies/complex_cuda.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
-    if (kernel.useRandom()) { // Write the random function
+    if (symbols.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_cuda.h>\n";
     }
     ss << "\n";
 
     // Write the header of the execute function
     ss << "extern \"C\" __global__ void execute";
-    write_kernel_function_arguments(symbols, kernel.getNonTemps(), write_cuda_type, ss, nullptr, false);
+    write_kernel_function_arguments(symbols, write_cuda_type, ss, nullptr, false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks

@@ -80,8 +80,7 @@ class Impl : public ComponentImpl {
     // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
-    void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      vector<bh_base*> non_temps, stringstream &ss);
+    void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
 
     // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
     vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
@@ -230,7 +229,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config, vector<bh_base*> non_temps, stringstream &ss) {
+void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -239,7 +238,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
     ss << "#include <complex.h>\n";
     ss << "#include <tgmath.h>\n";
     ss << "#include <math.h>\n";
-    if (kernel.useRandom()) { // Write the random function
+    if (symbols.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
     write_c99_dtype_union(ss); // We always need to declare the union of all constant data types
@@ -247,7 +246,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
 
     // Write the header of the execute function
     ss << "void execute";
-    write_kernel_function_arguments(symbols, kernel.getNonTemps(), write_c99_type, ss, nullptr, false);
+    write_kernel_function_arguments(symbols, write_c99_type, ss, nullptr, false);
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";

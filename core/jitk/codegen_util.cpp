@@ -112,15 +112,14 @@ pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_siz
 }
 
 void write_kernel_function_arguments(const SymbolTable &symbols,
-                                     const vector<bh_base*> &non_temps,
                                      std::function<const char *(bh_type type)> type_writer,
                                      stringstream &ss,
                                      const char *array_type_prefix,
                                      const bool all_pointers) {
     // We create the comma separated list of args and saves it in `stmp`
     stringstream stmp;
-    for (size_t i=0; i < non_temps.size(); ++i) {
-        bh_base *b = non_temps[i];
+    for (size_t i=0; i < symbols.getNonTemps().size(); ++i) {
+        bh_base *b = symbols.getNonTemps()[i];
         if (array_type_prefix != nullptr) {
             stmp << array_type_prefix << " ";
         }

@@ -82,6 +82,7 @@ struct Constant_less {
     }
 };
 
+// The SymbolTable class contains all array meta date needed for a JIT kernel.
 class SymbolTable {
 private:
     std::map<const bh_base*, size_t> _base_map; // Mapping a base to its ID
@@ -89,12 +90,18 @@ private:
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
-    std::set<InstrPtr, Constant_less> _constant_set; // Sets of instructions to a constant ID
-    std::set<const bh_base*> _array_always; // Sets of base arrays that should always be arrays
+    std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID
+    std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
+    std::vector<bh_base*> _non_temps; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
+    const std::set<bh_base*> _temps; // Set of temporary arrays// Arrays freed
+    std::set<bh_base*> _frees; // Set of freed arrays
+    std::set<bh_base*> _syncs; // Set of sync'ed arrays
+    bool _useRandom; // Flag: is any instructions using random?
 
 public:
-    SymbolTable(const std::vector<InstrPtr> &instr_list, bool strides_as_variables, bool index_as_var,
-                bool const_as_var) {
+    SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> temp_arrays,
+                bool strides_as_variables, bool index_as_var,
+                bool const_as_var) : _temps(std::move(temp_arrays)) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -117,9 +124,22 @@ public:
                 if (not bh_is_constant(&instr->operand[1])) {
                     _array_always.insert(instr->operand[1].base);
                 }
-            }
-            if (instr->opcode == BH_SCATTER or instr->opcode == BH_COND_SCATTER) {
+            } else if (instr->opcode == BH_SCATTER or instr->opcode == BH_COND_SCATTER) {
                 _array_always.insert(instr->operand[0].base);
+            } else if (instr->opcode == BH_RANDOM) {
+                _useRandom = true;
+            } else if (instr->opcode == BH_FREE) {
+                _frees.insert(instr->operand[0].base);
+            } else if (instr->opcode == BH_SYNC) {
+                _syncs.insert(instr->operand[0].base);
+            }
+            // Find non-temporary arrays
+            for(const bh_view &v: instr->operand) {
+                if (not bh_is_constant(&v) and _temps.find(v.base) == _temps.end()) {
+                    if (std::find(_non_temps.begin(), _non_temps.end(), v.base) == _non_temps.end()) {
+                        _non_temps.push_back(v.base);
+                    }
+                }
             }
         }
         if (strides_as_variables) {
@@ -175,6 +195,22 @@ public:
     // Return true when 'base' should always be an array
     bool isAlwaysArray(const bh_base *base) const {
         return util::exist(_array_always, base);
+    }
+    // Return all non-temporary arrays, which are the in-/out-puts of the JIT kernel
+    const std::vector<bh_base*> &getNonTemps() const {
+        return _non_temps;
+    }
+    // Return the freed arrays
+    const std::set<bh_base*> &getFrees() const {
+        return _frees;
+    }
+    // Return the sync'ed arrays
+    const std::set<bh_base*> &getSyncs() const {
+        return _syncs;
+    }
+    // Is any instructions use the random library?
+    bool useRandom() const {
+        return _useRandom;
     }
 };
 
