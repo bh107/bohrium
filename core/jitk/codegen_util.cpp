@@ -24,7 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
-#include <jitk/kernel.hpp>
 
 using namespace std;
 

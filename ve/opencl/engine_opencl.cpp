@@ -23,8 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 #include <boost/filesystem.hpp>
 
-#include <jitk/kernel.hpp>
-
 #include "engine_opencl.hpp"
 
 namespace fs = boost::filesystem;

@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
-#include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 
 #include "compiler.hpp"

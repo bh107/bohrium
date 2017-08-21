@@ -23,8 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 #include <iomanip>
 
-#include <jitk/kernel.hpp>
-
 #include "engine_cuda.hpp"
 
 using namespace std;

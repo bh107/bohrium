@@ -36,7 +36,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <jitk/block.hpp>
 #include <jitk/base_db.hpp>
-#include <jitk/kernel.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/apply_fusion.hpp>

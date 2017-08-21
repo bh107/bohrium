@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_opcode.h>
 #include <jitk/fuser.hpp>
-#include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/graph.hpp>

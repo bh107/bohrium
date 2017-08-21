@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define __OPENMP_OPENMP_UTIL_HPP
 
 #include <bh_opcode.h>
-#include <jitk/kernel.hpp>
 #include <jitk/base_db.hpp>
 
 // Return the OpenMP reduction symbol
