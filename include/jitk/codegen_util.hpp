@@ -221,7 +221,8 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         assert(not block.isInstr());
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables, index_as_var, const_as_var);
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables,
+                                  index_as_var, const_as_var);
         stat.record(symbols);
         if (verbose) {
             std::cout << "Kernel's non-temps: \n";
@@ -321,10 +322,12 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         //Let's create a kernel
         Kernel kernel = create_kernel_object(block, verbose, stat);
 
-        const SymbolTable symbols(kernel.getAllInstr(), kernel.getAllTemps(), strides_as_variables, index_as_var, const_as_var);
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables,
+                                  index_as_var, const_as_var);
+
 
         // We can skip a lot of steps if the kernel does no computation
-        const bool kernel_is_computing = not kernel.block.isSystemOnly();
+        const bool kernel_is_computing = not block.isSystemOnly();
 
         // Find the parallel blocks
         const vector<const LoopB*> threaded_blocks = self.find_threaded_blocks(kernel);
@@ -341,16 +344,16 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             auto toffload = chrono::steady_clock::now();
 
             // Let's copy all non-temporary to the host
-            engine.copyToHost(kernel.getNonTemps());
+            engine.copyToHost(symbols.getNonTemps());
 
             // Let's free device buffers
-            for (bh_base *base: kernel.getFrees()) {
+            for (bh_base *base: symbols.getFrees()) {
                 engine.delBuffer(base);
             }
 
             // Let's send the kernel instructions to our child
             vector<bh_instruction> child_instr_list;
-            for (const InstrPtr instr: kernel.block.getAllInstr()) {
+            for (const InstrPtr &instr: block.getAllInstr()) {
                 child_instr_list.push_back(*instr);
             }
             bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
@@ -363,7 +366,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         if (kernel_is_computing) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
-            engine.copyToDevice(kernel.getNonTemps());
+            engine.copyToDevice(symbols.getNonTemps());
 
             // Code generation
             stringstream ss;
