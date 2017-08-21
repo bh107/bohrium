@@ -82,12 +82,6 @@ class Impl : public ComponentImpl {
     // Write the OpenMP kernel
     void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
 
-    // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
-    vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
-        vector<const LoopB*> threaded_blocks = {&kernel.block};
-        return threaded_blocks;
-    }
-
     // Handle messages from parent
     string message(const string &msg) {
         stringstream ss;

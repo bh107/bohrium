@@ -169,10 +169,24 @@ void util_handle_extmethod(component::ComponentImpl *self,
     bhir->instr_list = instr_list;
 }
 
+// Returns the blocks that can be parallelized in 'block' (incl. sub-blocks)
+inline std::vector<const LoopB*> find_threaded_blocks(const Block &block, Statistics &stat,
+                                                      uint64_t parallel_threshold) {
+    std::vector<const LoopB*> threaded_blocks;
+    uint64_t total_threading;
+    tie(threaded_blocks, total_threading) = util_find_threaded_blocks(block.getLoop());
+    if (total_threading < parallel_threshold) {
+        for (const InstrPtr instr: block.getAllInstr()) {
+            if (not bh_opcode_is_system(instr->opcode)) {
+                stat.threading_below_threshold += bh_nelements(instr->operand[0]);
+            }
+        }
+    }
+    return threaded_blocks;
+}
 
 /* Handle execution of regular instructions
  * 'SelfType' most be a component implementation that exposes:
- *     - find_threaded_blocks(...)
  *     - void write_kernel(...)
  * 'EngineType' most be a engine implementation that exposes:
  *     - set_constructor_flag(...)
@@ -262,7 +276,6 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
 
 /* Handle execution of regular instructions
  * 'SelfType' most be a component implementation that exposes:
- *     - find_threaded_blocks(...)
  *     - void write_kernel(...)
  * 'EngineType' most be a engine implementation that exposes:
  *     - set_constructor_flag(...)
@@ -282,6 +295,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
+    const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
 
     // Some statistics
     stat.record(bhir->instr_list);
@@ -330,7 +344,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         const bool kernel_is_computing = not block.isSystemOnly();
 
         // Find the parallel blocks
-        const vector<const LoopB*> threaded_blocks = self.find_threaded_blocks(kernel);
+        const vector<const LoopB*> threaded_blocks = find_threaded_blocks(block, stat, parallel_threshold);
 
         // We might have to offload the execution to the CPU
         if (threaded_blocks.size() == 0 and kernel_is_computing) {

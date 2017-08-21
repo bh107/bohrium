@@ -86,21 +86,6 @@ public:
         util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
     }
 
-    // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
-    vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
-        vector<const LoopB*> threaded_blocks;
-        uint64_t total_threading;
-        tie(threaded_blocks, total_threading) = util_find_threaded_blocks(kernel.block);
-        if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
-            for (const InstrPtr instr: kernel.getAllInstr()) {
-                if (not bh_opcode_is_system(instr->opcode)) {
-                    stat.threading_below_threshold += bh_nelements(instr->operand[0]);
-                }
-            }
-        }
-        return threaded_blocks;
-    }
-
     // Handle messages from parent
     string message(const string &msg) {
         stringstream ss;
