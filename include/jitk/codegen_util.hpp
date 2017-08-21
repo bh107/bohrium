@@ -220,13 +220,19 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     for(const Block &block: block_list) {
         assert(not block.isInstr());
 
-        //Let's create a kernel
-        Kernel kernel = create_kernel_object(block, verbose, stat);
-
-        const SymbolTable symbols(kernel.getAllInstr(), kernel.getAllTemps(), strides_as_variables, index_as_var, const_as_var);
+        // Let's create the symbol table for the kernel
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables, index_as_var, const_as_var);
+        stat.record(symbols);
+        if (verbose) {
+            std::cout << "Kernel's non-temps: \n";
+            for (const bh_base *base: symbols.getNonTemps()) {
+                std::cout << "\t" << *base << "\n";
+            }
+            std::cout << block;
+        }
 
         // We can skip a lot of steps if the kernel does no computation
-        const bool kernel_is_computing = not kernel.block.isSystemOnly();
+        const bool kernel_is_computing = not block.isSystemOnly();
 
         // Let's execute the kernel
         if (kernel_is_computing) {
@@ -242,11 +248,11 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             }
 
             // Let's execute the kernel
-            engine.execute(ss.str(), kernel.getNonTemps(), symbols.offsetStrideViews(), constants);
+            engine.execute(ss.str(), symbols.getNonTemps(), symbols.offsetStrideViews(), constants);
         }
 
         // Finally, let's cleanup
-        for(bh_base *base: kernel.getFrees()) {
+        for(bh_base *base: symbols.getFrees()) {
             bh_data_free(base);
         }
     }

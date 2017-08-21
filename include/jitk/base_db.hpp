@@ -200,6 +200,10 @@ public:
     const std::vector<bh_base*> &getNonTemps() const {
         return _non_temps;
     }
+    // Return all temporary arrays
+    const std::set<bh_base*> &getTemps() const {
+        return _temps;
+    }
     // Return the freed arrays
     const std::set<bh_base*> &getFrees() const {
         return _frees;
