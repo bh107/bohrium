@@ -77,7 +77,7 @@ public:
     }
 
     // Write an CUDA kernel
-    void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Implement the handle of extension methods
@@ -190,7 +190,7 @@ const char *write_thread_id(unsigned int dim) {
     }
 }
 
-void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
                         const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
@@ -220,7 +220,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, nullptr, kernel.block, config, threaded_blocks, true, write_cuda_type,
+    write_loop_block(symbols, nullptr, block.getLoop(), config, threaded_blocks, true, write_cuda_type,
                      loop_head_writer, ss);
     ss << "}\n\n";
 }

@@ -78,7 +78,7 @@ public:
     }
 
     // Write an OpenCL kernel
-    void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Implement the handle of extension methods
@@ -193,14 +193,14 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     }
 }
 
-void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
+void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
                         const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     ss << "#include <kernel_dependencies/complex_opencl.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
-    if (kernel.useRandom()) { // Write the random function
+    if (symbols.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_opencl.h>\n";
     }
     ss << "\n";
@@ -224,7 +224,7 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, nullptr, kernel.block, config, threaded_blocks, true, write_opencl_type,
+    write_loop_block(symbols, nullptr, block.getLoop(), config, threaded_blocks, true, write_opencl_type,
                      loop_head_writer, ss);
 
     ss << "}\n\n";
