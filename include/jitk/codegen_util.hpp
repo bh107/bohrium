@@ -333,11 +333,17 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     for(const Block &block: block_list) {
         assert(not block.isInstr());
 
-        //Let's create a kernel
-        Kernel kernel = create_kernel_object(block, verbose, stat);
-
+        // Let's create the symbol table for the kernel
         const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables,
                                   index_as_var, const_as_var);
+        stat.record(symbols);
+        if (verbose) {
+            std::cout << "Kernel's non-temps: \n";
+            for (const bh_base *base: symbols.getNonTemps()) {
+                std::cout << "\t" << *base << "\n";
+            }
+            std::cout << block;
+        }
 
 
         // We can skip a lot of steps if the kernel does no computation
@@ -394,20 +400,19 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             }
 
             // Let's execute the kernel
-            engine.execute(ss.str(), kernel, threaded_blocks, symbols.offsetStrideViews(), constants);
+            engine.execute(ss.str(), symbols.getNonTemps(), threaded_blocks, symbols.offsetStrideViews(), constants);
         }
 
         // Let's copy sync'ed arrays back to the host
-        engine.copyToHost(kernel.getSyncs());
+        engine.copyToHost(symbols.getSyncs());
 
         // Let's free device buffers
-        const auto &kernel_frees = kernel.getFrees();
-        for(bh_base *base: kernel.getFrees()) {
+        for(bh_base *base: symbols.getFrees()) {
             engine.delBuffer(base);
         }
 
         // Finally, let's cleanup
-        for(bh_base *base: kernel_frees) {
+        for(bh_base *base: symbols.getFrees()) {
             bh_data_free(base);
         }
     }

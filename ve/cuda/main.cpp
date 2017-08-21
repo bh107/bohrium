@@ -69,8 +69,8 @@ public:
         // we have to use its move constructor.
         try {
             extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
-        } catch(extmethod::ExtmethodNotFound e) {
-            // I don't know this function, lets try my child
+        } catch(extmethod::ExtmethodNotFound &e) {
+            // I don't know this function, let's try my child
             child.extmethod(name, opcode);
             child_extmethods.insert(opcode);
         }
