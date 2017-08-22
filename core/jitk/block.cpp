@@ -222,6 +222,22 @@ set<bh_base *> LoopB::getAllTemps() const {
     return ret;
 }
 
+void LoopB::getAllNonTemps(std::set<bh_base*> &out) const {
+    const auto all_tmps = getAllTemps();
+    for(const bh_base* t: getAllBases()) {
+        auto b = const_cast<bh_base*>(t);
+        if (not util::exist(all_tmps, b)) {
+            out.insert(b);
+        }
+    }
+}
+
+set<bh_base *> LoopB::getAllNonTemps() const {
+    set<bh_base *> ret;
+    getAllNonTemps(ret);
+    return ret;
+}
+
 pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
     assert(validation());
     for (int64_t i=_block_list.size()-1; i >= 0; --i) {
