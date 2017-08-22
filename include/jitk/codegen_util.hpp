@@ -244,7 +244,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         if (kernel_is_computing) {
             // Code generation
             stringstream ss;
-            self.write_kernel(block, symbols, config, ss);
+            self.write_kernel({block}, symbols, config, ss);
 
             // Create the constant vector
             vector<const bh_instruction*> constants;

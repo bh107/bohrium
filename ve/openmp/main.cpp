@@ -79,7 +79,7 @@ class Impl : public ComponentImpl {
     // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
-    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
+    void write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
 
     // Handle messages from parent
     string message(const string &msg) {
@@ -222,7 +222,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
+void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -243,7 +243,9 @@ void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const Co
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
-    write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss);
+    for(const Block &block: block_list) {
+        write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss);
+    }
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
