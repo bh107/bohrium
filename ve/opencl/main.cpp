@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_opcode.h>
 #include <jitk/statistics.hpp>
-#include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/fuser.hpp>
@@ -78,28 +77,12 @@ public:
     }
 
     // Write an OpenCL kernel
-    void write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks,
-                      const vector<const bh_view*> &offset_strides, stringstream &ss);
+    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
+                      const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Implement the handle of extension methods
     void handle_extmethod(bh_ir *bhir) {
         util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
-    }
-
-    // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
-    vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
-        vector<const LoopB*> threaded_blocks;
-        uint64_t total_threading;
-        tie(threaded_blocks, total_threading) = util_find_threaded_blocks(kernel.block);
-        if (total_threading < config.defaultGet<uint64_t>("parallel_threshold", 1000)) {
-            for (const InstrPtr instr: kernel.getAllInstr()) {
-                if (not bh_opcode_is_system(instr->opcode)) {
-                    stat.threading_below_threshold += bh_nelements(instr->operand[0]);
-                }
-            }
-        }
-        return threaded_blocks;
     }
 
     // Handle messages from parent
@@ -194,26 +177,25 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     }
 }
 
-void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks,
-                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
+void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
+                        const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     ss << "#include <kernel_dependencies/complex_opencl.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
-    if (kernel.useRandom()) { // Write the random function
+    if (symbols.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_opencl.h>\n";
     }
     ss << "\n";
 
     // Write the header of the execute function
     ss << "__kernel void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_opencl_type, ss, "__global", false);
+    write_kernel_function_arguments(symbols, write_opencl_type, ss, "__global", false);
     ss << "{\n";
 
     // Write the IDs of the threaded blocks
-    if (threaded_blocks.size() > 0) {
+    if (not threaded_blocks.empty()) {
         spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
@@ -226,7 +208,8 @@ void Impl::write_kernel(const Kernel &kernel, const SymbolTable &symbols, const 
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, NULL, kernel.block, config, threaded_blocks, true, write_opencl_type, loop_head_writer, ss);
+    write_loop_block(symbols, nullptr, block.getLoop(), config, threaded_blocks, true, write_opencl_type,
+                     loop_head_writer, ss);
 
     ss << "}\n\n";
 }
@@ -242,5 +225,5 @@ void Impl::execute(bh_ir *bhir) {
     util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
 
     // And then the regular instructions
-    handle_execution(*this, bhir, engine, config, stat, fcache, &child);
+    handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
 }

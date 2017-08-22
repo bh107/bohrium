@@ -23,8 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 #include <iomanip>
 
-#include <jitk/kernel.hpp>
-
 #include "engine_cuda.hpp"
 
 using namespace std;
@@ -207,7 +205,7 @@ CUfunction EngineCUDA::getFunction(const string &source) {
     return program;
 }
 
-void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
+void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
@@ -219,7 +217,7 @@ void EngineCUDA::execute(const std::string &source, const jitk::Kernel &kernel,
     // Let's execute the CUDA kernel
     vector<void *> args;
 
-    for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+    for (bh_base *base: non_temps) { // NB: the iteration order matters!
         args.push_back(getBuffer(base));
     }
 

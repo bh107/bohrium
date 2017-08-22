@@ -28,8 +28,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <vector>
 
-#include <bh_instruction.hpp>
 #include <colors.hpp>
+#include <bh_instruction.hpp>
+#include <jitk/base_db.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -172,6 +173,12 @@ class Statistics {
                 }
             }
         }
+    }
+
+    // Record statistics based on the 'symbols'
+    void record(const SymbolTable& symbols) {
+        num_base_arrays += symbols.getNonTemps().size() + symbols.getTemps().size();
+        num_temp_arrays += symbols.getTemps().size();
     }
 
   private:

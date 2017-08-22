@@ -27,7 +27,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_opcode.h>
 #include <jitk/fuser.hpp>
-#include <jitk/kernel.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/graph.hpp>
@@ -77,18 +76,10 @@ class Impl : public ComponentImpl {
         util_handle_extmethod(this, bhir, extmethods);
     }
 
-    // The following methods implements the methods required by jitk::handle_execution()
+    // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
-    void write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks,
-                      const vector<const bh_view*> &offset_strides, stringstream &ss);
-
-    // Returns the blocks that can be parallelized in 'kernel' (incl. sub-blocks)
-    vector<const LoopB*> find_threaded_blocks(Kernel &kernel) {
-        vector<const LoopB*> threaded_blocks = {&kernel.block};
-        return threaded_blocks;
-    }
+    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
 
     // Handle messages from parent
     string message(const string &msg) {
@@ -158,7 +149,7 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     if (not config.defaultGet<bool>("compiler_openmp", false)) {
         return;
     }
-    bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
+    const bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     vector<InstrPtr> openmp_reductions;
@@ -168,7 +159,7 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     if (block.rank == 0 and openmp_compatible(block)) {
         ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
-        for (const InstrPtr instr: block._sweeps) {
+        for (const InstrPtr &instr: block._sweeps) {
             assert(instr->operand.size() == 3);
             const bh_view &view = instr->operand[0];
             if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
@@ -231,9 +222,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks,
-                        const vector<const bh_view*> &offset_strides, stringstream &ss) {
+void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -242,7 +231,7 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
     ss << "#include <complex.h>\n";
     ss << "#include <tgmath.h>\n";
     ss << "#include <math.h>\n";
-    if (kernel.useRandom()) { // Write the random function
+    if (symbols.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
     write_c99_dtype_union(ss); // We always need to declare the union of all constant data types
@@ -250,51 +239,49 @@ void Impl::write_kernel(Kernel &kernel, const SymbolTable &symbols, const Config
 
     // Write the header of the execute function
     ss << "void execute";
-    write_kernel_function_arguments(kernel, symbols, offset_strides, write_c99_type, ss, NULL, false);
+    write_kernel_function_arguments(symbols, write_c99_type, ss, nullptr, false);
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
-    write_loop_block(symbols, NULL, kernel.block, config, {}, false, write_c99_type, loop_head_writer, ss);
+    write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss);
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
-        for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
+        for(size_t i=0; i < symbols.getNonTemps().size(); ++i) {
             spaces(ss, 4);
-            bh_base *b = kernel.getNonTemps()[i];
+            bh_base *b = symbols.getNonTemps()[i];
             ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
         spaces(ss, 4);
         ss << "execute(";
-        for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-            bh_base *b = kernel.getNonTemps()[i];
-            ss << "a" << symbols.baseID(b);
-            if (i+1 < kernel.getNonTemps().size()) {
-                ss << ", ";
-            }
+        // We create the comma separated list of args and saves it in `stmp`
+        stringstream stmp;
+        for(size_t i=0; i < symbols.getNonTemps().size(); ++i) {
+            bh_base *b = symbols.getNonTemps()[i];
+            stmp << "a" << symbols.baseID(b) << ", ";
         }
         uint64_t count=0;
-        for (const bh_view *view: offset_strides) {
-            ss << ", offset_strides[" << count++ << "]";
+        for (const bh_view *view: symbols.offsetStrideViews()) {
+            stmp << "offset_strides[" << count++ << "], ";
             for (int i=0; i<view->ndim; ++i) {
-                ss << ", offset_strides[" << count++ << "]";
+                stmp << "offset_strides[" << count++ << "], ";
             }
         }
         if (symbols.constIDs().size() > 0) {
-            if (kernel.getNonTemps().size() > 0) {
-                ss << ", "; // If any args were written before us, we need a comma
-            }
             uint64_t i=0;
-            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
                 const InstrPtr &instr = *it;
-                ss << "constants[" << i++ << "]." << bh_type_text(instr->constant.type);
-                if (++it != symbols.constIDs().end()) { // Not the last iteration
-                    ss << ", ";
-                }
+                stmp << "constants[" << i++ << "]." << bh_type_text(instr->constant.type) << ", ";
             }
+        }
+        // And then we write `stmp` into `ss` excluding the last comma
+        const string strtmp = stmp.str();
+        if (not strtmp.empty()) {
+            ss << strtmp.substr(0, strtmp.size()-2);
         }
         ss << ");\n";
         ss << "}\n";
@@ -306,5 +293,5 @@ void Impl::execute(bh_ir *bhir) {
     util_handle_extmethod(this, bhir, extmethods);
 
     // And then the regular instructions
-    handle_execution(*this, bhir, engine, config, stat, fcache, NULL);
+    handle_cpu_execution(*this, bhir, engine, config, stat, fcache);
 }

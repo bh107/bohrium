@@ -23,8 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 #include <boost/filesystem.hpp>
 
-#include <jitk/kernel.hpp>
-
 #include "engine_opencl.hpp"
 
 namespace fs = boost::filesystem;
@@ -281,7 +279,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     return program;
 }
 
-void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel,
+void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
@@ -293,7 +291,7 @@ void EngineOpenCL::execute(const std::string &source, const jitk::Kernel &kernel
     cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
 
     cl_uint i = 0;
-    for (bh_base *base: kernel.getNonTemps()) { // NB: the iteration order matters!
+    for (bh_base *base: non_temps) { // NB: the iteration order matters!
         opencl_kernel.setArg(i++, *getBuffer(base));
     }
 

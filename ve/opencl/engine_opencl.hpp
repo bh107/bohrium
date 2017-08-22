@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <bh_view.hpp>
 #include <jitk/statistics.hpp>
-#include <jitk/kernel.hpp>
 #include <jitk/codegen_util.hpp>
 
 #include "cl.hpp"
@@ -86,7 +85,7 @@ public:
     ~EngineOpenCL();
 
     // Execute the 'source'
-    void execute(const std::string &source, const jitk::Kernel &kernel,
+    void execute(const std::string &source, const std::vector<bh_base*> &non_temps,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);

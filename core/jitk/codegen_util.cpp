@@ -24,7 +24,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
 #include <jitk/instruction.hpp>
-#include <jitk/kernel.hpp>
 
 using namespace std;
 
@@ -105,57 +104,56 @@ pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_siz
         block_size < 0) {
         throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
     }
-    const uint32_t lsize = (uint32_t) work_group_size;
-    const uint32_t rem = (uint32_t) block_size % lsize;
-    const uint32_t gsize = (uint32_t) block_size + (rem==0?0:(lsize-rem));
+    const auto lsize = (uint32_t) work_group_size;
+    const auto rem   = (uint32_t) block_size % lsize;
+    const auto gsize = (uint32_t) block_size + (rem==0?0:(lsize-rem));
     return make_pair(gsize, lsize);
 }
 
-void write_kernel_function_arguments(const Kernel &kernel, const SymbolTable &symbols,
-                                     const vector<const bh_view*> &offset_strides,
+void write_kernel_function_arguments(const SymbolTable &symbols,
                                      std::function<const char *(bh_type type)> type_writer,
                                      stringstream &ss,
                                      const char *array_type_prefix,
                                      const bool all_pointers) {
-    ss << "(";
-    for(size_t i=0; i < kernel.getNonTemps().size(); ++i) {
-        bh_base *b = kernel.getNonTemps()[i];
-        if(array_type_prefix != NULL) {
-            ss << array_type_prefix << " ";
+    // We create the comma separated list of args and saves it in `stmp`
+    stringstream stmp;
+    for (size_t i=0; i < symbols.getNonTemps().size(); ++i) {
+        bh_base *b = symbols.getNonTemps()[i];
+        if (array_type_prefix != nullptr) {
+            stmp << array_type_prefix << " ";
         }
-        ss << type_writer(b->type) << " *a" << symbols.baseID(b);
-        if (i+1 < kernel.getNonTemps().size()) {
-            ss << ", ";
-        }
+        stmp << type_writer(b->type) << " *a" << symbols.baseID(b) << ", ";
     }
-    for (const bh_view *view: offset_strides) {
-        ss << ", " << type_writer(bh_type::UINT64);
+    for (const bh_view *view: symbols.offsetStrideViews()) {
+        stmp << type_writer(bh_type::UINT64);
         if (all_pointers)
-            ss << "*";
-        ss << " vo" << symbols.offsetStridesID(*view);
+            stmp << "*";
+        stmp << " vo" << symbols.offsetStridesID(*view) << ", ";
         for (int i=0; i<view->ndim; ++i) {
-            ss << ", " << type_writer(bh_type::UINT64);
+            stmp << type_writer(bh_type::UINT64);
             if (all_pointers)
-                ss << "*";
-            ss << " vs" << symbols.offsetStridesID(*view) << "_" << i;
+                stmp << "*";
+            stmp << " vs" << symbols.offsetStridesID(*view) << "_" << i << ", ";
         }
     }
-    if (symbols.constIDs().size() > 0) {
-        if (kernel.getNonTemps().size() > 0) {
-            ss << ", "; // If any args were written before us, we need a comma
-        }
-        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end();) {
+    if (not symbols.constIDs().empty()) {
+        for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
             const InstrPtr &instr = *it;
-            ss << "const " << type_writer(instr->constant.type);
+            stmp << "const " << type_writer(instr->constant.type);
             if (all_pointers)
-                ss << "*";
-            ss << " c" << symbols.constID(*instr);
-            if (++it != symbols.constIDs().end()) { // Not the last iteration
-                ss << ", ";
-            }
+                stmp << "*";
+            stmp << " c" << symbols.constID(*instr) << ", ";
         }
     }
-    ss << ")";
+    // And then we write `stmp` into `ss` excluding the last comma
+    const string strtmp = stmp.str();
+    if (strtmp.empty()) {
+        ss << "()";
+    } else {
+        ss << "(";
+        ss << strtmp.substr(0, strtmp.size()-2); // Excluding the last comma
+        ss << ")";
+    }
 }
 
 
@@ -186,10 +184,10 @@ void write_loop_block(const SymbolTable &symbols,
 
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<const bh_view*> scalar_replaced_reduction_outputs;
-    for (const InstrPtr instr: block._sweeps) {
+    for (const InstrPtr &instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             if (local_tmps.find(instr->operand[0].base) == local_tmps.end() and
-                    (parent_scope == NULL or parent_scope->isArray(instr->operand[0]))) {
+                    (parent_scope == nullptr or parent_scope->isArray(instr->operand[0]))) {
                 scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
             }
         }
@@ -202,7 +200,7 @@ void write_loop_block(const SymbolTable &symbols,
         // We have to ignore output arrays and arrays that are accumulated
         set<bh_base *> ignore_bases;
         for (const InstrPtr &instr: block_instr_list) {
-            if (instr->operand.size() > 0) {
+            if (not instr->operand.empty()) {
                 ignore_bases.insert(instr->operand[0].base);
             }
             if (bh_opcode_is_accumulate(instr->opcode)) {
@@ -217,7 +215,7 @@ void write_loop_block(const SymbolTable &symbols,
                 const bh_view &input = instr->operand[i];
                 if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
                     if (local_tmps.find(input.base) == local_tmps.end() and
-                        (parent_scope == NULL or parent_scope->isArray(input))) {
+                        (parent_scope == nullptr or parent_scope->isArray(input))) {
                         if (util::exist(candidates, input)) { // 'input' is used multiple times
                             scalar_replaced_input_only.push_back(&input);
                         } else {
@@ -235,7 +233,7 @@ void write_loop_block(const SymbolTable &symbols,
 
     // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
     // it should be declared before the for-loop
-    for (const InstrPtr instr: block._sweeps) {
+    for (const InstrPtr &instr: block._sweeps) {
         if (bh_opcode_is_reduction(instr->opcode)) {
             const bh_view &output = instr->operand[0];
             if (not scope.isDeclared(output) and not scope.isArray(output)) {
@@ -267,7 +265,7 @@ void write_loop_block(const SymbolTable &symbols,
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
     {
-        for (const InstrPtr instr: block._sweeps) {
+        for (const InstrPtr &instr: block._sweeps) {
             const bh_view &v = instr->operand[0];
             if (not (has_reduce_identity(instr->opcode) and (scope.isScalarReplaced(v) or scope.isTmp(v.base)))) {
                 need_to_peel = true;
@@ -278,7 +276,7 @@ void write_loop_block(const SymbolTable &symbols,
 
     // When not peeling, we need a neutral initial reduction value
     if (not need_to_peel) {
-        for (const InstrPtr instr: block._sweeps) {
+        for (const InstrPtr &instr: block._sweeps) {
             const bh_view &view = instr->operand[0];
             if (not scope.isArray(view) and not scope.isDeclared(view)) {
                 scope.writeDeclaration(view, type_writer(view.base->type), out);
@@ -315,7 +313,7 @@ void write_loop_block(const SymbolTable &symbols,
         out << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
 
         // Write temporary and scalar replaced array declarations
-        for (const InstrPtr instr: block.getLocalInstr()) {
+        for (const InstrPtr &instr: block.getLocalInstr()) {
             for (const bh_view *view: instr->get_views()) {
                 if (not peeled_scope.isDeclared(*view)) {
                     if (peeled_scope.isTmp(view->base)) {
@@ -344,7 +342,7 @@ void write_loop_block(const SymbolTable &symbols,
         out << "\n";
         for (const Block &b: peeled_block._block_list) {
             if (b.isInstr()) {
-                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
+                if (b.getInstr() != nullptr and not bh_opcode_is_system(b.getInstr()->opcode)) {
                     spaces(out, 4 + b.rank()*4);
                     write_instr(peeled_scope, *b.getInstr(), out, opencl);
                 }
@@ -361,7 +359,7 @@ void write_loop_block(const SymbolTable &symbols,
     head_writer(symbols, scope, block, config, need_to_peel, threaded_blocks, out);
 
     // Write temporary and scalar replaced array declarations
-    for (const InstrPtr instr: block.getLocalInstr()) {
+    for (const InstrPtr &instr: block.getLocalInstr()) {
         for (const bh_view *view: instr->get_views()) {
             if (not scope.isDeclared(*view)) {
                 if (scope.isTmp(view->base)) {
