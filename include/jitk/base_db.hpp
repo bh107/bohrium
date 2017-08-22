@@ -153,6 +153,10 @@ public:
     size_t baseID(const bh_base *base) const {
         return _base_map.at(base);
     }
+    // Get total number of base arrays
+    size_t getNumBaseArrays() const {
+        return _base_map.size();
+    }
     // Get the ID of 'view', throws exception if 'view' doesn't exist
     size_t viewID(const bh_view &view) const {
         return _view_map.at(view);
