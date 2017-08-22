@@ -200,6 +200,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
+    const bool monolithic = config.defaultGet<bool>("monolithic", false);
 
     // Some statistics
     stat.record(bhir->instr_list);
@@ -229,22 +230,30 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     // Let's get the block list
     const vector<Block> block_list = get_block_list(instr_list, config, fcache, stat, false);
 
-    for(const Block &block: block_list) {
-        assert(not block.isInstr());
+    if (monolithic) {
+        // When creating a monolithic kernel (all instructions in one shared library), we first combine
+        // the instructions and non-temps from each different block and then we create the kernel
+        vector<InstrPtr> all_instr;
+        set<bh_base *> all_non_temps;
+        bool kernel_is_computing = false;
+        for(const Block &block: block_list) {
+            assert(not block.isInstr());
+            block.getAllInstr(all_instr);
+            block.getLoop().getAllNonTemps(all_non_temps);
+            if (not block.isSystemOnly()) {
+                kernel_is_computing = true;
+            }
+        }
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
-                                  index_as_var, const_as_var);
+        const SymbolTable symbols(all_instr, all_non_temps, strides_as_variables, index_as_var, const_as_var);
         stat.record(symbols);
-
-        // We can skip a lot of steps if the kernel does no computation
-        const bool kernel_is_computing = not block.isSystemOnly();
 
         // Let's execute the kernel
         if (kernel_is_computing) {
             // Code generation
             stringstream ss;
-            self.write_kernel({block}, symbols, config, ss);
+            self.write_kernel(block_list, symbols, config, ss);
 
             // Create the constant vector
             vector<const bh_instruction*> constants;
@@ -261,7 +270,45 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         for(bh_base *base: symbols.getFrees()) {
             bh_data_free(base);
         }
+
+    } else {
+        // When creating a regular kernels (a block nest per shared library), we create one kernel at a time
+        for(const Block &block: block_list) {
+            assert(not block.isInstr());
+
+            // Let's create the symbol table for the kernel
+            const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
+                                      index_as_var, const_as_var);
+            stat.record(symbols);
+
+            // We can skip a lot of steps if the kernel does no computation
+            const bool kernel_is_computing = not block.isSystemOnly();
+
+            // Let's execute the kernel
+            if (kernel_is_computing) {
+                // Code generation
+                stringstream ss;
+                self.write_kernel({block}, symbols, config, ss);
+
+                // Create the constant vector
+                vector<const bh_instruction*> constants;
+                constants.reserve(symbols.constIDs().size());
+                for (const InstrPtr &instr: symbols.constIDs()) {
+                    constants.push_back(&(*instr));
+                }
+
+                // Let's execute the kernel
+                engine.execute(ss.str(), symbols.getParams(), symbols.offsetStrideViews(), constants);
+            }
+
+            // Finally, let's cleanup
+            for(bh_base *base: symbols.getFrees()) {
+                bh_data_free(base);
+            }
+        }
     }
+
+
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
