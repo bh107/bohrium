@@ -250,9 +250,9 @@ void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const Co
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
-        for(size_t i=0; i < symbols.getNonTemps().size(); ++i) {
+        for(size_t i=0; i < symbols.getParams().size(); ++i) {
             spaces(ss, 4);
-            bh_base *b = symbols.getNonTemps()[i];
+            bh_base *b = symbols.getParams()[i];
             ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
@@ -260,8 +260,8 @@ void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const Co
         ss << "execute(";
         // We create the comma separated list of args and saves it in `stmp`
         stringstream stmp;
-        for(size_t i=0; i < symbols.getNonTemps().size(); ++i) {
-            bh_base *b = symbols.getNonTemps()[i];
+        for(size_t i=0; i < symbols.getParams().size(); ++i) {
+            bh_base *b = symbols.getParams()[i];
             stmp << "a" << symbols.baseID(b) << ", ";
         }
         uint64_t count=0;

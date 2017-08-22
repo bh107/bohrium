@@ -177,8 +177,9 @@ class Statistics {
 
     // Record statistics based on the 'symbols'
     void record(const SymbolTable& symbols) {
-        num_base_arrays += symbols.getNonTemps().size() + symbols.getTemps().size();
-        num_temp_arrays += symbols.getTemps().size();
+      //  assert(1==2);
+      //  num_base_arrays += symbols.getNonTemps().size() + symbols.getTemps().size();
+      //  num_temp_arrays += symbols.getTemps().size();
     }
 
   private:

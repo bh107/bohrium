@@ -197,7 +197,6 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
 
     const auto texecution = chrono::steady_clock::now();
 
-    const bool verbose = config.defaultGet<bool>("verbose", false);
     const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
@@ -234,16 +233,9 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         assert(not block.isInstr());
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables,
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
                                   index_as_var, const_as_var);
         stat.record(symbols);
-        if (verbose) {
-            std::cout << "Kernel's non-temps: \n";
-            for (const bh_base *base: symbols.getNonTemps()) {
-                std::cout << "\t" << *base << "\n";
-            }
-            std::cout << block;
-        }
 
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not block.isSystemOnly();
@@ -262,7 +254,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             }
 
             // Let's execute the kernel
-            engine.execute(ss.str(), symbols.getNonTemps(), symbols.offsetStrideViews(), constants);
+            engine.execute(ss.str(), symbols.getParams(), symbols.offsetStrideViews(), constants);
         }
 
         // Finally, let's cleanup
@@ -333,17 +325,9 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         assert(not block.isInstr());
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllTemps(), strides_as_variables,
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
                                   index_as_var, const_as_var);
         stat.record(symbols);
-        if (verbose) {
-            std::cout << "Kernel's non-temps: \n";
-            for (const bh_base *base: symbols.getNonTemps()) {
-                std::cout << "\t" << *base << "\n";
-            }
-            std::cout << block;
-        }
-
 
         // We can skip a lot of steps if the kernel does no computation
         const bool kernel_is_computing = not block.isSystemOnly();
@@ -363,7 +347,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             auto toffload = chrono::steady_clock::now();
 
             // Let's copy all non-temporary to the host
-            engine.copyToHost(symbols.getNonTemps());
+            engine.copyToHost(symbols.getParams());
 
             // Let's free device buffers
             for (bh_base *base: symbols.getFrees()) {
@@ -385,7 +369,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         if (kernel_is_computing) {
 
             // We need a memory buffer on the device for each non-temporary array in the kernel
-            engine.copyToDevice(symbols.getNonTemps());
+            engine.copyToDevice(symbols.getParams());
 
             // Code generation
             stringstream ss;
@@ -399,7 +383,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             }
 
             // Let's execute the kernel
-            engine.execute(ss.str(), symbols.getNonTemps(), threaded_blocks, symbols.offsetStrideViews(), constants);
+            engine.execute(ss.str(), symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
         }
 
         // Let's copy sync'ed arrays back to the host
