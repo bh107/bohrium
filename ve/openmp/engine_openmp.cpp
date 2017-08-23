@@ -70,7 +70,7 @@ EngineOpenMP::~EngineOpenMP() {
             if (fs::exists(src)) {
                 const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
                 if (not fs::exists(dst)) {
-                    fs::copy_file(src, dst);
+                    fs::copy(src, dst);
                 }
             }
         }
