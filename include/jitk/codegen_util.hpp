@@ -250,7 +250,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         stat.record(symbols);
 
         // Let's execute the kernel
-        if (kernel_is_computing) {
+        if (kernel_is_computing) { // We can skip this step if the kernel does no computation
             // Code generation
             stringstream ss;
             self.write_kernel(block_list, symbols, config, ss);
@@ -270,9 +270,8 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         for(bh_base *base: symbols.getFrees()) {
             bh_data_free(base);
         }
-
     } else {
-        // When creating a regular kernels (a block nest per shared library), we create one kernel at a time
+        // When creating a regular kernels (a block-nest per shared library), we create one kernel at a time
         for(const Block &block: block_list) {
             assert(not block.isInstr());
 
@@ -281,11 +280,8 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
                                       index_as_var, const_as_var);
             stat.record(symbols);
 
-            // We can skip a lot of steps if the kernel does no computation
-            const bool kernel_is_computing = not block.isSystemOnly();
-
             // Let's execute the kernel
-            if (kernel_is_computing) {
+            if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
                 // Code generation
                 stringstream ss;
                 self.write_kernel({block}, symbols, config, ss);
@@ -307,8 +303,6 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             }
         }
     }
-
-
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
