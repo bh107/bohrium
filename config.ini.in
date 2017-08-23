@@ -100,6 +100,8 @@ fuser_list = greedy, collapse_redundant_axes
 index_as_var = true
 strides_as_variables = true
 const_as_var = true
+# Monolithic combines all blocks into one shared library rather than a block-nest per shared library
+monolithic = false
 
 [opencl]
 impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_opencl${CMAKE_SHARED_LIBRARY_SUFFIX}

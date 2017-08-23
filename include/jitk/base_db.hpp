@@ -92,16 +92,15 @@ private:
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
     std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID
     std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
-    std::vector<bh_base*> _non_temps; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
-    const std::set<bh_base*> _temps; // Set of temporary arrays// Arrays freed
+    std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
     std::set<bh_base*> _frees; // Set of freed arrays
     std::set<bh_base*> _syncs; // Set of sync'ed arrays
     bool _useRandom; // Flag: is any instructions using random?
 
 public:
-    SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> temp_arrays,
+    SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> non_temp_arrays,
                 bool strides_as_variables, bool index_as_var,
-                bool const_as_var) : _temps(std::move(temp_arrays)) {
+                bool const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -133,11 +132,12 @@ public:
             } else if (instr->opcode == BH_SYNC) {
                 _syncs.insert(instr->operand[0].base);
             }
-            // Find non-temporary arrays
+            // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
+            // already in `_params`. NB: the order of `_params` matches the order of the array IDs
             for(const bh_view &v: instr->operand) {
-                if (not bh_is_constant(&v) and _temps.find(v.base) == _temps.end()) {
-                    if (std::find(_non_temps.begin(), _non_temps.end(), v.base) == _non_temps.end()) {
-                        _non_temps.push_back(v.base);
+                if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
+                    if (not util::exist_linearly(_params, v.base)) {
+                        _params.push_back(v.base);
                     }
                 }
             }
@@ -152,6 +152,10 @@ public:
     // Get the ID of 'base', throws exception if 'base' doesn't exist
     size_t baseID(const bh_base *base) const {
         return _base_map.at(base);
+    }
+    // Get total number of base arrays
+    size_t getNumBaseArrays() const {
+        return _base_map.size();
     }
     // Get the ID of 'view', throws exception if 'view' doesn't exist
     size_t viewID(const bh_view &view) const {
@@ -196,13 +200,9 @@ public:
     bool isAlwaysArray(const bh_base *base) const {
         return util::exist(_array_always, base);
     }
-    // Return all non-temporary arrays, which are the in-/out-puts of the JIT kernel
-    const std::vector<bh_base*> &getNonTemps() const {
-        return _non_temps;
-    }
-    // Return all temporary arrays
-    const std::set<bh_base*> &getTemps() const {
-        return _temps;
+    // Return non-temporary arrays, which are the in-/out-puts of the JIT kernel, in the order of their IDs
+    const std::vector<bh_base*> &getParams() const {
+        return _params;
     }
     // Return the freed arrays
     const std::set<bh_base*> &getFrees() const {

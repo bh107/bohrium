@@ -117,8 +117,8 @@ void write_kernel_function_arguments(const SymbolTable &symbols,
                                      const bool all_pointers) {
     // We create the comma separated list of args and saves it in `stmp`
     stringstream stmp;
-    for (size_t i=0; i < symbols.getNonTemps().size(); ++i) {
-        bh_base *b = symbols.getNonTemps()[i];
+    for (size_t i=0; i < symbols.getParams().size(); ++i) {
+        bh_base *b = symbols.getParams()[i];
         if (array_type_prefix != nullptr) {
             stmp << array_type_prefix << " ";
         }

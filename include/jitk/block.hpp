@@ -119,6 +119,10 @@ public:
     void getAllTemps(std::set<bh_base*> &out) const;
     std::set<bh_base*> getAllTemps() const;
 
+    // Return all non-temporary arrays in this block (incl. nested blocks)
+    void getAllNonTemps(std::set<bh_base*> &out) const;
+    std::set<bh_base*> getAllNonTemps() const;
+
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const;
 

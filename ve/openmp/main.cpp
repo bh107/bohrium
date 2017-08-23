@@ -79,7 +79,7 @@ class Impl : public ComponentImpl {
     // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
-    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
+    void write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
 
     // Handle messages from parent
     string message(const string &msg) {
@@ -222,7 +222,7 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
+void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -243,16 +243,18 @@ void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const Co
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
-    write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss);
+    for(const Block &block: block_list) {
+        write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss);
+    }
     ss << "}\n\n";
 
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
         ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
-        for(size_t i=0; i < symbols.getNonTemps().size(); ++i) {
+        for(size_t i=0; i < symbols.getParams().size(); ++i) {
             spaces(ss, 4);
-            bh_base *b = symbols.getNonTemps()[i];
+            bh_base *b = symbols.getParams()[i];
             ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
@@ -260,8 +262,8 @@ void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const Co
         ss << "execute(";
         // We create the comma separated list of args and saves it in `stmp`
         stringstream stmp;
-        for(size_t i=0; i < symbols.getNonTemps().size(); ++i) {
-            bh_base *b = symbols.getNonTemps()[i];
+        for(size_t i=0; i < symbols.getParams().size(); ++i) {
+            bh_base *b = symbols.getParams()[i];
             stmp << "a" << symbols.baseID(b) << ", ";
         }
         uint64_t count=0;
