@@ -18,37 +18,28 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __BH_VE_CUDA_COMPILER_HPP
-#define __BH_VE_CUDA_COMPILER_HPP
+#ifndef __BH_JITK_COMPILER_HPP
+#define __BH_JITK_COMPILER_HPP
 
 #include <string>
 #include <sstream>
 #include <cstdio>
 #include <iostream>
+#include <bh_config_parser.hpp>
 
-namespace bohrium{
+namespace bohrium {
+namespace jitk {
 
+/**
+ * compile() forks and executes a system process.
+ */
 class Compiler {
 public:
-	/**
-	 * compile() forks and executes a system process, the process along with
-	 * arguments must be provided as argument at time of construction.
-	 * The process must be able to consume sourcecode via stdin and produce
-	 * a shared object file.
-	 * The compiled shared-object is then loaded and made available for execute().
-	 *
-	 * Examples:
-	 *
-	 *  Compiler tcc("tcc", "", "-lm", "-O2 -march=core2", "-fPIC -x c -shared");
-	 *  Compiler icc("ic",  "", "-lm", "-O2 -march=core2", "-fPIC -x c -shared");
-	 *  Compiler gcc("gcc", "", "-lm", "-O2 -march=core2", "-fPIC -x c -shared");
-	 *
-	 */
-    Compiler() {};
-    Compiler(std::string cmd, std::string inc, std::string lib, std::string flg, std::string ext);
+    std::string cmd_template;
+    bool verbose;
 
-    std::string text() const;
-    std::string process_str(std::string object_abspath, std::string source_abspath) const;
+    Compiler(std::string cmd_template, bool verbose);
+    Compiler() = default;
 
     /**
      *  Compile by piping, the given sourcecode into a shared object.
@@ -62,16 +53,13 @@ public:
      */
 
     /**
-     *  Compile by disk writting, the given sourcecode into a shared object.
+     *  Compile by disk writing, the given sourcecode into a shared object.
      *
      *  Throws runtime_error on compilation failure
      */
     void compile(std::string object_abspath, std::string src_abspath) const;
-
-private:
-    std::string cmd_, inc_, lib_, flg_, ext_;
 };
 
-}
+}}
 
 #endif

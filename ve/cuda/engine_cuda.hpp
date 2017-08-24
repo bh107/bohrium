@@ -32,10 +32,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
+#include <jitk/compiler.hpp>
 
 #include <cuda.h>
-
-#include "compiler.hpp"
 
 namespace {
     // This will output the proper CUDA error strings
@@ -103,7 +102,7 @@ private:
     const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
-    Compiler compiler;
+    jitk::Compiler compiler;
 
     // The hash of the JIT compilation command
     size_t compilation_hash;

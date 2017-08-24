@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 #include <boost/functional/hash.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <iomanip>
 
 #include "engine_cuda.hpp"
@@ -79,25 +80,17 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     // Write the compilation hash
     compilation_hash = hasher(info());
 
-    // Get the compiler flag and replace {MAJOR} and {MINOR} with the SM versions
-    string compiler_flg = config.defaultGet<string>("compiler_flg", "--cubin -m64 -arch=sm_{MAJOR}{MINOR}");
+    // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
+    string compiler_cmd = config.get<string>("compiler_cmd");
     {
         int major = 0, minor = 0;
         checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
-        if (compiler_flg.find("{MAJOR}") != string::npos) {
-            compiler_flg.replace(compiler_flg.find("{MAJOR}"), string("{MAJOR}").size(), std::to_string(major));
-        }
-        if (compiler_flg.find("{MINOR}") != string::npos) {
-            compiler_flg.replace(compiler_flg.find("{MINOR}"), string("{MINOR}").size(), std::to_string(minor));
-        }
+        boost::replace_all(compiler_cmd, "{MAJOR}", std::to_string(major));
+        boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
     }
 
     // Init the compiler
-    compiler = Compiler(config.defaultGet<string>("compiler_cmd", "nvcc"),
-                        config.defaultGet<string>("compiler_inc", ""),
-                        config.defaultGet<string>("compiler_lib", ""),
-                        compiler_flg,
-                        config.defaultGet<string>("compiler_ext", ""));
+    compiler = jitk::Compiler(compiler_cmd, verbose);
 }
 
 EngineCUDA::~EngineCUDA() {

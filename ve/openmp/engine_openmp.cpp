@@ -39,17 +39,13 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
+                                           verbose(config.defaultGet<bool>("verbose", false)),
                                            tmp_dir(jitk::get_tmp_path(config)),
                                            tmp_src_dir(tmp_dir / "src"),
                                            tmp_bin_dir(tmp_dir / "obj"),
                                            cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", ""))),
-                                           compiler(config.defaultGet<string>("compiler_cmd", "/usr/bin/cc"),
-                                                    config.defaultGet<string>("compiler_inc", ""),
-                                                    config.defaultGet<string>("compiler_lib", "-lm"),
-                                                    config.defaultGet<string>("compiler_flg", ""),
-                                                    config.defaultGet<string>("compiler_ext", "")),
-                                           compilation_hash(hasher(compiler.text())),
-                                           verbose(config.defaultGet<bool>("verbose", false)),
+                                           compiler(config.get<string>("compiler_cmd"), verbose),
+                                           compilation_hash(hasher(compiler.cmd_template)),
                                            stat(stat)
 {
     // Let's make sure that the directories exist
@@ -218,7 +214,7 @@ std::string EngineOpenMP::info() const {
     ss << "----"                                                           << "\n";
     ss << "OpenMP:"                                                        << "\n";
     ss << "  Hardware threads: " << std::thread::hardware_concurrency()    << "\n";
-    ss << "  JIT Command: \"" << compiler.process_str("${OBJ}", "${SRC}")  << "\"\n";
+    ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
     return ss.str();
 }
 
