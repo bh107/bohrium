@@ -253,6 +253,7 @@ std::string EngineCUDA::info() const {
     ss << "CUDA:"                                                                       << "\n";
     ss << "  Device: \"" << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
     ss << "  Memory: \"" <<totalGlobalMem / 1024 / 1024 << " MB\"\n";
+    ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
     return ss.str();
 }
 
