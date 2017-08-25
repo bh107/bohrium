@@ -79,7 +79,8 @@ class Impl : public ComponentImpl {
     // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
-    void write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss);
+    void write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config,
+                      const vector<bh_base*> &kernel_temps, stringstream &ss);
 
     // Handle messages from parent
     string message(const string &msg) {
@@ -222,7 +223,8 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
-void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config, stringstream &ss) {
+void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config,
+                        const vector<bh_base*> &kernel_temps, stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -243,8 +245,22 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
+    // Write allocations of the kernel temporaries
+    for(const bh_base* b: kernel_temps) {
+        spaces(ss, 4);
+        ss << write_c99_type(b->type) << " *a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b) << ");\n";
+    }
+    ss << "\n";
+
     for(const Block &block: block_list) {
         write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss);
+    }
+
+    // Write frees of the kernel temporaries
+    ss << "\n";
+    for(const bh_base* b: kernel_temps) {
+        spaces(ss, 4);
+        ss << "free(" << "a" << symbols.baseID(b) << ");\n";
     }
     ss << "}\n\n";
 
