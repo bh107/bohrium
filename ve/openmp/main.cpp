@@ -248,7 +248,8 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
     // Write allocations of the kernel temporaries
     for(const bh_base* b: kernel_temps) {
         spaces(ss, 4);
-        ss << write_c99_type(b->type) << " *a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b) << ");\n";
+        ss << write_c99_type(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b)
+           << ");\n";
     }
     ss << "\n";
 
