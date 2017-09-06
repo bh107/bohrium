@@ -25,7 +25,7 @@ env:
 
     # Python 3.5
     - BH_STACK=openmp PYTHON_EXEC=python3.5
-    - BH_STACK=opencl PYTHON_EXEC=python3.5
+#    - BH_STACK=opencl PYTHON_EXEC=python3.5
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
