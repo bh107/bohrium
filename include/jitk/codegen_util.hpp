@@ -197,7 +197,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
 
     const auto texecution = chrono::steady_clock::now();
 
-    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+    const bool strides_as_var = config.defaultGet<bool>("strides_as_var", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
     const bool monolithic = config.defaultGet<bool>("monolithic", false);
@@ -260,7 +260,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         }
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(all_instr, all_non_temps, strides_as_variables, index_as_var, const_as_var);
+        const SymbolTable symbols(all_instr, all_non_temps, strides_as_var, index_as_var, const_as_var);
         stat.record(symbols);
 
         // Let's execute the kernel
@@ -290,7 +290,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             assert(not block.isInstr());
 
             // Let's create the symbol table for the kernel
-            const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
+            const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_var,
                                       index_as_var, const_as_var);
             stat.record(symbols);
 
@@ -339,7 +339,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     const auto texecution = chrono::steady_clock::now();
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
-    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+    const bool strides_as_var = config.defaultGet<bool>("strides_as_var", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
     const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
@@ -381,7 +381,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         assert(not block.isInstr());
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_var,
                                   index_as_var, const_as_var);
         stat.record(symbols);
 
