@@ -122,7 +122,7 @@ void write_kernel_function_arguments(const SymbolTable &symbols,
         if (array_type_prefix != nullptr) {
             stmp << array_type_prefix << " ";
         }
-        stmp << type_writer(b->type) << " *a" << symbols.baseID(b) << ", ";
+        stmp << type_writer(b->type) << " * restrict a" << symbols.baseID(b) << ", ";
     }
     for (const bh_view *view: symbols.offsetStrideViews()) {
         stmp << type_writer(bh_type::UINT64);
