@@ -127,8 +127,8 @@ class ConfigParser {
             ret = lookup(section, option);
         } catch (const property_tree::ptree_bad_path&) {
             stringstream ss;
-            ss << "Error parsing the config file '" << file_path << "': '" \
-               << section << "." << option << "' not found!" << endl;
+            ss << "Error parsing the config file '" << file_path << "': '" << section << "." << option
+               << "' not found!\n Using an old config file? try removing it and re-install bohrium" << endl;
             throw ConfigKeyNotFound(ss.str());
         }
         //Now let's try to convert the value to the requested type

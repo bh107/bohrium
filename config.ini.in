@@ -83,11 +83,9 @@ graph = false
 tmp_dir =
 # Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
+# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
+compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} ${VE_OPENMP_COMPILER_LIB} {IN} -o {OUT}"
 # JIT compile options
-compiler_cmd = "${VE_OPENMP_COMPILER_CMD}"
-compiler_inc = "${VE_OPENMP_COMPILER_INC}"
-compiler_lib = "${VE_OPENMP_COMPILER_LIB}"
-compiler_flg = "${VE_OPENMP_COMPILER_FLG}"
 compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
@@ -151,11 +149,9 @@ graph = false
 tmp_dir =
 # Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
-# The command to execute the compiler
-compiler_cmd = "${CUDA_NVCC_EXECUTABLE}"
-# The compile flags where {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
-compiler_flg = "--cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3"
-compiler_inc = "${VE_OPENMP_COMPILER_INC}"
+# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
+# Additionally, {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
+compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # List of extension methods
 libs = ${CUDA_LIBS}
 # The pre-fuser to use

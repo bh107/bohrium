@@ -20,45 +20,33 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 #include <stdexcept>
+#include <boost/algorithm/string/replace.hpp>
 
-#include "compiler.hpp"
+#include <jitk/compiler.hpp>
 
 using namespace std;
 
+namespace {
+    // Returns the command where {OUT} and {IN} are expanded.
+    string expand_cmd(const string &cmd_template, const string &out, const string &in) {
+        string ret = cmd_template;
+        boost::replace_first(ret, "{OUT}", out);
+        boost::replace_first(ret, "{IN}", in);
+        return ret;
+    }
+}
+
 namespace bohrium {
+namespace jitk {
 
-Compiler::Compiler(string cmd, string inc, string lib, string flg, string ext) : cmd_(cmd), inc_(inc), lib_(lib), flg_(flg), ext_(ext) {}
+Compiler::Compiler(string cmd_template, bool verbose) : cmd_template(std::move(cmd_template)), verbose(verbose) {}
 
-string Compiler::text() const {
-    stringstream ss;
-    ss << "Compiler {" << endl;
-    ss << "  cmd = '" << cmd_ << "'," << endl;
-    ss << "  inc = '" << inc_ << "'," << endl;
-    ss << "  lib = '" << lib_ << "'," << endl;
-    ss << "  flg = '" << flg_ << "'," << endl;
-    ss << "  ext = '" << ext_ << "'," << endl;
-    ss << "  process_str = '" << process_str("OBJ", "SRC") << "'" << endl;
-    ss << "}";
-    return ss.str();
-}
-
-string Compiler::process_str(string object_abspath, string source_abspath) const {
-    stringstream ss;
-
-    ss           << cmd_;
-    ss << " "    << inc_; 
-    ss << " "    << flg_;
-    ss << " "    << ext_;
-    ss << " "    << source_abspath;
-    ss << " "    << lib_;
-    ss << " -o " << object_abspath;
-
-    return ss.str();
-}
 
 void Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len) const {
-    string cmd = process_str(object_abspath, " - ");
-//    cout << "compile command: " << cmd << endl;
+    const string cmd = expand_cmd(cmd_template, object_abspath, " - ");
+    if (verbose) {
+        cout << "compile command: " << cmd << endl;
+    }
 
     FILE* cmd_stdin = popen(cmd.c_str(), "w");  // Open process and get stdin stream
     if (!cmd_stdin) {
@@ -93,8 +81,10 @@ void Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
 }
 
 void Compiler::compile(string object_abspath, string src_abspath) const {
-    string cmd = process_str(object_abspath, src_abspath);
-    // cout << "compile command: " << cmd << endl;
+    const string cmd = expand_cmd(cmd_template, object_abspath, src_abspath);
+    if (verbose) {
+        cout << "compile command: " << cmd << endl;
+    }
 
     // Execute the process
     FILE *cmd_stdin = NULL;                     // Handle for library-file
@@ -112,4 +102,4 @@ void Compiler::compile(string object_abspath, string src_abspath) const {
     }
 }
 
-}
+}}

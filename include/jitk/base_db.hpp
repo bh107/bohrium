@@ -245,7 +245,7 @@ public:
           const T2 &scalar_replacements_r,
           const ConfigParser &config) : symbols(symbols), parent(parent),
                                         use_volatile(config.defaultGet<bool>("volatile", false)),
-                                        strides_as_variables(config.defaultGet<bool>("strides_as_variables", true)) {
+                                        strides_as_variables(config.defaultGet<bool>("strides_as_var", true)) {
         for(const bh_base* base: tmps) {
             if (not symbols.isAlwaysArray(base))
                 _tmps.insert(base);

@@ -30,8 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/block.hpp>
-
-#include "compiler.hpp"
+#include <jitk/compiler.hpp>
 
 namespace bohrium {
 
@@ -41,6 +40,9 @@ class EngineOpenMP {
   private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
+
+    // Verbose flag
+    const bool verbose;
 
     // Path to a temporary directory for the source and object files
     const boost::filesystem::path tmp_dir;
@@ -55,13 +57,10 @@ class EngineOpenMP {
     const boost::filesystem::path cache_bin_dir;
 
     // The compiler to use when function doesn't exist
-    const Compiler compiler;
+    const jitk::Compiler compiler;
 
     // The hash of the JIT compilation command
     const size_t compilation_hash;
-
-    // Verbose flag
-    const bool verbose;
 
     // Some statistics
     jitk::Statistics &stat;

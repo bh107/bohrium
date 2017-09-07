@@ -197,7 +197,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
 
     const auto texecution = chrono::steady_clock::now();
 
-    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+    const bool strides_as_var = config.defaultGet<bool>("strides_as_var", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
     const bool monolithic = config.defaultGet<bool>("monolithic", false);
@@ -244,16 +244,30 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
                 kernel_is_computing = true;
             }
         }
+        // Let's find the arrays that are allocated and freed between blocks in the kernel
+        vector<bh_base*> kernel_temps;
+        {
+            set<bh_base*> constructors;
+            for(const InstrPtr &instr: all_instr) {
+                if (instr->constructor) {
+                    assert(instr->operand[0].base != NULL);
+                    constructors.insert(instr->operand[0].base);
+                } else if (instr->opcode == BH_FREE and util::exist(constructors, instr->operand[0].base)) {
+                    kernel_temps.push_back(instr->operand[0].base);
+                    all_non_temps.erase(instr->operand[0].base);
+                }
+            }
+        }
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(all_instr, all_non_temps, strides_as_variables, index_as_var, const_as_var);
+        const SymbolTable symbols(all_instr, all_non_temps, strides_as_var, index_as_var, const_as_var);
         stat.record(symbols);
 
         // Let's execute the kernel
         if (kernel_is_computing) { // We can skip this step if the kernel does no computation
             // Code generation
             stringstream ss;
-            self.write_kernel(block_list, symbols, config, ss);
+            self.write_kernel(block_list, symbols, config, kernel_temps, ss);
 
             // Create the constant vector
             vector<const bh_instruction*> constants;
@@ -276,7 +290,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             assert(not block.isInstr());
 
             // Let's create the symbol table for the kernel
-            const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
+            const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_var,
                                       index_as_var, const_as_var);
             stat.record(symbols);
 
@@ -284,7 +298,8 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
                 // Code generation
                 stringstream ss;
-                self.write_kernel({block}, symbols, config, ss);
+
+                self.write_kernel({block}, symbols, config, {}, ss);
 
                 // Create the constant vector
                 vector<const bh_instruction*> constants;
@@ -324,7 +339,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     const auto texecution = chrono::steady_clock::now();
 
     const bool verbose = config.defaultGet<bool>("verbose", false);
-    const bool strides_as_variables = config.defaultGet<bool>("strides_as_variables", true);
+    const bool strides_as_var = config.defaultGet<bool>("strides_as_var", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
     const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
@@ -366,7 +381,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         assert(not block.isInstr());
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_variables,
+        const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_var,
                                   index_as_var, const_as_var);
         stat.record(symbols);
 

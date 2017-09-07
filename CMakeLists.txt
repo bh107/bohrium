@@ -157,10 +157,6 @@ install(DIRECTORY thirdparty/Random123-1.09/include/Random123
 install(DIRECTORY include/jitk/kernel_dependencies
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
-###############
-# Install misc
-install(PROGRAMS misc/bh-info DESTINATION bin COMPONENT bohrium)
-
 #############################
 # Bohrium configuration file
 set(BIN_KERNEL_CACHE_DIR ${CMAKE_INSTALL_PREFIX}/var/bohrium/cache CACHE PATH "Path to the directory of the persistent JIT kernel cache")
