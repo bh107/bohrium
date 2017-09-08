@@ -12,6 +12,7 @@ from . import bhary
 from . import ufuncs
 from . import linalg
 from . import summations
+from . import _util
 
 
 # 1d
@@ -233,6 +234,8 @@ def _correlate_kernel(Array, Filter, mode):
     Correlated = V[IndiVec[0]:n + IndiVec[0]] * A[0]
     for i in range(1, Filter.size):
         Correlated += V[IndiVec[i]:n + IndiVec[i]] * A[i]
+        # TODO: we need this flush because of very slow fusion
+        _util.flush()
 
     Full = Correlated.reshape(PaddedSize, order='F')
     if mode == 'full':
