@@ -54,17 +54,19 @@ endif()
 if(${PYTHON_VERSION_MAJOR} EQUAL "2")
     find_program(PYTHON3 python3)
     if(PYTHON3)
-        message(STATUS ${PYTHON3})
+        message(STATUS "Found python3 at '${PYTHON3}'")
     endif()
 
     find_program(CYTHON3 cython3)
     if(CYTHON3)
-        message(STATUS ${CYTHON3})
+        message(STATUS "Found Cython3 at '${CYTHON3}'")
     endif()
 
     # Check if NumPy 3 exist
     execute_process(COMMAND "${PYTHON3}" "-c" "import numpy as n;"
-                    RESULT_VARIABLE NUMPY3)
+                    RESULT_VARIABLE NUMPY3
+                    ERROR_QUIET
+                    OUTPUT_QUIET)
     if(${NUMPY3} EQUAL "0" AND PYTHON3 AND CYTHON3)
         #Get Python Minor version
         execute_process(COMMAND "${PYTHON3}" "-c" "import sys; print(sys.version_info.minor);"
@@ -83,6 +85,8 @@ if(${PYTHON_VERSION_MAJOR} EQUAL "2")
         install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/platlib3/
                 DESTINATION ${LIBDIR}/python3.${NUMPY3_MINOR}/site-packages
                 COMPONENT bohrium3)
+    else()
+        message(STATUS "Will not build for Python 3")
     endif()
 endif()
 
