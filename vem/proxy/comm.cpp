@@ -33,23 +33,22 @@ using boost::asio::ip::tcp;
 using namespace std;
 using namespace bohrium;
 
-static void comm_send_array_data(boost::asio::ip::tcp::socket &socket, const bh_base *base)
-{
-    assert(base->data != NULL);
+namespace {
+void comm_send_array_data(boost::asio::ip::tcp::socket &socket, const bh_base *base) {
+    assert(base->data != nullptr);
 
     const size_t org_size = bh_base_size(base);
     size_t new_size = compressBound(org_size);
     vector<Bytef> buffer(new_size);
-    compress(&buffer[0], &new_size, (Bytef*)base->data, org_size);
+    compress(&buffer[0], &new_size, (Bytef *) base->data, org_size);
 
     const size_t size[] = {new_size};
     boost::asio::write(socket, boost::asio::buffer(size));
     boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
 }
 
-static void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *base)
-{
-    assert(base->data != NULL);
+void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *base) {
+    assert(base->data != nullptr);
 
     size_t size[1];
     boost::asio::read(socket, boost::asio::buffer(size));
@@ -60,17 +59,15 @@ static void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *
     vector<char> compressed(size[0]);
     boost::asio::read(socket, boost::asio::buffer(compressed));
 
-    uncompress((Bytef*)base->data, &new_size, (Bytef*) (&compressed[0]), compressed.size());
+    uncompress((Bytef *) base->data, &new_size, (Bytef *) (&compressed[0]), compressed.size());
     assert(new_size == org_size);
 }
+}
 
-CommFrontend::CommFrontend(int stack_level, const std::string &address, int port) : socket(io_service)
-{
+CommFrontend::CommFrontend(int stack_level, const std::string &address, int port) : socket(io_service) {
     constexpr unsigned int retries = 100;
-    for(unsigned int i = 1; i <= retries; ++i)
-    {
-        try
-        {
+    for (unsigned int i = 1; i <= retries; ++i) {
+        try {
             cout << "[PROXY-VEM] Connecting to " << address << ":" << port << endl;
             // Get a list of endpoints corresponding to the server name.
             tcp::resolver resolver(io_service);
@@ -80,8 +77,7 @@ CommFrontend::CommFrontend(int stack_level, const std::string &address, int port
 
             // Try each endpoint until we successfully establish a connection.
             boost::system::error_code error = boost::asio::error::host_not_found;
-            while (error && endpoint_iterator != end)
-            {
+            while (error && endpoint_iterator != end) {
                 socket.close();
                 socket.connect(*endpoint_iterator++, error);
             }
@@ -90,8 +86,7 @@ CommFrontend::CommFrontend(int stack_level, const std::string &address, int port
             socket.set_option(boost::asio::ip::tcp::no_delay(true));
             goto connected;
         }
-        catch(const boost::system::system_error &e)
-        {
+        catch (const boost::system::system_error &e) {
             this_thread::sleep_for(chrono::seconds(1));
             cerr << e.what() << endl;
             cout << "Retrying - attempt number " << i << " of " << retries << endl;
@@ -115,8 +110,7 @@ connected:
     boost::asio::write(socket, boost::asio::buffer(buf_body));
 }
 
-CommFrontend::~CommFrontend()
-{
+CommFrontend::~CommFrontend() {
     //Serialize message head
     vector<char> buf_head;
     serialize::Header head(serialize::TYPE_SHUTDOWN, 0);
@@ -128,12 +122,11 @@ CommFrontend::~CommFrontend()
     socket.close();
 }
 
-void CommFrontend::execute(BhIR &bhir)
-{
+void CommFrontend::execute(bh_ir &bhir) {
     //Serialize the BhIR
     vector<char> buf_body;
-    vector<bh_base*> data_send;
-    vector<bh_base*> data_recv;
+    vector<bh_base *> data_send;
+    vector<bh_base *> data_recv;
     exec_serializer.serialize(bhir, buf_body, data_send, data_recv);
 
     //Serialize message head
@@ -146,10 +139,8 @@ void CommFrontend::execute(BhIR &bhir)
     boost::asio::write(socket, boost::asio::buffer(buf_body));
 
     //Send array data
-    for(size_t i=0; i< data_send.size(); ++i)
-    {
-        bh_base *base = data_send[i];
-        assert(base->data != NULL);
+    for (bh_base *base: data_send) {
+        assert(base->data != nullptr);
         send_array_data(base);
     }
 
@@ -157,26 +148,21 @@ void CommFrontend::execute(BhIR &bhir)
     exec_serializer.cleanup(bhir);
 
     //Receive sync'ed array data
-    for(size_t i=0; i< data_recv.size(); ++i)
-    {
-        bh_base *base = data_recv[i];
+    for (bh_base *base: data_recv) {
         bh_data_malloc(base);
         recv_array_data(base);
     }
 }
 
-void CommFrontend::send_array_data(const bh_base *base)
-{
-    assert(base->data != NULL);
+void CommFrontend::send_array_data(const bh_base *base) {
+    assert(base->data != nullptr);
     comm_send_array_data(socket, base);
 }
 
-void CommFrontend::recv_array_data(bh_base *base)
-{
-    assert(base->data != NULL);
+void CommFrontend::recv_array_data(bh_base *base) {
+    assert(base->data != nullptr);
     comm_recv_array_data(socket, base);
 }
-
 
 
 CommBackend::CommBackend(const std::string &address, int port) : socket(io_service) {
@@ -186,14 +172,12 @@ CommBackend::CommBackend(const std::string &address, int port) : socket(io_servi
     socket.set_option(boost::asio::ip::tcp::no_delay(true));
 }
 
-CommBackend::~CommBackend()
-{
+CommBackend::~CommBackend() {
     socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     socket.close();
 }
 
-serialize::Header CommBackend::next_message_head()
-{
+serialize::Header CommBackend::next_message_head() {
     //Let's read the head of the message
     vector<char> buf_head(serialize::HeaderSize);
     boost::asio::read(socket, boost::asio::buffer(buf_head));
@@ -201,20 +185,17 @@ serialize::Header CommBackend::next_message_head()
     return head;
 }
 
-void CommBackend::next_message_body(std::vector<char> &buffer)
-{
+void CommBackend::next_message_body(std::vector<char> &buffer) {
     boost::asio::read(socket, boost::asio::buffer(buffer));
 }
 
 
-void CommBackend::send_array_data(const bh_base *base)
-{
-    assert(base->data != NULL);
+void CommBackend::send_array_data(const bh_base *base) {
+    assert(base->data != nullptr);
     comm_send_array_data(socket, base);
 }
 
-void CommBackend::recv_array_data(bh_base *base)
-{
-    assert(base->data != NULL);
+void CommBackend::recv_array_data(bh_base *base) {
+    assert(base->data != nullptr);
     comm_recv_array_data(socket, base);
 }

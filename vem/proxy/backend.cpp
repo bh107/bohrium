@@ -67,7 +67,7 @@ static void service(const std::string &address, int port)
                 for(size_t i=0; i<data_recv.size(); ++i)
                 {
                     bh_base *base = data_recv[i];
-                    base->data = NULL;
+                    base->data = nullptr;
                     bh_data_malloc(base);
                     comm_backend.recv_array_data(base);
                 }

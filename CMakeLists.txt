@@ -119,7 +119,7 @@ set(BH_OPENCL_LIBS "")
 add_subdirectory(core)
 
 add_subdirectory(vem/node)
-#add_subdirectory(vem/proxy) TODO: fix and enable
+add_subdirectory(vem/proxy)
 
 add_subdirectory(ve/openmp)
 add_subdirectory(ve/opencl)

@@ -3,6 +3,7 @@
 
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/vector.hpp>
 #include <vector>
 #include <set>
 
@@ -132,10 +133,9 @@ struct bh_instruction
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & opcode;
+        ar & operand;
         //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
         ar & boost::serialization::make_array(&constant, 1);
-        for(bh_view &view: operand)
-            ar & view;
     }
 };
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)

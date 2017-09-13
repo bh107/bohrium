@@ -49,9 +49,44 @@ public:
         throw runtime_error("[PROXY-VEM] extmethod() not implemented!");
     };
 
-    virtual string message(const string &msg) {
+    // Handle messages from parent
+    string message(const string &msg) {
         throw runtime_error("[PROXY-VEM] message() not implemented!");
     }
+
+    // Handle memory pointer retrieval
+    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        if (not copy2host) {
+            throw runtime_error("PROXY - get_mem_ptr(): `copy2host` is not True");
+        }
+        if (force_alloc) {
+            bh_data_malloc(&base);
+        }
+        void *ret = base.data;
+        if (nullify) {
+            base.data = nullptr;
+        }
+        return ret;
+    }
+
+    // Handle memory pointer obtainment
+    void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+        if (not host_ptr) {
+            throw runtime_error("PROXY - set_mem_ptr(): `host_ptr` is not True");
+        }
+        if (base->data != nullptr) {
+            throw runtime_error("PROXY - set_mem_ptr(): `base->data` is not NULL");
+        }
+        base->data = mem;
+    }
+
+    // We have no context so returning NULL
+    void* get_device_context() {
+        return nullptr;
+    };
+
+    // We have no context so doing nothing
+    void set_device_context(void* device_context) {};
 };
 } //Unnamed namespace
 
