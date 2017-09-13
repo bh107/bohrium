@@ -28,5 +28,3 @@ RUN make install
 WORKDIR /bohrium
 ENTRYPOINT export PYTHONPATH="/usr/lib/$PYTHON_EXEC/site-packages:$PYTHONPATH" && export && $TEST_EXEC
 
-
-#/bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && $PYTHON_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py

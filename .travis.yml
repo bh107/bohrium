@@ -19,18 +19,19 @@ env:
 
   matrix:
     # All test_*.py scripts
-    - BH_STACK=openmp PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=openmp BH_OPENMP_MONOLITHIC=true PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=opencl PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=openmp PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=opencl PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-
-    # The test_benchmarks.py script
-    - BH_STACK=openmp PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-    - BH_STACK=opencl PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-    - BH_STACK=openmp PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-    - BH_STACK=opencl PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-
+    - BH_STACK=openmp PYTHON_EXEC=python2.7 TEST_EXEC="echo hej & ls && export"
+      #- BH_STACK=openmp PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && export & echo hej"
+      #    - BH_STACK=openmp BH_OPENMP_MONOLITHIC=true PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+      #    - BH_STACK=opencl PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+      #    - BH_STACK=openmp PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+      #    - BH_STACK=opencl PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+      #
+      #    # The test_benchmarks.py script
+      #    - BH_STACK=openmp PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      #    - BH_STACK=opencl PYTHON_EXEC=python2.7 TEST_EXEC="python2.7 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      #    - BH_STACK=openmp PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      #    - BH_STACK=opencl PYTHON_EXEC=python3.5 TEST_EXEC="python3.5 /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+      #
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
 
