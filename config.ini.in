@@ -11,6 +11,7 @@ default    = bcexp_cpu, bccon, node, openmp
 openmp     = bcexp_cpu, bccon, node, openmp
 opencl     = bcexp_gpu, bccon, node, opencl, openmp
 cuda       = bcexp_gpu, bccon, node, cuda, openmp
+proxy      = bcexp_cpu, bccon, proxy, node, openmp
 
 ############
 # Managers #
