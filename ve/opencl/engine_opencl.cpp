@@ -245,6 +245,9 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
                      << log
                      << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
             }
+            cout << "************ SOURCE ************" << endl
+                 << source
+                 << "^^^^^^^^^^^^^ SOURCE^^^^^^^^^^^^" << endl << endl;
         }
     } else { // If the binary file exist we load the binary into the program
 
