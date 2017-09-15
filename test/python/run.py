@@ -19,12 +19,12 @@ except NameError:
 assert (numpy != bohrium)
 
 # Terminal colors
-HEADER = '\033[35m'
-OKBLUE = '\033[34m'
+HEADER  = '\033[35m'
+OKBLUE  = '\033[34m'
 OKGREEN = '\033[32m'
 WARNING = '\033[33m'
-FAIL = '\033[31m'
-ENDC = '\033[0m'
+FAIL    = '\033[31m'
+ENDC    = '\033[0m'
 
 
 def get_test_object_names(obj):
@@ -84,7 +84,7 @@ def run(args):
                 mth_obj = getattr(cls_inst, mth_name)
                 name = "%s/%s/%s" % (filename, cls_name[5:], mth_name[5:])
 
-                print("Testing %s%s%s" % (OKGREEN, name, ENDC), end="")
+                print("Testing %s%s%s " % (OKGREEN, name, ENDC), end="")
                 sys.stdout.flush()
 
                 start_time = time.time()
@@ -137,7 +137,7 @@ def run(args):
                         if not args.cont_on_error:
                             sys.exit(1)
 
-                print("%s (%.2fs) ✓%s" % (OKBLUE, time.time() - start_time, ENDC))
+                print("%s(%.2fs) %s✓%s" % (OKBLUE, time.time() - start_time, OKGREEN, ENDC))
 
 
 if __name__ == "__main__":
@@ -197,4 +197,4 @@ if __name__ == "__main__":
     time_start = time.time()
     run(args)
 
-    print("*** Finished in: %s%.2fs%s" % (OKBLUE, time.time() - time_start, ENDC))
+    print("%s***%s Finished in: %s%.2fs%s %s***%s" % (OKGREEN, ENDC, OKBLUE, time.time() - time_start, ENDC, OKGREEN, ENDC))
