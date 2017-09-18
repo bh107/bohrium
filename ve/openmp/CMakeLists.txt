@@ -66,6 +66,12 @@ endif()
 # Optimizations
 if (FLAG_03_FOUND)
     set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -O3")
+
+    # With Clang, -O3 gives a warning about not being able to vectorize loops
+    # TODO: Figure out if we can actually have clang vectorize the loops
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -Wno-pass-failed")
+    endif()
 endif()
 if (FLAG_MARCH_NATIVE_FOUND)
     set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -march=native")
