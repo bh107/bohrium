@@ -18,9 +18,8 @@ install(TARGETS bh_ve_openmp DESTINATION ${LIBDIR} COMPONENT bohrium)
 
 
 #
-#   The rest of the this file is finding the compiler and flags to write in the config file
+# The rest of the this file is finding the compiler and flags to write in the config file
 #
-
 include(CheckCCompilerFlag)
 include(FeatureSummary)
 
@@ -57,22 +56,15 @@ check_c_compiler_flag(-O3 FLAG_03_FOUND)
 check_c_compiler_flag(-march=native FLAG_MARCH_NATIVE_FOUND)
 check_c_compiler_flag(-Werror FLAG_WERROR_FOUND)
 
-#
 # JIT-compiler capabilities: optimization, and parallelization
-#
 if(APPLE)
-    # Fallback on APPLE, this will run but without optimizations and parallelization.
-    set(VE_OPENMP_COMPILER_INC "")
     set(VE_OPENMP_COMPILER_FLG "-x c -dynamiclib -arch x86_64 -Wno-expansion-to-defined")
-    set(VE_OPENMP_COMPILER_LIB "-lm -L${VE_OPENMP_COMPILER_INC}/${LIBDIR} -lbh")
 else()
-    # Mandatory flags
     set(VE_OPENMP_COMPILER_FLG "-x c -fPIC -shared ${C99_FLAG}")
 endif()
 
 # Optimizations
-if (FLAG_03_FOUND AND !APPLE)
-    # This doesn't work with MacOS at the moment
+if (FLAG_03_FOUND)
     set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -O3")
 endif()
 if (FLAG_MARCH_NATIVE_FOUND)
