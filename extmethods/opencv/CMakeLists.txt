@@ -6,7 +6,7 @@ if(NOT EXT_OPENCV)
 endif()
 
 # External dependencies
-find_package(OpenCV 3)
+find_package(OpenCV 3 QUIET)
 set_package_properties(OpenCV PROPERTIES DESCRIPTION "Open Source Computer Vision" URL "opencv.org")
 set_package_properties(OpenCV PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the OpenCV extended method")
 
