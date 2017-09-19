@@ -2175,5 +2175,25 @@
     "reduction":     false,
     "accumulate":    false,
     "system_opcode": false
+},
+{
+    "opcode": "BH_CONJ",
+    "doc":  "Complex conjugates.",
+    "code": "op1 = bh_conj(op2)",
+    "id":   "85",
+    "nop":   2,
+    "types": [
+            [ "BH_COMPLEX64", "BH_COMPLEX64" ],
+            [ "BH_COMPLEX128", "BH_COMPLEX128" ]
+    ],
+    "layout": [
+             [ "A", "A" ],
+             [ "A", "K" ]
+    ],
+    "elementwise":   true,
+    "composite":     false,
+    "reduction":     false,
+    "accumulate":    false,
+    "system_opcode": false
 }
 ]
