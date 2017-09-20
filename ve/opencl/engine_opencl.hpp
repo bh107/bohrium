@@ -90,13 +90,18 @@ public:
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
+    // Check if `base` is on the device
+    bool baseOnDevice(const bh_base *base) const {
+        return util::exist_nconst(buffers, base);
+    }
+
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>
     void copyToHost(T &bases) {
         auto tcopy = std::chrono::steady_clock::now();
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: bases) {
-            if (buffers.find(base) != buffers.end()) {
+            if (baseOnDevice(base)) {
                 bh_data_malloc(base);
                 if (verbose) {
                     std::cout << "Copy to host: " << *base << std::endl;

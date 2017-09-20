@@ -124,6 +124,11 @@ public:
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
+    // Check if `base` is on the device
+    bool baseOnDevice(const bh_base *base) const {
+        return util::exist_nconst(buffers, base);
+    }
+
     // Delete a buffer
     template <typename T>
     void delBuffer(T &base) {
