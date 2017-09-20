@@ -270,6 +270,17 @@ public:
         return false;
     }
 
+    // Return number of bytes accessed in the computation
+    uint64_t compute_size() const {
+        uint64_t ret=0;
+        for(const InstrPtr &instr: getAllInstr()) {
+            for (const bh_view *view: instr->get_views()) {
+                ret += bh_nelements(*view) * bh_type_size(view->base->type);
+            }
+        }
+        return ret;
+    }
+
     // Pretty print this block
     std::string pprint(const char *newline="\n") const;
 };
