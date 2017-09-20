@@ -171,6 +171,7 @@ void write_loop_block(const SymbolTable &symbols,
                                           bool loop_is_peeled,
                                           const std::vector<const LoopB *> &threaded_blocks,
                                           std::stringstream &out)> head_writer,
+                      std::stringstream &declares,
                       std::stringstream &out) {
 
     if (block.isSystemOnly()) {
@@ -238,7 +239,7 @@ void write_loop_block(const SymbolTable &symbols,
             const bh_view &output = instr->operand[0];
             if (not scope.isDeclared(output) and not scope.isArray(output)) {
                 // Let's write the declaration of the scalar variable
-                scope.writeDeclaration(output, type_writer(output.base->type), out);
+                scope.writeDeclaration(output, type_writer(output.base->type), declares);
                 out << "\n";
                 spaces(out, 4 + block.rank * 4);
             }
@@ -279,7 +280,7 @@ void write_loop_block(const SymbolTable &symbols,
         for (const InstrPtr &instr: block._sweeps) {
             const bh_view &view = instr->operand[0];
             if (not scope.isArray(view) and not scope.isDeclared(view)) {
-                scope.writeDeclaration(view, type_writer(view.base->type), out);
+                scope.writeDeclaration(view, type_writer(view.base->type), declares);
                 out << "\n";
                 spaces(out, 4 + block.rank * 4);
             }
@@ -318,11 +319,11 @@ void write_loop_block(const SymbolTable &symbols,
                 if (not peeled_scope.isDeclared(*view)) {
                     if (peeled_scope.isTmp(view->base)) {
                         spaces(out, 8 + block.rank * 4);
-                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), declares);
                         out << "\n";
                     } else if (peeled_scope.isScalarReplaced_R(*view)) {
                         spaces(out, 8 + block.rank * 4);
-                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), declares);
                         out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
                         write_array_subscription(peeled_scope, *view, out);
                         out << ";";
@@ -335,7 +336,7 @@ void write_loop_block(const SymbolTable &symbols,
         for (const bh_view *view: indexes) {
             if (not peeled_scope.isIdxDeclared(*view)) {
                 spaces(out, 8 + block.rank * 4);
-                peeled_scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), out);
+                peeled_scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), declares);
                 out << "\n";
             }
         }
@@ -347,7 +348,8 @@ void write_loop_block(const SymbolTable &symbols,
                     write_instr(peeled_scope, *b.getInstr(), out, opencl);
                 }
             } else {
-                write_loop_block(symbols, &peeled_scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
+                write_loop_block(symbols, &peeled_scope, b.getLoop(), config, threaded_blocks, opencl, type_writer,
+                                 head_writer, declares, out);
             }
         }
         spaces(out, 4 + block.rank*4);
@@ -364,11 +366,11 @@ void write_loop_block(const SymbolTable &symbols,
             if (not scope.isDeclared(*view)) {
                 if (scope.isTmp(view->base)) {
                     spaces(out, 8 + block.rank * 4);
-                    scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                    scope.writeDeclaration(*view, type_writer(view->base->type), declares);
                     out << "\n";
                 } else if (scope.isScalarReplaced_R(*view)) {
                     spaces(out, 8 + block.rank * 4);
-                    scope.writeDeclaration(*view, type_writer(view->base->type), out);
+                    scope.writeDeclaration(*view, type_writer(view->base->type), declares);
                     out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
                     write_array_subscription(scope, *view, out);
                     out << ";";
@@ -381,7 +383,7 @@ void write_loop_block(const SymbolTable &symbols,
     for (const bh_view *view: indexes) {
         if (not scope.isIdxDeclared(*view)) {
             spaces(out, 8 + block.rank * 4);
-            scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), out);
+            scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), declares);
             out << "\n";
         }
     }
@@ -396,7 +398,8 @@ void write_loop_block(const SymbolTable &symbols,
                     write_instr(scope, *b.getInstr(), out, true);
                 }
             } else {
-                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
+                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer,
+                                 head_writer, declares, out);
             }
         }
     } else {
@@ -417,7 +420,8 @@ void write_loop_block(const SymbolTable &symbols,
                     write_instr(scope, *instr, out);
                 }
             } else {
-                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer, head_writer, out);
+                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer,
+                                 head_writer, declares, out);
             }
         }
     }

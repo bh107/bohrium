@@ -95,6 +95,7 @@ void write_loop_block(const SymbolTable &symbols,
                                           bool loop_is_peeled,
                                           const std::vector<const LoopB *> &threaded_blocks,
                                           std::stringstream &out)> head_writer,
+                      std::stringstream &declares,
                       std::stringstream &out);
 
 // Sets the constructor flag of each instruction in 'instr_list'
