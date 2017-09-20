@@ -101,22 +101,21 @@ const char *write_cuda_type(bh_type dtype) {
 
 // Writes the union of C99 types that can make up a constant
 void write_c99_dtype_union(std::stringstream& out) {
-    out << "union dtype {\n";
-    spaces(out, 4);
-    out << write_c99_type(bh_type::BOOL) << " " << bh_type_text(bh_type::BOOL) << ";\n";
-    out << write_c99_type(bh_type::INT8) << " " << bh_type_text(bh_type::INT8) << ";\n";
-    out << write_c99_type(bh_type::INT16) << " " << bh_type_text(bh_type::INT16) << ";\n";
-    out << write_c99_type(bh_type::INT32) << " " << bh_type_text(bh_type::INT32) << ";\n";
-    out << write_c99_type(bh_type::INT64) << " " << bh_type_text(bh_type::INT64) << ";\n";
-    out << write_c99_type(bh_type::UINT8) << " " << bh_type_text(bh_type::UINT8) << ";\n";
-    out << write_c99_type(bh_type::UINT16) << " " << bh_type_text(bh_type::UINT16) << ";\n";
-    out << write_c99_type(bh_type::UINT32) << " " << bh_type_text(bh_type::UINT32) << ";\n";
-    out << write_c99_type(bh_type::UINT64) << " " << bh_type_text(bh_type::UINT64) << ";\n";
-    out << write_c99_type(bh_type::FLOAT32) << " " << bh_type_text(bh_type::FLOAT32) << ";\n";
-    out << write_c99_type(bh_type::FLOAT64) << " " << bh_type_text(bh_type::FLOAT64) << ";\n";
-    out << write_c99_type(bh_type::COMPLEX64) << " " << bh_type_text(bh_type::COMPLEX64) << ";\n";
-    out << write_c99_type(bh_type::COMPLEX128) << " " << bh_type_text(bh_type::COMPLEX128) << ";\n";
-    out << write_c99_type(bh_type::R123) << " " << bh_type_text(bh_type::R123) << ";\n";
+    out << "\nunion dtype {\n";
+    spaces(out, 4); out << write_c99_type(bh_type::BOOL)       << " " << bh_type_text(bh_type::BOOL)       << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::INT8)       << " " << bh_type_text(bh_type::INT8)       << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::INT16)      << " " << bh_type_text(bh_type::INT16)      << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::INT32)      << " " << bh_type_text(bh_type::INT32)      << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::INT64)      << " " << bh_type_text(bh_type::INT64)      << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::UINT8)      << " " << bh_type_text(bh_type::UINT8)      << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::UINT16)     << " " << bh_type_text(bh_type::UINT16)     << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::UINT32)     << " " << bh_type_text(bh_type::UINT32)     << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::UINT64)     << " " << bh_type_text(bh_type::UINT64)     << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::FLOAT32)    << " " << bh_type_text(bh_type::FLOAT32)    << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::FLOAT64)    << " " << bh_type_text(bh_type::FLOAT64)    << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::COMPLEX64)  << " " << bh_type_text(bh_type::COMPLEX64)  << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::COMPLEX128) << " " << bh_type_text(bh_type::COMPLEX128) << ";\n";
+    spaces(out, 4); out << write_c99_type(bh_type::R123)       << " " << bh_type_text(bh_type::R123)       << ";\n";
     out << "};\n";
 }
 

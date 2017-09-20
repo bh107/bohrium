@@ -20,8 +20,6 @@ include(CheckCCompilerFlag)
 include(FeatureSummary)
 include(LibVsLib64) # Sets LIBDIR
 
-message(STATUS "LIBDIR: ${LIBDIR}")
-
 # Write all compile commands to 'compile_commands.json', which can be used by YouCompleteMe
 # and other auto-completion software
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
@@ -32,9 +30,6 @@ ADD_CUSTOM_TARGET(run_install COMMAND ${CMAKE_MAKE_PROGRAM} install)
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)                                     # .local is default
     set (CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "The install prefix (default path is ~/.local)" FORCE)
 endif()
-
-set(BENCHMARK_DIR "${CMAKE_SOURCE_DIR}/benchmark")                                  # Benchmarks (npbackend)
-message(STATUS "Benchmark-dir: ${BENCHMARKS_DIR}")
 
 ####################################
 # Default compile-flags for Bohrium
@@ -192,6 +187,10 @@ if(JUPYTER_FOUND)
   endif()
 endif()
 
+MESSAGE(STATUS "")
+MESSAGE(STATUS "+---------------------------------------------------------+")
+MESSAGE(STATUS "|                         SUMMARY                         |")
+MESSAGE(STATUS "+---------------------------------------------------------+")
 MESSAGE(STATUS "C compiler:" ${CMAKE_C_COMPILER})
 MESSAGE(STATUS "C compile flags:" ${CMAKE_C_COMPILE_FLAGS})
 MESSAGE(STATUS "C debug flags:" ${CMAKE_C_FLAGS_DEBUG})
@@ -203,5 +202,7 @@ MESSAGE(STATUS "CXX debug flags:" ${CMAKE_CXX_FLAGS_DEBUG})
 MESSAGE(STATUS "CXX release flags:" ${CMAKE_CXX_FLAGS_RELEASE})
 MESSAGE(STATUS "CXX min size flags:" ${CMAKE_CXX_FLAGS_MINSIZEREL})
 MESSAGE(STATUS "CXX flags:" ${CMAKE_CXX_FLAGS})
+MESSAGE(STATUS "+---------------------------------------------------------+")
+MESSAGE(STATUS "")
 
 feature_summary(WHAT ALL)

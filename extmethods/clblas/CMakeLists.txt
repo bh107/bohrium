@@ -33,7 +33,7 @@ if(CLBLAS_FOUND)
     target_link_libraries(bh_clblas bh)
 
     if(APPLE)
-      target_link_libraries(bh_clblas "-lclblas -framework OpenCL")
+      target_link_libraries(bh_clblas ${OPENCL_LIBRARIES} clBLAS)
     endif()
 
     include_directories(${CLBLAS_INCLUDES})

@@ -86,7 +86,7 @@ if(${PYTHON_VERSION_MAJOR} EQUAL "2")
                 DESTINATION ${LIBDIR}/python3.${NUMPY3_MINOR}/site-packages
                 COMPONENT bohrium3)
     else()
-        message(STATUS "Will not build for Python 3")
+        message(STATUS "** Will not build for Python 3")
     endif()
 endif()
 
