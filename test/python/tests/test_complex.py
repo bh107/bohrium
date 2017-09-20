@@ -18,4 +18,14 @@ class test_complex_views:
     def test_imag(self, cmd):
         return cmd + "res = z + z.imag"
 
+    def test_conj(self, cmd):
+        return cmd + "res = z.conj()"
 
+    def test_conj_method(self, cmd):
+        return cmd + "res = M.conj(z)"
+
+    def test_conjugate(self, cmd):
+        return cmd + "res = z.conjugate()"
+
+    def test_conjugate_method(self, cmd):
+        return cmd + "res = M.conjugate(z)"

@@ -254,6 +254,14 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             }
             break;
         }
+        case BH_CONJ:
+            if (opencl) {
+                out << ops[0] << " = " << ops[1] << ";\n";
+                out << ops[0] << ".y *= -1;\n";
+            } else {
+                out << ops[0] << " = conj(" << ops[1] << ");\n";
+            }
+            break;
         case BH_RANGE:
             out << ops[0] << " = " << ops[1] << ";\n";
             break;

@@ -690,6 +690,10 @@ static PyObject* BhArray_all(PyObject *self, PyObject *args, PyObject *kwds) {
     return method2function("all", self, args, kwds);
 }
 
+static PyObject* BhArray_conj(PyObject *self, PyObject *args, PyObject *kwds) {
+    return method2function("conj", self, args, kwds);
+}
+
 static PyObject* BhArray_min(PyObject *self, PyObject *args, PyObject *kwds) {
     return method2function("min", self, args, kwds);
 }
@@ -748,6 +752,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"cumprod",            (PyCFunction) BhArray_cumprod,       METH_VARARGS | METH_KEYWORDS, "a.cumprod(axis=None, dtype=None, out=None)\n\nReturn the cumulative product of the array elements over the given axis\n\nRefer to `numpy.cumprod` for full documentation."},
     {"any",                (PyCFunction) BhArray_any,           METH_VARARGS | METH_KEYWORDS, "a.any(axis=None, out=None)\n\nTest whether any array element along a given axis evaluates to True.\n\nRefer to `numpy.any` for full documentation."},
     {"all",                (PyCFunction) BhArray_all,           METH_VARARGS | METH_KEYWORDS, "a.all(axis=None, out=None)\n\nTest whether all array elements along a given axis evaluate to True.\n\nRefer to `numpy.all` for full documentation."},
+    {"conj",               (PyCFunction) BhArray_conj,          METH_VARARGS | METH_KEYWORDS, "a.conj(x[, out])\n\nReturn the complex conjugate, element-wise.\n\nRefer to `numpy.conj` for full documentation."},
+    {"conjugate",          (PyCFunction) BhArray_conj,          METH_VARARGS | METH_KEYWORDS, "a.conjugate(x[, out])\n\nReturn the complex conjugate, element-wise.\n\nRefer to `numpy.conj` for full documentation."},
     {"min",                (PyCFunction) BhArray_min,           METH_VARARGS | METH_KEYWORDS, "a.min(axis=None, out=None)\n\nReturn the minimum along a given axis.\n\nRefer to numpy.amin for full documentation."},
     {"max",                (PyCFunction) BhArray_max,           METH_VARARGS | METH_KEYWORDS, "a.max(axis=None, out=None)\n\nReturn the maximum along a given axis.\n\nRefer to numpy.amax for full documentation."},
     {"argmin",             (PyCFunction) BhArray_argmin,        METH_VARARGS | METH_KEYWORDS, "a.argmin(axis=None, out=None)\n\nReturns the indices of the minimum values along an axis.\n\nRefer to numpy.argmin for full documentation."},
