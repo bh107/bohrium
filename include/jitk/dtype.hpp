@@ -120,6 +120,29 @@ void write_c99_dtype_union(std::stringstream& out) {
     out << "};\n";
 }
 
+// Return Fortran types, which are used inside the Fortran kernels
+const char *write_fortran_type(bh_type dtype) {
+    switch (dtype) {
+        case bh_type::BOOL:       return "logical";
+        case bh_type::INT8:       return "integer*1";
+        case bh_type::INT16:      return "integer*2";
+        case bh_type::INT32:      return "integer*4";
+        case bh_type::INT64:      return "integer*8";
+        case bh_type::UINT8:      return "integer*1";
+        case bh_type::UINT16:     return "integer*2";
+        case bh_type::UINT32:     return "integer*4";
+        case bh_type::UINT64:     return "integer*8";
+        case bh_type::FLOAT32:    return "real*4";
+        case bh_type::FLOAT64:    return "real*8";
+        case bh_type::COMPLEX64:  return "complex*8";
+        case bh_type::COMPLEX128: return "complex*16";
+        case bh_type::R123:       return "struct { uint64_t start, key; }";
+        default:
+            std::cerr << "Unknown Fortran type: " << bh_type_text(dtype) << std::endl;
+            throw std::runtime_error("Unknown Fortran type");
+    }
+}
+
 } // jitk
 } // bohrium
 

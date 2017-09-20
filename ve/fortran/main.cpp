@@ -158,7 +158,8 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     stringstream ss;
     // "OpenMP for" goes to the outermost loop
     if (block.rank == 0 and openmp_compatible(block)) {
-        ss << " parallel for";
+        // OUTCOMMENTED
+        //        ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
         for (const InstrPtr &instr: block._sweeps) {
             assert(instr->operand.size() == 3);
@@ -192,14 +193,15 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     }
     const string ss_str = ss.str();
     if(not ss_str.empty()) {
-        out << "#pragma omp" << ss_str << "\n";
+        // OUTCOMMENTED
+        //        out << "#pragma omp" << ss_str << "\n";
         spaces(out, 4 + block.rank*4);
     }
 }
 
 // Writes the OpenMP specific for-loop header
-void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config, bool loop_is_peeled,
-                      const vector<const LoopB *> &threaded_blocks, stringstream &out) {
+void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config,
+                      bool loop_is_peeled, const vector<const LoopB *> &threaded_blocks, stringstream &out) {
 
     // Let's write the OpenMP loop header
     {
@@ -215,97 +217,73 @@ void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &blo
     // Write the for-loop header
     string itername;
     {stringstream t; t << "i" << block.rank; itername = t.str();}
-    out << "for(uint64_t " << itername;
+    out << "do " << itername;
     if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-        out << "=1; ";
+        out << "=1,";
     else
-        out << "=0; ";
-    out << itername << " < " << block.size << "; ++" << itername << ") {\n";
+        out << "=0,";
+    out << block.size-1 << "\n";
 }
 
 void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symbols, const ConfigParser &config,
                         const vector<bh_base*> &kernel_temps, stringstream &ss) {
 
-    // Write the need includes
-    ss << "#include <stdint.h>\n";
-    ss << "#include <stdlib.h>\n";
-    ss << "#include <stdbool.h>\n";
-    ss << "#include <complex.h>\n";
-    ss << "#include <tgmath.h>\n";
-    ss << "#include <math.h>\n";
-    if (symbols.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_openmp.h>\n";
-    }
-    write_c99_dtype_union(ss); // We always need to declare the union of all constant data types
-    ss << "\n";
+    // Write the header of the launcher subroutine
+    ss << "subroutine launcher(data_list, offset_strides, constants)" << endl;
 
-    // Write the header of the execute function
-    ss << "void execute";
-    write_kernel_function_arguments(symbols, write_c99_type, ss, nullptr, false);
+    // Include convert_pointer, which unpacks the c pointers for fortran use
+    spaces(ss, 4);
+    ss << "use iso_c_binding" << endl;
+    spaces(ss, 4);
+    ss << "interface" << endl;
+    spaces(ss, 8);
+    ss << "function convert_pointer(a,b) result(res) bind(C, name=\"convert_pointer\")" << endl;
+    spaces(ss, 12);
+    ss << "use iso_c_binding" << endl;
+    spaces(ss, 12);
+    ss << "type(c_ptr) :: a" << endl;
+    spaces(ss, 12);
+    ss << "integer :: b" << endl;
+    spaces(ss, 12);
+    ss << "type(c_ptr) :: res" << endl;
+    spaces(ss, 8);
+    ss << "end function" << endl;
+    spaces(ss, 4);
+    ss << "end interface" << endl;
+    spaces(ss, 4);
+    ss << "type(c_ptr) :: data_list" << endl << endl;
 
-    // Write the block that makes up the body of 'execute()'
-    ss << "{\n";
-    // Write allocations of the kernel temporaries
-    for(const bh_base* b: kernel_temps) {
-        spaces(ss, 4);
-        ss << write_c99_type(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b)
-           << ");\n";
-    }
-    ss << "\n";
-
-    for(const Block &block: block_list) {
-        write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, false, write_c99_type, loop_head_writer,
-                         ss, ss);
-    }
-
-    // Write frees of the kernel temporaries
-    ss << "\n";
-    for(const bh_base* b: kernel_temps) {
-        spaces(ss, 4);
-        ss << "free(" << "a" << symbols.baseID(b) << ");\n";
-    }
-    ss << "}\n\n";
-
-    // Write the launcher function, which will convert the data_list of void pointers
-    // to typed arrays and call the execute function
+    stringstream body;
     {
-        ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
+        stringstream declares;
+        for(const Block &block: block_list) {
+            write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, false, write_fortran_type,
+                             loop_head_writer, body, declares);
+        }
+        ss << declares.str() << "\n";
+        // For each declares input, declare a fortran pointer and a c pointer
         for(size_t i=0; i < symbols.getParams().size(); ++i) {
+            bh_base *b = symbols.getParams()[i];
             spaces(ss, 4);
-            bh_base *b = symbols.getParams()[i];
-            ss << write_c99_type(b->type) << " *a" << symbols.baseID(b);
-            ss << " = data_list[" << i << "];\n";
+            ss << write_fortran_type(b->type) << ", POINTER, dimension (:) :: a" << symbols.baseID(b) << "\n";
+            spaces(ss, 4);
+            ss << "type(c_ptr) :: c" << symbols.baseID(b) << "\n";
         }
-        spaces(ss, 4);
-        ss << "execute(";
-        // We create the comma separated list of args and saves it in `stmp`
-        stringstream stmp;
-        for(size_t i=0; i < symbols.getParams().size(); ++i) {
-            bh_base *b = symbols.getParams()[i];
-            stmp << "a" << symbols.baseID(b) << ", ";
-        }
-        uint64_t count=0;
-        for (const bh_view *view: symbols.offsetStrideViews()) {
-            stmp << "offset_strides[" << count++ << "], ";
-            for (int i=0; i<view->ndim; ++i) {
-                stmp << "offset_strides[" << count++ << "], ";
-            }
-        }
-        if (symbols.constIDs().size() > 0) {
-            uint64_t i=0;
-            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
-                const InstrPtr &instr = *it;
-                stmp << "constants[" << i++ << "]." << bh_type_text(instr->constant.type) << ", ";
-            }
-        }
-        // And then we write `stmp` into `ss` excluding the last comma
-        const string strtmp = stmp.str();
-        if (not strtmp.empty()) {
-            ss << strtmp.substr(0, strtmp.size()-2);
-        }
-        ss << ");\n";
-        ss << "}\n";
     }
+    cout << "\n";
+    // Write convert statements for the c pointers
+    for(size_t i=0; i < symbols.getParams().size(); ++i) {
+        bh_base *b = symbols.getParams()[i];
+        spaces(ss, 4);
+        ss << "c" << symbols.baseID(b) << "= CONVERT_POINTER(" << "data_list, " << i << ")" << "\n";
+        spaces(ss, 4);
+        ss << "call c_f_pointer(c" << symbols.baseID(b) << ", a" << symbols.baseID(b) << ", shape=[" << b->nelem << "])\n";
+    }
+
+    ss << body.str() << "\n";
+
+    // End the subroutine
+    ss << "end subroutine launcher\n\n";
 }
 
 void Impl::execute(bh_ir *bhir) {
