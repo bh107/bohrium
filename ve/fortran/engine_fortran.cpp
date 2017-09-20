@@ -123,7 +123,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
-                                                       jitk::hash_filename(compilation_hash, hash, ".c"),
+                                                       jitk::hash_filename(compilation_hash, hash, ".f95"),
                                                        true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {

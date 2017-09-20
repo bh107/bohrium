@@ -11,6 +11,7 @@ default    = bcexp_cpu, bccon, node, openmp
 openmp     = bcexp_cpu, bccon, node, openmp
 opencl     = bcexp_gpu, bccon, node, opencl, openmp
 cuda       = bcexp_gpu, bccon, node, cuda, openmp
+fortran    = bcexp_cpu, bccon, node, fortran
 
 ############
 # Managers #
@@ -169,3 +170,33 @@ work_group_size_2dy = 4
 work_group_size_3dx = 32
 work_group_size_3dy = 2
 work_group_size_3dz = 2
+
+[fortran]
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_fortran${CMAKE_SHARED_LIBRARY_SUFFIX}
+verbose = false
+# Profiling statistics
+prof = false
+prof_filename =
+# Write a Graphviz graph for each kernel
+graph = false
+# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
+tmp_dir =
+# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+cache_dir = ${BIN_KERNEL_CACHE_DIR}
+# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
+compiler_cmd = "gfortran -shared -fPIC ${VE_OPENMP_COMPILER_INC} ${VE_OPENMP_COMPILER_LIB} -lc {IN} -o {OUT}"
+# JIT compile options
+compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
+compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
+# List of extension methods
+libs = ${OPENMP_LIBS}
+# The pre-fuser to use
+pre_fuser = pre_fuser_lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, collapse_redundant_axes
+# *_as_var specifies whether to hard-code variables or have them as variables
+index_as_var = true
+strides_as_variables = true
+const_as_var = true
+# Monolithic combines all blocks into one shared library rather than a block-nest per shared library
+monolithic = false

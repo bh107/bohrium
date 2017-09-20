@@ -257,7 +257,7 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
     {
         stringstream declares;
         for(const Block &block: block_list) {
-            write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, false, write_fortran_type,
+            write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, true, write_fortran_type,
                              loop_head_writer, body, declares);
         }
         ss << declares.str() << "\n";

@@ -173,7 +173,11 @@ void write_loop_block(const SymbolTable &symbols,
                       std::stringstream &out) {
 
     if (block.isSystemOnly()) {
-        out << "// Removed loop with only system instructions\n";
+        if (fortran) {
+            out << "! Removed loop with only system instructions\n";
+        } else {
+            out << "// Removed loop with only system instructions\n";
+        }
         return;
     }
     spaces(out, 4 + block.rank*4);
@@ -307,13 +311,18 @@ void write_loop_block(const SymbolTable &symbols,
         }
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
-        if (not fortran) {
-            out << "{";
+        if (fortran) {
+            out << "! Peeled loop, 1. sweep iteration\n";
+        } else {
+            out << "{ // Peeled loop, 1. sweep iteration\n";
         }
-        out << " // Peeled loop, 1. sweep iteration\n";
 
         spaces(out, 8 + block.rank*4);
-        out << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
+        if (fortran) {
+            out << type_writer(bh_type::UINT64) << " :: " << itername << " = 0;\n";
+        } else {
+            out << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
+        }
 
         // Write temporary and scalar replaced array declarations
         for (const InstrPtr &instr: block.getLocalInstr()) {
