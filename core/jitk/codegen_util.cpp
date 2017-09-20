@@ -114,7 +114,7 @@ void write_kernel_function_arguments(const SymbolTable &symbols,
                                      std::function<const char *(bh_type type)> type_writer,
                                      stringstream &ss,
                                      const char *array_type_prefix,
-                                     const bool all_pointers) {
+                                     const bool fortran_style_param) {
     // We create the comma separated list of args and saves it in `stmp`
     stringstream stmp;
     for (size_t i=0; i < symbols.getParams().size(); ++i) {
@@ -122,17 +122,16 @@ void write_kernel_function_arguments(const SymbolTable &symbols,
         if (array_type_prefix != nullptr) {
             stmp << array_type_prefix << " ";
         }
-        stmp << type_writer(b->type) << " * __restrict__ a" << symbols.baseID(b) << ", ";
+        if (not fortran_style_param) { // In fortran every parameter is a pointer
+            stmp << type_writer(b->type) << " * __restrict__ ";
+        }
+        stmp << "a" << symbols.baseID(b) << ", ";
     }
     for (const bh_view *view: symbols.offsetStrideViews()) {
         stmp << type_writer(bh_type::UINT64);
-        if (all_pointers)
-            stmp << "*";
         stmp << " vo" << symbols.offsetStridesID(*view) << ", ";
         for (int i=0; i<view->ndim; ++i) {
             stmp << type_writer(bh_type::UINT64);
-            if (all_pointers)
-                stmp << "*";
             stmp << " vs" << symbols.offsetStridesID(*view) << "_" << i << ", ";
         }
     }
@@ -140,8 +139,6 @@ void write_kernel_function_arguments(const SymbolTable &symbols,
         for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
             const InstrPtr &instr = *it;
             stmp << "const " << type_writer(instr->constant.type);
-            if (all_pointers)
-                stmp << "*";
             stmp << " c" << symbols.constID(*instr) << ", ";
         }
     }
@@ -163,6 +160,7 @@ void write_loop_block(const SymbolTable &symbols,
                       const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks,
                       bool opencl,
+                      bool fortran,
                       std::function<const char *(bh_type type)> type_writer,
                       std::function<void (const SymbolTable &symbols,
                                           Scope &scope,
@@ -309,7 +307,11 @@ void write_loop_block(const SymbolTable &symbols,
         }
         string itername;
         {stringstream t; t << "i" << block.rank; itername = t.str();}
-        out << "{ // Peeled loop, 1. sweep iteration\n";
+        if (not fortran) {
+            out << "{";
+        }
+        out << " // Peeled loop, 1. sweep iteration\n";
+
         spaces(out, 8 + block.rank*4);
         out << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
 
@@ -348,12 +350,15 @@ void write_loop_block(const SymbolTable &symbols,
                     write_instr(peeled_scope, *b.getInstr(), out, opencl);
                 }
             } else {
-                write_loop_block(symbols, &peeled_scope, b.getLoop(), config, threaded_blocks, opencl, type_writer,
-                                 head_writer, declares, out);
+                write_loop_block(symbols, &peeled_scope, b.getLoop(), config, threaded_blocks, opencl, fortran,
+                                 type_writer, head_writer, declares, out);
             }
         }
         spaces(out, 4 + block.rank*4);
-        out << "}\n";
+        if (not fortran) {
+            out << "}";
+        }
+        out << "\n";
         spaces(out, 4 + block.rank*4);
     }
 
@@ -398,7 +403,7 @@ void write_loop_block(const SymbolTable &symbols,
                     write_instr(scope, *b.getInstr(), out, true);
                 }
             } else {
-                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer,
+                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, fortran, type_writer,
                                  head_writer, declares, out);
             }
         }
@@ -420,13 +425,16 @@ void write_loop_block(const SymbolTable &symbols,
                     write_instr(scope, *instr, out);
                 }
             } else {
-                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, type_writer,
+                write_loop_block(symbols, &scope, b.getLoop(), config, threaded_blocks, opencl, fortran, type_writer,
                                  head_writer, declares, out);
             }
         }
     }
     spaces(out, 4 + block.rank*4);
-    out << "}\n";
+    if (not fortran) {
+        out << "}";
+    }
+    out << "\n";
 
     // Let's copy the scalar replaced reduction outputs back to the original array
     for (const bh_view *view: scalar_replaced_reduction_outputs) {

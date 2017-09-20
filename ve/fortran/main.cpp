@@ -254,7 +254,8 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
     ss << "\n";
 
     for(const Block &block: block_list) {
-        write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, write_c99_type, loop_head_writer, ss, ss);
+        write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, false, write_c99_type, loop_head_writer,
+                         ss, ss);
     }
 
     // Write frees of the kernel temporaries
