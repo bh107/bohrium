@@ -30,11 +30,8 @@ namespace jitk {
 
 void write_array_index(const Scope &scope, const bh_view &view, stringstream &out,
                        int hidden_axis, const pair<int, int> axis_offset) {
-    bool empty_subscription = true;
-    if (view.start > 0) {
-        out << view.start;
-        empty_subscription = false;
-    }
+
+    out << view.start + 1;
     if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
         for (int i = 0; i < view.ndim; ++i) {
             int t = i;
@@ -49,12 +46,9 @@ void write_array_index(const Scope &scope, const bh_view &view, stringstream &ou
                 if (view.stride[i] != 1) {
                     out << "*" << view.stride[i];
                 }
-                empty_subscription = false;
             }
         }
     }
-    if (empty_subscription)
-        out << "0";
 }
 
 void write_array_index_variables(const Scope &scope, const bh_view &view, stringstream &out,
@@ -92,13 +86,13 @@ void write_array_subscription(const Scope &scope, const bh_view &view, stringstr
             return;
         }
     }
-    out << "[";
+    out << "(";
     if (scope.strides_as_variables and scope.isArray(view) and scope.symbols.existOffsetStridesID(view)) {
         write_array_index_variables(scope, view, out, hidden_axis, axis_offset);
     } else {
         write_array_index(scope, view, out, hidden_axis, axis_offset);
     }
-    out << "]";
+    out << ")";
 }
 
 } // jitk
