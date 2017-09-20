@@ -43,7 +43,7 @@ static void rewrite_chain(vector<bh_instruction*>& links, bh_instruction* &first
     }
 }
 
-void Contracter::contract_reduction(bh_ir &bhir)
+void Contracter::contract_reduction(BhIR &bhir)
 {
     bh_opcode reduce_opcode = BH_NONE;
     bh_instruction* first;

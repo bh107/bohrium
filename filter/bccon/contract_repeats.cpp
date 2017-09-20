@@ -81,7 +81,7 @@ static uint count_occur(string str1, string str2)
     return occur;
 }
 
-void Contracter::contract_repeats(bh_ir &bhir)
+void Contracter::contract_repeats(BhIR &bhir)
 {
     // Build map of instructions and string representation of instruction list
     unordered_map<char, const bh_instruction*> identifier_map;

@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */
-class bh_ir
+class BhIR
 {
 public:
     //The list of Bohrium instructions in topological order
@@ -37,8 +37,8 @@ public:
 
 public:
     // Some constructors
-    bh_ir(std::vector<bh_instruction> instr_list) : instr_list(std::move(instr_list)) {}
-    bh_ir(bh_instruction instr) {
+    BhIR(std::vector<bh_instruction> instr_list) : instr_list(std::move(instr_list)) {}
+    BhIR(bh_instruction instr) {
         instr_list.push_back(std::move(instr));
     }
 };

@@ -39,7 +39,7 @@ public:
                                      config.defaultGet<bool>("repeat", true)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(bh_ir *bhir) {
+    void execute(BhIR *bhir) {
         expander.expand(*bhir);
         child.execute(bhir);
     };

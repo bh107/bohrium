@@ -35,7 +35,7 @@ class Impl : public ComponentImplWithChild {
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level) {};
     ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(bh_ir *bhir) {
+    void execute(BhIR *bhir) {
         stringstream ss;
         ss << "trace-" << count++ << ".txt";
         cout << "pprint-filter: writing trace('" << ss.str() << "')." << endl;

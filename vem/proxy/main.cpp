@@ -43,7 +43,7 @@ public:
 
     ~Impl() { }
 
-    void execute(bh_ir *bhir) { comm_front.execute(*bhir); }
+    void execute(BhIR *bhir) { comm_front.execute(*bhir); }
 
     void extmethod(const std::string &name, bh_opcode opcode) {
         throw runtime_error("[PROXY-VEM] extmethod() not implemented!");

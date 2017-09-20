@@ -65,7 +65,7 @@ namespace bcexp {
  *
  *  Returns the number of instructions used (12 or 17).
  */
-int Expander::expand_sign(bh_ir& bhir, int pc)
+int Expander::expand_sign(BhIR& bhir, int pc)
 {
     int start_pc = pc;
     bh_instruction& composite = bhir.instr_list[pc];

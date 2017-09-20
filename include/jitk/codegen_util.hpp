@@ -122,14 +122,14 @@ void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const 
 
 // Handle the extension methods within the 'bhir'
 void util_handle_extmethod(component::ComponentImpl *self,
-                           bh_ir *bhir,
+                           BhIR *bhir,
                            std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods);
 
 // Handle the extension methods within the 'bhir'
 // This version takes a child component and possible an engine that must have a copyToHost() method
 template<typename T>
 void util_handle_extmethod(component::ComponentImpl *self,
-                           bh_ir *bhir,
+                           BhIR *bhir,
                            std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
                            std::set<bh_opcode> &child_extmethods,
                            component::ComponentFace &child,
@@ -142,7 +142,7 @@ void util_handle_extmethod(component::ComponentImpl *self,
 
         if (ext != extmethods.end() or childext != child_extmethods.end()) {
             // Execute the instructions up until now
-            bh_ir b(std::move(instr_list));
+            BhIR b(std::move(instr_list));
             self->execute(&b);
             instr_list.clear(); // Notice, it is legal to clear a moved vector.
 
@@ -190,7 +190,7 @@ inline std::vector<const LoopB*> find_threaded_blocks(const Block &block, Statis
  *     - set_constructor_flag(...)
  */
 template<typename SelfType, typename EngineType>
-void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
+void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
                           FuseCache &fcache) {
     using namespace std;
 
@@ -331,7 +331,7 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
  * 'child' can only be NULL when find_threaded_blocks() always returns one or more blocks
  */
 template<typename SelfType, typename EngineType>
-void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
+void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const ConfigParser &config, Statistics &stat,
                           FuseCache &fcache, component::ComponentFace *child) {
     using namespace std;
 
@@ -416,7 +416,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             for (const InstrPtr &instr: block.getAllInstr()) {
                 child_instr_list.push_back(*instr);
             }
-            bh_ir tmp_bhir(std::move(child_instr_list));
+            BhIR tmp_bhir(std::move(child_instr_list));
             child->execute(&tmp_bhir);
             stat.time_offload += chrono::steady_clock::now() - toffload;
             continue;

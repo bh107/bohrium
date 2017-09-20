@@ -41,7 +41,7 @@ Expander::Expander(
           __verbose = verbose;
       }
 
-void Expander::expand(bh_ir& bhir)
+void Expander::expand(BhIR& bhir)
 {
     int end = bhir.instr_list.size();
     for(int pc=0; pc<end; ++pc) {
@@ -149,13 +149,13 @@ bh_view Expander::make_temp(bh_type type, int64_t nelem)
     return view;
 }
 
-void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out)
+void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out)
 {
     bh_instruction instr(opcode, {out});
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 
-void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1)
+void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1)
 {
     bh_instruction instr(opcode, {out, in1});
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);

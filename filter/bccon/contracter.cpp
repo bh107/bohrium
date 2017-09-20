@@ -43,7 +43,7 @@ Contracter::Contracter(
 
 Contracter::~Contracter(void) {}
 
-void Contracter::contract(bh_ir& bhir)
+void Contracter::contract(BhIR& bhir)
 {
     if(reduction_)  contract_reduction(bhir);
     if(stupidmath_) contract_stupidmath(bhir);

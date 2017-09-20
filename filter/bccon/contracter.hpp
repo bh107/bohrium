@@ -17,13 +17,13 @@ public:
 
     ~Contracter(void);
 
-    void contract(bh_ir& bhir);
+    void contract(BhIR& bhir);
 
-    void contract_repeats(bh_ir& bhir);
-    void contract_reduction(bh_ir& bhir);
-    void contract_stupidmath(bh_ir& bhir);
-    void contract_collect(bh_ir& bhir);
-    void contract_muladd(bh_ir& bhir);
+    void contract_repeats(BhIR& bhir);
+    void contract_reduction(BhIR& bhir);
+    void contract_stupidmath(BhIR& bhir);
+    void contract_collect(BhIR& bhir);
+    void contract_muladd(BhIR& bhir);
 private:
     bool repeats_;
     bool reduction_;

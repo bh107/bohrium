@@ -128,7 +128,7 @@ CommFrontend::~CommFrontend()
     socket.close();
 }
 
-void CommFrontend::execute(bh_ir &bhir)
+void CommFrontend::execute(BhIR &bhir)
 {
     //Serialize the BhIR
     vector<char> buf_body;

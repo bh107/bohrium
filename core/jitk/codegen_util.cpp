@@ -437,14 +437,14 @@ void write_loop_block(const SymbolTable &symbols,
 
 // Handle the extension methods within the 'bhir'
 void util_handle_extmethod(component::ComponentImpl *self,
-                           bh_ir *bhir,
+                           BhIR *bhir,
                            std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods) {
 
     std::vector<bh_instruction> instr_list;
     for (bh_instruction &instr: bhir->instr_list) {
         auto ext = extmethods.find(instr.opcode);
         if (ext != extmethods.end()) {
-            bh_ir b(instr_list);
+            BhIR b(instr_list);
             self->execute(&b); // Execute the instructions up until now
             instr_list.clear();
             ext->second.execute(&instr, NULL); // Execute the extension method
