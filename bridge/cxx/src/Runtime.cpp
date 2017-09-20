@@ -72,10 +72,9 @@ void Runtime::enqueue_deletion(std::unique_ptr<BhBase> base_ptr) {
 void Runtime::flush() {
     // Construct Bohrium Internal Representation
     // and fill it with our instructions and execute.
-    bh_ir bhir;
-    std::move(instr_list.begin(), instr_list.end(), std::back_inserter(bhir.instr_list));
+    bh_ir bhir(std::move(instr_list));
     runtime.execute(&bhir);
-    instr_list.clear();
+    instr_list.clear(); // Notice, it is legal to clear a moved vector.
 
     // Purge the bases we have scheduled for deletion:
     bases_for_deletion.clear();

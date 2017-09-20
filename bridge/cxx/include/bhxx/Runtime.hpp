@@ -136,7 +136,7 @@ class Runtime {
 
     // Unique pointers to base objects, which are to be
     // purged after the next flush
-    std::vector<std::unique_ptr<BhBase>> bases_for_deletion;
+    std::vector<std::unique_ptr<BhBase> > bases_for_deletion;
 
     // Bohrium Configuration
     bohrium::ConfigParser config;

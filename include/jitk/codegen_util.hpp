@@ -142,10 +142,9 @@ void util_handle_extmethod(component::ComponentImpl *self,
 
         if (ext != extmethods.end() or childext != child_extmethods.end()) {
             // Execute the instructions up until now
-            bh_ir b;
-            b.instr_list = instr_list;
+            bh_ir b(std::move(instr_list));
             self->execute(&b);
-            instr_list.clear();
+            instr_list.clear(); // Notice, it is legal to clear a moved vector.
 
             if (ext != extmethods.end()) {
                 // Execute the extension method
@@ -391,6 +390,8 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         // Find the parallel blocks
         const vector<const LoopB*> threaded_blocks = find_threaded_blocks(block, stat, parallel_threshold);
 
+
+
         // We might have to offload the execution to the CPU
         if (threaded_blocks.size() == 0 and kernel_is_computing) {
             if (verbose)
@@ -415,7 +416,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
             for (const InstrPtr &instr: block.getAllInstr()) {
                 child_instr_list.push_back(*instr);
             }
-            bh_ir tmp_bhir(child_instr_list.size(), &child_instr_list[0]);
+            bh_ir tmp_bhir(std::move(child_instr_list));
             child->execute(&tmp_bhir);
             stat.time_offload += chrono::steady_clock::now() - toffload;
             continue;

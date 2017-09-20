@@ -24,58 +24,22 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <map>
 #include <set>
-#include <boost/serialization/vector.hpp>
 
 #include <bh_instruction.hpp>
-#include <bh_seqset.hpp>
-
-// Forward declaration of class boost::serialization::access
-namespace boost {namespace serialization {class access;}}
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */
 class bh_ir
 {
 public:
-    bh_ir(){};
-    /* Constructs a Bohrium Internal Representation (BhIR)
-     * from a instruction list.
-     *
-     * @ninstr      Number of instructions
-     * @instr_list  The instruction list
-     */
-    bh_ir(int64_t ninstr, const bh_instruction instr_list[]);
-
-    // Special constructor for 1 instruction
-    // Used by the GPU to send instructions to the CPU
-    bh_ir(const bh_instruction& instr);
-
-    /* Constructs a BhIR from a serialized BhIR.
-    *
-    * @bhir The BhIR serialized as a char array
-    */
-    bh_ir(const char bhir[], int64_t size);
-
-    /* Serialize the BhIR object into a char buffer
-    *  (use the bh_ir constructor above to deserialization)
-    *
-    *  @buffer   The char vector to serialize into
-    */
-    void serialize(std::vector<char> &buffer) const;
-
     //The list of Bohrium instructions in topological order
     std::vector<bh_instruction> instr_list;
 
-    // Should the ve tally after this bh_ir
-    bool tally;
-
-protected:
-    // Serialization using Boost
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
-        ar & instr_list;
+public:
+    // Some constructors
+    bh_ir(std::vector<bh_instruction> instr_list) : instr_list(std::move(instr_list)) {}
+    bh_ir(bh_instruction instr) {
+        instr_list.push_back(std::move(instr));
     }
 };
 

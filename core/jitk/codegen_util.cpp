@@ -444,8 +444,7 @@ void util_handle_extmethod(component::ComponentImpl *self,
     for (bh_instruction &instr: bhir->instr_list) {
         auto ext = extmethods.find(instr.opcode);
         if (ext != extmethods.end()) {
-            bh_ir b;
-            b.instr_list = instr_list;
+            bh_ir b(instr_list);
             self->execute(&b); // Execute the instructions up until now
             instr_list.clear();
             ext->second.execute(&instr, NULL); // Execute the extension method
