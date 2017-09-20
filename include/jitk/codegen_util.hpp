@@ -75,7 +75,7 @@ std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t bloc
 void write_kernel_function_arguments(const SymbolTable &symbols,
                                      std::function<const char *(bh_type type)> type_writer,
                                      std::stringstream &ss, const char *array_type_prefix,
-                                     const bool all_pointers);
+                                     const bool fortran_style_param);
 
 
 // Writes a loop block, which corresponds to a parallel for-loop.
@@ -87,6 +87,7 @@ void write_loop_block(const SymbolTable &symbols,
                       const ConfigParser &config,
                       const std::vector<const LoopB *> &threaded_blocks,
                       bool opencl,
+                      bool fortran,
                       std::function<const char *(bh_type type)> type_writer,
                       std::function<void (const SymbolTable &symbols,
                                           Scope &scope,
@@ -95,6 +96,7 @@ void write_loop_block(const SymbolTable &symbols,
                                           bool loop_is_peeled,
                                           const std::vector<const LoopB *> &threaded_blocks,
                                           std::stringstream &out)> head_writer,
+                      std::stringstream &declares,
                       std::stringstream &out);
 
 // Sets the constructor flag of each instruction in 'instr_list'

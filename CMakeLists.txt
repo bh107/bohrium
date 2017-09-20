@@ -131,6 +131,7 @@ add_subdirectory(filter/noneremover)
 add_subdirectory(ve/openmp)
 add_subdirectory(ve/opencl)
 add_subdirectory(ve/cuda)
+add_subdirectory(ve/fortran)
 
 add_subdirectory(extmethods/blas)
 add_subdirectory(extmethods/clblas)

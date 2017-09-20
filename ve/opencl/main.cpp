@@ -208,8 +208,8 @@ void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const Co
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, nullptr, block.getLoop(), config, threaded_blocks, true, write_opencl_type,
-                     loop_head_writer, ss);
+    write_loop_block(symbols, nullptr, block.getLoop(), config, threaded_blocks, true, false, write_opencl_type,
+                     loop_head_writer, ss, ss);
 
     ss << "}\n\n";
 }
