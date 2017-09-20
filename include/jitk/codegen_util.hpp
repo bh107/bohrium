@@ -321,6 +321,21 @@ void handle_cpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
+// Returns True when we should run the `block` on the device
+template<typename EngineType>
+bool compute_on_device(const Block &block, const EngineType &engine) {
+    uint64_t bytes_on_host=0, bytes_on_device=0;
+    for(const bh_base *base: block.getAllBases()) {
+        if (engine.baseOnDevice(base)) {
+            bytes_on_device += bh_base_size(base);
+        } else {
+            bytes_on_host += bh_base_size(base);
+        }
+    }
+    uint64_t bytes_computing = block.compute_size();
+    return bytes_computing > 0;
+}
+
 /* Handle execution of regular instructions
  * 'SelfType' most be a component implementation that exposes:
  *     - void write_kernel(...)
@@ -392,7 +407,7 @@ void handle_gpu_execution(SelfType &self, bh_ir *bhir, EngineType &engine, const
         const vector<const LoopB*> threaded_blocks = find_threaded_blocks(block, stat, parallel_threshold);
 
         // We might have to offload the execution to the CPU
-        if (threaded_blocks.size() == 0 and kernel_is_computing) {
+        if (kernel_is_computing and (threaded_blocks.size() == 0 or not compute_on_device(block, engine))) {
             if (verbose)
                 cout << "Offloading to CPU\n";
 
