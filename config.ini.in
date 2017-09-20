@@ -195,8 +195,8 @@ pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, collapse_redundant_axes
 # *_as_var specifies whether to hard-code variables or have them as variables
-index_as_var = true
-strides_as_variables = true
-const_as_var = true
+index_as_var = false
+strides_as_var = false
+const_as_var = false
 # Monolithic combines all blocks into one shared library rather than a block-nest per shared library
 monolithic = false

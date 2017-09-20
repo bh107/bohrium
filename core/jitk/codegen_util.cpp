@@ -313,15 +313,12 @@ void write_loop_block(const SymbolTable &symbols,
         {stringstream t; t << "i" << block.rank; itername = t.str();}
         if (fortran) {
             out << "! Peeled loop, 1. sweep iteration\n";
+            spaces(out, 8 + block.rank*4);
+            out << itername << " = 0;\n";
         } else {
             out << "{ // Peeled loop, 1. sweep iteration\n";
-        }
-
-        spaces(out, 8 + block.rank*4);
-        if (fortran) {
-            out << type_writer(bh_type::UINT64) << " :: " << itername << " = 0;\n";
-        } else {
-            out << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
+            spaces(out, 8 + block.rank*4);
+            declares << type_writer(bh_type::UINT64) << " " << itername << " = 0;\n";
         }
 
         // Write temporary and scalar replaced array declarations
@@ -330,11 +327,15 @@ void write_loop_block(const SymbolTable &symbols,
                 if (not peeled_scope.isDeclared(*view)) {
                     if (peeled_scope.isTmp(view->base)) {
                         spaces(out, 8 + block.rank * 4);
-                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), declares);
-                        out << "\n";
+                        if (not fortran) {
+                            peeled_scope.writeDeclaration(*view, type_writer(view->base->type), declares);
+                            out << "\n";
+                        }
                     } else if (peeled_scope.isScalarReplaced_R(*view)) {
                         spaces(out, 8 + block.rank * 4);
-                        peeled_scope.writeDeclaration(*view, type_writer(view->base->type), declares);
+                        if (not fortran) {
+                            peeled_scope.writeDeclaration(*view, type_writer(view->base->type), declares);
+                        }
                         out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
                         write_array_subscription(peeled_scope, *view, out);
                         out << ";";
@@ -347,7 +348,9 @@ void write_loop_block(const SymbolTable &symbols,
         for (const bh_view *view: indexes) {
             if (not peeled_scope.isIdxDeclared(*view)) {
                 spaces(out, 8 + block.rank * 4);
-                peeled_scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), declares);
+                if (not fortran) {
+                    peeled_scope.writeIdxDeclaration(*view, type_writer(bh_type::UINT64), declares);
+                }
                 out << "\n";
             }
         }

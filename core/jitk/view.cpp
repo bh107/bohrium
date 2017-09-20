@@ -86,9 +86,9 @@ void write_array_subscription(const Scope &scope, const bh_view &view, stringstr
     // Let's check if the index is already declared as a variable
     if (not ignore_declared_indexes) {
         if (scope.isIdxDeclared(view)) {
-            out << "[";
+            out << "(";
             scope.getIdxName(view, out);
-            out << "]";
+            out << ")";
             return;
         }
     }

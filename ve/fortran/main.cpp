@@ -258,7 +258,7 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
         stringstream declares;
         for(const Block &block: block_list) {
             write_loop_block(symbols, nullptr, block.getLoop(), config, {}, false, true, write_fortran_type,
-                             loop_head_writer, body, declares);
+                             loop_head_writer, declares, body);
         }
         ss << declares.str() << "\n";
         // For each declares input, declare a fortran pointer and a c pointer
