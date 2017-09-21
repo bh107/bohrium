@@ -771,16 +771,13 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
     }
 }
 
-vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> &instr_list,
-                                                         set<bh_base *> &syncs, set<bh_base *> &frees) {
+vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> &instr_list, set<bh_base *> &frees) {
     vector<bh_instruction*> ret;
     set<const bh_base*> computes;
     for (bh_instruction &instr: instr_list) {
-        if (instr.opcode == BH_SYNC and computes.find(instr.operand[0].base) == computes.end()) {
-            syncs.insert(instr.operand[0].base);
-        } else if (instr.opcode == BH_FREE and computes.find(instr.operand[0].base) == computes.end()) {
+        if (instr.opcode == BH_FREE and not util::exist(computes, instr.operand[0].base)) {
             frees.insert(instr.operand[0].base);
-        } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY)) {
+        } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY or instr.opcode == BH_SYNC)) {
             set<const bh_base*> bases = instr.get_bases_const();
             computes.insert(bases.begin(), bases.end());
             ret.push_back(&instr);

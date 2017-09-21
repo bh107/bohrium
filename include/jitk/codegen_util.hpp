@@ -207,9 +207,8 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
     {
-        set<bh_base*> syncs;
         set<bh_base*> frees;
-        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, frees);
 
         // Let's free device buffers and array memory
         for(bh_base *base: frees) {
@@ -349,12 +348,8 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
     {
-        set<bh_base*> syncs;
         set<bh_base*> frees;
-        instr_list = remove_non_computed_system_instr(bhir->instr_list, syncs, frees);
-
-        // Let's copy sync'ed arrays back to the host
-        engine.copyToHost(syncs);
+        instr_list = remove_non_computed_system_instr(bhir->instr_list, frees);
 
         // Let's free device buffers and array memory
         for(bh_base *base: frees) {

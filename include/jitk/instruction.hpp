@@ -44,7 +44,7 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &o
 // Removes syncs and frees from 'instr_list' that are never used in a computation.
 // 'syncs' and 'frees' are the sets of arrays that were removed.
 std::vector<bh_instruction*> remove_non_computed_system_instr(std::vector<bh_instruction> &instr_list,
-                                                              std::set<bh_base *> &syncs, std::set<bh_base *> &frees);
+                                                              std::set<bh_base *> &frees);
 
 // Reshape 'instr' to match 'size_of_rank_dim' at the 'rank' dimension.
 // The dimensions from zero to 'rank-1' are untouched.
