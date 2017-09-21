@@ -94,7 +94,6 @@ private:
     std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
     std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
     std::set<bh_base*> _frees; // Set of freed arrays
-    std::set<bh_base*> _syncs; // Set of sync'ed arrays
     bool _useRandom; // Flag: is any instructions using random?
 
 public:
@@ -129,8 +128,6 @@ public:
                 _useRandom = true;
             } else if (instr->opcode == BH_FREE) {
                 _frees.insert(instr->operand[0].base);
-            } else if (instr->opcode == BH_SYNC) {
-                _syncs.insert(instr->operand[0].base);
             }
             // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
             // already in `_params`. NB: the order of `_params` matches the order of the array IDs
@@ -207,10 +204,6 @@ public:
     // Return the freed arrays
     const std::set<bh_base*> &getFrees() const {
         return _frees;
-    }
-    // Return the sync'ed arrays
-    const std::set<bh_base*> &getSyncs() const {
-        return _syncs;
     }
     // Is any instructions use the random library?
     bool useRandom() const {

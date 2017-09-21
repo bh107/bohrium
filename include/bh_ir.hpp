@@ -32,14 +32,23 @@ If not, see <http://www.gnu.org/licenses/>.
 class BhIR
 {
 public:
-    //The list of Bohrium instructions in topological order
+    // The list of Bohrium instructions in topological order
     std::vector<bh_instruction> instr_list;
+    // Set of sync'ed arrays 
+    std::set<bh_base *> _syncs;
 
 public:
-    // Some constructors
-    BhIR(std::vector<bh_instruction> instr_list) : instr_list(std::move(instr_list)) {}
-    BhIR(bh_instruction instr) {
-        instr_list.push_back(std::move(instr));
+    // The constructor
+    BhIR(std::vector<bh_instruction> instr_list) : instr_list(std::move(instr_list)) {
+        for (const bh_instruction &instr: instr_list) {
+            if (instr.opcode == BH_SYNC) {
+                _syncs.insert(instr.operand[0].base);
+            }
+        }
+    }
+    // Returns the set of sync'ed arrays 
+    const std::set<bh_base *> getSyncs() const {
+        return _syncs;
     }
 };
 

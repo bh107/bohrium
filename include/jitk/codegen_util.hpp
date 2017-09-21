@@ -444,7 +444,7 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
         }
 
         // Let's copy sync'ed arrays back to the host
-        engine.copyToHost(symbols.getSyncs());
+        engine.copyToHost(bhir->getSyncs());
 
         // Let's free device buffers
         for(bh_base *base: symbols.getFrees()) {
