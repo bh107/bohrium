@@ -67,6 +67,9 @@ class Runtime {
     // Send enqueued instructions to Bohrium for execution
     void flush();
 
+    // Flag array to be sync'ed after the next flush
+    void sync(std::shared_ptr<BhBase> &base_ptr);
+
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
 
@@ -133,6 +136,9 @@ class Runtime {
 
     // The lazy evaluated instructions
     std::vector<bh_instruction> instr_list;
+
+    // The base arrays to sync when flushing
+    std::set<bh_base *> syncs;
 
     // Unique pointers to base objects, which are to be
     // purged after the next flush

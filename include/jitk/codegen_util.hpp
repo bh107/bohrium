@@ -142,7 +142,7 @@ void util_handle_extmethod(component::ComponentImpl *self,
 
         if (ext != extmethods.end() or childext != child_extmethods.end()) {
             // Execute the instructions up until now
-            BhIR b(std::move(instr_list));
+            BhIR b(std::move(instr_list), bhir->getSyncs());
             self->execute(&b);
             instr_list.clear(); // Notice, it is legal to clear a moved vector.
 
@@ -202,7 +202,7 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     const bool monolithic = config.defaultGet<bool>("monolithic", false);
 
     // Some statistics
-    stat.record(bhir->instr_list);
+    stat.record(*bhir);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
@@ -343,7 +343,7 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
 
     // Some statistics
-    stat.record(bhir->instr_list);
+    stat.record(*bhir);
 
     // Let's start by cleanup the instructions from the 'bhir'
     vector<bh_instruction*> instr_list;
@@ -411,7 +411,7 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
             for (const InstrPtr &instr: block.getAllInstr()) {
                 child_instr_list.push_back(*instr);
             }
-            BhIR tmp_bhir(std::move(child_instr_list));
+            BhIR tmp_bhir(std::move(child_instr_list), bhir->getSyncs());
             child->execute(&tmp_bhir);
             stat.time_offload += chrono::steady_clock::now() - toffload;
             continue;

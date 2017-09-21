@@ -777,7 +777,7 @@ vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> 
     for (bh_instruction &instr: instr_list) {
         if (instr.opcode == BH_FREE and not util::exist(computes, instr.operand[0].base)) {
             frees.insert(instr.operand[0].base);
-        } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY or instr.opcode == BH_SYNC)) {
+        } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY)) {
             set<const bh_base*> bases = instr.get_bases_const();
             computes.insert(bases.begin(), bases.end());
             ret.push_back(&instr);

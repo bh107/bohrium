@@ -38,7 +38,7 @@ T as_scalar(BhArray<T> ary) {
               "element");
     }
 
-    sync(ary);
+    Runtime::instance().sync(ary.base);
     Runtime::instance().flush();
 
     const T* data = ary.data();

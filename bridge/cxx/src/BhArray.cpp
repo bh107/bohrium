@@ -70,7 +70,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
 
     // Let's makes sure that the data we are reading is contiguous
     BhArray<T> contiguous = as_contiguous(*this);
-    sync(contiguous);
+    Runtime::instance().sync(contiguous.base);
     Runtime::instance().flush();
 
     // Get the data pointer and check for NULL

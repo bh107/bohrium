@@ -39,13 +39,8 @@ public:
 
 public:
     // The constructor
-    BhIR(std::vector<bh_instruction> instr_list) : instr_list(std::move(instr_list)) {
-        for (const bh_instruction &instr: instr_list) {
-            if (instr.opcode == BH_SYNC) {
-                _syncs.insert(instr.operand[0].base);
-            }
-        }
-    }
+    BhIR(std::vector<bh_instruction> instr_list, std::set<bh_base *> syncs) : instr_list(std::move(instr_list)),
+                                                                              _syncs(std::move(syncs)) {}
     // Returns the set of sync'ed arrays 
     const std::set<bh_base *> getSyncs() const {
         return _syncs;
