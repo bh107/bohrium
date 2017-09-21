@@ -1137,7 +1137,11 @@ static PyObject* BhArray_Repr(PyObject *self) {
         if (c[0] == 0) {
             str = PyArray_Type.tp_repr(t);
         } else {
+#if defined(NPY_PY3K)
+            str = PyUnicode_FromString(c);
+#else
             str = PyString_FromString(c);
+#endif
         }
     } else {
         str = PyArray_Type.tp_repr(t);
