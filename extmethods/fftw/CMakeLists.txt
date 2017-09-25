@@ -26,7 +26,7 @@ if(FFTW_FOUND)
 
     install(TARGETS bh_fftw DESTINATION ${LIBDIR} COMPONENT bohrium)
 
-    set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
+    set(BH_OPENMP_LIBS ${BH_OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_fftw${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
 else()
     if (FFTW_INCLUDES_PRE)
         set_package_properties(FFTW PROPERTIES TYPE RECOMMENDED PURPOSE "FFTW was found, but not enabled. \n   Manually enable FFTW with FFTW_INCLUDES and FFTW_LIBRARIES\n   if you have a clang multi-arch FFTW binary.")

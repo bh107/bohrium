@@ -113,8 +113,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 #####################
 # Bohrium components
-set(OPENMP_LIBS "")
-set(OPENCL_LIBS "")
+set(BH_OPENMP_LIBS "")
+set(BH_OPENCL_LIBS "")
 
 add_subdirectory(core)
 add_subdirectory(vem/node)
@@ -137,10 +137,11 @@ add_subdirectory(extmethods/opencv)
 add_subdirectory(bridge/cxx)
 add_subdirectory(bridge/c)
 add_subdirectory(bridge/npbackend)
+
 add_subdirectory(test)
 
-string(REPLACE ";" ", " OPENMP_LIBS "${OPENMP_LIBS}")
-string(REPLACE ";" ", " OPENCL_LIBS "${OPENCL_LIBS}")
+string(REPLACE ";" ", " BH_OPENMP_LIBS "${BH_OPENMP_LIBS}")
+string(REPLACE ";" ", " BH_OPENCL_LIBS "${BH_OPENCL_LIBS}")
 
 #############################
 # Install thirdparty headers

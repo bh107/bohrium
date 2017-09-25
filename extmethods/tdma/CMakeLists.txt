@@ -13,11 +13,11 @@ add_library(bh_tdma SHARED main.cpp)
 target_link_libraries(bh_tdma bh)
 
 find_package(OpenMP COMPONENTS bohrium)
-if(OPENMP_FOUND)
+if(OpenMP_CXX_FOUND)
     set_target_properties(bh_tdma PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} LINK_FLAGS ${OpenMP_CXX_FLAGS})
 endif()
 
 install(TARGETS bh_tdma DESTINATION ${LIBDIR} COMPONENT bohrium)
 
 # Add TDMA to OpenMP libs
-set(OPENMP_LIBS ${OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_tdma${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
+set(BH_OPENMP_LIBS ${BH_OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_tdma${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)

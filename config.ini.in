@@ -89,7 +89,7 @@ compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_
 compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
-libs = ${OPENMP_LIBS}
+libs = ${BH_OPENMP_LIBS}
 # The pre-fuser to use
 pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers
@@ -120,7 +120,7 @@ platform_no = -1
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 # List of extension methods
-libs = ${OPENCL_LIBS}
+libs = ${BH_OPENCL_LIBS}
 # The pre-fuser to use
 pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers
