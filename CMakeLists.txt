@@ -12,7 +12,7 @@ endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 # Everyting else should come after 'project(BOHRIUM)' since 'project()' defines many of the CMAKE_BUILD_* vars
-project(BOHRIUM)
+project(BOHRIUM C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")    # Shared modules
 include(CheckCXXCompilerFlag)
