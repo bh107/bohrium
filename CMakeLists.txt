@@ -117,15 +117,18 @@ set(BH_OPENMP_LIBS "")
 set(BH_OPENCL_LIBS "")
 
 add_subdirectory(core)
+
 add_subdirectory(vem/node)
 #add_subdirectory(vem/proxy) TODO: fix and enable
+
+add_subdirectory(ve/openmp)
+add_subdirectory(ve/opencl)
+add_subdirectory(ve/cuda)
+
 add_subdirectory(filter/pprint)
 add_subdirectory(filter/bccon)
 add_subdirectory(filter/bcexp)
 add_subdirectory(filter/noneremover)
-add_subdirectory(ve/openmp)
-add_subdirectory(ve/opencl)
-add_subdirectory(ve/cuda)
 
 add_subdirectory(extmethods/blas)
 add_subdirectory(extmethods/clblas)
