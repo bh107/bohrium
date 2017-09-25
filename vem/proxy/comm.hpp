@@ -36,7 +36,7 @@ private:
 public:
     CommFrontend(int stack_level, const std::string &address, int port);
     ~CommFrontend();
-    void execute(bh_ir &bhir);
+    void execute(BhIR &bhir);
     void send_array_data(const bh_base *base);
     void recv_array_data(bh_base *base);
 };

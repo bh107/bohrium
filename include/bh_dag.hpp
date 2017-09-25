@@ -197,7 +197,7 @@ public:
  *
  * Throw logic_error() if the kernel_list wihtin 'bhir' isn't empty
  */
-void from_bhir(bh_ir &bhir, GraphDW &dag);
+void from_bhir(BhIR &bhir, GraphDW &dag);
 
 /* Creates a new DAG based on a kernel list where each vertex is a kernel.
  * NB: the 'kernels' must not be deallocated or moved before 'dag'.
@@ -289,7 +289,7 @@ bool dag_validate(const GraphDW &dag, bool transitivity_allowed=true);
  * @transitivity_allowed  Is transitive edges allowed in the dag?
  * @return                The bool answer
  */
-bool dag_validate(const bh_ir &bhir, const std::vector<GraphDW> &dags, bool transitivity_allowed=true);
+bool dag_validate(const BhIR &bhir, const std::vector<GraphDW> &dags, bool transitivity_allowed=true);
 
 
 /* Returns the set of non-fusibles for each vertex in 'dag'

@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 #include <colors.hpp>
+#include <bh_ir.hpp>
 #include <bh_instruction.hpp>
 #include <jitk/base_db.hpp>
 
@@ -160,18 +161,15 @@ class Statistics {
     }
 
     // Record statistics based on the 'instr_list'
-    void record(std::vector<bh_instruction> &instr_list) {
+    void record(const BhIR &bhir) {
         if (enabled) {
-            for (const bh_instruction &instr: instr_list) {
+            for (const bh_instruction &instr: bhir.instr_list) {
                 if (instr.opcode != BH_IDENTITY and not bh_opcode_is_system(instr.opcode)) {
                     const std::vector<int64_t> shape = instr.shape();
                     totalwork += bh_nelements(shape.size(), &shape[0]);
                 }
-
-                if (instr.opcode == BH_SYNC) {
-                    ++num_syncs;
-                }
             }
+            num_syncs += bhir.getSyncs().size();
         }
     }
 

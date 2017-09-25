@@ -59,7 +59,7 @@ class Impl : public ComponentImplWithChild {
   public:
     Impl(int stack_level) : ComponentImplWithChild(stack_level) {};
     ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(bh_ir *bhir) {
+    void execute(BhIR *bhir) {
         // Remove BH_NONE from entire instruction list
         remove_none(bhir->instr_list, 0, bhir->instr_list.size(), 0);
         child.execute(bhir);

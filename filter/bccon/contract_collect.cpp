@@ -53,7 +53,7 @@ static bool chain_has_same_type(vector<bh_instruction*>& chain)
     return true;
 }
 
-static void rewrite_chain_add_sub(bh_ir &bhir, vector<bh_instruction*>& chain)
+static void rewrite_chain_add_sub(BhIR &bhir, vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
@@ -111,7 +111,7 @@ static void rewrite_chain_add_sub(bh_ir &bhir, vector<bh_instruction*>& chain)
     first.constant.set_double(sum);
 }
 
-static void rewrite_chain_mul_div(bh_ir &bhir, vector<bh_instruction*>& chain)
+static void rewrite_chain_mul_div(BhIR &bhir, vector<bh_instruction*>& chain)
 {
     bh_instruction& first = *chain.front();
     bh_instruction& last = *chain.back();
@@ -161,7 +161,7 @@ static void rewrite_chain_mul_div(bh_ir &bhir, vector<bh_instruction*>& chain)
     first.constant.set_double(result);
 }
 
-static void rewrite_chain(bh_ir &bhir, vector<bh_instruction*>& chain)
+static void rewrite_chain(BhIR &bhir, vector<bh_instruction*>& chain)
 {
     bh_opcode opc = chain[0]->opcode;
     if (is_add_sub(opc)) {
@@ -173,7 +173,7 @@ static void rewrite_chain(bh_ir &bhir, vector<bh_instruction*>& chain)
     }
 }
 
-void Contracter::contract_collect(bh_ir &bhir)
+void Contracter::contract_collect(BhIR &bhir)
 {
     bh_opcode collect_opcode = BH_NONE;
     vector<const bh_view*> views;

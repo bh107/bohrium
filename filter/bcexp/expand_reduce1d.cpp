@@ -39,7 +39,7 @@ static inline int find_fold(int64_t elements, int thread_limit)
 }
 
 // TODO: What does this do? Give example like expand_sign.cpp
-int Expander::expand_reduce1d(bh_ir& bhir, int pc, int thread_limit)
+int Expander::expand_reduce1d(BhIR& bhir, int pc, int thread_limit)
 {
     int start_pc = pc;
     bh_instruction& instr = bhir.instr_list[pc];

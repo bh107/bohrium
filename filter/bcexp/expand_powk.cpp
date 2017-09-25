@@ -28,7 +28,7 @@ namespace bcexp {
 
 static const int64_t max_exponent_unfolding = 100;
 
-int Expander::expand_powk(bh_ir& bhir, int pc)
+int Expander::expand_powk(BhIR& bhir, int pc)
 {
     verbose_print("[Powk] Expanding BH_POWER");
 

@@ -27,7 +27,7 @@ namespace bohrium {
 namespace filter {
 namespace bccon {
 
-static bool rewrite_chain(bh_ir &bhir, const vector<bh_instruction*>& chain, const vector<bh_view*>& temps)
+static bool rewrite_chain(BhIR &bhir, const vector<bh_instruction*>& chain, const vector<bh_view*>& temps)
 {
     bh_instruction& first  = *chain.at(0); // BH_MULTIPLY
     bh_instruction& second = *chain.at(1); // BH_MULTIPLY
@@ -109,7 +109,7 @@ or in the case of our byte-code:
   BH_MULTIPLY a3 5 a0
 */
 
-void Contracter::contract_muladd(bh_ir &bhir)
+void Contracter::contract_muladd(BhIR &bhir)
 {
     bool rewritten = false;
 

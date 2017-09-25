@@ -1484,36 +1484,6 @@
     "system_opcode": true
 },
 {
-    "opcode": "BH_SYNC",
-    "doc":  "System instruction that informs the child component to make data synchronized and available.",
-    "code": "SYNC",
-    "id":   "56",
-    "nop":   1,
-    "types": [
-            [ "BH_BOOL" ],
-            [ "BH_COMPLEX128" ],
-            [ "BH_COMPLEX64" ],
-            [ "BH_FLOAT32" ],
-            [ "BH_FLOAT64" ],
-            [ "BH_INT16" ],
-            [ "BH_INT32" ],
-            [ "BH_INT64" ],
-            [ "BH_INT8" ],
-            [ "BH_UINT16" ],
-            [ "BH_UINT32" ],
-            [ "BH_UINT64" ],
-            [ "BH_UINT8" ]
-    ],
-    "layout": [
-            [ "A" ]
-    ],
-    "elementwise":   false,
-    "composite":     false,
-    "reduction":     false,
-    "accumulate":    false,
-    "system_opcode": true
-},
-{
     "opcode": "BH_NONE",
     "doc":  "A opcode that should be ignored.",
     "code": "No operation.",

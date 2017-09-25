@@ -64,7 +64,7 @@ class Impl : public ComponentImpl {
                             stat(config.defaultGet("prof", false)),
                             fcache(stat), engine(config, stat) {}
     ~Impl();
-    void execute(bh_ir *bhir);
+    void execute(BhIR *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
@@ -72,7 +72,7 @@ class Impl : public ComponentImpl {
     }
 
     // Implement the handle of extension methods
-    void handle_extmethod(bh_ir *bhir) {
+    void handle_extmethod(BhIR *bhir) {
         util_handle_extmethod(this, bhir, extmethods);
     }
 
@@ -307,7 +307,7 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
     }
 }
 
-void Impl::execute(bh_ir *bhir) {
+void Impl::execute(BhIR *bhir) {
     // Let's handle extension methods
     util_handle_extmethod(this, bhir, extmethods);
 

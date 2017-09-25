@@ -61,7 +61,7 @@ static void service(const std::string &address, int port)
 
                 vector<bh_base*> data_send;
                 vector<bh_base*> data_recv;
-                bh_ir bhir = exec.deserialize(buffer, data_send, data_recv);
+                BhIR bhir = exec.deserialize(buffer, data_send, data_recv);
 
                 //Receive new base array data
                 for(size_t i=0; i<data_recv.size(); ++i)

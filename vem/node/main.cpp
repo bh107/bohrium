@@ -39,7 +39,7 @@ class Impl : public ComponentImplWithChild {
         mem_warn = getenv("BH_MEM_WARN") != NULL;
     }
     ~Impl(); // NB: a destructor implementation must exist
-    void execute(bh_ir *bhir);
+    void execute(BhIR *bhir);
 };
 } //Unnamed namespace
 
@@ -88,7 +88,7 @@ void Impl::inspect(bh_instruction *instr) {
     }
 }
 
-void Impl::execute(bh_ir *bhir) {
+void Impl::execute(BhIR *bhir) {
     if (mem_warn) {
         for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
             inspect(&bhir->instr_list[i]);

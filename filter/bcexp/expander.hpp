@@ -30,7 +30,7 @@ public:
     /**
      *  Modifies the given bhir, expanding composites per configuration.
      */
-    void expand(bh_ir& bhir);
+    void expand(BhIR& bhir);
 
     /**
      *  Collect garbage, that is de-allocate an amount of bh_base.
@@ -59,31 +59,31 @@ public:
      */
 
     // System instruction
-    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out);
-    inline void inject(bh_ir& bhir, int pc, bh_instruction instr);
+    void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out);
+    inline void inject(BhIR& bhir, int pc, bh_instruction instr);
 
     // Unary instruction
-    void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1);
+    void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1);
 
     // Unary with constants
     template <typename T>
-    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type);
+    inline void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type);
     template <typename T>
-    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1);
+    inline void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, T in1);
 
     // Binary instruction
-    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2);
+    inline void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2);
     // Binary with constants
     template <typename T>
-    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type);
+    inline void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type);
 
     template <typename T>
-    inline void inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2);
+    inline void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2);
 
-    int expand_sign(bh_ir& bhir, int pc);
-    int expand_powk(bh_ir& bhir, int pc);
-    int expand_reduce1d(bh_ir& bhir, int pc, int fold_limit);
-    int expand_repeat(bh_ir& bhir, int pc);
+    int expand_sign(BhIR& bhir, int pc);
+    int expand_powk(BhIR& bhir, int pc);
+    int expand_reduce1d(BhIR& bhir, int pc, int fold_limit);
+    int expand_repeat(BhIR& bhir, int pc);
 
 private:
     static const char TAG[];
@@ -95,19 +95,19 @@ private:
     int repeat_;
 };
 
-void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
+void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
 {
     bh_instruction instr(opcode, {out, in1, in2});
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 
-inline void Expander::inject(bh_ir& bhir, int pc, bh_instruction instr)
+inline void Expander::inject(BhIR& bhir, int pc, bh_instruction instr)
 {
     bhir.instr_list.insert(bhir.instr_list.begin()+pc, instr);
 }
 
 template <typename T>
-inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type)
+inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2, bh_type const_type)
 {
     bh_instruction instr(opcode, {out, in1});
     instr.operand.resize(3); // Make room for the constant
@@ -116,13 +116,13 @@ inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out
 }
 
 template <typename T>
-inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2)
+inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2)
 {
     Expander::inject(bhir, pc, opcode, out, in1, in2, in1.base->type);
 }
 
 template <typename T>
-inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type)
+inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, T in1, bh_type const_type)
 {
     bh_instruction instr(opcode, {out});
     instr.operand.resize(2); // Make room for the constant
@@ -131,7 +131,7 @@ inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out
 }
 
 template <typename T>
-inline void Expander::inject(bh_ir& bhir, int pc, bh_opcode opcode, bh_view& out, T in1)
+inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, T in1)
 {
     Expander::inject(bhir, pc, opcode, out, in1, out.base->type);
 }

@@ -39,7 +39,7 @@ public:
                                        config.defaultGet<bool>("muladd", false)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(bh_ir *bhir) {
+    void execute(BhIR *bhir) {
         contractor.contract(*bhir);
         child.execute(bhir);
     };

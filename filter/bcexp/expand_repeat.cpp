@@ -25,7 +25,7 @@ namespace bohrium {
 namespace filter {
 namespace bcexp {
 
-int Expander::expand_repeat(bh_ir& bhir, int pc)
+int Expander::expand_repeat(BhIR& bhir, int pc)
 {
     verbose_print("[Repeat] Expanding BH_REPEAT");
     // Grab the BH_REPEAT instruction

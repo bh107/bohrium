@@ -65,7 +65,7 @@ class ComponentImpl {
      * @bhir  The BhIR to execute
      * Throws exceptions on error
      */
-    virtual void execute(bh_ir *bhir) = 0;
+    virtual void execute(BhIR *bhir) = 0;
 
     /* Register a new extension method.
      *
@@ -146,7 +146,7 @@ class ComponentFace {
     ComponentFace(const ComponentFace &other) = delete;
     ComponentFace(ComponentFace &&other) = delete;
 
-    void execute(bh_ir *bhir) {
+    void execute(BhIR *bhir) {
         assert(_implementation != NULL);
         _implementation->execute(bhir);
     };
@@ -191,7 +191,7 @@ public:
             : ComponentImpl(stack_level),
               child(ComponentImpl::config.getChildLibraryPath(), stack_level+1), disabled(false) {}
     virtual ~ComponentImplWithChild() {};
-    virtual void execute(bh_ir *bhir) {
+    virtual void execute(BhIR *bhir) {
         child.execute(bhir);
     }
     virtual void extmethod(const std::string &name, bh_opcode opcode) {
