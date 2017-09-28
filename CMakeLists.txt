@@ -12,7 +12,7 @@ endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 # Everyting else should come after 'project(BOHRIUM)' since 'project()' defines many of the CMAKE_BUILD_* vars
-project(BOHRIUM)
+project(BOHRIUM C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")    # Shared modules
 include(CheckCXXCompilerFlag)
@@ -113,19 +113,22 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 #####################
 # Bohrium components
-set(OPENMP_LIBS "")
-set(OPENCL_LIBS "")
+set(BH_OPENMP_LIBS "")
+set(BH_OPENCL_LIBS "")
 
 add_subdirectory(core)
+
 add_subdirectory(vem/node)
 #add_subdirectory(vem/proxy) TODO: fix and enable
+
+add_subdirectory(ve/openmp)
+add_subdirectory(ve/opencl)
+add_subdirectory(ve/cuda)
+
 add_subdirectory(filter/pprint)
 add_subdirectory(filter/bccon)
 add_subdirectory(filter/bcexp)
 add_subdirectory(filter/noneremover)
-add_subdirectory(ve/openmp)
-add_subdirectory(ve/opencl)
-add_subdirectory(ve/cuda)
 
 add_subdirectory(extmethods/blas)
 add_subdirectory(extmethods/clblas)
@@ -137,10 +140,11 @@ add_subdirectory(extmethods/opencv)
 add_subdirectory(bridge/cxx)
 add_subdirectory(bridge/c)
 add_subdirectory(bridge/npbackend)
+
 add_subdirectory(test)
 
-string(REPLACE ";" ", " OPENMP_LIBS "${OPENMP_LIBS}")
-string(REPLACE ";" ", " OPENCL_LIBS "${OPENCL_LIBS}")
+string(REPLACE ";" ", " BH_OPENMP_LIBS "${BH_OPENMP_LIBS}")
+string(REPLACE ";" ", " BH_OPENCL_LIBS "${BH_OPENCL_LIBS}")
 
 #############################
 # Install thirdparty headers

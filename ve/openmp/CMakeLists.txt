@@ -24,9 +24,19 @@ include(CheckCCompilerFlag)
 include(FeatureSummary)
 
 # Import and detect OpenMP features
+if(APPLE)
+    # Clang will break find_package(OpenMP) because CMake supplies '-Werror' and a linker command line argument, which isn't used.
+    # Therefore we add '-Wno-unused-command-line-argument'
+    if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        set(OpenMP_C_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
+    endif()
+endif()
 find_package(OpenMP COMPONENTS bohrium)
 set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, essential for performance of the CPU VE.")
-if(OPENMP_FOUND)
+if(OPENMP_FOUND OR OpenMP_C_FOUND)
     # Check for the SIMD flag
     set(OpenMP_SIMD_C_FLAGS "${OpenMP_C_FLAGS} ${OpenMP_C_FLAGS}-simd")
     check_c_compiler_flag("${OpenMP_SIMD_C_FLAGS}" OPENMP_SIMD_FLAG_FOUND)

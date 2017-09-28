@@ -48,7 +48,7 @@ if(OpenCV_FOUND)
       set(OpenCV_TEMPLATE_LIBS ${OpenCV_TEMPLATE_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_opencv_${FUNC}${CMAKE_SHARED_LIBRARY_SUFFIX}")
     endforeach(FUNC)
 
-    set(OPENMP_LIBS ${OPENMP_LIBS} ${OpenCV_TEMPLATE_LIBS} PARENT_SCOPE)
+    set(BH_OPENMP_LIBS ${BH_OPENMP_LIBS} ${OpenCV_TEMPLATE_LIBS} PARENT_SCOPE)
 else()
     if (OpenCV_INCLUDES_PRE)
         set_package_properties(OPENCV PROPERTIES TYPE RECOMMENDED PURPOSE "OpenCV was found, but not enabled. \n   Manually enable OpenCV with OpenCV_INCLUDE_DIRS and OpenCV_LIBS.")
