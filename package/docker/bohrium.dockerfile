@@ -26,5 +26,5 @@ RUN make install
 
 # Test Suite
 WORKDIR /bohrium
-ENTRYPOINT export PYTHONPATH="/usr/lib/$PY_EXEC/site-packages:$PYTHONPATH" && export && echo "$TEST_EXEC" > test_exec.sh && bash test_exec.sh
+ENTRYPOINT export PYTHONPATH="/usr/lib/$PY_EXEC/site-packages:$PYTHONPATH" && export && echo "shopt -s extglob"> test_exec.sh && echo "$TEST_EXEC" >> test_exec.sh && echo "Test commands: " && cat test_exec.sh && bash test_exec.sh
 
