@@ -51,8 +51,8 @@ void bh_create_base(bh_type type, int64_t nelements, bh_base** new_base)
 
 // Returns the label of this base array
 // NB: generated a new label if necessary
-static map<const bh_base*, unsigned int>label_map;
-unsigned int bh_base::get_label() const
+static map<const bh_base*, size_t>label_map;
+size_t bh_base::get_label() const
 {
    if(label_map.find(this) == label_map.end()) {
        label_map[this] = label_map.size();
