@@ -230,7 +230,6 @@ def scatter(ary, indexes, values):
         Values to write into 'ary"
     """
 
-    ary = array_create.array(ary)
     indexes = array_manipulation.flatten(array_create.array(indexes, dtype=numpy.uint64), always_copy=False)
     values = array_manipulation.flatten(array_create.array(values, dtype=ary.dtype), always_copy=False)
 
@@ -294,6 +293,9 @@ def put(a, ind, v, mode='raise'):
 
     """
 
+    if ind.size == 0:
+        return  # Nothing to insert!
+
     if not bhary.check(a):
         return numpy.put(a, ind.astype(numpy.int64), v, mode=mode)
 
@@ -302,9 +304,8 @@ def put(a, ind, v, mode='raise'):
                       "it will be handled by the original NumPy." % mode, UserWarning, 2)
         return numpy.put(a, ind, v, mode=mode)
 
-    ary = array_create.array(a)
     indexes = array_manipulation.flatten(array_create.array(ind, dtype=numpy.uint64), always_copy=False)
-    values = array_manipulation.flatten(array_create.array(v, dtype=ary.dtype), always_copy=False)
+    values = array_manipulation.flatten(array_create.array(v, dtype=a.dtype), always_copy=False)
 
     # Now let's make the shape of 'indexes' and 'values' match
     if indexes.size > values.size:
@@ -322,7 +323,7 @@ def put(a, ind, v, mode='raise'):
         values = values[0:indexes.size]
 
     # Now that 'indexes' and 'values' have the same shape, we can call 'scatter'
-    scatter(ary, indexes, values)
+    scatter(a, indexes, values)
 
 
 @fix_biclass_wrapper
@@ -408,7 +409,6 @@ def cond_scatter(ary, indexes, values, mask):
         A mask that specifies which indexes and values to include and exclude
     """
 
-    ary = array_create.array(ary)
     indexes = array_manipulation.flatten(array_create.array(indexes, dtype=numpy.uint64), always_copy=False)
     values = array_manipulation.flatten(array_create.array(values, dtype=ary.dtype), always_copy=False)
     mask = array_manipulation.flatten(array_create.array(mask, dtype=numpy.bool), always_copy=False)
