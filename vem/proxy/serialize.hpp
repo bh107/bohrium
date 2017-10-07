@@ -18,8 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef BH_SERIALIZE_H
-#define BH_SERIALIZE_H
+#pragma once
 
 #include <vector>
 #include <boost/serialization/split_member.hpp>
@@ -32,17 +31,17 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost {namespace serialization {class access;}}
 
-
-namespace bohrium {
-namespace serialize {
+namespace msg {
 
 /* Message type */
-enum Type
+enum class Type
 {
-    TYPE_INIT,
-    TYPE_SHUTDOWN,
-    TYPE_EXEC,
-    TYPE_EXTMETHOD
+    INIT,
+    SHUTDOWN,
+    EXEC,
+    GET_DATA,
+    MSG,
+    EXTMETHOD
 };
 
 struct Header
@@ -64,23 +63,14 @@ struct Init
     void serialize(std::vector<char> &buffer);
 };
 
-class ExecuteFrontend
+struct GetData
 {
-    std::set<const bh_base *> known_base_arrays;
-public:
-    void serialize(bh_ir &bhir, std::vector<char> &buffer, std::vector<bh_base*> &data_send, std::vector<bh_base*> &data_recv);
-    void cleanup(bh_ir &bhir);
+    bh_base *base;
+    bool nullify;
+    GetData(bh_base *base, bool nullify):base(base), nullify(nullify) {}
+    GetData(const std::vector<char> &buffer);
+
+    void serialize(std::vector<char> &buffer);
 };
 
-class ExecuteBackend
-{
-    std::map<const bh_base*, bh_base> remote2local;
-    std::set<const bh_base*> remote_frees;
-public:
-    bh_ir deserialize(std::vector<char> &buffer, std::vector<bh_base*> &data_send, std::vector<bh_base*> &data_recv);
-    void cleanup(const bh_ir &bhir);
-};
-
-
-}}
-#endif //BH_SERIALIZE_H
+}
