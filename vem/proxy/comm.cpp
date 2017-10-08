@@ -33,17 +33,20 @@ using boost::asio::ip::tcp;
 using namespace std;
 
 namespace {
-void comm_send_array_data(boost::asio::ip::tcp::socket &socket, const bh_base *base) {
-    assert(base->data != nullptr);
+void comm_send_array_data(boost::asio::ip::tcp::socket &socket, const void *data, size_t nbytes) {
+    if (nbytes == 0 or data == nullptr) {
+        const size_t size[] = {0};
+        boost::asio::write(socket, boost::asio::buffer(size));
+    } else {
+        const size_t org_size = nbytes;
+        size_t new_size = compressBound(org_size);
+        vector<Bytef> buffer(new_size);
+        compress(&buffer[0], &new_size, (Bytef *) data, org_size);
 
-    const size_t org_size = bh_base_size(base);
-    size_t new_size = compressBound(org_size);
-    vector<Bytef> buffer(new_size);
-    compress(&buffer[0], &new_size, (Bytef *) base->data, org_size);
-
-    const size_t size[] = {new_size};
-    boost::asio::write(socket, boost::asio::buffer(size));
-    boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
+        const size_t size[] = {new_size};
+        boost::asio::write(socket, boost::asio::buffer(size));
+        boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
+    }
 }
 
 void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *base) {
@@ -123,8 +126,7 @@ CommFrontend::~CommFrontend() {
 }
 
 void CommFrontend::send_array_data(const bh_base *base) {
-    assert(base->data != nullptr);
-    comm_send_array_data(socket, base);
+    comm_send_array_data(socket, base->data, bh_base_size(base));
 }
 
 void CommFrontend::recv_array_data(bh_base *base) {
@@ -144,19 +146,7 @@ CommBackend::~CommBackend() {
 }
 
 void CommBackend::send_array_data(const void *data, size_t nbytes) {
-    if (nbytes == 0 or data == nullptr) {
-        const size_t size[] = {0};
-        boost::asio::write(socket, boost::asio::buffer(size));
-    } else {
-        const size_t org_size = nbytes;
-        size_t new_size = compressBound(org_size);
-        vector<Bytef> buffer(new_size);
-        compress(&buffer[0], &new_size, (Bytef *) data, org_size);
-
-        const size_t size[] = {new_size};
-        boost::asio::write(socket, boost::asio::buffer(size));
-        boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
-    }
+    comm_send_array_data(socket, data, nbytes);
 }
 
 void CommBackend::recv_array_data(bh_base *base) {
