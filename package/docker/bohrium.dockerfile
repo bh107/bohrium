@@ -20,7 +20,7 @@ ENV PYTHONPATH "/benchpress/benchpress/module:$PYTHONPATH"
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
 COPY . ../
-RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DEXT_VISUALIZER=OFF -DUSE_WERROR=ON
+RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DEXT_VISUALIZER=OFF -DUSE_WERROR=ON -DVEM_PROXY=ON
 RUN make
 RUN make install
 
