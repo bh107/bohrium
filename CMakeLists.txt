@@ -156,10 +156,21 @@ install(DIRECTORY thirdparty/Random123-1.09/include/Random123
 install(DIRECTORY include/jitk/kernel_dependencies
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
+###############
+# Bohrium Cache
+set(BIN_KERNEL_CACHE_DIR ${CMAKE_INSTALL_PREFIX}/var/bohrium/cache CACHE PATH
+        "Path to the directory of the persistent JIT kernel cache")
+
+# When using the default cache location, we will install the cache dir and set permissions to 777.
+if ("${BIN_KERNEL_CACHE_DIR}" STREQUAL "${CMAKE_INSTALL_PREFIX}/var/bohrium/cache")
+    file(MAKE_DIRECTORY cache)
+    install(DIRECTORY cache DESTINATION ${CMAKE_INSTALL_PREFIX}/var/bohrium DIRECTORY_PERMISSIONS OWNER_WRITE
+            OWNER_READ OWNER_EXECUTE GROUP_WRITE GROUP_READ GROUP_EXECUTE WORLD_WRITE WORLD_READ WORLD_EXECUTE
+            COMPONENT bohrium)
+endif()
+
 #############################
 # Bohrium configuration file
-set(BIN_KERNEL_CACHE_DIR ${CMAKE_INSTALL_PREFIX}/var/bohrium/cache CACHE PATH "Path to the directory of the persistent JIT kernel cache")
-
 configure_file(${CMAKE_SOURCE_DIR}/config.ini.in ${CMAKE_BINARY_DIR}/config.ini)    # Fill out the config-template
 
 set(FORCE_CONFIG_PATH "OFF" CACHE STRING "Manually setting the install path of the config (ini) file")
