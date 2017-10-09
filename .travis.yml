@@ -1,14 +1,7 @@
 services:
   - docker
 
-language: c
-
-compiler:
-  - gcc
-
-before_install:
-  - docker pull bohrium/ubuntu:16.04
-  - docker build -t bohrium_release -f package/docker/bohrium.dockerfile .
+language: python
 
 env:
   global:
@@ -16,26 +9,37 @@ env:
     - BH_OPENMP_VOLATILE=true
     - BH_OPENCL_PROF=true
     - BH_OPENCL_VOLATILE=true
+    - TEST_RUN="/bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+    - BENCHMARK_RUN="/bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
-  matrix:
-    # All test_*.py scripts
-    - BH_STACK=openmp PY_EXEC=python2.7 TEST_EXEC="$PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=openmp BH_OPENMP_MONOLITHIC=true PY_EXEC=python2.7 TEST_EXEC="$PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=opencl PY_EXEC=python2.7 TEST_EXEC="$PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=openmp PY_EXEC=python3.5 TEST_EXEC="$PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
-    - BH_STACK=opencl PY_EXEC=python3.5 TEST_EXEC="$PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
+script:
+  - env | grep -v "PATH" | grep -v "TRAVIS" | sort > .env-file
+  - cat .env-file
+  - docker pull bohrium/bohrium:latest
+  - docker run -t --env-file .env-file bohrium/bohrium
 
-    # Test of the proxy backend
-    - BH_STACK=proxy_opencl PY_EXEC=python2.7 TEST_EXEC="/usr/bin/bh_proxy_backend -a localhost -p 4200 & $PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_!(nobh).py"
+jobs:
+  include:
+    - stage: build docker image
+      script:
+        - docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
+        - docker build -t bohrium/bohrium -f package/docker/bohrium.dockerfile .
+        - docker push bohrium/bohrium
 
-    # The test_benchmarks.py script
-    - BH_STACK=openmp PY_EXEC=python2.7 TEST_EXEC="$PY_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-    - BH_STACK=opencl PY_EXEC=python2.7 TEST_EXEC="$PY_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-    - BH_STACK=openmp PY_EXEC=python3.5 TEST_EXEC="$PY_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py"
-    - BH_STACK=opencl PY_EXEC=python3.5 TEST_EXEC="$PY_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py"
+    - stage: verify
+    # Test suite
+      env: PY_EXEC="python2.7" BH_STACK=openmp TEST_EXEC="$PY_EXEC $TEST_RUN"
+    - env: PY_EXEC="python2.7" BH_STACK=opencl TEST_EXEC="$PY_EXEC $TEST_RUN"
+    - env: PY_EXEC="python2.7" BH_STACK=openmp BH_OPENMP_MONOLITHIC=true TEST_EXEC="$PY_EXEC $TEST_RUN"
+    - env: PY_EXEC="python2.7" BH_STACK=proxy_opencl TEST_EXEC="/usr/bin/bh_proxy_backend -a localhost -p 4200 & $PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_!(nobh).py"
+    - env: PY_EXEC="python3.5" BH_STACK=openmp TEST_EXEC="$PY_EXEC $TEST_RUN"
+    - env: PY_EXEC="python3.5" BH_STACK=opencl TEST_EXEC="$PY_EXEC $TEST_RUN"
+
+    # Benchmarks
+    - env: PY_EXEC="python2.7" BH_STACK=openmp TEST_EXEC="$PY_EXEC $BENCHMARK_RUN"
+    - env: PY_EXEC="python2.7" BH_STACK=opencl TEST_EXEC="$PY_EXEC $BENCHMARK_RUN"
+    - env: PY_EXEC="python3.5" BH_STACK=openmp TEST_EXEC="$PY_EXEC $BENCHMARK_RUN"
+    - env: PY_EXEC="python3.5" BH_STACK=opencl TEST_EXEC="$PY_EXEC $BENCHMARK_RUN"
 
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
-
-script:
-  - docker run -t -e BH_STACK -e BH_OPENMP_PROF -e BH_OPENCL_PROF -e BH_OPENMP_VOLATILE -e BH_OPENCL_VOLATILE -e BH_OPENMP_MONOLITHIC -e PY_EXEC -e TEST_EXEC bohrium_release
