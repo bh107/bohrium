@@ -7,10 +7,13 @@
 #     The bridge is never part of the list                               #
 ##########################################################################
 [stacks]
-default    = bcexp_cpu, bccon, node, openmp
-openmp     = bcexp_cpu, bccon, node, openmp
-opencl     = bcexp_gpu, bccon, node, opencl, openmp
-cuda       = bcexp_gpu, bccon, node, cuda, openmp
+default      = bcexp_cpu, bccon, node, openmp
+openmp       = bcexp_cpu, bccon, node, openmp
+opencl       = bcexp_gpu, bccon, node, opencl, openmp
+cuda         = bcexp_gpu, bccon, node, cuda, openmp
+proxy_openmp = bcexp_cpu, bccon, proxy, node, openmp
+proxy_opencl = bcexp_cpu, bccon, proxy, node, opencl, openmp
+proxy_cuda   = bcexp_cpu, bccon, proxy, node, cuda, openmp
 
 ############
 # Managers #

@@ -37,20 +37,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/split_member.hpp>
 
 // Forward declaration of class boost::serialization::access
-namespace boost {namespace serialization {class access;}}
+namespace boost { namespace serialization { class access; }}
 
 constexpr int64_t BH_MAXDIM = 16;
 
 //Implements pprint of base arrays
-DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_base& b);
+DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_base &b);
 
-struct bh_view
-{
-    bh_view(){}
-    bh_view(const bh_view& view)
-    {
+struct bh_view {
+    bh_view() {}
+
+    bh_view(const bh_view &view) {
         base = view.base;
-        if(base == NULL) {
+        if (base == nullptr) {
             return; //'view' is a constant thus the rest are garbage
         }
 
@@ -62,19 +61,19 @@ struct bh_view
     }
 
     /// Pointer to the base array.
-    bh_base*      base;
+    bh_base *base;
 
     /// Index of the start element
-    int64_t      start;
+    int64_t start;
 
     /// Number of dimensions
-    int64_t       ndim;
+    int64_t ndim;
 
     /// Number of elements in each dimensions
-    int64_t      shape[BH_MAXDIM];
+    int64_t shape[BH_MAXDIM];
 
     /// The stride for each dimensions
-    int64_t      stride[BH_MAXDIM];
+    int64_t stride[BH_MAXDIM];
 
     // Returns a vector of tuples that describe the view using (almost)
     // Python Notation.
@@ -94,8 +93,7 @@ struct bh_view
     // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
-    bool operator<(const bh_view& other) const
-    {
+    bool operator<(const bh_view &other) const {
         if (base < other.base) return true;
         if (other.base < base) return false;
         if (start < other.start) return true;
@@ -116,9 +114,8 @@ struct bh_view
         return false;
     }
 
-    bool operator==(const bh_view& other) const
-    {
-        if (base == NULL or this->base == NULL) return false;
+    bool operator==(const bh_view &other) const {
+        if (base == nullptr or this->base == nullptr) return false;
         if (base != other.base) return false;
         if (ndim != other.ndim) return false;
         if (start != other.start) return false;
@@ -138,42 +135,44 @@ struct bh_view
         return true;
     }
 
-    bool operator!=(const bh_view& other) const
-    {
+    bool operator!=(const bh_view &other) const {
         return !(*this == other);
     }
 
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
-    {
-        size_t tmp = (size_t)base;
+    void save(Archive &ar, const unsigned int version) const {
+        size_t tmp = (size_t) base;
         ar << tmp;
-        ar & start;
-        ar & ndim;
-        for(int64_t i = 0; i < ndim; ++i) {
-            ar & shape[i];
-            ar & stride[i];
+        if (base != nullptr) { // This view is NOT a constant
+            ar << start;
+            ar << ndim;
+            for (int64_t i = 0; i < ndim; ++i) {
+                ar << shape[i];
+                ar << stride[i];
+            }
         }
     }
+
     template<class Archive>
-    void load(Archive & ar, const unsigned int version)
-    {
+    void load(Archive &ar, const unsigned int version) {
         size_t tmp;
         ar >> tmp;
-        base = (bh_base*)tmp;
-        ar & start;
-        ar & ndim;
-
-        for(int64_t i = 0; i < ndim; ++i) {
-            ar & shape[i];
-            ar & stride[i];
+        base = (bh_base *) tmp;
+        if (base != nullptr) { // This view is NOT a constant
+            ar >> start;
+            ar >> ndim;
+            for (int64_t i = 0; i < ndim; ++i) {
+                ar >> shape[i];
+                ar >> stride[i];
+            }
         }
     }
+
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 //Implements pprint of views
-DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
+DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_view &v);
 
 /** Create a new base array.
  *
@@ -181,7 +180,7 @@ DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_view& v);
  * @param nelements The number of elements
  * @param new_base The handler for the newly created base
  */
-DLLEXPORT void bh_create_base(bh_type type, int64_t nelements, bh_base** new_base);
+DLLEXPORT void bh_create_base(bh_type type, int64_t nelements, bh_base **new_base);
 
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
@@ -197,7 +196,7 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape);
+DLLEXPORT bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape);
 
 /* Find the base array for a given view
  *
@@ -220,7 +219,8 @@ int64_t bh_nelements_nbcast(const bh_view *view);
  * @return   Number of element operations
  */
 DLLEXPORT int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
-DLLEXPORT int64_t bh_nelements(const bh_view& view);
+
+DLLEXPORT int64_t bh_nelements(const bh_view &view);
 
 /* Set the view stride to contiguous row-major
  *
@@ -242,20 +242,20 @@ DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
  * @view The view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_scalar(const bh_view* view);
+DLLEXPORT bool bh_is_scalar(const bh_view *view);
 
 /* Determines whether the operand is a constant
  *
  * @o The operand
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_constant(const bh_view* o);
+DLLEXPORT bool bh_is_constant(const bh_view *o);
 
 /* Flag operand as a constant
  *
  * @o The operand
  */
-DLLEXPORT void bh_flag_constant(bh_view* o);
+DLLEXPORT void bh_flag_constant(bh_view *o);
 
 /* Determines whether two views have same shape.
  *

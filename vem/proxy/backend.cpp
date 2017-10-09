@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh_component.hpp>
+#include <bh_util.hpp>
 
 #include "comm.hpp"
 
@@ -29,20 +30,22 @@ using namespace component;
 static void service(const std::string &address, int port)
 {
     CommBackend comm_backend(address, port);
-    serialize::ExecuteBackend exec;
     unique_ptr<ConfigParser> config;
     unique_ptr<ComponentFace> child;
+    std::map<const bh_base*, bh_base> remote2local;
 
-    while(1)
-    {
-        serialize::Header head = comm_backend.next_message_head();
-        switch(head.type)
-        {
-            case serialize::TYPE_INIT:
+    while(true) {
+        // Let's read the head of the message
+        vector<char> buf_head(msg::HeaderSize);
+        comm_backend.read(buf_head);
+        msg::Header head(buf_head);
+
+        switch(head.type) {
+            case msg::Type::INIT:
             {
                 std::vector<char> buffer(head.body_size);
-                comm_backend.next_message_body(buffer);
-                serialize::Init body(buffer);
+                comm_backend.read(buffer);
+                msg::Init body(buffer);
                 if (child.get() != nullptr) {
                     throw runtime_error("[VEM-PROXY] Received INIT messages multiple times!");
                 }
@@ -50,38 +53,51 @@ static void service(const std::string &address, int port)
                 child.reset(new ComponentFace(config->getChildLibraryPath(), config->stack_level+1));
                 break;
             }
-            case serialize::TYPE_SHUTDOWN:
+            case msg::Type::SHUTDOWN:
             {
                 return;
             }
-            case serialize::TYPE_EXEC:
+            case msg::Type::EXEC:
             {
                 std::vector<char> buffer(head.body_size);
-                comm_backend.next_message_body(buffer);
-
-                vector<bh_base*> data_send;
+                comm_backend.read(buffer);
                 vector<bh_base*> data_recv;
-                BhIR bhir = exec.deserialize(buffer, data_send, data_recv);
+                set<bh_base*> freed;
+                BhIR bhir(buffer, remote2local, data_recv, freed);
 
-                //Receive new base array data
-                for(size_t i=0; i<data_recv.size(); ++i)
-                {
-                    bh_base *base = data_recv[i];
-                    base->data = NULL;
-                    bh_data_malloc(base);
+                // Receive new base array data
+                for (bh_base *base: data_recv) {
+                    base->data = nullptr;
                     comm_backend.recv_array_data(base);
                 }
 
+                // Send the bhir down to the child
                 child->execute(&bhir);
 
-                //Send sync'ed array data
-                for(size_t i=0; i<data_send.size(); ++i)
-                {
-                    bh_base *base = data_send[i];
-                    bh_data_malloc(base);
-                    comm_backend.send_array_data(base);
+                // Let's remove the freed base arrays
+                for (const bh_base *base: freed) {
+                    bh_data_free(&remote2local[base]);
+                    remote2local.erase(base);
                 }
-                exec.cleanup(bhir);
+                break;
+            }
+            case msg::Type::GET_DATA:
+            {
+                std::vector<char> buffer(head.body_size);
+                comm_backend.read(buffer);
+                msg::GetData body(buffer);
+
+                if (util::exist(remote2local, body.base)) {
+                    bh_base &local_base = remote2local.at(body.base);
+                    void *data = child->get_mem_ptr(local_base, true, false, body.nullify);
+                    comm_backend.send_array_data(data, bh_base_size(&local_base));
+                } else {
+                    comm_backend.send_array_data(nullptr, 0);
+                }
+                break;
+            }
+            case msg::Type::MSG:
+            {
                 break;
             }
             default:
@@ -94,7 +110,7 @@ static void service(const std::string &address, int port)
 
 int main(int argc, char * argv[])
 {
-    char *address = NULL;
+    char *address = nullptr;
     int port = 0;
 
     if (argc == 5 && \

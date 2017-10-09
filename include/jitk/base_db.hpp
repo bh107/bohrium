@@ -99,7 +99,7 @@ private:
 public:
     SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> &non_temp_arrays,
                 bool strides_as_variables, bool index_as_var,
-                bool const_as_var) {
+                bool const_as_var) : _useRandom(false) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {

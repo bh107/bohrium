@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-set(VEM_PROXY true CACHE BOOL "VEM-PROXY: Build the proxy VEM.")
+set(VEM_PROXY false CACHE BOOL "VEM-PROXY: Build the proxy VEM.")
 if(NOT VEM_PROXY)
     return()
 endif()

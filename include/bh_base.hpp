@@ -42,7 +42,7 @@ struct bh_base
     int64_t      nelem;
 
     // Returns an unique ID of this base array
-    unsigned int get_label() const;
+    size_t get_label() const;
 
     // Returns pprint string of this base array
     std::string str() const;

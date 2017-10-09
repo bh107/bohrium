@@ -20,13 +20,11 @@ ENV PYTHONPATH "/benchpress/benchpress/module:$PYTHONPATH"
 RUN mkdir -p /bohrium/build
 WORKDIR /bohrium/build
 COPY . ../
-RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DEXT_VISUALIZER=OFF -DUSE_WERROR=ON
+RUN cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DEXT_VISUALIZER=OFF -DUSE_WERROR=ON -DVEM_PROXY=ON
 RUN make
 RUN make install
 
 # Test Suite
 WORKDIR /bohrium
-ENTRYPOINT export PYTHONPATH="/usr/lib/$PYTHON_EXEC/site-packages:$PYTHONPATH" && export && $TEST_EXEC
+ENTRYPOINT export PYTHONPATH="/usr/lib/$PY_EXEC/site-packages:$PYTHONPATH" && export && echo "shopt -s extglob"> test_exec.sh && echo "$TEST_EXEC" >> test_exec.sh && echo "Test commands: " && cat test_exec.sh && bash test_exec.sh
 
-
-#/bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py && $PYTHON_EXEC /bohrium/test/python/numpytest.py --file test_benchmarks.py

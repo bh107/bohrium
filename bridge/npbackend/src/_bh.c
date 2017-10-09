@@ -188,7 +188,8 @@ static int _mremap_data(void *dst, void *src, npy_intp size) {
         int errsv = errno; // mremap() sets the errno.
         PyErr_Format(
             PyExc_RuntimeError,
-            "Error - could not mremap a data region. Returned error code by mremap(): %s.\n",
+            "Error - could not mremap a data region (src: %p, dst: %p, size: %ld). Returned error code by mremap(): %s.\n",
+            src, dst, size,
             strerror(errsv)
         );
         return -1;
