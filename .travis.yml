@@ -26,7 +26,6 @@ env:
     - BH_STACK=opencl PY_EXEC=python3.5 TEST_EXEC="$PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_*.py"
 
     # Test of the proxy backend
-    - BH_STACK=proxy_openmp PY_EXEC=python2.7 TEST_EXEC="/usr/bin/bh_proxy_backend -a localhost -p 4200 & $PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_!(nobh).py"
     - BH_STACK=proxy_opencl PY_EXEC=python2.7 TEST_EXEC="/usr/bin/bh_proxy_backend -a localhost -p 4200 & $PY_EXEC /bohrium/test/python/run.py /bohrium/test/python/tests/test_!(nobh).py"
 
     # The test_benchmarks.py script
