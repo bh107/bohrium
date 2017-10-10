@@ -128,7 +128,7 @@ def _addZerosNd(Array, FilterSize, dtype):
             maxpos = Array.shape[i]
         cut += str(minpos) + ':' + str(maxpos) + ','
     cut = cut[:-1] + ']'
-    Padded = numpy.zeros(PaddedSize, dtype=dtype)
+    Padded = array_create.zeros(PaddedSize, dtype=dtype, bohrium=bhary.check(Array))
     exec ('Padded' + cut + '=Array')
     return Padded
 
