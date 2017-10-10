@@ -233,7 +233,8 @@ def _correlate_kernel(Array, Filter, mode):
     for i in range(1, Filter.size):
         Correlated += V[IndiVec[i]:n + IndiVec[i]] * A[i]
         # TODO: we need this flush because of very slow fusion
-        _util.flush()
+        if bhary.check(V):
+            _util.flush()
 
     Full = Correlated.reshape(PaddedSize, order='F')
     if mode == 'full':
