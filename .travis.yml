@@ -13,7 +13,7 @@ env:
     - BENCHMARK_RUN="/bohrium/test/python/numpytest.py --file test_benchmarks.py"
 
 script:
-  - env | grep -v "PATH" | grep -v "TRAVIS" | sort > .env-file
+  - env | grep -E "BH_|_RUN|_EXEC" | sort > .env-file
   - cat .env-file
   - docker pull bohrium/bohrium:latest
   - docker run -t --env-file .env-file bohrium/bohrium
