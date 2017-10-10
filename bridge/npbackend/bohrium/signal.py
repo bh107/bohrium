@@ -97,14 +97,14 @@ def convolve1d(a, v, mode='full'):
 def _findIndices(ArrSize, FilterSize):
     N = FilterSize.shape[0]
     n = int(FilterSize.prod())
-    CumSizeArr = array_create.ones([N], dtype=numpy.int32)
+    CumSizeArr = numpy.ones([N], dtype=numpy.int32)
     CumSizeArr[1:N] = ArrSize[0:N - 1].cumprod()
-    CumSize = array_create.ones([N], dtype=numpy.int32)
+    CumSize = numpy.ones([N], dtype=numpy.int32)
     CumSize[1:N] = FilterSize[0:N - 1].cumprod()
 
-    vals = array_create.empty((n, N), dtype=numpy.int32)
+    vals = numpy.empty((n, N), dtype=numpy.int32)
     for i in range(N):
-        vals[:, i] = array_create.linspace(0, n - 1, n)
+        vals[:, i] = numpy.linspace(0, n - 1, n)
 
     vals = vals // CumSize
     vals = vals % FilterSize
@@ -115,7 +115,7 @@ def _findIndices(ArrSize, FilterSize):
 
 def _addZerosNd(Array, FilterSize, dtype):
     # Introduces zero padding for Column major flattening
-    PaddedSize = array_create.array(Array.shape, dtype=numpy.int32)
+    PaddedSize = numpy.array(Array.shape, dtype=numpy.int32)
     N = FilterSize.shape[0]
     PaddedSize[0:N] += FilterSize - 1
     cut = '['
@@ -128,7 +128,7 @@ def _addZerosNd(Array, FilterSize, dtype):
             maxpos = Array.shape[i]
         cut += str(minpos) + ':' + str(maxpos) + ','
     cut = cut[:-1] + ']'
-    Padded = array_create.zeros(PaddedSize, dtype=dtype)
+    Padded = array_create.zeros(PaddedSize, dtype=dtype, bohrium=bhary.check(Array))
     exec ('Padded' + cut + '=Array')
     return Padded
 
@@ -172,8 +172,6 @@ def _invert_ary(a):
 
     def flip(m, axis):
         """Copy of `numpy.flip()`, which were introduced in NumPy v1.12"""
-        if not hasattr(m, 'ndim'):
-            m = array_create.array(m)
         indexer = [slice(None)] * m.ndim
         try:
             indexer[axis] = slice(None, None, -1)
@@ -198,8 +196,8 @@ def _correlate_kernel(Array, Filter, mode):
         Filter = numpy.conj(Filter)
 
     # Get sizes as arrays for easier manipulation
-    ArrSize = array_create.array(Array.shape, dtype=numpy.int32)
-    FilterSize = array_create.array(Filter.shape, dtype=numpy.int32)
+    ArrSize = numpy.array(Array.shape, dtype=numpy.int32)
+    FilterSize = numpy.array(Filter.shape, dtype=numpy.int32)
 
     # Check that mode='valid' is allowed given the array sizes
     if mode == 'valid':
@@ -214,7 +212,7 @@ def _correlate_kernel(Array, Filter, mode):
 
     # Add zeros along relevant dimensions
     Padded = _addZerosNd(Array, FilterSize, dtype)
-    PaddedSize = array_create.array(Padded.shape, dtype=numpy.int32)
+    PaddedSize = numpy.array(Padded.shape, dtype=numpy.int32)
 
     # Get positions of first view
     IndiVec = _findIndices(PaddedSize, FilterSize)
@@ -224,7 +222,7 @@ def _correlate_kernel(Array, Filter, mode):
     nPost = IndiVec[Filter.size - 1] - nPre
     n = Padded.size
     nTot = n + nPre + nPost  # Total size after pre/post padding
-    V = array_create.empty([nTot], dtype=dtype)
+    V = array_create.empty([nTot], dtype=dtype, bohrium=bhary.check(Array))
     V[nPre:n + nPre] = Padded.flatten(order='F')
     V[:nPre] = 0
     V[n + nPre:] = 0
@@ -235,7 +233,8 @@ def _correlate_kernel(Array, Filter, mode):
     for i in range(1, Filter.size):
         Correlated += V[IndiVec[i]:n + IndiVec[i]] * A[i]
         # TODO: we need this flush because of very slow fusion
-        _util.flush()
+        if bhary.check(V):
+            _util.flush()
 
     Full = Correlated.reshape(PaddedSize, order='F')
     if mode == 'full':
@@ -249,10 +248,6 @@ def _correlate_kernel(Array, Filter, mode):
 
 
 def convolve(a, v, mode='full'):
-    # Let's make sure that we are working on Bohrium arrays
-    if not bhary.check(a) and not bhary.check(v):
-        raise TypeError("convolveNd: Expects Bohrium arrays")
-
     if (a.size > v.size) or (mode == 'same'):
         Array = a
         Filter = _invert_ary(v)
@@ -263,10 +258,6 @@ def convolve(a, v, mode='full'):
 
 
 def correlate(a, v, mode='valid'):
-    # Let's make sure that we are working on Bohrium arrays
-    if not bhary.check(a) and not bhary.check(v):
-        raise TypeError("correlateNd: Expects Bohrium arrays")
-
     if (a.size > v.size) or (mode == 'same'):
         Array = a
         Filter = v
