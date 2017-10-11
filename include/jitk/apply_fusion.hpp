@@ -35,16 +35,6 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-
-// Apply the pre-fuser (i.e. fuse an instruction list to a block list specified by the name 'transformer_name'
-std::vector<Block> apply_pre_fusion(const std::vector<bh_instruction*> &instr_list,
-                                    const std::string &transformer_name);
-
-// Apply the list of tranformers specified by the names in 'transformer_names'
-// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
-void apply_transformers(std::vector<Block> &block_list, const std::vector<std::string> &transformer_names,
-                        bool avoid_rank0_sweep);
-
 // Create a block list based on 'instr_list' and what is in the 'config' and 'fcache'
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 std::vector<Block> get_block_list(const std::vector<bh_instruction*> &instr_list, const ConfigParser &config,
