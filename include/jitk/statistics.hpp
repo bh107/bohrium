@@ -64,11 +64,13 @@ class Statistics {
     std::chrono::duration<double> time_total_execution{0};
     std::chrono::duration<double> time_pre_fusion{0};
     std::chrono::duration<double> time_fusion{0};
-    std::chrono::duration<double> time_exec{0};
+    std::chrono::duration<double> time_codegen{0};
     std::chrono::duration<double> time_compile{0};
+    std::chrono::duration<double> time_exec{0};
     std::chrono::duration<double> time_offload{0};
     std::chrono::duration<double> time_copy2dev{0};
     std::chrono::duration<double> time_copy2host{0};
+    std::chrono::duration<double> time_ext_method{0};
 
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
@@ -107,10 +109,12 @@ class Statistics {
             out << "Total Execution:                 " << BLU << time_total_execution.count() << "s" << "\n" << RST;
             out << "  Pre-fusion:                    " << YEL << time_pre_fusion.count() << "s"      << "\n" << RST;
             out << "  Fusion:                        " << YEL << time_fusion.count() << "s"          << "\n" << RST;
+            out << "  Codegen:                       " << YEL << time_codegen.count() << "s"         << "\n" << RST;
             out << "  Compile:                       " << YEL << time_compile.count() << "s"         << "\n" << RST;
             out << "  Exec:                          " << YEL << time_exec.count() << "s"            << "\n" << RST;
             out << "  Copy2dev:                      " << YEL << time_copy2dev.count() << "s"        << "\n" << RST;
             out << "  Copy2host:                     " << YEL << time_copy2host.count() << "s"       << "\n" << RST;
+            out << "  Ext-method:                    " << YEL << time_ext_method.count() << "s"      << "\n" << RST;
             out << "  Offload:                       " << YEL << time_offload.count() << "s"         << "\n" << RST;
             out << "  Other:                         " << YEL << time_other() << "s"                 << "\n" << RST;
             out << "\n";
@@ -210,7 +214,8 @@ class Statistics {
 
     double time_other() {
         std::chrono::duration<double> time_other{0};
-        return (time_total_execution - time_pre_fusion - time_fusion - time_compile - time_exec  - time_copy2dev - time_copy2host - time_offload).count();
+        return (time_total_execution - time_pre_fusion - time_fusion - time_codegen - time_compile - time_exec
+                - time_copy2dev - time_copy2host - time_offload).count();
     }
 
     double unaccounted() {

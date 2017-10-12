@@ -39,6 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/instruction.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/apply_fusion.hpp>
+#include <jitk/statistics.hpp>
 
 
 namespace bohrium {
@@ -123,7 +124,8 @@ void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const 
 // Handle the extension methods within the 'bhir'
 void util_handle_extmethod(component::ComponentImpl *self,
                            BhIR *bhir,
-                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods);
+                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
+                           Statistics &stat);
 
 // Handle the extension methods within the 'bhir'
 // This version takes a child component and possible an engine that must have a copyToHost() method
@@ -133,6 +135,7 @@ void util_handle_extmethod(component::ComponentImpl *self,
                            std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
                            std::set<bh_opcode> &child_extmethods,
                            component::ComponentFace &child,
+                           Statistics &stat,
                            T *acc_engine = NULL) {
 
     std::vector<bh_instruction> instr_list;
@@ -147,8 +150,9 @@ void util_handle_extmethod(component::ComponentImpl *self,
             instr_list.clear(); // Notice, it is legal to clear a moved vector.
 
             if (ext != extmethods.end()) {
-                // Execute the extension method
-                ext->second.execute(&instr, acc_engine);
+                const auto texecution = std::chrono::steady_clock::now();
+                ext->second.execute(&instr, acc_engine); // Execute the extension method
+                stat.time_ext_method += std::chrono::steady_clock::now() - texecution;
             } else if (childext != child_extmethods.end()) {
                 // We let the child component execute the instruction
                 std::set<bh_base *> ext_bases = instr.get_bases();
@@ -264,8 +268,10 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
         // Let's execute the kernel
         if (kernel_is_computing) { // We can skip this step if the kernel does no computation
             // Code generation
+            const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
             self.write_kernel(block_list, symbols, config, kernel_temps, ss);
+            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
             // Create the constant vector
             vector<const bh_instruction*> constants;
@@ -295,9 +301,10 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
             // Let's execute the kernel
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
                 // Code generation
+                const auto tcodegen = chrono::steady_clock::now();
                 stringstream ss;
-
                 self.write_kernel({block}, symbols, config, {}, ss);
+                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
                 // Create the constant vector
                 vector<const bh_instruction*> constants;
@@ -424,8 +431,10 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
             engine.copyToDevice(symbols.getParams());
 
             // Code generation
+            const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
             self.write_kernel(block, symbols, config, threaded_blocks, ss);
+            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
             // Create the constant vector
             vector<const bh_instruction*> constants;

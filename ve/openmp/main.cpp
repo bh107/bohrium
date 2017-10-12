@@ -71,11 +71,6 @@ class Impl : public ComponentImpl {
         extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
     }
 
-    // Implement the handle of extension methods
-    void handle_extmethod(BhIR *bhir) {
-        util_handle_extmethod(this, bhir, extmethods);
-    }
-
     // The following methods implements the methods required by jitk::handle_gpu_execution()
 
     // Write the OpenMP kernel
@@ -309,7 +304,7 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
 
 void Impl::execute(BhIR *bhir) {
     // Let's handle extension methods
-    util_handle_extmethod(this, bhir, extmethods);
+    util_handle_extmethod(this, bhir, extmethods, stat);
 
     // And then the regular instructions
     handle_cpu_execution(*this, bhir, engine, config, stat, fcache);
