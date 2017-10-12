@@ -80,11 +80,6 @@ public:
     void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
                       const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
-    // Implement the handle of extension methods
-    void handle_extmethod(BhIR *bhir) {
-        util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
-    }
-
     // Handle messages from parent
     string message(const string &msg) {
         stringstream ss;
@@ -222,7 +217,7 @@ void Impl::execute(BhIR *bhir) {
     }
 
     // Let's handle extension methods
-    util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, &engine);
+    util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, stat, &engine);
 
     // And then the regular instructions
     handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);

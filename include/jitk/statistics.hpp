@@ -69,6 +69,7 @@ class Statistics {
     std::chrono::duration<double> time_offload{0};
     std::chrono::duration<double> time_copy2dev{0};
     std::chrono::duration<double> time_copy2host{0};
+    std::chrono::duration<double> time_ext_method{0};
 
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
@@ -111,6 +112,7 @@ class Statistics {
             out << "  Exec:                          " << YEL << time_exec.count() << "s"            << "\n" << RST;
             out << "  Copy2dev:                      " << YEL << time_copy2dev.count() << "s"        << "\n" << RST;
             out << "  Copy2host:                     " << YEL << time_copy2host.count() << "s"       << "\n" << RST;
+            out << "  Ext-method:                    " << YEL << time_ext_method.count() << "s"      << "\n" << RST;
             out << "  Offload:                       " << YEL << time_offload.count() << "s"         << "\n" << RST;
             out << "  Other:                         " << YEL << time_other() << "s"                 << "\n" << RST;
             out << "\n";
@@ -210,7 +212,8 @@ class Statistics {
 
     double time_other() {
         std::chrono::duration<double> time_other{0};
-        return (time_total_execution - time_pre_fusion - time_fusion - time_compile - time_exec  - time_copy2dev - time_copy2host - time_offload).count();
+        return (time_total_execution - time_pre_fusion - time_fusion - time_compile - time_exec
+                - time_copy2dev - time_copy2host - time_offload).count();
     }
 
     double unaccounted() {

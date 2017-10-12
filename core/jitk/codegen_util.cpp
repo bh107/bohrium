@@ -438,7 +438,8 @@ void write_loop_block(const SymbolTable &symbols,
 // Handle the extension methods within the 'bhir'
 void util_handle_extmethod(component::ComponentImpl *self,
                            BhIR *bhir,
-                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods) {
+                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
+                           Statistics &stat) {
 
     std::vector<bh_instruction> instr_list;
     for (bh_instruction &instr: bhir->instr_list) {
@@ -447,7 +448,9 @@ void util_handle_extmethod(component::ComponentImpl *self,
             BhIR b(std::move(instr_list), bhir->getSyncs());
             self->execute(&b);
             instr_list.clear(); // Notice, it is legal to clear a moved vector.
+            const auto texecution = chrono::steady_clock::now();
             ext->second.execute(&instr, nullptr); // Execute the extension method
+            stat.time_ext_method += std::chrono::steady_clock::now() - texecution;
         } else {
             instr_list.push_back(instr);
         }

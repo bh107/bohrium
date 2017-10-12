@@ -39,6 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/instruction.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/apply_fusion.hpp>
+#include <jitk/statistics.hpp>
 
 
 namespace bohrium {
@@ -123,7 +124,8 @@ void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const 
 // Handle the extension methods within the 'bhir'
 void util_handle_extmethod(component::ComponentImpl *self,
                            BhIR *bhir,
-                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods);
+                           std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
+                           Statistics &stat);
 
 // Handle the extension methods within the 'bhir'
 // This version takes a child component and possible an engine that must have a copyToHost() method
@@ -133,6 +135,7 @@ void util_handle_extmethod(component::ComponentImpl *self,
                            std::map<bh_opcode, extmethod::ExtmethodFace> &extmethods,
                            std::set<bh_opcode> &child_extmethods,
                            component::ComponentFace &child,
+                           Statistics &stat,
                            T *acc_engine = NULL) {
 
     std::vector<bh_instruction> instr_list;
@@ -147,8 +150,9 @@ void util_handle_extmethod(component::ComponentImpl *self,
             instr_list.clear(); // Notice, it is legal to clear a moved vector.
 
             if (ext != extmethods.end()) {
-                // Execute the extension method
-                ext->second.execute(&instr, acc_engine);
+                const auto texecution = std::chrono::steady_clock::now();
+                ext->second.execute(&instr, acc_engine); // Execute the extension method
+                stat.time_ext_method += std::chrono::steady_clock::now() - texecution;
             } else if (childext != child_extmethods.end()) {
                 // We let the child component execute the instruction
                 std::set<bh_base *> ext_bases = instr.get_bases();
