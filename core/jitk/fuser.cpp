@@ -375,16 +375,23 @@ void fuser_reshapable_first(vector<Block> &block_list, bool avoid_rank0_sweep) {
     block_list = ret;
 }
 
-void fuser_greedy(vector<Block> &block_list, bool avoid_rank0_sweep) {
+void fuser_greedy(const ConfigParser &config, vector<Block> &block_list, bool avoid_rank0_sweep) {
 
     graph::DAG dag = graph::from_block_list(block_list);
+
+    size_t greedy_threshold = config.defaultGet<size_t>("greedy_threshold", 10000);
+    if (boost::num_edges(dag) > greedy_threshold) {
+        fuser_reshapable_first(block_list, avoid_rank0_sweep);
+        return;
+    }
+
     graph::greedy(dag, avoid_rank0_sweep);
     vector<Block> ret = graph::fill_block_list(dag);
 
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_greedy(b.getLoop()._block_list, avoid_rank0_sweep);
+            fuser_greedy(config, b.getLoop()._block_list, avoid_rank0_sweep);
         }
     }
     block_list = ret;

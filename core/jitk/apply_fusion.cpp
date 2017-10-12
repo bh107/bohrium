@@ -28,8 +28,10 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-vector<Block> apply_pre_fusion(const vector<bh_instruction*> &instr_list,
-                                    const string &transformer_name) {
+namespace {
+// Apply the pre-fuser (i.e. fuse an instruction list to a block list specified by the name 'transformer_name'
+vector<Block> apply_pre_fusion(const ConfigParser &config, const vector<bh_instruction*> &instr_list,
+                               const string &transformer_name) {
 
     if (transformer_name == "singleton") {
         return fuser_singleton(instr_list);
@@ -41,7 +43,9 @@ vector<Block> apply_pre_fusion(const vector<bh_instruction*> &instr_list,
     }
 }
 
-void apply_transformers(vector<Block> &block_list, const vector<string> &transformer_names,
+// Apply the list of tranformers specified by the names in 'transformer_names'
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
+void apply_transformers(const ConfigParser &config, vector<Block> &block_list, const vector<string> &transformer_names,
                         bool avoid_rank0_sweep) {
 
     for(auto it = transformer_names.begin(); it != transformer_names.end(); ++it) {
@@ -58,12 +62,13 @@ void apply_transformers(vector<Block> &block_list, const vector<string> &transfo
         } else if (*it == "reshapable_first") {
             fuser_reshapable_first(block_list, avoid_rank0_sweep);
         } else if (*it == "greedy") {
-            fuser_greedy(block_list, avoid_rank0_sweep);
+            fuser_greedy(config, block_list, avoid_rank0_sweep);
         } else {
             cout << "Unknown transformer: \"" << *it << "\"" << endl;
             throw runtime_error("Unknown transformer!");
         }
     }
+}
 }
 
 vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
@@ -84,12 +89,12 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
         stat.num_instrs_into_fuser += instr_list.size();
         // Let's fuse the 'instr_list' into blocks
         // We start with the pre_fuser
-        block_list = apply_pre_fusion(instr_list, config.defaultGet("pre_fuser", string("pre_fuser_lossy")));
+        block_list = apply_pre_fusion(config, instr_list, config.defaultGet("pre_fuser", string("pre_fuser_lossy")));
         stat.num_blocks_out_of_fuser += block_list.size();
         const auto tfusion = chrono::steady_clock::now();
         stat.time_pre_fusion += tfusion - tpre_fusion;
         // Then we fuse fully
-        apply_transformers(block_list, config.defaultGetList("fuser_list", {"greedy"}), avoid_rank0_sweep);
+        apply_transformers(config, block_list, config.defaultGetList("fuser_list", {"greedy"}), avoid_rank0_sweep);
         stat.time_fusion += chrono::steady_clock::now() - tfusion;
         fcache.insert(instr_list, block_list);
     }

@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 #include <jitk/block.hpp>
+#include <bh_config_parser.hpp>
 #include <bh_instruction.hpp>
 
 namespace bohrium {
@@ -55,7 +56,7 @@ void fuser_reshapable_first(std::vector<Block> &block_list, bool avoid_rank0_swe
 
 // Fuses 'block_list' greedily
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
-void fuser_greedy(std::vector<Block> &block_list, bool avoid_rank0_sweep);
+void fuser_greedy(const ConfigParser &config, std::vector<Block> &block_list, bool avoid_rank0_sweep);
 
 } // jit
 } // bohrium

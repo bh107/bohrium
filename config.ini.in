@@ -97,6 +97,8 @@ libs = ${BH_OPENMP_LIBS}
 pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, collapse_redundant_axes
+# Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead
+greedy_threshold = 10000
 # *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
 strides_as_variables = true
@@ -128,6 +130,8 @@ libs = ${BH_OPENCL_LIBS}
 pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
+# Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead
+greedy_threshold = 10000
 # *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
 strides_as_variables = true
@@ -161,6 +165,8 @@ libs = ${CUDA_LIBS}
 pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
+# Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead
+greedy_threshold = 10000
 # *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = false
 strides_as_variables = false
