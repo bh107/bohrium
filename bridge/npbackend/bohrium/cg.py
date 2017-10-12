@@ -3,39 +3,35 @@ Conjugate Gradient (CG) solver
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
-import bohrium as np
+from . import array_create
+from . import linalg
+from . import summations
 
-from sys import stderr
-from . import ufuncs
 
-
-# Implemented as example MATLAB code from https://en.wikipedia.org/wiki/Conjugate_gradient_method
-def cg(A, b, x=None, tol=1e-5):
+# Implemented as example MATLAB code from <https://en.wikipedia.org/wiki/Conjugate_gradient_method>
+def cg(A, b, x=None, tol=1e-5, force_niter=None):
     # If no guess is given, set an empty guess
     if x is None:
-        x = np.zeros(shape=b.shape, dtype=b.dtype)
+        x = array_create.zeros_like(b)
 
-    # Initialize arrays
-    alpha = np.zeros(shape=(1, 1), dtype=b.dtype)
-    rsold = np.zeros(shape=(1, 1), dtype=b.dtype)
-    rsnew = np.zeros(shape=(1, 1), dtype=b.dtype)
-
-    r = b - np.dot(A, x)
+    r = b - linalg.dot(A, x)
     p = r.copy()
     r_squared = r * r
-    rsold = np.sum(r_squared)
+    rsold = summations.sum(r_squared)
 
     tol_squared = tol * tol
-    while np.max(r_squared) > tol_squared:
-        Ap = np.dot(A, p)
-        alpha = rsold / np.dot(p, Ap)
-
+    i = 0
+    while summations.max(r_squared) > tol_squared or force_niter is not None:
+        Ap = linalg.dot(A, p)
+        alpha = rsold / linalg.dot(p, Ap)
         x = x + alpha * p
         r = r - alpha * Ap
         r_squared = r * r
-        rsnew = np.sum(r_squared)
+        rsnew = summations.sum(r_squared)
 
         p = r + (rsnew / rsold) * p
         rsold = rsnew
-
+        if force_niter is not None and i >= force_niter:
+            break
+        i += 1
     return x

@@ -33,6 +33,7 @@ from . import interop_pycuda
 from . import interop_numpy
 from . import backend_messaging
 from .nobh import bincount
+from .cg import cg
 
 # In NumPy `correlate` and `convolve` only handles 1D arrays whereas in SciPy they handles ND arrays.
 # However, NumPy and SciPy's functionality differ! Thus, the ND version cannot replace NumPy's 1D version.

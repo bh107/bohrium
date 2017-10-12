@@ -174,7 +174,9 @@ def matmul(a, b, no_blas=False):
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
 
-    if bhary.check(a) or bhary.check(b):
+    if not (bhary.check(a) or bhary.check(b)):  # Both are regular numpy arrays
+        return numpy.dot(a, b)
+    else:
         a = array_create.array(a)
         b = array_create.array(b)
 
@@ -253,7 +255,9 @@ def dot(a, b, no_blas=False):
     499128
 
     """
-    if bhary.check(a) or bhary.check(b):
+    if not (bhary.check(a) or bhary.check(b)):  # Both are regular numpy arrays
+        return numpy.dot(a, b)
+    else:
         a = array_create.array(a)
         b = array_create.array(b)
 
