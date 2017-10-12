@@ -268,8 +268,10 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
         // Let's execute the kernel
         if (kernel_is_computing) { // We can skip this step if the kernel does no computation
             // Code generation
+            const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
             self.write_kernel(block_list, symbols, config, kernel_temps, ss);
+            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
             // Create the constant vector
             vector<const bh_instruction*> constants;
@@ -299,9 +301,10 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
             // Let's execute the kernel
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
                 // Code generation
+                const auto tcodegen = chrono::steady_clock::now();
                 stringstream ss;
-
                 self.write_kernel({block}, symbols, config, {}, ss);
+                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
                 // Create the constant vector
                 vector<const bh_instruction*> constants;
@@ -428,8 +431,10 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
             engine.copyToDevice(symbols.getParams());
 
             // Code generation
+            const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
             self.write_kernel(block, symbols, config, threaded_blocks, ss);
+            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
             // Create the constant vector
             vector<const bh_instruction*> constants;
