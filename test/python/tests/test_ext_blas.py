@@ -1,7 +1,6 @@
 import util
 import bohrium as bh
 import bohrium.blas
-import bohrium.cg
 
 import platform
 from os import environ
@@ -161,5 +160,5 @@ class test_ext_cg:
         cmd_bh  = "a = bh.array([[4, 1], [1, 3]], dtype=%s);" % t
         cmd_bh += "b = bh.array([1, 2], dtype=%s);" % t
         cmd_bh += "x = bh.array([2, 1], dtype=%s);" % t
-        cmd_bh += "res = bh.cg.cg(a, b, x);"
+        cmd_bh += "res = bh.linalg.cg(a, b, x);"
         return cmd_np, cmd_bh
