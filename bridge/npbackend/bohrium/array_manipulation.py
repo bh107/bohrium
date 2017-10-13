@@ -462,6 +462,13 @@ def broadcast_arrays(*args):
         if len(args) == 0:
             return ([], [])
 
+        if len(args) == 1:
+            if numpy.isscalar(args[0]):  # It is possible that `args[0]` is a scalar
+                shape = (1,)
+            else:
+                shape = args[0].shape
+            return (args, shape)
+
         # Common case where nothing needs to be broadcasted.
         bcast = numpy.broadcast(*args)
         if all(array.shape == bcast.shape for array in args if not numpy.isscalar(array)):

@@ -174,7 +174,9 @@ def matmul(a, b, no_blas=False):
     if a.ndim != 2 and b.ndim != 2:
         raise ValueError("Input must be 2-D.")
 
-    if bhary.check(a) or bhary.check(b):
+    if not (bhary.check(a) or bhary.check(b)):  # Both are regular numpy arrays
+        return numpy.dot(a, b)
+    else:
         a = array_create.array(a)
         b = array_create.array(b)
 
@@ -253,7 +255,9 @@ def dot(a, b, no_blas=False):
     499128
 
     """
-    if bhary.check(a) or bhary.check(b):
+    if not (bhary.check(a) or bhary.check(b)):  # Both are regular numpy arrays
+        return numpy.dot(a, b)
+    else:
         a = array_create.array(a)
         b = array_create.array(b)
 
@@ -512,3 +516,37 @@ def solve_tridiagonal(a, b, c, rhs):
     out = array_create.zeros_like(rhs)
     ufuncs.extmethod("tdma", out, diagonals, rhs)
     return out.reshape(out_shape)
+
+
+@fix_biclass_wrapper
+def cg(A, b, x=None, tol=1e-5, force_niter=None):
+    """
+    Conjugate Gradient (CG) solver
+
+    Implemented as example MATLAB code from <https://en.wikipedia.org/wiki/Conjugate_gradient_method>
+    """
+    # If no guess is given, set an empty guess
+    if x is None:
+        x = array_create.zeros_like(b)
+
+    r = b - dot(A, x)
+    p = r.copy()
+    r_squared = r * r
+    rsold = np.sum(r_squared)
+
+    tol_squared = tol * tol
+    i = 0
+    while np.max(r_squared) > tol_squared or force_niter is not None:
+        Ap = dot(A, p)
+        alpha = rsold / dot(p, Ap)
+        x = x + alpha * p
+        r = r - alpha * Ap
+        r_squared = r * r
+        rsnew = np.sum(r_squared)
+
+        p = r + (rsnew / rsold) * p
+        rsold = rsnew
+        if force_niter is not None and i >= force_niter:
+            break
+        i += 1
+    return x
