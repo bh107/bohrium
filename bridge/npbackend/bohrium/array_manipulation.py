@@ -7,6 +7,7 @@ import numpy_force as numpy
 from . import bhary
 from . import _util
 from .bhary import fix_biclass_wrapper
+from . import numpy_backport
 
 
 @fix_biclass_wrapper
@@ -154,7 +155,7 @@ def diagonal(ary, offset=0, axis1=0, axis2=1):
     ary = ary[..., :diag_size, offset:(offset + diag_size)]
 
     ret_strides = ary.strides[:-2] + (ary.strides[-1] + ary.strides[-2],)
-    return numpy.lib.stride_tricks.as_strided(ary, shape=ret_shape, strides=ret_strides)
+    return numpy_backport.as_strided(ary, shape=ret_shape, strides=ret_strides)
 
 
 @fix_biclass_wrapper
