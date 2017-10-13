@@ -3,6 +3,7 @@ The Computation Backend
 """
 from .. import bhc
 from .._util import dtype_name
+from .. import numpy_backport
 import numpy as np
 import mmap
 import time
@@ -53,7 +54,7 @@ class View(interface.View):
     def __init__(self, ndim, start, shape, strides, base):
         super(View, self).__init__(ndim, start, shape, strides, base)
         buf = np.frombuffer(self.base.mmap, dtype=self.dtype, offset=self.start)
-        self.ndarray = np.lib.stride_tricks.as_strided(buf, shape, self.strides)
+        self.ndarray = numpy_backport.as_strided(buf, shape, self.strides)
 
 
 def views2numpy(views):
