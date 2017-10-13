@@ -6,13 +6,13 @@ Common signal processing functions, which often handle multiple dimension
 
 """
 import numpy_force as numpy
-from numpy_force.lib.stride_tricks import as_strided
 from . import array_create
 from . import bhary
 from . import ufuncs
 from . import linalg
 from . import summations
 from . import _util
+from . import numpy_backport
 
 
 # 1d
@@ -34,8 +34,8 @@ def _correlate_and_convolve_body(vector, filter, d, mode):
     padded[0:filter.size - 1] = 0
     padded[filter.size - 1:vector.size + filter.size - 1] = vector
     padded[vector.size + filter.size - 1:] = 0
-    s = as_strided(padded, shape=(padded.shape[0] - filter.size + 1, filter.size),
-                   strides=(padded.strides[0], padded.strides[0]))
+    s = numpy_backport.as_strided(padded, shape=(padded.shape[0] - filter.size + 1, filter.size),
+                                  strides=(padded.strides[0], padded.strides[0]))
     result = linalg.dot(s, filter)
     if mode == 'same':
         return result[d:vector.size + d]

@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 import sys
 from ._util import dtype_equal, dtype_support, dtype_in
 from . import target
+from . import numpy_backport
 import operator
 import functools
 import numpy_force as numpy
@@ -234,7 +235,7 @@ def get_bhc(ary):
             # All this is simply a hack to reinterpret 'ary' as a complex view of the 'base'
             offset = (get_cdata(ary) - get_cdata(base)) // base.itemsize
             cary = numpy.frombuffer(base, dtype=base.dtype, offset=offset * base.itemsize)
-            cary = numpy.lib.stride_tricks.as_strided(cary, ary.shape, ary.strides, subok=True)
+            cary = numpy_backport.as_strided(cary, ary.shape, ary.strides)
 
             # if the view/base offset is aligned with the complex dtype, we know that the
             # 'ary' is a view of the real part of 'base'
