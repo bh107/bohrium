@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.pngmath',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.spelling',
     'numpydoc',
     'breathe'
 ]
@@ -280,3 +281,8 @@ breathe_domain_by_extension = {
     "hpp" : "cpp",
     "cpp" : "cpp"
 }
+
+# -- Options for Spell check -------------------------
+spelling_lang = 'en_US'
+spelling_show_suggestions = False
+spelling_word_list_filename = 'spelling_wordlist.txt'

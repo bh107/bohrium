@@ -7,9 +7,9 @@ Python/NumPy
 Automatic Parallelization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bohrium implements a new python module ``bohrium`` that introduces a new array class ``bohrium.ndarray`` which inherent from ``numpy.ndarray``. The two array classes a fully compatible thus one only has to replace ``numpy.ndarray`` with ``bohrium.ndarray`` in order to utilize the Bohrium runtime system.
+Bohrium implements a new python module ``bohrium`` that introduces a new array class ``bohrium.ndarray`` which inherits from ``numpy.ndarray``. The two array classes are fully compatible thus one only has to replace ``numpy.ndarray`` with ``bohrium.ndarray`` in order to utilize the Bohrium runtime system.
 
-The following example is a heat-equation solver that uses Bohrium. Note that the only different between Bohrium code and NumPy code is the first line where we import bohrium as np instead of numpy as np::
+The following example is a heat-equation solver that uses Bohrium. Note that the only difference between Bohrium code and NumPy code is the first line where we import bohrium as np instead of numpy as np::
 
     import bohrium as np
     def heat2d(height, width, epsilon=42):
@@ -41,11 +41,11 @@ In this case, all instances of ``import numpy`` is converted to ``import bohrium
 Acceleration
 ~~~~~~~~~~~~
 
-The approach of Bohrium is to accelerate all element-wise functions in NumPy (aka universals functions) as well as the reductions and accumulations of element-wise functions. This approach makes it possible to accelerate the heat-equation solver on both multi-core CPUs and GPUs.
+The approach of Bohrium is to accelerate all element-wise functions in NumPy (aka universal functions) as well as the reductions and accumulations of element-wise functions. This approach makes it possible to accelerate the heat-equation solver on both multi-core CPUs and GPUs.
 
-Beside element-wise functions, Bohrium also accelerate a selection of common NumPy functions such as ``dot()`` and ``solve()``. But the number of functions in NumPy and related projects such as SciPy is enormous thus we cannot hope to accelerate every single function in Bohrium. Instead, Bohrium will automatically convert ``bohrium.ndarray`` to ``numpy.ndarray`` when encountering a function that Bohrium cannot accelerate. When running on the CPU, this conversion is very cheap but when running on the GPU, this conversion requires the array data to be copied from the GPU to the CPU.
+Beside element-wise functions, Bohrium also accelerates a selection of common NumPy functions such as ``dot()`` and ``solve()``. But the number of functions in NumPy and related projects such as SciPy is enormous thus we cannot hope to accelerate every single function in Bohrium. Instead, Bohrium will automatically convert ``bohrium.ndarray`` to ``numpy.ndarray`` when encountering a function that Bohrium cannot accelerate. When running on the CPU, this conversion is very cheap but when running on the GPU, this conversion requires the array data to be copied from the GPU to the CPU.
 
-Matplotlib’s ``matshow()`` function is example of a function Bohrium cannot accelerate. Say we want to visualize the result of the heat-equation solver, we could use ``matshow()``::
+Matplotlib's ``matshow()`` function is example of a function Bohrium cannot accelerate. Say we want to visualize the result of the heat-equation solver, we could use ``matshow()``::
 
     from matplotlib import pyplot as plt
 
@@ -300,14 +300,14 @@ In order to parallelize `bincount()` for a GPGPU, one can use PyOpenCL::
         return ret
 
 
-The implementation is regular PyOpenCL and the OpenCL kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi at al.
+The implementation is regular PyOpenCL and the OpenCL kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi et al.
 However, notice that we use `bohrium.interop_pyopencl.get_context()` to get the PyOpenCL context rather than `pyopencl.create_some_context() <https://documen.tician.de/pyopencl/runtime_platform.html#pyopencl.create_some_context>`_.
-In order to avoid coping data between host and device memory, we use `bohrium.interop_pyopencl.get_buffer()` to create a OpenCL buffer that points to the device memory of the Bohrium arrays.
+In order to avoid copying data between host and device memory, we use `bohrium.interop_pyopencl.get_buffer()` to create a OpenCL buffer that points to the device memory of the Bohrium arrays.
 
 PyCUDA
 ------
 
-The PyCUDA implemention is very similar to the PyOpenCL. Besides some minor difference in the kernel source code, we use `interop_pycuda.init()` to initiate PyCUDA and use `interop_pycuda.get_gpuarray()` to get the CUDA buffers from the Bohrium arrays::
+The PyCUDA implementation is very similar to the PyOpenCL. Besides some minor difference in the kernel source code, we use `interop_pycuda.init()` to initiate PyCUDA and use `interop_pycuda.get_gpuarray()` to get the CUDA buffers from the Bohrium arrays::
 
     def bincount_pycuda(x, minlength=None):
         """PyCUDA implementation of `bincount()`"""
@@ -338,7 +338,7 @@ The PyCUDA implemention is very similar to the PyOpenCL. Besides some minor diff
         x_buf = interop_pycuda.get_gpuarray(x)
         ret_buf = interop_pycuda.get_gpuarray(ret)
 
-        # CUDA kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi at al.
+        # CUDA kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi et al.
         source = """
         __global__ void histogram_partial(
             DTYPE *input,
@@ -431,8 +431,8 @@ The PyCUDA implemention is very similar to the PyOpenCL. Besides some minor diff
 Performance Comparison
 ----------------------
 
-Finally, let’s us compare the performance of the difference approaches. We run on a *Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz* with 4 CPU-cores and a *GeForce GTX Titan X (maxwell)*.
-The timing is wall clock thus includes anything and in particular the host/device communication overhead.
+Finally, let's compare the performance of the difference approaches. We run on a *Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz* with 4 CPU-cores and a *GeForce GTX Titan X (maxwell)*.
+The timing is wall-clock time including everything, in particular the host/device communication overhead.
 
 .. plot::
 
@@ -474,4 +474,4 @@ The timing code::
 Conclusion
 ----------
 
-Interoperability makes it possible to accelerate code that Bohrium doesn’t accelerate automatically. The Bohrium teams works constantly on improving the performance and increase the number of NumPy operations automatically accelerated but in some cases we simply have to give the user full control.
+Interoperability makes it possible to accelerate code that Bohrium doesn't accelerate automatically. The Bohrium team constantly works on improving the performance and increase the number of NumPy operations automatically accelerated but in some cases we simply have to give the user full control.

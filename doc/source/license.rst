@@ -10,6 +10,7 @@ Bohrium is an active research project started by Mads R. B. Kristensen, Troels B
     * Kenneth Skovhede <skovhede@nbi.dk>
     * Simon Andreas Frimann Lund <safl@nbi.dk>
     * Mads Ruben Burgdorff Kristensen <madsbk@nbi.dk>
+    * Mads Ohm Larsen <ohm@nbi.dk>
 
 Contributors are welcome, do not hesitate to contact us!
 
@@ -180,6 +181,3 @@ Bohrium is distributed under the LGPLv3 license::
   apply, that proxy's public statement of acceptance of any version is
   permanent authorization for you to choose that version for the
   Library.
-
-
-

@@ -138,7 +138,7 @@ As well as a python-packages **breathe** and **numpydoc** for integrating doxyge
 
   sudo easy_install breathe numpydoc
 
-Overview of the documentatation files::
+Overview of the documentation files::
 
   bohrium/doc                 # Root folder of the documentation.
   bohrium/doc/source          # Write / Edit the documentation here.
@@ -169,9 +169,7 @@ The docs still needs a neat way to integrate a full API-documentation of the Boh
 Continuous Integration
 ----------------------
 
-At some point a proper automated build/deploy/test/benchmark system will be setup/configured.
-
-The basis of which will probably be `Jenkins <https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Ubuntu>`_.
+Currently we use both a privately hosted `Jenkins <https://bohrium.erda.dk/jenkins/>`_ server as well as `Travis <https://travis-ci.org/bh107/bohrium>`_ for our CI.
 
 Setup jenkins::
 
@@ -180,4 +178,4 @@ Setup jenkins::
   sudo apt-get update
   sudo apt-get install jenkins
 
-Then configure it via web-interface.
+Then configure it via the web interface.
