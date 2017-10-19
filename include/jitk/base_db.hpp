@@ -90,7 +90,7 @@ private:
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
-    std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID
+    std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID (Order by `origin_id`)
     std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
     std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
     std::set<bh_base*> _frees; // Set of freed arrays
@@ -140,9 +140,9 @@ public:
             }
         }
         if (strides_as_variables) {
-            _offset_stride_views.reserve(_offset_strides_map.size());
+            _offset_stride_views.resize(_offset_strides_map.size());
             for(auto &v: _offset_strides_map) {
-                _offset_stride_views.push_back(&v.first);
+                _offset_stride_views[v.second] = &v.first;
             }
         }
     };
