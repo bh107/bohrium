@@ -98,7 +98,7 @@ private:
 
 public:
     SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> &non_temp_arrays,
-                bool strides_as_variables, bool index_as_var,
+                bool strides_as_var, bool index_as_var,
                 bool const_as_var) : _useRandom(false) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
@@ -139,7 +139,7 @@ public:
                 }
             }
         }
-        if (strides_as_variables) {
+        if (strides_as_var) {
             _offset_stride_views.resize(_offset_strides_map.size());
             for(auto &v: _offset_strides_map) {
                 _offset_stride_views[v.second] = &v.first;
@@ -227,8 +227,8 @@ private:
 public:
     // Should we declare scalar variables using the volatile keyword?
     const bool use_volatile;
-    // Should we use offset and strides as variables?
-    const bool strides_as_variables;
+    // Should we use start and strides as variables?
+    const bool strides_as_var;
 
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
@@ -238,7 +238,7 @@ public:
           const T2 &scalar_replacements_r,
           const ConfigParser &config) : symbols(symbols), parent(parent),
                                         use_volatile(config.defaultGet<bool>("volatile", false)),
-                                        strides_as_variables(config.defaultGet<bool>("strides_as_var", true)) {
+                                        strides_as_var(config.defaultGet<bool>("strides_as_var", true)) {
         for(const bh_base* base: tmps) {
             if (not symbols.isAlwaysArray(base))
                 _tmps.insert(base);

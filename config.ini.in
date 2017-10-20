@@ -101,7 +101,7 @@ fuser_list = greedy, collapse_redundant_axes
 greedy_threshold = 10000
 # *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
-strides_as_variables = true
+strides_as_var = true
 const_as_var = true
 # Monolithic combines all blocks into one shared library rather than a block-nest per shared library
 monolithic = false
@@ -134,7 +134,7 @@ fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redu
 greedy_threshold = 10000
 # *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = true
-strides_as_variables = true
+strides_as_var = true
 const_as_var = true
 # OpenCL work group sizes
 work_group_size_1dx = 128
@@ -169,7 +169,7 @@ fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redu
 greedy_threshold = 10000
 # *_as_var specifies whether to hard-code variables or have them as variables
 index_as_var = false
-strides_as_variables = false
+strides_as_var = false
 const_as_var = false
 # CUDA work group sizes
 work_group_size_1dx = 128
