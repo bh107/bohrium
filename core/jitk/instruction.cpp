@@ -613,8 +613,18 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
                << ", " << instr.constant.value.r123.key << ", ";
 
             // Let's find the flatten index of the output view
+            if (scope.strides_as_var) {
+                ss << "vo" << scope.symbols.offsetStridesID(instr.operand[0]);
+            } else {
+                ss << instr.operand[0].start;
+            }
             for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                ss << "+i" << i << "*" << instr.operand[0].stride[i];
+                ss << "+i" << i << "*";
+                if (scope.strides_as_var) {
+                    ss << "vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
+                } else {
+                    ss << instr.operand[0].stride[i];
+                }
             }
             ss << ")";
             ops.push_back(ss.str());
