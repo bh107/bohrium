@@ -609,8 +609,13 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
         // Write the random generation
         {
             stringstream ss;
-            ss << "random123(" << instr.constant.value.r123.start \
-               << ", " << instr.constant.value.r123.key << ", ";
+            // Find the random `start` and `key`
+            const int64_t constID = scope.symbols.constID(instr);
+            if (constID >= 0) {
+                ss << "random123(" << "c" << constID << ".x, " << "c" << constID << ".y, " ;
+            } else {
+                ss << "random123(" << instr.constant.value.r123.start << ", " << instr.constant.value.r123.key << ", ";
+            }
 
             // Let's find the flatten index of the output view
             if (scope.strides_as_var) {

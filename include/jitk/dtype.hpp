@@ -46,7 +46,7 @@ const char *write_c99_type(bh_type dtype) {
         case bh_type::FLOAT64:    return "double";
         case bh_type::COMPLEX64:  return "float complex";
         case bh_type::COMPLEX128: return "double complex";
-        case bh_type::R123:       return "struct { uint64_t start, key; }";
+        case bh_type::R123:       return "r123_t"; // Defined by `write_c99_dtype_union()`
         default:
             std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown C99 type");
@@ -101,7 +101,8 @@ const char *write_cuda_type(bh_type dtype) {
 
 // Writes the union of C99 types that can make up a constant
 void write_c99_dtype_union(std::stringstream& out) {
-    out << "\nunion dtype {\n";
+    out << "\ntypedef struct { uint64_t x, y; } r123_t" << ";\n";
+    out << "union dtype {\n";
     spaces(out, 4); out << write_c99_type(bh_type::BOOL)       << " " << bh_type_text(bh_type::BOOL)       << ";\n";
     spaces(out, 4); out << write_c99_type(bh_type::INT8)       << " " << bh_type_text(bh_type::INT8)       << ";\n";
     spaces(out, 4); out << write_c99_type(bh_type::INT16)      << " " << bh_type_text(bh_type::INT16)      << ";\n";

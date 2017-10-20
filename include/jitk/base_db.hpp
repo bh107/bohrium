@@ -113,8 +113,7 @@ public:
             }
             if (const_as_var) {
                 assert(instr->origin_id >= 0);
-                if (instr->has_constant() and bh_opcode_is_elementwise(instr->opcode)
-                    and instr->opcode != BH_RANDOM) {
+                if (instr->has_constant() and not bh_opcode_is_sweep(instr->opcode)) {
                     _constant_set.insert(instr);
                 }
             }
@@ -229,6 +228,8 @@ public:
     const bool use_volatile;
     // Should we use start and strides as variables?
     const bool strides_as_var;
+    // Should we use constants as variables?
+    const bool const_as_var;
 
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
@@ -238,7 +239,8 @@ public:
           const T2 &scalar_replacements_r,
           const ConfigParser &config) : symbols(symbols), parent(parent),
                                         use_volatile(config.defaultGet<bool>("volatile", false)),
-                                        strides_as_var(config.defaultGet<bool>("strides_as_var", true)) {
+                                        strides_as_var(config.defaultGet<bool>("strides_as_var", true)),
+                                        const_as_var(config.defaultGet<bool>("const_as_var", true)) {
         for(const bh_base* base: tmps) {
             if (not symbols.isAlwaysArray(base))
                 _tmps.insert(base);
