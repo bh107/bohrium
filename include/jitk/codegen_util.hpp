@@ -38,6 +38,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/base_db.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_cache.hpp>
 #include <jitk/apply_fusion.hpp>
 #include <jitk/statistics.hpp>
 
@@ -205,6 +206,8 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
     const bool monolithic = config.defaultGet<bool>("monolithic", false);
 
+    static CodegenCache codegen_cache(stat);
+
     // Some statistics
     stat.record(*bhir);
 
@@ -300,11 +303,6 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
 
             // Let's execute the kernel
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
-                // Code generation
-                const auto tcodegen = chrono::steady_clock::now();
-                stringstream ss;
-                self.write_kernel({block}, symbols, config, {}, ss);
-                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
                 // Create the constant vector
                 vector<const bh_instruction*> constants;
@@ -312,9 +310,18 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
                 for (const InstrPtr &instr: symbols.constIDs()) {
                     constants.push_back(&(*instr));
                 }
-
-                // Let's execute the kernel
-                engine.execute(ss.str(), symbols.getParams(), symbols.offsetStrideViews(), constants);
+                const auto lookup = codegen_cache.get({block}, symbols);
+                if(lookup.second) {
+                    engine.execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
+                } else {
+                    const auto tcodegen = chrono::steady_clock::now();
+                    stringstream ss;
+                    self.write_kernel({block}, symbols, config, {}, ss);
+                    string source = ss.str();
+                    stat.time_codegen += chrono::steady_clock::now() - tcodegen;
+                    engine.execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);
+                    codegen_cache.insert(std::move(source), {block}, symbols);
+                }
             }
 
             // Finally, let's cleanup
