@@ -205,6 +205,7 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
     const bool monolithic = config.defaultGet<bool>("monolithic", false);
+    const bool use_volatile = config.defaultGet<bool>("use_volatile", false);
 
     static CodegenCache codegen_cache(stat);
 
@@ -265,7 +266,7 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
         }
 
         // Let's create the symbol table for the kernel
-        const SymbolTable symbols(all_instr, all_non_temps, strides_as_var, index_as_var, const_as_var);
+        const SymbolTable symbols(all_instr, all_non_temps, strides_as_var, index_as_var, const_as_var, use_volatile);
         stat.record(symbols);
 
         // Let's execute the kernel
@@ -298,7 +299,7 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
 
             // Let's create the symbol table for the kernel
             const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_var,
-                                      index_as_var, const_as_var);
+                                      index_as_var, const_as_var, use_volatile);
             stat.record(symbols);
 
             // Let's execute the kernel
@@ -354,6 +355,7 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
     const bool strides_as_var = config.defaultGet<bool>("strides_as_var", true);
     const bool index_as_var = config.defaultGet<bool>("index_as_var", true);
     const bool const_as_var = config.defaultGet<bool>("const_as_var", true);
+    const bool use_volatile = config.defaultGet<bool>("use_volatile", false);
     const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
 
     // Some statistics
@@ -390,7 +392,7 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
 
         // Let's create the symbol table for the kernel
         const SymbolTable symbols(block.getAllInstr(), block.getLoop().getAllNonTemps(), strides_as_var,
-                                  index_as_var, const_as_var);
+                                  index_as_var, const_as_var, use_volatile);
         stat.record(symbols);
 
         // We can skip a lot of steps if the kernel does no computation
