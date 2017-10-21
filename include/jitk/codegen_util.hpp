@@ -313,6 +313,16 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
                 }
                 const auto lookup = codegen_cache.get({block}, symbols);
                 if(lookup.second) {
+                    // In debug mode, we check that the cached source code is correct
+                    #ifndef NDEBUG
+                        stringstream ss;
+                        self.write_kernel({block}, symbols, config, {}, ss);
+                        if (ss.str().compare(lookup.first) != 0) {
+                            cout << "\nCached source code: \n" << lookup.first;
+                            cout << "\nReal source code: \n" << ss.str();
+                            assert(1 == 2);
+                        }
+                    #endif
                     engine.execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
                 } else {
                     const auto tcodegen = chrono::steady_clock::now();

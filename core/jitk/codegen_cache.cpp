@@ -37,9 +37,19 @@ boost::hash<string> hasher;
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
  */
 void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstream &ss) {
-    ss << "baseid: " << symbols.baseID(view.base);
-    ss << "strideid: " << symbols.offsetStridesID(view);
     ss << "dtype: " << static_cast<size_t>(view.base->type);
+    ss << "baseid: " << symbols.baseID(view.base);
+
+    if (symbols.strides_as_var) {
+        ss << "strideid: " << symbols.offsetStridesID(view);
+    } else {
+        ss << "vstart: " << view.start;
+        for (int j = 0; j < view.ndim; ++j) {
+            ss << "dim: " << j;
+            ss << "shape: " << view.shape[j];
+            ss << "stride: " << view.stride[j];
+        }
+    }
 }
 
 /* The Instruction hash consists of the following fields:
@@ -50,12 +60,12 @@ void hash_stream(const bh_instruction &instr, const SymbolTable &symbols, std::s
     for (const bh_view &op: instr.operand) {
         if (bh_is_constant(&op)) {
             int64_t id = symbols.constID(instr);
-            if (id == -1) {
+            if (id >= 0 and symbols.const_as_var) {
                 ss << "const: " << symbols.constID(instr);
             } else {
                 ss << "const: " << instr.constant;
             }
-
+            ss << "const dtype: " << static_cast<size_t>(instr.constant.type);
         } else {
             hash_stream(op, symbols,  ss);
         }
