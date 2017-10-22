@@ -11,7 +11,7 @@ On Ubuntu use apt-get::
     sudo apt-get install bohrium-visualizer # data visualizing
     sudo apt-get install bohrium3 # Python3 support
 
-On Linux-64 use `Anaconda <https://www.continuum.io/downloads>`_ (currently, no GPU support)::
+On other 64-bit Linux systems use `Anaconda <https://www.continuum.io/downloads>`_ (currently, no GPU support)::
 
     # Create a new environment 'bh' with the 'bohrium' package from the 'bohrium' channel:
     conda create -n bh -c bohrium bohrium
@@ -136,4 +136,3 @@ And you should see a result similar to this::
 
 
 .. note:: We set ``BH_OPENMP_VOLATILE=true`` in order to avoid precision differences because of Intel's use of 80-bit floats internally.
-

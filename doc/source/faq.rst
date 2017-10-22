@@ -3,7 +3,7 @@ Frequently Asked Questions (FAQ)
 
 **Does it automatically support lazy evaluation (also called: late evaluation, expression templates)?**
 
-Yes, Bohrium will lazy evaluate all Python/NumPy operations until it encounters a “Python Read”, such a printing an array or having an if-statement testing the value of an array.
+Yes, Bohrium will lazy evaluate all Python/NumPy operations until it encounters a "Python Read", such a printing an array or having an if-statement testing the value of an array.
 
 **Does it support "views" in the sense that a sub-slice is simply a view  on the same array?**
 
@@ -24,16 +24,16 @@ Yes.
 
 **Will it lazily operate even over for-loops effectively unrolling them?**
 
-Yes, a for-loop in Python does not force evaluation. However, loops in Python with many iterations will hurt performance, just like to does in regular NumPy or Matlab
+Yes, a for-loop in Python does not force evaluation. However, loops in Python with many iterations will hurt performance, just like it does in regular NumPy or Matlab
 
 
 **Is Bohrium using CUDA on Nvidia Cards or generic OpenCL for any GPU?**
 
-At the moment, Bohrium uses OpenCL for both Nvidia and AMD graphic cards.
+At the moment, Bohrium uses OpenCL for both Nvidia, AMD, and Intel graphic cards.
 
-**What is the disadvantage of Bohrium? I wonder why it exists as a separate project. From my view it looks like Bohrium is "just reimplementing" NumPy in fast. That’s probably extremely oversimplified, but is there a plan to feed the results of Bohrium into the NumPy project?**
+**What is the disadvantage of Bohrium? I wonder why it exists as a separate project. From my point of view it looks like Bohrium is "just reimplementing" NumPy. That's probably extremely oversimplified, but is there a plan to feed the results of Bohrium into the NumPy project?**
 
-The only disadvantage of Bohrium is the extra dependencies e.g. Bohrium need a C99 compiler for JIT-complication.  Thus, the idea of incorporating Bohrium into NumPy as an alternative "backend" is very appealing and we hope it could be realized some day.
+The only disadvantage of Bohrium is the extra dependencies e.g. Bohrium need a C99 compiler for JIT-complication. Thus, the idea of incorporating Bohrium into NumPy as an alternative "backend" is very appealing and we hope it could be realized some day.
 
 
 

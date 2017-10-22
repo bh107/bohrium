@@ -1,8 +1,8 @@
-Installation as non-priviliged user on a system with a dated software-stack
+Installation as non-privileged user on a system with a dated software-stack
 ===========================================================================
 
-In case you wanne experiment with Bohrium in a restricted environment such as on a native mode on a Xeon Phi or on a cluster
-with dated software stacks, this documents how to install basically everything needed to bootstrap something never.
+In case you want to experiment with Bohrium in a restricted environment such as on a native mode on a Xeon Phi or on a cluster
+with dated software stacks, this documents how to install basically everything needed to bootstrap something newer.
 
 This will install:
 
@@ -20,12 +20,12 @@ This will install:
  * Benchpress via git
  * Bohrium via git
 
-Create some folder for all prerequisites, this will probably be fastest to use some local storage instead of a networked filesystem::
+Create some folder for all prerequisites, it will usually be fastest to use some local storage instead of a networked file system::
 
   mkdir /tmp/preqs
   mkdir $HOME/tools
 
-Set environment vars, you probably want to persist it (.profile, .bashrc, or .bash_aliases)::
+Set environment vars (you probably want to make them persistent e.g. in your .profile, .bashrc or .bash_aliases)::
 
   export CPLUS_INCLUDE_PATH=$HOME/tools/boost-1.58.0/include:$CPLUS_INCLUDE_PATH
   export CPLUS_INCLUDE_PATH=$HOME/tools/pcre-8.37/include:$CPLUS_INCLUDE_PATH
@@ -48,20 +48,20 @@ Set environment vars, you probably want to persist it (.profile, .bashrc, or .ba
   export PATH=$HOME/tools/binutils-2.25/bin:$PATH
   export PYTHONPATH=$HOME/tools/benchpress/module:$PYTHONPATH
 
-Be warned, this is a fairly time-consuming task. Expect 3-4 hours.
-The most time consuming are compiling `gcc` and `boost`.
+Be warned, this is a fairly time consuming task. Expect 3-4 hours.
+The most time consuming steps are compiling `gcc` and `boost`.
 
 .. note::
 
   The order that you perform the following is quite important,
   you want to get a recent `gcc` before compiling anything else since anything else
-  would othervise be compiled with an older `gcc`. Also installing binutils before
+  would otherwise be compiled with an older `gcc`. Also installing binutils before
   gcc will probably result in compile-errors.
 
 gcc 4.9.3
 ---------
 
-Lets try with a never gcc and a different preq-install::
+Let's try with a newer gcc and a different preq-install::
 
   cd /tmp/preqs
   wget ftp://ftp.gnu.org/gnu/gcc/gcc-4.9.3/gcc-4.9.3.tar.gz
@@ -72,7 +72,7 @@ Lets try with a never gcc and a different preq-install::
   make -j$(nproc)
   make install
 
-This is the most time-consuming so go do something else.
+This is the most time consuming, so you might just go do something else in the meantime.
 
 And quite importantly make sure to link `gcc` to `cc`::
 
@@ -117,8 +117,6 @@ In case even your shell is broken then go for installing bash::
 mosh (optional)
 ---------------
 
-sdfdsf::
-
   cd /tmp/preqs
   wget https://github.com/google/protobuf/archive/master.zip
   unzip master.zip
@@ -155,11 +153,11 @@ Then install `python`::
   ./configure --prefix=$HOME/tools/python2.7
   make install
 
-And check that it called when invoking `python`::
+And check that it's called when invoking `python`::
 
   python -V
 
-If it does not then check your `$PATH`.
+If not then check your `$PATH`.
 
 Then bootstrap `pip`::
 
@@ -198,7 +196,7 @@ Then install `boost`::
   ./bootstrap.sh --prefix=$HOME/tools/boost-1.58.0
   ./b2 --with-serialization --with-filesystem --with-system --with-thread install
 
-This is the second most time-consuming compile you have to do.
+This is the second most time consuming compile you have to do.
 
 swig 3.0.5
 ----------
@@ -249,14 +247,12 @@ Without OpenMP clang is not of much use to Bohrium, so we grab the omp-port::
   make -j$(nproc)
   make install
 
-Also build the Intel OpenMP runtime. Hmm...
-
-Hmm unfortunately this does not seem to work...
+Also build the Intel OpenMP runtime.
 
 benchpress
 ----------
 
-We need this to run testing against benchmarks and to run benchmarks from the benchpress repos::
+We need this to run testing against benchmarks and to run benchmarks from the benchpress repository::
 
   cd $HOME/tools
   git clone https://github.com/bh107/benchpress.git
@@ -284,4 +280,4 @@ Now run numpytest to check that it is operational::
 
   python $HOME/bohrium/test/python/numpytest.py
 
-Wooohooo!
+And you're done!
