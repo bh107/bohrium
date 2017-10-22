@@ -67,6 +67,10 @@ boost::filesystem::path get_tmp_path(const ConfigParser &config);
 // Useful when multiple processes runs on the same filesystem
 void create_directories(const boost::filesystem::path &path);
 
+// Order all sweep instructions by the viewID of their first operand.
+// This makes the source of the kernels more identical, which improve the code and compile caches.
+std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
+
 // Calculate the work group sizes.
 // Return pair (global work size, local work size)
 std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size);
