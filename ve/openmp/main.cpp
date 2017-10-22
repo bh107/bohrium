@@ -285,7 +285,7 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
                 stmp << "offset_strides[" << count++ << "], ";
             }
         }
-        if (symbols.constIDs().size() > 0) {
+        if (not symbols.constIDs().empty()) {
             uint64_t i=0;
             for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
                 const InstrPtr &instr = *it;

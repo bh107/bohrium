@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/functional/hash.hpp>
 
 #include <jitk/fuser_cache.hpp>
-#include <bh_seqset.hpp>
 
 
 using namespace std;
@@ -33,16 +32,38 @@ namespace jitk {
 
 namespace {
 
+// Handling view IDs
+class ViewDB {
+private:
+    size_t maxid;
+    std::map<bh_view,size_t> _map;
+public:
+    ViewDB() : maxid(0) {}
+
+    // Insert an object
+    std::pair<size_t,bool> insert(const bh_view &v) {
+        auto it = _map.find(v);
+        if (it == _map.end()) {
+            size_t id = maxid++;
+            _map.insert(std::make_pair(v,id));
+            return std::make_pair(id,true);
+
+        } else {
+            return  std::make_pair(it->second,false);
+        }
+    }
+};
+
+
 boost::hash<string> hasher;
 constexpr size_t SEP_INSTR = SIZE_MAX;
 constexpr size_t SEP_OP = SIZE_MAX - 1;
-// constexpr size_t SEP_BLOCK = SIZE_MAX - 2;
-constexpr size_t SEP_SHAPE = SIZE_MAX - 3;
+constexpr size_t SEP_SHAPE = SIZE_MAX - 2;
 
 /* The Instruction hash consists of the following fields:
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
  */
-void hash_view(const bh_view &view, seqset<bh_view> &views, std::stringstream &ss) {
+void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
     if (not bh_is_constant(&view)) {
         size_t view_id = views.insert(view).first;
         ss << view_id;
@@ -60,7 +81,7 @@ void hash_view(const bh_view &view, seqset<bh_view> &views, std::stringstream &s
 /* The Instruction hash consists of the following fields:
  * <opcode[<hash_view>...]<sweep_axis()><SEP_INSTR>
  */
-void hash_instr(const bh_instruction &instr, seqset<bh_view> &views, std::stringstream &ss) {
+void hash_instr(const bh_instruction &instr, ViewDB &views, std::stringstream &ss) {
     ss << instr.opcode; // <opcode>
     for(const bh_view &op: instr.operand) {
         hash_view(op, views, ss);
@@ -72,7 +93,7 @@ void hash_instr(const bh_instruction &instr, seqset<bh_view> &views, std::string
 // Hash of an instruction list
 size_t hash_instr_list(const vector<bh_instruction *> &instr_list) {
     stringstream ss;
-    seqset<bh_view> views;
+    ViewDB views;
     for (const bh_instruction *instr: instr_list) {
         hash_instr(*instr, views, ss);
     }

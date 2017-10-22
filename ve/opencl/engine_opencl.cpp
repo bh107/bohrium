@@ -348,6 +348,9 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
             case bh_type::COMPLEX128:
                 opencl_kernel.setArg(i++, instr->constant.value.complex128);
                 break;
+            case bh_type::R123:
+                opencl_kernel.setArg(i++, instr->constant.value.r123);
+                break;
             default:
                 std::cerr << "Unknown OpenCL type: " << bh_type_text(instr->constant.type) << std::endl;
                 throw std::runtime_error("Unknown OpenCL type");

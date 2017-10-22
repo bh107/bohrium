@@ -90,7 +90,7 @@ private:
     std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
-    std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID
+    std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID (Order by `origin_id`)
     std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
     std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
     std::set<bh_base*> _frees; // Set of freed arrays
@@ -98,7 +98,7 @@ private:
 
 public:
     SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> &non_temp_arrays,
-                bool strides_as_variables, bool index_as_var,
+                bool strides_as_var, bool index_as_var,
                 bool const_as_var) : _useRandom(false) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
@@ -113,8 +113,7 @@ public:
             }
             if (const_as_var) {
                 assert(instr->origin_id >= 0);
-                if (instr->has_constant() and bh_opcode_is_elementwise(instr->opcode)
-                    and instr->opcode != BH_RANDOM) {
+                if (instr->has_constant() and not bh_opcode_is_sweep(instr->opcode)) {
                     _constant_set.insert(instr);
                 }
             }
@@ -139,10 +138,10 @@ public:
                 }
             }
         }
-        if (strides_as_variables) {
-            _offset_stride_views.reserve(_offset_strides_map.size());
+        if (strides_as_var) {
+            _offset_stride_views.resize(_offset_strides_map.size());
             for(auto &v: _offset_strides_map) {
-                _offset_stride_views.push_back(&v.first);
+                _offset_stride_views[v.second] = &v.first;
             }
         }
     };
@@ -227,8 +226,10 @@ private:
 public:
     // Should we declare scalar variables using the volatile keyword?
     const bool use_volatile;
-    // Should we use offset and strides as variables?
-    const bool strides_as_variables;
+    // Should we use start and strides as variables?
+    const bool strides_as_var;
+    // Should we use constants as variables?
+    const bool const_as_var;
 
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
@@ -238,7 +239,8 @@ public:
           const T2 &scalar_replacements_r,
           const ConfigParser &config) : symbols(symbols), parent(parent),
                                         use_volatile(config.defaultGet<bool>("volatile", false)),
-                                        strides_as_variables(config.defaultGet<bool>("strides_as_var", true)) {
+                                        strides_as_var(config.defaultGet<bool>("strides_as_var", true)),
+                                        const_as_var(config.defaultGet<bool>("const_as_var", true)) {
         for(const bh_base* base: tmps) {
             if (not symbols.isAlwaysArray(base))
                 _tmps.insert(base);
