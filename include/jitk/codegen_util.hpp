@@ -275,12 +275,6 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
 
         // Let's execute the kernel
         if (kernel_is_computing) { // We can skip this step if the kernel does no computation
-            // Code generation
-            const auto tcodegen = chrono::steady_clock::now();
-            stringstream ss;
-            self.write_kernel(block_list, symbols, config, kernel_temps, ss);
-            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-
             // Create the constant vector
             vector<const bh_instruction*> constants;
             constants.reserve(symbols.constIDs().size());
@@ -288,8 +282,28 @@ void handle_cpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
                 constants.push_back(&(*instr));
             }
 
-            // Let's execute the kernel
-            engine.execute(ss.str(), symbols.getParams(), symbols.offsetStrideViews(), constants);
+            const auto lookup = codegen_cache.get(block_list, symbols);
+            if(lookup.second) {
+                // In debug mode, we check that the cached source code is correct
+                #ifndef NDEBUG
+                    stringstream ss;
+                    self.write_kernel(block_list, symbols, config, kernel_temps, ss);
+                    if (ss.str().compare(lookup.first) != 0) {
+                        cout << "\nCached source code: \n" << lookup.first;
+                        cout << "\nReal source code: \n" << ss.str();
+                        assert(1 == 2);
+                    }
+                #endif
+                engine.execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
+            } else {
+                const auto tcodegen = chrono::steady_clock::now();
+                stringstream ss;
+                self.write_kernel(block_list, symbols, config, kernel_temps, ss);
+                string source = ss.str();
+                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
+                engine.execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);
+                codegen_cache.insert(std::move(source), block_list, symbols);
+            }
         }
 
         // Finally, let's cleanup
