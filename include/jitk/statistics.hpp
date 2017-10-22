@@ -71,6 +71,7 @@ class Statistics {
     std::chrono::duration<double> time_copy2dev{0};
     std::chrono::duration<double> time_copy2host{0};
     std::chrono::duration<double> time_ext_method{0};
+    std::map<std::string, std::pair<int, std::chrono::duration<double> > > time_per_kernel;
 
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
@@ -153,7 +154,13 @@ class Statistics {
             file << "    pre_fusion: "          << time_pre_fusion.count()      << "\n"; // s
             file << "    fusion: "              << time_fusion.count()          << "\n"; // s
             file << "    compile: "             << time_compile.count()         << "\n"; // s
-            file << "    exec: "                << time_exec.count()            << "\n"; // s
+            file << "    exec: "                                                << "\n";
+            file << "      total: "             << time_exec.count()            << "\n"; // s
+            file << "      per_kernel: "                                        << "\n";
+            for (auto const& x : time_per_kernel)
+            {
+            file << "        " << x.first << ": [" << x.second.first << ", " << x.second.second.count() << "] \n"; // [1, s]
+            }
             file << "    copy2dev: "            << time_copy2dev.count()        << "\n"; // s
             file << "    copy2host: "           << time_copy2host.count()       << "\n"; // s
             file << "    offload: "             << time_offload.count()         << "\n"; // s
