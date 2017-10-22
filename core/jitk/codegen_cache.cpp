@@ -50,6 +50,9 @@ void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstr
             ss << "stride: " << view.stride[j];
         }
     }
+    if (symbols.index_as_var) {
+        ss << "indexid: " << symbols.idxID(view);
+    }
 }
 
 /* The Instruction hash consists of the following fields:

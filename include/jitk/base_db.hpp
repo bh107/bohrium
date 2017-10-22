@@ -101,13 +101,15 @@ public:
     const bool use_volatile;
     // Should we use start and strides as variables?
     const bool strides_as_var;
+    // Should we save index calculations in variables?
+    const bool index_as_var;
     // Should we use constants as variables?
     const bool const_as_var;
 
     SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> &non_temp_arrays,
                 bool strides_as_var, bool index_as_var, bool const_as_var,
-                bool use_volatile) : _useRandom(false), use_volatile(use_volatile),
-                                     strides_as_var(strides_as_var), const_as_var(const_as_var) {
+                bool use_volatile) : _useRandom(false), use_volatile(use_volatile), strides_as_var(strides_as_var),
+                                     index_as_var(index_as_var), const_as_var(const_as_var) {
 
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
