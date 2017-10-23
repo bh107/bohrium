@@ -97,9 +97,20 @@ private:
     bool _useRandom; // Flag: is any instructions using random?
 
 public:
+    // Should we declare scalar variables using the volatile keyword?
+    const bool use_volatile;
+    // Should we use start and strides as variables?
+    const bool strides_as_var;
+    // Should we save index calculations in variables?
+    const bool index_as_var;
+    // Should we use constants as variables?
+    const bool const_as_var;
+
     SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> &non_temp_arrays,
-                bool strides_as_var, bool index_as_var,
-                bool const_as_var) : _useRandom(false) {
+                bool strides_as_var, bool index_as_var, bool const_as_var,
+                bool use_volatile) : _useRandom(false), use_volatile(use_volatile), strides_as_var(strides_as_var),
+                                     index_as_var(index_as_var), const_as_var(const_as_var) {
+
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -224,23 +235,13 @@ private:
     std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
     std::set<bh_view, idx_less> _declared_idx; // Set of indexes that have been locally declared
 public:
-    // Should we declare scalar variables using the volatile keyword?
-    const bool use_volatile;
-    // Should we use start and strides as variables?
-    const bool strides_as_var;
-    // Should we use constants as variables?
-    const bool const_as_var;
-
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,
           const Scope *parent,
           const std::set<bh_base *> &tmps,
           const T1 &scalar_replacements_rw,
           const T2 &scalar_replacements_r,
-          const ConfigParser &config) : symbols(symbols), parent(parent),
-                                        use_volatile(config.defaultGet<bool>("volatile", false)),
-                                        strides_as_var(config.defaultGet<bool>("strides_as_var", true)),
-                                        const_as_var(config.defaultGet<bool>("const_as_var", true)) {
+          const ConfigParser &config) : symbols(symbols), parent(parent) {
         for(const bh_base* base: tmps) {
             if (not symbols.isAlwaysArray(base))
                 _tmps.insert(base);
@@ -402,7 +403,7 @@ public:
     void writeDeclaration(const bh_view &view, const std::string &type_str, T &out) {
         assert(not isDeclared(view));
 
-        if (use_volatile) {
+        if (symbols.use_volatile) {
             out << "volatile ";
         }
 

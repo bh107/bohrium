@@ -18,28 +18,37 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_util.hpp>
-#include <jitk/base_db.hpp>
-#include <jitk/view.hpp>
+#pragma once
 
-using namespace std;
+#include <map>
+#include <string>
+
+#include <bh_instruction.hpp>
+#include <jitk/block.hpp>
+#include <jitk/statistics.hpp>
+
 
 namespace bohrium {
 namespace jitk {
 
-void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, stringstream &out) {
-    assert(not isIdxDeclared(view));
-    _declared_idx.insert(view);
-    out << "const " << type_str << " ";
-    getIdxName(view, out);
-    out << "= (";
-    if (symbols.strides_as_var and symbols.existOffsetStridesID(view)) {
-        write_array_index_variables(*this, view, out);
-    } else {
-        write_array_index(*this, view, out);
-    }
-    out << ");";
-}
+class CodegenCache {
+private:
+    std::map<size_t, std::string> _cache;
+    // Some statistics
+    jitk::Statistics &stat;
+public:
+    // The constructor takes the statistic object
+    CodegenCache(jitk::Statistics &stat) : stat(stat) {}
 
-} // jitk
+    // Check the cache for a source code that matches 'instr_list'
+    std::pair<std::string, bool> get(const std::vector<Block> &block_list, const SymbolTable &symbols);
+
+    // Insert 'source' as a hit when requesting 'block_list'
+    void insert(std::string source, const std::vector<Block> &block_list, const SymbolTable &symbols);
+};
+
+
+} // jit
 } // bohrium
+
+
