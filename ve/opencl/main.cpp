@@ -84,7 +84,7 @@ public:
     string message(const string &msg) {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
-            stat = Statistics(true, config.defaultGet("prof", false));
+            stat = Statistics(true, config.defaultGet("prof", false), config.defaultGet("verbose", false));
         } else if (msg == "statistic") {
             stat.write("OpenCL", "", ss);
         } else if (msg == "GPU: disable") {

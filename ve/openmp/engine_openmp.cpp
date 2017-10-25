@@ -122,8 +122,9 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
         // Write the source file and compile it (reading from disk)
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
-            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
-                                                       jitk::hash_filename(compilation_hash, hash, ".c"),
+            std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
+            stat.time_per_kernel.insert(std::make_pair(source_filename, std::make_pair(0, 0)));
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename,
                                                        true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {
@@ -157,6 +158,8 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
 void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
                            const std::vector<const bh_view*> &offset_strides,
                            const std::vector<const bh_instruction*> &constants) {
+    size_t hash = hasher(source);
+    std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
 
     // Make sure all arrays are allocated
     for (bh_base *base: non_temps) {
@@ -196,10 +199,13 @@ void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*
         constant_arg.push_back(instr->constant.value);
     }
 
-    auto texec = chrono::steady_clock::now();
+    auto start_exec = chrono::steady_clock::now();
     // Call the launcher function, which will execute the kernel
     func(&data_list[0], &offset_and_strides[0], &constant_arg[0]);
-    stat.time_exec += chrono::steady_clock::now() - texec;
+    auto exec_duration = chrono::steady_clock::now() - start_exec;
+    stat.time_exec += exec_duration;
+    ++stat.time_per_kernel[source_filename].first;
+    stat.time_per_kernel[source_filename].second += exec_duration;
 
 }
 

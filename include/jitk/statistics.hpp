@@ -49,6 +49,7 @@ class Statistics {
   public:
     bool enabled;
     bool print_on_exit; // On exist, write to file or pprint to stdout
+    bool verbose; // print per-kernel statistics
     uint64_t num_base_arrays           = 0;
     uint64_t num_temp_arrays           = 0;
     uint64_t num_syncs                 = 0;
@@ -71,13 +72,13 @@ class Statistics {
     std::chrono::duration<double> time_copy2dev{0};
     std::chrono::duration<double> time_copy2host{0};
     std::chrono::duration<double> time_ext_method{0};
-    std::map<std::string, std::pair<int, std::chrono::duration<double> > > time_per_kernel;
+    std::map<std::string, std::pair<uint64_t, std::chrono::duration<double> > > time_per_kernel;
 
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
-    Statistics(bool enabled) : enabled(enabled), print_on_exit(enabled) {}
-    Statistics(bool enabled, bool print_on_exit) : enabled(enabled), print_on_exit(print_on_exit) {}
+    Statistics(bool enabled) : enabled(enabled), print_on_exit(enabled), verbose(false) {}
+    Statistics(bool enabled, bool print_on_exit, bool verbose) : enabled(enabled), print_on_exit(print_on_exit), verbose(verbose) {}
 
     void write(std::string backend_name, std::string filename, std::ostream &out) {
         if (filename == "") {
@@ -120,6 +121,14 @@ class Statistics {
             out << "  Other:                         " << YEL << time_other() << "s"                 << "\n" << RST;
             out << "\n";
             out << BOLD << RED << "Unaccounted for (wall - total):  " << unaccounted() << "s\n" << RST;
+
+            if (verbose) {
+              out << "\n";
+              out << "Total execution time per kernel: (num_calls, s)" << "\n";
+              for (auto const& x : time_per_kernel) {
+                out << "  - " << x.first << ": (" << x.second.first << ", " << x.second.second.count() << ")" << "\n";
+              }
+            }
             out << endl;
         } else {
             out << BLU << "[" << backend_name << "] Profiling: " << RST;
@@ -157,9 +166,12 @@ class Statistics {
             file << "    exec: "                                                << "\n";
             file << "      total: "             << time_exec.count()            << "\n"; // s
             file << "      per_kernel: "                                        << "\n";
-            for (auto const& x : time_per_kernel)
-            {
-            file << "        " << x.first << ": [" << x.second.first << ", " << x.second.second.count() << "] \n"; // [1, s]
+            if (verbose) {
+              for (auto const& x : time_per_kernel) {
+                file << "        - " << x.first << ": "                         << "\n";
+                file << "          num_calls: " << x.second.first               << "\n";
+                file << "          time: "      << x.second.second.count()      << "\n"; // s
+              }
             }
             file << "    copy2dev: "            << time_copy2dev.count()        << "\n"; // s
             file << "    copy2host: "           << time_copy2host.count()       << "\n"; // s

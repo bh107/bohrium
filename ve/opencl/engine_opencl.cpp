@@ -250,9 +250,6 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
                                                        source_filename,
                                                        true);
-            cout << "************ SOURCE  ************" << endl
-                 << source
-                 << "^^^^^^^^^^^^^ SOURCE^^^^^^^^^^^^" << endl << endl;
         }
     } else { // If the binary file exist we load the binary into the program
 
@@ -363,10 +360,10 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
     }
 
     const auto ranges = NDRanges(threaded_blocks);
-    auto texec = chrono::steady_clock::now();
+    auto start_exec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
-    auto exec_duration = chrono::steady_clock::now() - texec;
+    auto exec_duration = chrono::steady_clock::now() - start_exec;
     stat.time_exec += exec_duration;
     ++stat.time_per_kernel[source_filename].first;
     stat.time_per_kernel[source_filename].second += exec_duration;

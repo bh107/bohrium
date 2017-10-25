@@ -111,7 +111,7 @@ EngineCUDA::~EngineCUDA() {
 
     // File clean up
     if (not verbose) {
-        fs::remove_all(tmp_src_dir);
+        fs::remove_all(tmp_src_dir);texec
     }
 }
 
@@ -161,6 +161,9 @@ CUfunction EngineCUDA::getFunction(const string &source) {
         // Write the source file and compile it (reading from disk)
         // TODO: make nvcc read directly from stdin
         {
+            if (verbose) {
+              
+            }
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
                                                        jitk::hash_filename(compilation_hash, hash, ".cu"), verbose);
             compiler.compile(binfile.string(), srcfile.string());
