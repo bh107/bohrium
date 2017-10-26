@@ -123,7 +123,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
             std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
-            stat.time_per_kernel.insert(std::make_pair(source_filename, std::make_pair(0, 0)));
+            stat.add_kernel(source_filename);
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename,
                                                        true);
             compiler.compile(binfile.string(), srcfile.string());
@@ -204,8 +204,8 @@ void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*
     func(&data_list[0], &offset_and_strides[0], &constant_arg[0]);
     auto exec_duration = chrono::steady_clock::now() - start_exec;
     stat.time_exec += exec_duration;
-    ++stat.time_per_kernel[source_filename].first;
-    stat.time_per_kernel[source_filename].second += exec_duration;
+    ++stat.time_per_kernel[source_filename].num_calls;
+    stat.time_per_kernel[source_filename].time += exec_duration;
 
 }
 

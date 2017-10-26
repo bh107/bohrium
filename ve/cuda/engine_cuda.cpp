@@ -161,11 +161,12 @@ CUfunction EngineCUDA::getFunction(const string &source) {
         // Write the source file and compile it (reading from disk)
         // TODO: make nvcc read directly from stdin
         {
+            std::string kernel_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
             if (verbose) {
-              
+              stat.add_kernel(kernel_filename);
             }
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
-                                                       jitk::hash_filename(compilation_hash, hash, ".cu"), verbose);
+                                                       kernel_filename, verbose);
             compiler.compile(binfile.string(), srcfile.string());
         }
         /* else {

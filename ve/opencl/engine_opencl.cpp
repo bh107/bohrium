@@ -238,7 +238,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
         std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
-        stat.time_per_kernel.insert(std::make_pair(source_filename, std::make_pair(0, 0)));
+        stat.add_kernel(source_filename);
         program = cl::Program(context, source);
         if (verbose) {
             const string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
@@ -365,8 +365,8 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
     queue.finish();
     auto exec_duration = chrono::steady_clock::now() - start_exec;
     stat.time_exec += exec_duration;
-    ++stat.time_per_kernel[source_filename].first;
-    stat.time_per_kernel[source_filename].second += exec_duration;
+    ++stat.time_per_kernel[source_filename].num_calls;
+    stat.time_per_kernel[source_filename].time += exec_duration;
 }
 
 void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {

@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <ostream>
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 #include <vector>
 
 #include <colors.hpp>
@@ -45,11 +46,20 @@ std::string pprint_ratio(uint64_t a, uint64_t b) {
 }
 }
 
+struct KernelStats {
+  uint64_t num_calls = 0;
+  std::chrono::duration<double> time{0};
+
+  bool operator< (const KernelStats& rhs) const {
+    return this->time.count() < rhs.time.count();
+  }
+};
+
 class Statistics {
   public:
     bool enabled;
     bool print_on_exit; // On exist, write to file or pprint to stdout
-    bool verbose; // print per-kernel statistics
+    bool verbose; // Print per-kernel statistics
     uint64_t num_base_arrays           = 0;
     uint64_t num_temp_arrays           = 0;
     uint64_t num_syncs                 = 0;
@@ -72,12 +82,12 @@ class Statistics {
     std::chrono::duration<double> time_copy2dev{0};
     std::chrono::duration<double> time_copy2host{0};
     std::chrono::duration<double> time_ext_method{0};
-    std::map<std::string, std::pair<uint64_t, std::chrono::duration<double> > > time_per_kernel;
+    std::map<std::string, KernelStats> time_per_kernel;
 
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
-    Statistics(bool enabled) : enabled(enabled), print_on_exit(enabled), verbose(false) {}
+    Statistics(bool enabled, bool verbose) : enabled(enabled), print_on_exit(enabled), verbose(verbose) {}
     Statistics(bool enabled, bool print_on_exit, bool verbose) : enabled(enabled), print_on_exit(print_on_exit), verbose(verbose) {}
 
     void write(std::string backend_name, std::string filename, std::ostream &out) {
@@ -124,9 +134,23 @@ class Statistics {
 
             if (verbose) {
               out << "\n";
-              out << "Total execution time per kernel: (num_calls, s)" << "\n";
-              for (auto const& x : time_per_kernel) {
-                out << "  - " << x.first << ": (" << x.second.first << ", " << x.second.second.count() << ")" << "\n";
+              out << BLU << "Per-kernel Profiling:"                                                  << "\n" << RST;
+              out << "  " << std::left << std::setw(38) << "Kernel filename"
+                                       << std::setw(12) << "Calls"
+                                       << std::setw(10) << "Total time"                              << "\n" << RST;
+              auto cmp = [](std::pair<std::string, KernelStats> const & a, std::pair<std::string, KernelStats> const & b) {
+                return !(a.second < b.second);
+              };
+              std::vector<std::pair<std::string, KernelStats> > tpk_sorted(time_per_kernel.begin(), time_per_kernel.end());
+              std::sort(std::begin(tpk_sorted), std::end(tpk_sorted), cmp);
+              for (auto const& x : tpk_sorted) {
+                std::string kernel_filename = x.first;
+                KernelStats kernel_data = x.second;
+                out << "  "
+                    << std::left         << std::setw(38) << kernel_filename
+                    << std::right << YEL << std::setw(8)  << kernel_data.num_calls    << "    "
+                    << std::left << std::scientific << std::setprecision(3)
+                                         << std::setw(10) << kernel_data.time.count() << "s"         << "\n" << RST;
               }
             }
             out << endl;
@@ -165,12 +189,12 @@ class Statistics {
             file << "    compile: "             << time_compile.count()         << "\n"; // s
             file << "    exec: "                                                << "\n";
             file << "      total: "             << time_exec.count()            << "\n"; // s
-            file << "      per_kernel: "                                        << "\n";
             if (verbose) {
+              file << "      per_kernel: "                                      << "\n";
               for (auto const& x : time_per_kernel) {
                 file << "        - " << x.first << ": "                         << "\n";
-                file << "          num_calls: " << x.second.first               << "\n";
-                file << "          time: "      << x.second.second.count()      << "\n"; // s
+                file << "          num_calls: " << x.second.num_calls           << "\n";
+                file << "          time: "      << x.second.time.count()        << "\n"; // s
               }
             }
             file << "    copy2dev: "            << time_copy2dev.count()        << "\n"; // s
@@ -200,6 +224,10 @@ class Statistics {
     void record(const SymbolTable& symbols) {
       num_base_arrays += symbols.getNumBaseArrays();
       num_temp_arrays += symbols.getNumBaseArrays() - symbols.getParams().size();
+    }
+
+    void add_kernel(const std::string& kernel_name) {
+      time_per_kernel.insert(std::make_pair(kernel_name, KernelStats()));
     }
 
   private:

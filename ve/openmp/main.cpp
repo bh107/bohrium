@@ -61,7 +61,7 @@ class Impl : public ComponentImpl {
 
   public:
     Impl(int stack_level) : ComponentImpl(stack_level),
-                            stat(config.defaultGet("prof", false)),
+                            stat(config.defaultGet("prof", false), config.defaultGet("verbose", false)),
                             fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(BhIR *bhir);
