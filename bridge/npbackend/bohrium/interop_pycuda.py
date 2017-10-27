@@ -2,7 +2,7 @@
 Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
-from .bhary import get_bhc
+from .bhary import get_bhc, get_base
 from .target import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
 from ._util import flush
@@ -60,7 +60,27 @@ def init():
 
 
 def get_gpuarray(bh_ary):
-    """Return a PyCUDA GPUArray object that points to the same device memory as `bh_ary`"""
+    """Return a PyCUDA GPUArray object that points to the same device memory as `bh_ary`.
+
+    Parameters
+    ----------
+    bh_ary : ndarray (Bohrium array)
+        Must be a Bohrium base array
+
+    Returns
+    -------
+    out : GPUArray
+
+    Notes
+    -----
+    Changing or deallocating `bh_ary` invalidates the returned GPUArray array!
+
+    """
+
+    if get_base(bh_ary) is not bh_ary:
+        raise RuntimeError('`bh_ary` must be a base array and not a view')
+    assert (bh_ary.bhc_mmap_allocated)
+
     with contexts.DisableBohrium():
         _import_pycuda_module()
         from pycuda import gpuarray

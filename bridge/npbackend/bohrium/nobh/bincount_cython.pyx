@@ -1,6 +1,7 @@
 from .. import array_create
 from .._util import flush, dtype_equal
 from ..interop_numpy import get_array
+from ..bhary import get_base
 
 import cython
 from cython.parallel import prange, parallel
@@ -148,7 +149,7 @@ def bincount_cython(x, weights=None, minlength=None):
         elif dtype_equal(weights.dtype, np.float32) or dtype_equal(weights.dtype, np.float64):
             weights = array_create.array(weights, dtype=np.float64)
             ret = array_create.zeros((x_max+1, ), dtype=weights.dtype)
-            _count_float_weights(get_array(x), get_array(weights), get_array(ret))
+            _count_float_weights(get_array(x), get_array(get_base(weights)), get_array(ret))
         else:
             raise RuntimeError("bincount(): weights has unsupported dtype (%s)" % weights.dtype)
     return ret
