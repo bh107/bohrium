@@ -64,6 +64,8 @@ private:
     std::map<bh_base*, std::unique_ptr<cl::Buffer> > buffers;
     // Verbose flag
     const bool verbose;
+    // Maximum number of cache files
+    const int64_t cache_file_max;
     // Some statistics
     jitk::Statistics &stat;
     // Record profiling statistics
