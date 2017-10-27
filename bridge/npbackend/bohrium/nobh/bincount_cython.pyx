@@ -87,7 +87,7 @@ cdef _count_int_weights(uint64[:] x, int64[:] w, int64[:] out):
     ELSE:
         with nogil:
             for i in range(x.shape[0]):
-                out[x[i]] += 1
+                out[x[i]] += w[i]
 
 
 @cython.boundscheck(False) # turn off bounds-checking
@@ -124,7 +124,7 @@ cdef _count_float_weights(uint64[:] x, double[:] w, double[:] out):
     ELSE:
         with nogil:
             for i in range(x.shape[0]):
-                out[x[i]] += 1
+                out[x[i]] += w[i]
 
 
 def bincount_cython(x, weights=None, minlength=None):
