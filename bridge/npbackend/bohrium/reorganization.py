@@ -119,7 +119,7 @@ def take(a, indices, axis=None, out=None, mode='raise'):
 
     if not bhary.check(a):
         indices = array_create.array(indices, bohrium=False)
-        numpy.take(a, indices, axis=axis, out=out, mode=mode)
+        return numpy.take(a, indices, axis=axis, out=out, mode=mode)
 
     if mode != "raise":
         warnings.warn("Bohrium only supports the 'raise' mode not '%s', "
