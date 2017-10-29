@@ -124,8 +124,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
         if (verbose) {
             std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
             stat.add_kernel(source_filename);
-            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename,
-                                                       true);
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {
             // Pipe the source directly into the compiler thus no source file is written
@@ -202,10 +201,9 @@ void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*
     auto start_exec = chrono::steady_clock::now();
     // Call the launcher function, which will execute the kernel
     func(&data_list[0], &offset_and_strides[0], &constant_arg[0]);
-    auto exec_duration = chrono::steady_clock::now() - start_exec;
-    stat.time_exec += exec_duration;
-    ++stat.time_per_kernel[source_filename].num_calls;
-    stat.time_per_kernel[source_filename].time += exec_duration;
+    auto texec = chrono::steady_clock::now() - start_exec;
+    stat.time_exec += texec;
+    stat.time_per_kernel[source_filename].register_exec_time(texec);
 
 }
 

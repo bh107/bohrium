@@ -61,7 +61,7 @@ class Impl : public ComponentImpl {
 
   public:
     Impl(int stack_level) : ComponentImpl(stack_level),
-                            stat(config.defaultGet("prof", false), config.defaultGet("verbose", false)),
+                            stat(config),
                             fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(BhIR *bhir);
@@ -81,7 +81,7 @@ class Impl : public ComponentImpl {
     string message(const string &msg) {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
-            stat = Statistics(true, config.defaultGet("prof", false), config.defaultGet("verbose", false));
+            stat = Statistics(true, config);
         } else if (msg == "statistic") {
             stat.write("OpenMP", "", ss);
             return ss.str();

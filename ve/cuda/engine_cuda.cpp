@@ -111,7 +111,7 @@ EngineCUDA::~EngineCUDA() {
 
     // File clean up
     if (not verbose) {
-        fs::remove_all(tmp_src_dir);texec
+        fs::remove_all(tmp_src_dir);
     }
 }
 
@@ -206,6 +206,8 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
+    size_t hash = hasher(source);
+    std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();
     CUfunction program = getFunction(source);
@@ -225,7 +227,7 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
         }
     }
 
-    auto texec = chrono::steady_clock::now();
+    auto exec_start = chrono::steady_clock::now();
 
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
     tie(blocks, threads) = NDRanges(threaded_blocks);
@@ -236,7 +238,9 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
                                    0, 0, &args[0], 0));
     checkCudaErrors(cuCtxSynchronize());
 
-    stat.time_exec += chrono::steady_clock::now() - texec;
+    auto texec = chrono::steady_clock::now() - exec_start;
+    stat.time_exec += texec;
+    stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
 void EngineCUDA::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {

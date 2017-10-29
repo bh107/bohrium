@@ -247,9 +247,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
                      << log
                      << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
             }
-            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
-                                                       source_filename,
-                                                       true);
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
         }
     } else { // If the binary file exist we load the binary into the program
 
@@ -363,10 +361,9 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
     auto start_exec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
-    auto exec_duration = chrono::steady_clock::now() - start_exec;
-    stat.time_exec += exec_duration;
-    ++stat.time_per_kernel[source_filename].num_calls;
-    stat.time_per_kernel[source_filename].time += exec_duration;
+    auto texec = chrono::steady_clock::now() - start_exec;
+    stat.time_exec += texec;
+    stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
 void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {

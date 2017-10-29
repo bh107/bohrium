@@ -60,7 +60,7 @@ class Impl : public ComponentImplWithChild {
     EngineOpenCL engine;
 
 public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config.defaultGet("prof", false), config.defaultGet("verbose", false)),
+    Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config),
                             fcache(stat), engine(config, stat) {}
     ~Impl();
     void execute(BhIR *bhir);
@@ -84,7 +84,7 @@ public:
     string message(const string &msg) {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
-            stat = Statistics(true, config.defaultGet("prof", false), config.defaultGet("verbose", false));
+            stat = Statistics(true, config);
         } else if (msg == "statistic") {
             stat.write("OpenCL", "", ss);
         } else if (msg == "GPU: disable") {
