@@ -52,7 +52,6 @@ void Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
     if (!cmd_stdin) {
         perror("popen()");
         fprintf(stderr, "popen() failed for: [%s]", sourcecode);
-        pclose(cmd_stdin);
         throw runtime_error("Compiler: popen() failed");
     }
                                                 // Write / pipe to stdin
