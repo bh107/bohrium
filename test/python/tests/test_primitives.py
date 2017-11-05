@@ -28,6 +28,29 @@ class test_bh_opcodes:
         return cmd
 
 
+class test_bh_operators:
+    def init(self):
+        for op in ['+', '-', '*', '/', '//', '%', '==']:
+            for dtype in ['float64', 'int64']:
+                yield (op, dtype)
+
+    def test_arrays(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); "
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "res = a1 %s a2" % op
+        return cmd
+
+    def test_scalar_rhs(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); "
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a2 = np.%s(42); " % dtype
+        cmd += "res = a1 %s a2" % op
+        return cmd
+
+
 class test_extra_binary_ops:
     def init(self):
         for op in ["true_divide", "floor_divide"]:
