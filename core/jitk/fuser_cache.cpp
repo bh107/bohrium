@@ -59,6 +59,7 @@ boost::hash<string> hasher;
 constexpr size_t SEP_INSTR = SIZE_MAX;
 constexpr size_t SEP_OP = SIZE_MAX - 1;
 constexpr size_t SEP_SHAPE = SIZE_MAX - 2;
+constexpr size_t SEP_CONSTANT = SIZE_MAX - 3;
 
 /* The Instruction hash consists of the following fields:
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
@@ -75,6 +76,9 @@ void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
             ss << SEP_SHAPE;
         }
         ss << SEP_OP;
+    } else {
+        // Notice, we can ignore the value of the constant but we need to hash the location of the constant
+        ss << SEP_CONSTANT;
     }
 }
 
