@@ -622,8 +622,6 @@ static PyObject* BhArray_numpy_wrapper(PyObject *self, PyObject *args) {
     return PyArray_SimpleNewFromData(PyArray_NDIM(s), PyArray_DIMS(s), PyArray_TYPE(s), data);
 }
 
-
-
 static PyObject* BhArray_resize(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_NotImplementedError, "Bohrium arrays doesn't support resize");
     return NULL;
@@ -653,6 +651,10 @@ static PyObject* method2function(char *name, PyObject *self, PyObject *args, PyO
     Py_DECREF(func_args);
 
     return ret;
+}
+
+static PyObject* BhArray_array_ufunc(PyObject *self, PyObject *args, PyObject *kwds) {
+    return method2function("_handle__array_ufunc__", self, args, kwds);
 }
 
 static PyObject* BhArray_copy(PyObject *self, PyObject *args, PyObject *kwds) {
@@ -737,6 +739,7 @@ static PyObject* BhArray_put(PyObject *self, PyObject *args, PyObject *kwds) {
 
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
+    {"__array_ufunc__",    (PyCFunction) BhArray_array_ufunc,   METH_VARARGS | METH_KEYWORDS, "Handle ufunc"},
     {"_data_bhc2np",       BhArray_data_bhc2np,                 METH_NOARGS,                  "Copy the Bohrium-C data to NumPy data"},
     {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
