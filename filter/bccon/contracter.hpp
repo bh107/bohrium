@@ -18,7 +18,7 @@ public:
     ~Contracter(void);
 
     void contract(BhIR& bhir);
-    
+
     void contract_reduction(BhIR& bhir);
     void contract_stupidmath(BhIR& bhir);
     void contract_collect(BhIR& bhir);

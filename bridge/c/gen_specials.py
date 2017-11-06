@@ -23,12 +23,12 @@ def main(args):
 
     doc = "\n//Flush the Bohrium runtime system\n"
     impl += doc; head += doc
-    decl = "void bhc_flush(void)"
+    decl = "void bhc_flush(uint64_t nrepeats)"
     head += "DLLEXPORT %s;\n"%decl
     impl += "%s"%decl
     impl += """
 {
-    bhxx::Runtime::instance().flush();
+    bhxx::Runtime::instance().flush(nrepeats);
 }
 """
 

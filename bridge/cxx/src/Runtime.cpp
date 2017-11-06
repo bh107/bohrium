@@ -69,10 +69,10 @@ void Runtime::enqueue_deletion(std::unique_ptr<BhBase> base_ptr) {
     enqueue(std::move(instr));
 }
 
-void Runtime::flush() {
+void Runtime::flush(uint64_t nrepeats) {
     // Construct Bohrium Internal Representation
     // and fill it with our instructions and execute.
-    BhIR bhir(std::move(instr_list), std::move(syncs));
+    BhIR bhir(std::move(instr_list), std::move(syncs), nrepeats);
     runtime.execute(&bhir);
     instr_list.clear(); // Notice, it is legal to clear a moved collection.
     syncs.clear();

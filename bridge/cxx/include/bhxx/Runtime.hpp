@@ -65,7 +65,7 @@ class Runtime {
     void enqueue_deletion(std::unique_ptr<BhBase> base_ptr);
 
     // Send enqueued instructions to Bohrium for execution
-    void flush();
+    void flush(uint64_t nrepeats=1);
 
     // Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);

@@ -82,9 +82,14 @@ public:
     std::vector<char> write_serialized_archive(std::set<bh_base *> &known_base_arrays,
                                                std::vector<bh_base *> &new_data);
 
-    /* Returns the set of sync'ed arrays */
+    /** Returns the set of sync'ed arrays */
     const std::set<bh_base *> getSyncs() const {
         return _syncs;
+    }
+
+    /** Get number of times this BhIR should run */
+    uint64_t getNRepeats() const {
+        return _nrepeats;
     }
 };
 

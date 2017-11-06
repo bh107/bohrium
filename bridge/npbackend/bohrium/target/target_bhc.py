@@ -102,9 +102,9 @@ def _bhc_exec(func, *args):
     return func(*args)
 
 
-def runtime_flush():
+def runtime_flush(nrepeats=1):
     """ Flush the runtime system """
-    bhc.flush()
+    bhc.flush(nrepeats)
 
 
 def tally():

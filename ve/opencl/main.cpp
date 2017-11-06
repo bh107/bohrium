@@ -216,9 +216,11 @@ void Impl::execute(BhIR *bhir) {
         return;
     }
 
-    // Let's handle extension methods
-    util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, stat, &engine);
+    for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {
+        // Let's handle extension methods
+        util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, stat, &engine);
 
-    // And then the regular instructions
-    handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
+        // And then the regular instructions
+        handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
+    }
 }
