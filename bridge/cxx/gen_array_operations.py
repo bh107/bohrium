@@ -24,7 +24,7 @@ def main(args):
     head = ""; impl = ""
     for op in opcodes:
 
-        if op['opcode'] in ["BH_REPEAT", "BH_RANDOM"]:
+        if op['opcode'] in ["BH_RANDOM"]:
             continue
         # Generate functions that takes no operands
         if len(op['types']) == 0:

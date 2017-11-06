@@ -19,7 +19,7 @@ public:
     /**
      *  Construct the expander.
      */
-    Expander(bool verbose, size_t threshold, int sign, int powk, int reduce_1d, int repeat);
+    Expander(bool verbose, size_t threshold, int sign, int powk, int reduce_1d);
 
     /**
      *  Tear down the expander.
@@ -92,7 +92,6 @@ private:
     int sign_;
     int powk_;
     int reduce1d_;
-    int repeat_;
 };
 
 void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, bh_view& in2)
