@@ -2,7 +2,7 @@
 Interop PyOpenCL
 ~~~~~~~~~~~~~~~~
 """
-from .bhary import get_bhc
+from .bhary import get_bhc, get_base
 from .target import get_data_pointer, get_device_context, set_data_pointer
 from .backend_messaging import runtime_info
 
@@ -51,15 +51,48 @@ def get_context():
 
 
 def get_buffer(bh_ary):
-    """Return a OpenCL Buffer object wrapping the Bohrium array `ary`"""
+    """Return a OpenCL Buffer object wrapping the Bohrium array `ary`.
+
+    Parameters
+    ----------
+    bh_ary : ndarray (Bohrium array)
+        Must be a Bohrium base array
+
+    Returns
+    -------
+    out : pyopencl.Buffer
+
+    Notes
+    -----
+    Changing or deallocating `bh_ary` invalidates the returned pyopencl.Buffer!
+
+    """
+
+    if get_base(bh_ary) is not bh_ary:
+        raise RuntimeError('`bh_ary` must be a base array and not a view')
+    assert (bh_ary.bhc_mmap_allocated)
+
     pyopencl = _import_pyopencl_module()
     cl_mem = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
     return pyopencl.Buffer.from_int_ptr(cl_mem)
 
 
-def set_buffer(ary, buffer):
-    """Assign a OpenCL Buffer object to a Bohrium array `ary`"""
-    set_data_pointer(get_bhc(ary), buffer.int_ptr, host_ptr=False)
+def set_buffer(bh_ary, buffer):
+    """Assign a OpenCL Buffer object to a Bohrium array `ary`.
+
+    Parameters
+    ----------
+    bh_ary : ndarray (Bohrium array)
+        Must be a Bohrium base array
+
+    buffer : pyopencl.Buffer
+        The PyOpenCL device buffer
+    """
+
+    if get_base(bh_ary) is not bh_ary:
+        raise RuntimeError('`bh_ary` must be a base array and not a view')
+
+    set_data_pointer(get_bhc(bh_ary), buffer.int_ptr, host_ptr=False)
 
 
 def get_array(bh_ary, queue):

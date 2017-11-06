@@ -98,6 +98,18 @@ void create_directories(const boost::filesystem::path &path) {
     }
 }
 
+std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols) {
+    vector<InstrPtr> ret;
+    ret.reserve(sweep_set.size());
+    std::copy(sweep_set.begin(),  sweep_set.end(), std::back_inserter(ret));
+    std::sort(ret.begin(), ret.end(),
+             [symbols](const InstrPtr & a, const InstrPtr & b) -> bool
+             {
+                 return symbols.viewID(a->operand[0]) > symbols.viewID(b->operand[0]);
+             });
+    return ret;
+}
+
 pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
     if (numeric_limits<uint32_t>::max() <= work_group_size or
         numeric_limits<uint32_t>::max() <= block_size or
@@ -179,12 +191,16 @@ void write_loop_block(const SymbolTable &symbols,
     }
     spaces(out, 4 + block.rank*4);
 
+    // Order all sweep instructions by the viewID of their first operand.
+    // This makes the source of the kernels more identical, which improve the code and compile caches.
+    const vector<InstrPtr> ordered_block_sweeps = order_sweep_set(block._sweeps, symbols);
+
     // Let's find the local temporary arrays and the arrays to scalar replace
     const set<bh_base *> &local_tmps = block.getLocalTemps();
 
     // Let's scalar replace reduction outputs that reduces over the innermost axis
     vector<const bh_view*> scalar_replaced_reduction_outputs;
-    for (const InstrPtr &instr: block._sweeps) {
+    for (const InstrPtr &instr: ordered_block_sweeps) {
         if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
             if (local_tmps.find(instr->operand[0].base) == local_tmps.end() and
                     (parent_scope == nullptr or parent_scope->isArray(instr->operand[0]))) {
@@ -233,7 +249,7 @@ void write_loop_block(const SymbolTable &symbols,
 
     // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
     // it should be declared before the for-loop
-    for (const InstrPtr &instr: block._sweeps) {
+    for (const InstrPtr &instr: ordered_block_sweeps) {
         if (bh_opcode_is_reduction(instr->opcode)) {
             const bh_view &output = instr->operand[0];
             if (not scope.isDeclared(output) and not scope.isArray(output)) {
@@ -265,7 +281,7 @@ void write_loop_block(const SymbolTable &symbols,
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool need_to_peel = false;
     {
-        for (const InstrPtr &instr: block._sweeps) {
+        for (const InstrPtr &instr: ordered_block_sweeps) {
             const bh_view &v = instr->operand[0];
             if (not (has_reduce_identity(instr->opcode) and (scope.isScalarReplaced(v) or scope.isTmp(v.base)))) {
                 need_to_peel = true;
@@ -276,7 +292,7 @@ void write_loop_block(const SymbolTable &symbols,
 
     // When not peeling, we need a neutral initial reduction value
     if (not need_to_peel) {
-        for (const InstrPtr &instr: block._sweeps) {
+        for (const InstrPtr &instr: ordered_block_sweeps) {
             const bh_view &view = instr->operand[0];
             if (not scope.isArray(view) and not scope.isDeclared(view)) {
                 scope.writeDeclaration(view, type_writer(view.base->type), out);
@@ -296,7 +312,7 @@ void write_loop_block(const SymbolTable &symbols,
     if (block._sweeps.size() > 0 and need_to_peel) {
         Scope peeled_scope(scope);
         LoopB peeled_block(block);
-        for (const InstrPtr instr: block._sweeps) {
+        for (const InstrPtr instr: ordered_block_sweeps) {
             // The input is the same as in the sweep
             bh_instruction sweep_instr(BH_IDENTITY, {instr->operand[0], instr->operand[1]});
 

@@ -150,12 +150,16 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     vector<InstrPtr> openmp_reductions;
 
+    // Order all sweep instructions by the viewID of their first operand.
+    // This makes the source of the kernels more identical, which improve the code and compile caches.
+    const vector<InstrPtr> ordered_block_sweeps = order_sweep_set(block._sweeps, symbols);
+
     stringstream ss;
     // "OpenMP for" goes to the outermost loop
     if (block.rank == 0 and openmp_compatible(block)) {
         ss << " parallel for";
         // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
-        for (const InstrPtr &instr: block._sweeps) {
+        for (const InstrPtr &instr: ordered_block_sweeps) {
             assert(instr->operand.size() == 3);
             const bh_view &view = instr->operand[0];
             if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
@@ -172,14 +176,14 @@ void write_openmp_header(const SymbolTable &symbols, Scope &scope, const LoopB &
     if (enable_simd and block.isInnermost() and simd_compatible(block, scope)) {
         ss << " simd";
         if (block.rank > 0) { //NB: avoid multiple reduction declarations
-            for (const InstrPtr instr: block._sweeps) {
+            for (const InstrPtr &instr: ordered_block_sweeps) {
                 openmp_reductions.push_back(instr);
             }
         }
     }
 
     //Let's write the OpenMP reductions
-    for (const InstrPtr instr: openmp_reductions) {
+    for (const InstrPtr &instr: openmp_reductions) {
         assert(instr->operand.size() == 3);
         ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
         scope.getName(instr->operand[0], ss);
@@ -285,7 +289,7 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
                 stmp << "offset_strides[" << count++ << "], ";
             }
         }
-        if (symbols.constIDs().size() > 0) {
+        if (not symbols.constIDs().empty()) {
             uint64_t i=0;
             for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
                 const InstrPtr &instr = *it;

@@ -93,7 +93,7 @@ void write_array_subscription(const Scope &scope, const bh_view &view, stringstr
         }
     }
     out << "[";
-    if (scope.strides_as_variables and scope.isArray(view) and scope.symbols.existOffsetStridesID(view)) {
+    if (scope.symbols.strides_as_var and scope.symbols.existOffsetStridesID(view)) {
         write_array_index_variables(scope, view, out, hidden_axis, axis_offset);
     } else {
         write_array_index(scope, view, out, hidden_axis, axis_offset);

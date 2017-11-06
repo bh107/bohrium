@@ -93,6 +93,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     default_device_type(config.defaultGet<string>("device_type", "auto")),
                                     platform_no(config.defaultGet<int>("platform_no", -1)),
                                     verbose(config.defaultGet<bool>("verbose", false)),
+                                    cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
                                     stat(stat),
                                     prof(config.defaultGet<bool>("prof", false)),
                                     tmp_dir(jitk::get_tmp_path(config)),
@@ -193,6 +194,10 @@ EngineOpenCL::~EngineOpenCL() {
     // File clean up
     if (not verbose) {
         fs::remove_all(tmp_src_dir);
+    }
+
+    if (cache_file_max != -1) {
+        util::remove_old_files(cache_bin_dir, cache_file_max);
     }
 }
 
@@ -350,6 +355,9 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
                 break;
             case bh_type::COMPLEX128:
                 opencl_kernel.setArg(i++, instr->constant.value.complex128);
+                break;
+            case bh_type::R123:
+                opencl_kernel.setArg(i++, instr->constant.value.r123);
                 break;
             default:
                 std::cerr << "Unknown OpenCL type: " << bh_type_text(instr->constant.type) << std::endl;

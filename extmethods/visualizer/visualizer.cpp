@@ -405,7 +405,7 @@ void Visualizer::computeVerticesCube()
         {
             for (int zi = 0; zi < depth; zi++ )
             {
-                uint64_t offset = (xi * width + yi) * depth + zi;
+                uint64_t offset;
                 offset = i;
                 float dx = (XWIDTH/2.0f)/ (float)(width);
                 float dy = (YWIDTH/2.0f)/ (float)(height);

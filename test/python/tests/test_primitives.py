@@ -1,4 +1,5 @@
 import bohrium
+import numpy
 
 
 class test_bh_opcodes:
@@ -25,6 +26,47 @@ class test_bh_opcodes:
             cmd += "a%d, " % i
 
         cmd = cmd[:-2] + ");"
+        return cmd
+
+
+class test_bh_operators:
+    def init(self):
+        for op in ['+', '-', '*', '/', '//', '%', '==']:
+            for dtype in ['float64', 'int64']:
+                yield (op, dtype)
+
+    def test_arrays(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); "
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "res = a1 %s a2" % op
+        return cmd
+
+    def test_scalar_rhs(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); "
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a2 = np.%s(42); " % dtype
+        cmd += "res = a1 %s a2" % op
+        return cmd
+
+
+class test_bh_operators_lhs:
+    def init(self):
+        if numpy.__version__ >= "1.13":
+            for op in ['+', '-', '*', '/', '//', '%', '==']:
+                for dtype in ['float64', 'int64']:
+                    yield (op, dtype)
+        else:
+            print("The version of NumPy is too old (<= 1.13), ignoring test")
+
+    def test_scalar_lhs(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); "
+        cmd += "a1 = np.%s(42); " % dtype
+        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "res = a1 %s a2" % op
         return cmd
 
 

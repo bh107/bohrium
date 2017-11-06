@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <thread>
 
+#include <bh_util.hpp>
 #include "engine_openmp.hpp"
 
 using namespace std;
@@ -40,6 +41,7 @@ static boost::hash<string> hasher;
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
                                            verbose(config.defaultGet<bool>("verbose", false)),
+                                           cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
                                            tmp_dir(jitk::get_tmp_path(config)),
                                            tmp_src_dir(tmp_dir / "src"),
                                            tmp_bin_dir(tmp_dir / "obj"),
@@ -75,6 +77,10 @@ EngineOpenMP::~EngineOpenMP() {
     // File clean up
     if (not verbose) {
         fs::remove_all(tmp_src_dir);
+    }
+
+    if (cache_file_max != -1) {
+        util::remove_old_files(cache_bin_dir, cache_file_max);
     }
 
     // If this cleanup is enabled, the application segfaults

@@ -93,9 +93,7 @@ def bincount(x, weights=None, minlength=None):
             return bincount_pycuda(x, minlength=minlength)
         except NotImplementedError:
             try:
-                if weights is not None:
-                    raise NotImplementedError("Cython doesn't support the `weights` argument")
-                return bincount_cython(x, minlength=minlength)
+                return bincount_cython(x, weights=weights, minlength=minlength)
             except NotImplementedError:
                 return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
 

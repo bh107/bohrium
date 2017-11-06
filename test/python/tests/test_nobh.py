@@ -13,3 +13,13 @@ class test_bincount:
         cmd += "res = M.bincount(a)"
         return cmd
 
+    def test_int_weights(self, cmd):
+        cmd += "w = M.arange(a.shape[0]);"
+        cmd += "res = M.bincount(a, w)"
+        return cmd
+
+    def test_float_weights(self, cmd):
+        cmd += "w = M.arange(a.shape[0]) * 0.42;"
+        cmd += "res = M.bincount(a, w)"
+        return cmd
+

@@ -76,10 +76,12 @@ class Statistics {
     uint64_t max_memory_usage          = 0;
     uint64_t totalwork                 = 0;
     uint64_t threading_below_threshold = 0;
-    uint64_t kernel_cache_lookups      = 0;
-    uint64_t kernel_cache_misses       = 0;
     uint64_t fuser_cache_lookups       = 0;
     uint64_t fuser_cache_misses        = 0;
+    uint64_t codegen_cache_lookups     = 0;
+    uint64_t codegen_cache_misses      = 0;
+    uint64_t kernel_cache_lookups      = 0;
+    uint64_t kernel_cache_misses       = 0;
     uint64_t num_instrs_into_fuser     = 0;
     uint64_t num_blocks_out_of_fuser   = 0;
     std::chrono::duration<double> time_total_execution{0};
@@ -123,6 +125,7 @@ class Statistics {
 
             out << BLU << "[" << backend_name << "] Profiling: \n" << RST;
             out << "Fuse cache hits:                 " << GRN << fuse_cache_hits()                   << "\n" << RST;
+            out << "Codegen cache hits               " << GRN << codegen_cache_hits()                << "\n" << RST;
             out << "Kernel cache hits                " << GRN << kernel_cache_hits()                 << "\n" << RST;
             out << "Array contractions:              " << GRN << array_contractions()                << "\n" << RST;
             out << "Outer-fusion ratio:              " << GRN << outer_fusion_ratio()                << "\n" << RST;
@@ -194,6 +197,7 @@ class Statistics {
             file << "----"                                                           << "\n";
             file << backend_name << ":"                                              << "\n";
             file << "  fuse_cache_hits: "       << fuse_cache_hits()                 << "\n";
+            file << "  codegen_cache_hits: "    << codegen_cache_hits()              << "\n";
             file << "  kernel_cache_hits: "     << kernel_cache_hits()               << "\n";
             file << "  array_contractions: "    << array_contractions()              << "\n";
             file << "  outer_fusion_ratio: "    << outer_fusion_ratio()              << "\n";
@@ -226,7 +230,6 @@ class Statistics {
             file << "    offload: "             << time_offload.count()              << "\n"; // s
             file << "    other: "               << time_other()                      << "\n"; // s
             file << "    unaccounted: "         << unaccounted()                     << "\n"; // s
-
             file.close();
         }
     }
@@ -257,6 +260,10 @@ class Statistics {
   private:
     std::string fuse_cache_hits() {
         return pprint_ratio(fuser_cache_lookups - fuser_cache_misses, fuser_cache_lookups);
+    }
+
+    std::string codegen_cache_hits() {
+        return pprint_ratio(codegen_cache_lookups - codegen_cache_misses, codegen_cache_lookups);
     }
 
     std::string kernel_cache_hits() {

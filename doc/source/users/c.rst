@@ -52,7 +52,7 @@ Some meta-data access functions:
     // Gets the number of elements in the dimension
     uint64_t bh_multi_array_{TYPE}_get_dimension_size(bh_multi_array_{TYPE}_p self, const int64_t dimension);
 
-Before accesses the memory of an array, one has to synchronize the array:
+Before accessing the memory of an array, one has to synchronize the array:
 
 .. code-block:: c
 

@@ -16,4 +16,3 @@ Publications
 #) Mads R.B. Kristensen, Simon A.F. Lund, Troels Blum, and James Avery. `Fusion of Parallel Array Operations <http://dl.acm.org/authorize?N11772>`_. In Proceedings of the 2016 International Conference on Parallel Architectures and Compilation (PACT'16), 2016.
 
 #) Mads R.B. Kristensen, Simon A.F. Lund, Troels Blum, James Avery, and Brian Vinter. `Battling Memory Requirements of Array Programming through Streaming <https://www.researchgate.net/profile/James_Avery/publication/308892738_Battling_Memory_Requirements_of_Array_Programming_Through_Streaming/links/57f679f008ae886b8981c09b.pdf>`_. In Proceedings of the International Conference on High Performance Computing, 2016.
-

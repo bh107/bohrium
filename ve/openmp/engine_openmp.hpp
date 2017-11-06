@@ -44,6 +44,9 @@ class EngineOpenMP {
     // Verbose flag
     const bool verbose;
 
+    // Maximum number of cache files
+    const int64_t cache_file_max;
+
     // Path to a temporary directory for the source and object files
     const boost::filesystem::path tmp_dir;
 

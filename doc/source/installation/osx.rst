@@ -1,7 +1,7 @@
-MacOS
------
+Mac OS
+------
 
-The following explains how to get going on MacOS. You need some extra packages to build Bohrium from source.
+The following explains how to get going on Mac OS. You need some extra packages to build Bohrium from source.
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_ package, which is found in the App Store.
 

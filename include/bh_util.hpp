@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <vector>
 #include <type_traits>
+#include <boost/filesystem.hpp>
 
 #ifndef __BH_UTIL_H
 #define __BH_UTIL_H
@@ -66,6 +67,9 @@ template <typename container_type, typename element_type>
 bool exist_linearly(container_type &container, element_type &element) {
     return std::find(container.begin(), container.end(), element) != container.end();
 }
+
+// Remove all files in `dir` but keep some of the newest files.
+void remove_old_files(const boost::filesystem::path &dir, int64_t num_of_newest_to_keep);
 
 } // util
 
