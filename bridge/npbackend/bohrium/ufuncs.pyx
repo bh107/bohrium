@@ -8,6 +8,7 @@ NumPy ufunc encapsulation
 from __future__ import print_function
 import sys
 import os
+import warnings
 from . import _util
 from . import array_create
 import numpy_force as np
@@ -573,3 +574,31 @@ for name, ufunc in UFUNCS.items():
 
 # We do not want to expose a function named "ufunc"
 del ufunc
+
+
+def _handle__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+    """
+    - *self* is the array the method `__array_ufunc__` was called from.
+    - *ufunc* is the ufunc object that was called.
+    - *method* is a string indicating how the Ufunc was called, either
+      ``"__call__"`` to indicate it was called directly, or one of its
+      :ref:`methods<ufuncs.methods>`: ``"reduce"``, ``"accumulate"``,
+      ``"reduceat"``, ``"outer"``, or ``"at"``.
+    - *inputs* is a tuple of the input arguments to the ``ufunc``
+    - *kwargs* contains any optional or keyword arguments passed to the
+      function. This includes any ``out`` arguments, which are always
+      contained in a tuple.
+    """
+
+    if method == '__call__' and ufunc.__name__ in UFUNCS:
+        return UFUNCS[ufunc.__name__](*inputs, **kwargs)
+    else:
+        warnings.warn("Bohrium does not support ufunc `%s` it will be handled by "
+                      "the original NumPy." % ufunc.__name__, UserWarning, 1)
+        np_inputs = []
+        for i in inputs:
+            if bhary.check(i):
+                np_inputs.append(i.copy2numpy())
+            else:
+                np_inputs.append(i)
+        return getattr(np, ufunc.__name__)(*np_inputs, **kwargs)
