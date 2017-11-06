@@ -36,11 +36,15 @@ public:
     std::vector<bh_instruction> instr_list;
     // Set of sync'ed arrays 
     std::set<bh_base *> _syncs;
+    // NumPy of times to repeat this BhIR
+    uint64_t _nrepeats;
 
 public:
-    /** The regular constructor that takes the instructions and the sync'ed arrays */
-    BhIR(std::vector<bh_instruction> instr_list, std::set<bh_base *> syncs) : instr_list(std::move(instr_list)),
-                                                                              _syncs(std::move(syncs)) {}
+    /** The regular constructor that takes the instructions, the sync'ed arrays, and number of times to run the BhIR */
+    BhIR(std::vector<bh_instruction> instr_list, std::set<bh_base *> syncs, uint64_t nrepeats=1) :
+                                                                                instr_list(std::move(instr_list)),
+                                                                                _syncs(std::move(syncs)),
+                                                                                _nrepeats(nrepeats) {}
 
     /** Constructor that takes a serialized archive. All base array pointers are updated so that they point to
      *  local base arrays in `remote2local`.

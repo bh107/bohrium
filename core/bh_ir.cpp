@@ -43,6 +43,7 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
     archive::binary_iarchive ia(input_stream);
 
     // Load the instruction list
+    ia >> _nrepeats;
     ia >> instr_list;
 
     // Load the set of syncs
@@ -123,6 +124,7 @@ std::vector<char> BhIR::write_serialized_archive(set<bh_base *> &known_base_arra
     archive::binary_oarchive oa(output_stream);
 
     // Write to the output stream
+    oa << _nrepeats;
     oa << instr_list;
 
     vector<size_t> base_as_int;
