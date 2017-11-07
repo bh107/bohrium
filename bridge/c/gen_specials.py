@@ -32,6 +32,17 @@ def main(args):
 }
 """
 
+    doc = "\n//Get the number of times flush has been called\n"
+    impl += doc; head += doc
+    decl = "int bhc_flush_count(void)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{
+    return bhxx::Runtime::instance().getFlushCount();
+}
+"""
+
     doc = "\n//Send and receive a message through the component stack\n"
     doc += "//NB: the returned string is invalidated on the next call to bhc_message()\n"
     impl += doc; head += doc

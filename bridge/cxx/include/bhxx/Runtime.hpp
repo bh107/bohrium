@@ -113,6 +113,9 @@ class Runtime {
      */
     void set_device_context(void *device_context);
 
+    // Get the number of calls to flush so far
+    uint64_t getFlushCount() {return _flush_count;}
+
     ~Runtime() { flush(); }
 
     Runtime(Runtime&&) = default;
@@ -155,6 +158,9 @@ class Runtime {
 
     // The opcode id for the next new extension method
     bh_opcode extmethod_next_opcode_id;
+
+    // Number of calls to flush
+    uint64_t _flush_count = 0;
 };
 
 //

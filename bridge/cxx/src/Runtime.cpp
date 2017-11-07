@@ -79,6 +79,7 @@ void Runtime::flush(uint64_t nrepeats) {
 
     // Purge the bases we have scheduled for deletion:
     bases_for_deletion.clear();
+    ++_flush_count;
 }
 
 void Runtime::sync(std::shared_ptr<BhBase> &base_ptr) {
