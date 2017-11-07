@@ -107,6 +107,11 @@ def runtime_flush(nrepeats=1):
     bhc.flush(nrepeats)
 
 
+def runtime_flush_count():
+    """Get the number of times flush has been called"""
+    return bhc.flush_count()
+
+
 def tally():
     pass
 

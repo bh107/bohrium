@@ -66,8 +66,13 @@ class View(object):
         self.strides = [x * base.dtype.itemsize for x in strides]
 
 
-def runtime_flush():
+def runtime_flush(nrepeats=1):
     """ Flush the runtime system """
+    pass
+
+
+def runtime_flush_count():
+    """Get the number of times flush has been called"""
     pass
 
 
