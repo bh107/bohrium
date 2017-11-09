@@ -23,12 +23,12 @@ def main(args):
 
     doc = "\n//Flush the Bohrium runtime system\n"
     impl += doc; head += doc
-    decl = "void bhc_flush(uint64_t nrepeats)"
+    decl = "void bhc_flush(void)"
     head += "DLLEXPORT %s;\n"%decl
     impl += "%s"%decl
     impl += """
 {
-    bhxx::Runtime::instance().flush(nrepeats);
+    bhxx::Runtime::instance().flush();
 }
 """
 
@@ -40,6 +40,30 @@ def main(args):
     impl += """
 {
     return bhxx::Runtime::instance().getFlushCount();
+}
+"""
+
+    doc = "\n//Flush and repeat the lazy evaluated operations `nrepeats` times.\n"
+    impl += doc; head += doc
+    decl = "void bhc_flush_and_repeat(uint64_t nrepeats)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{   
+    std::shared_ptr<bhxx::BhBase> dummy;
+    bhxx::Runtime::instance().flush_and_repeat(nrepeats, dummy);
+}
+"""
+
+    doc = "\n//Flush and repeat the lazy evaluated operations until `condition` is false or `nrepeats` is reached.\n"
+    impl += doc; head += doc
+    decl = "void bhc_flush_and_repeat_condition(uint64_t nrepeats, bhc_ndarray_bool8_p condition)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{   
+    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<bool>*)condition)->base;
+    bhxx::Runtime::instance().flush_and_repeat(nrepeats, b);
 }
 """
 

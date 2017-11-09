@@ -66,13 +66,23 @@ class View(object):
         self.strides = [x * base.dtype.itemsize for x in strides]
 
 
-def runtime_flush(nrepeats=1):
+def runtime_flush():
     """ Flush the runtime system """
     pass
 
 
 def runtime_flush_count():
     """Get the number of times flush has been called"""
+    pass
+
+
+def runtime_flush_and_repeat(nrepeats, ary):
+    """Flush and repeat the lazy evaluated operations while `ary` is true and `nrepeats` hasn't been reach"""
+    pass
+
+
+def runtime_sync(ary):
+    """Sync `ary` to host memory"""
     pass
 
 
