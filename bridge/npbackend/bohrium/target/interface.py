@@ -71,6 +71,21 @@ def runtime_flush():
     pass
 
 
+def runtime_flush_count():
+    """Get the number of times flush has been called"""
+    pass
+
+
+def runtime_flush_and_repeat(nrepeats, ary):
+    """Flush and repeat the lazy evaluated operations while `ary` is true and `nrepeats` hasn't been reach"""
+    pass
+
+
+def runtime_sync(ary):
+    """Sync `ary` to host memory"""
+    pass
+
+
 def tally():
     """ Tally the runtime system """
     pass

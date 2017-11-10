@@ -67,13 +67,20 @@ class Runtime {
     // Send enqueued instructions to Bohrium for execution
     void flush();
 
+    /** Flush and repeat the lazy evaluated operations until `base_ptr` is false or `nrepeats` is reached
+     *
+     * @nrepeats  Number of maximum repeats
+     * @base_ptr  Repeat while `base_ptr` is true or is null. NB: must be an array with one element of type BH_BOOL
+     */
+    void flush_and_repeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr);
+
     // Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);
 
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
 
-    /* Get data pointer from the first VE in the runtime stack
+    /** Get data pointer from the first VE in the runtime stack
      * NB: this doesn't include a flush.
      *
      * @base         The base array that owns the data for retrieval
@@ -85,7 +92,7 @@ class Runtime {
      */
     void* get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
 
-    /* Set data pointer in the first VE in the runtime stack
+    /** Set data pointer in the first VE in the runtime stack
      * NB: The component will deallocate the memory when encountering a BH_FREE.
      *     Also, this doesn't include a flush
      *
@@ -97,7 +104,7 @@ class Runtime {
     void set_mem_ptr(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
 
 
-    /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
+    /** Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
      *
      * @return  The device handle
@@ -105,13 +112,16 @@ class Runtime {
      */
     void* get_device_context();
 
-    /* Set the device context, such as CUDA's context, of the first VE in the runtime stack.
+    /** Set the device context, such as CUDA's context, of the first VE in the runtime stack.
      * If the first VE isn't a device, nothing happens
      *
      * @device_context  The new device context
      * Throws exceptions on error
      */
     void set_device_context(void *device_context);
+
+    // Get the number of calls to flush so far
+    uint64_t getFlushCount() {return _flush_count;}
 
     ~Runtime() { flush(); }
 
@@ -155,6 +165,9 @@ class Runtime {
 
     // The opcode id for the next new extension method
     bh_opcode extmethod_next_opcode_id;
+
+    // Number of calls to flush
+    uint64_t _flush_count = 0;
 };
 
 //

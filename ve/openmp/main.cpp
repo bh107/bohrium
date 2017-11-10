@@ -307,9 +307,17 @@ void Impl::write_kernel(const vector<Block> &block_list, const SymbolTable &symb
 }
 
 void Impl::execute(BhIR *bhir) {
-    // Let's handle extension methods
-    util_handle_extmethod(this, bhir, extmethods, stat);
+    bh_base *cond = bhir->getRepeatCondition();
+    for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {
+        // Let's handle extension methods
+        util_handle_extmethod(this, bhir, extmethods, stat);
 
-    // And then the regular instructions
-    handle_cpu_execution(*this, bhir, engine, config, stat, fcache);
+        // And then the regular instructions
+        handle_cpu_execution(*this, bhir, engine, config, stat, fcache);
+
+        // Check condition
+        if (cond != nullptr and cond->data != nullptr and not ((bool*)cond->data)[0]) {
+            break;
+        }
+    }
 }

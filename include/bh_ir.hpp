@@ -36,11 +36,19 @@ public:
     std::vector<bh_instruction> instr_list;
     // Set of sync'ed arrays 
     std::set<bh_base *> _syncs;
+    // Number of times to repeat this BhIR
+    uint64_t _nrepeats;
+    // Repeat while this base evaluate to True or is a nullptr.
+    // NB: the `base->data` must point to a single element of type BH_BOOL
+    bh_base *_repeat_condition;
 
 public:
-    /** The regular constructor that takes the instructions and the sync'ed arrays */
-    BhIR(std::vector<bh_instruction> instr_list, std::set<bh_base *> syncs) : instr_list(std::move(instr_list)),
-                                                                              _syncs(std::move(syncs)) {}
+    /** The regular constructor that takes the instructions, the sync'ed arrays, and number of times to run the BhIR */
+    BhIR(std::vector<bh_instruction> instr_list, std::set<bh_base *> syncs,
+         uint64_t nrepeats = 1, bh_base *repeat_condition = nullptr) : instr_list(std::move(instr_list)),
+                                                                       _syncs(std::move(syncs)),
+                                                                       _nrepeats(nrepeats),
+                                                                       _repeat_condition(repeat_condition) {}
 
     /** Constructor that takes a serialized archive. All base array pointers are updated so that they point to
      *  local base arrays in `remote2local`.
@@ -78,9 +86,21 @@ public:
     std::vector<char> write_serialized_archive(std::set<bh_base *> &known_base_arrays,
                                                std::vector<bh_base *> &new_data);
 
-    /* Returns the set of sync'ed arrays */
+    /** Returns the set of sync'ed arrays */
     const std::set<bh_base *> getSyncs() const {
         return _syncs;
+    }
+
+    /** Get number of times this BhIR should run */
+    uint64_t getNRepeats() const {
+        return _nrepeats;
+    }
+
+    /** Get the repeat condition array
+     *  NB: can be a nullptr when the condition is always true.
+     */
+    bh_base * getRepeatCondition() {
+        return _repeat_condition;
     }
 };
 

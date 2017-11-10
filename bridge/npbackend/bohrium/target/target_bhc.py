@@ -107,6 +107,28 @@ def runtime_flush():
     bhc.flush()
 
 
+def runtime_flush_count():
+    """Get the number of times flush has been called"""
+    return bhc.flush_count()
+
+
+def runtime_flush_and_repeat(nrepeats, ary):
+    """Flush and repeat the lazy evaluated operations while `ary` is true and `nrepeats` hasn't been reach"""
+
+    if ary is None:
+        return bhc.flush_and_repeat(nrepeats)
+    else:
+        return bhc.flush_and_repeat_condition(nrepeats, ary.bhc_obj)
+
+
+def runtime_sync(ary):
+    """Sync `ary` to host memory"""
+
+    dtype = dtype_name(ary)
+    ary = ary.bhc_obj
+    bhc.call_single_dtype("sync", dtype, ary)
+
+
 def tally():
     pass
 

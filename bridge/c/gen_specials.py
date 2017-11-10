@@ -32,6 +32,41 @@ def main(args):
 }
 """
 
+    doc = "\n//Get the number of times flush has been called\n"
+    impl += doc; head += doc
+    decl = "int bhc_flush_count(void)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{
+    return bhxx::Runtime::instance().getFlushCount();
+}
+"""
+
+    doc = "\n//Flush and repeat the lazy evaluated operations `nrepeats` times.\n"
+    impl += doc; head += doc
+    decl = "void bhc_flush_and_repeat(uint64_t nrepeats)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{   
+    std::shared_ptr<bhxx::BhBase> dummy;
+    bhxx::Runtime::instance().flush_and_repeat(nrepeats, dummy);
+}
+"""
+
+    doc = "\n//Flush and repeat the lazy evaluated operations until `condition` is false or `nrepeats` is reached.\n"
+    impl += doc; head += doc
+    decl = "void bhc_flush_and_repeat_condition(uint64_t nrepeats, bhc_ndarray_bool8_p condition)"
+    head += "DLLEXPORT %s;\n"%decl
+    impl += "%s"%decl
+    impl += """
+{   
+    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<bool>*)condition)->base;
+    bhxx::Runtime::instance().flush_and_repeat(nrepeats, b);
+}
+"""
+
     doc = "\n//Send and receive a message through the component stack\n"
     doc += "//NB: the returned string is invalidated on the next call to bhc_message()\n"
     impl += doc; head += doc

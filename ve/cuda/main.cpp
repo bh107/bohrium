@@ -210,10 +210,21 @@ void Impl::execute(BhIR *bhir) {
         child.execute(bhir);
         return;
     }
+    bh_base *cond = bhir->getRepeatCondition();
+    for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {
+        // Let's handle extension methods
+        util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, stat, &engine);
 
-    // Let's handle extension methods
-    util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, stat, &engine);
+        // And then the regular instructions
+        handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
 
-    // And then the regular instructions
-    handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
+        // Check condition
+        if (cond != nullptr) {
+            const vector<bh_base*> t = {cond};
+            engine.copyToHost(t); // TODO: make it a read-only copy
+            if (cond->data != nullptr and not ((bool*)cond->data)[0]) {
+                break;
+            }
+        }
+    }
 }

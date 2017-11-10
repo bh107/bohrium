@@ -35,8 +35,7 @@ public:
                                      config.defaultGet<int>("gc_threshold", 400),
                                      config.defaultGet<bool>("sign", true),
                                      config.defaultGet<bool>("powk", true),
-                                     config.defaultGet<int>("reduce1d", 32000),
-                                     config.defaultGet<bool>("repeat", true)) {};
+                                     config.defaultGet<int>("reduce1d", 32000)) {};
 
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(BhIR *bhir) {

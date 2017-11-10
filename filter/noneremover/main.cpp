@@ -33,14 +33,6 @@ int remove_none(vector<bh_instruction> &bh_instr_list, int from, int to, int dec
     for(auto it = bh_instr_list.begin() + from; it != bh_instr_list.begin() + to; ++i)
     {
         switch(it->opcode) {
-            case BH_REPEAT:
-                // Recursively remove BH_NONE from inner part of BH_REPEAT
-                decrementer = remove_none(bh_instr_list, i + 1, i + 1 + it->constant.value.r123.start, decrementer);
-                it->constant.value.r123.start -= decrementer;
-
-                // Increment iterator manually
-                ++it;
-                break;
             case BH_NONE:
                 // Remove the BH_NONE and increase the decrementer for inner BH_REPEAT
                 it = bh_instr_list.erase(it);

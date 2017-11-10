@@ -92,6 +92,54 @@ Print the current Bohrium runtime stack::
     python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
 
 
+Accelerate Loops
+~~~~~~~~~~~~~~~~
+
+As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. it the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function ``do_while()``, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
+
+The function signature::
+
+    def do_while(func, niters, *args, **kwargs):
+        """Repeatedly calls the `func` with the `*args` and `**kwargs` as argument.
+
+        The `func` is called while `func` returns True or None and the maximum number
+        of iterations, `niters`, hasn't been reached.
+
+        Parameters
+        ----------
+        func : function
+            The function to run in each iterations. `func` can take any argument and may return
+            a boolean `bharray` with one element.
+        niters: int or None
+            Maximum number of iterations in the loop (number of times `func` is called). If None, there is no maximum.
+        *args, **kwargs : list and dict
+            The arguments to `func`
+
+        Notes
+        -----
+        `func` can only use operations supported natively in Bohrium.
+        """
+
+An example where the function doesn't return anything::
+
+        >>> def loop_body(a):
+        ...     a += 1
+        >>> a = bh.zeros(4)
+        >>> bh.do_while(loop_body, 5, a)
+        >>> a
+        array([5, 5, 5, 5])
+
+An example where the function returns a ``bharray`` with one element and of type ``bh.bool``::
+
+        >>> def loop_body(a):
+        ...     a += 1
+        ...     return bh.sum(a) < 10
+        >>> a = bh.zeros(4)
+        >>> bh.do_while(loop_body, None, a)
+        >>> a
+        array([3, 3, 3, 3])
+
+
 .. _interop:
 
 Interoperability

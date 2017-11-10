@@ -42,6 +42,14 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
     iostreams::stream<iostreams::basic_array_source<char> > input_stream(source);
     archive::binary_iarchive ia(input_stream);
 
+    // Load number of repeats and the repeat condition
+    ia >> _nrepeats;
+    {
+        size_t t;
+        ia >> t;
+        _repeat_condition = reinterpret_cast<bh_base*>(t);
+    }
+
     // Load the instruction list
     ia >> instr_list;
 
@@ -99,6 +107,11 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
         }
         _syncs = std::move(syncs_as_local_ptr);
     }
+    // Update the `_repeat_condition` pointer
+    if (_repeat_condition != nullptr) {
+        _repeat_condition = &remote2local.at(_repeat_condition);
+    }
+
 }
 
 std::vector<char> BhIR::write_serialized_archive(set<bh_base *> &known_base_arrays, vector<bh_base *> &new_data) {
@@ -122,15 +135,24 @@ std::vector<char> BhIR::write_serialized_archive(set<bh_base *> &known_base_arra
     iostreams::stream<iostreams::back_insert_device<vector<char> > > output_stream(ret);
     archive::binary_oarchive oa(output_stream);
 
-    // Write to the output stream
+    // Write number of repeats and the repeat condition
+    oa << _nrepeats;
+    if (_repeat_condition != nullptr and util::exist(known_base_arrays, _repeat_condition)) {
+        size_t t = reinterpret_cast<size_t >(_repeat_condition);
+        oa << t;
+    } else {
+        size_t t = 0;
+        oa << t;
+    }
+
+    // Write the instruction list
     oa << instr_list;
 
     vector<size_t> base_as_int;
     for(bh_base *base: _syncs) {
-        base_as_int.push_back(reinterpret_cast<size_t >(base));
+        base_as_int.push_back(reinterpret_cast<size_t>(base));
     }
     oa << base_as_int;
-
     oa << new_bases;
     return ret;
 }

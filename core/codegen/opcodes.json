@@ -2039,28 +2039,10 @@
     "system_opcode": false
 },
 {
-    "opcode": "BH_REPEAT",
-    "doc": "",
-    "code": "",
-    "id": "81",
-    "nop": 1,
-    "types": [
-        [ "BH_R123" ]
-    ],
-    "layout": [
-        [ "K" ]
-    ],
-    "elementwise":   false,
-    "composite":     false,
-    "reduction":     false,
-    "accumulate":    false,
-    "system_opcode": true
-},
-{
   "opcode": "BH_REMAINDER",
   "doc":  "Return the element-wise remainder of division, which is `x1 % x2` in C99 and has the same sign as the divided x1.",
   "code": "op1 = op2 % op3",
-  "id":   "82",
+  "id":   "81",
   "nop":   3,
   "types": [
     [ "BH_FLOAT32", "BH_FLOAT32", "BH_FLOAT32" ],
@@ -2089,7 +2071,7 @@
   "opcode": "BH_COND_SCATTER",
   "doc":  "Conditional scatter elements of IN where COND is true into OUT selected by INDEX. NB: IN.shape == INDEX.shape and OUT can have any shape but must be contiguous.",
   "code": "scatter(OUT, IN, INDEX, COND)",
-  "id":   "83",
+  "id":   "82",
   "nop":   4,
   "types": [
     [ "BH_BOOL"      , "BH_BOOL"      , "BH_UINT64", "BH_BOOL"],
@@ -2119,7 +2101,7 @@
     "opcode": "BH_ISFINITE",
     "doc":  "Test for finite values.",
     "code": "op1 = bh_isfinite(op2)",
-    "id":   "84",
+    "id":   "83",
     "nop":   2,
     "types": [
             [ "BH_BOOL", "BH_BOOL" ],
@@ -2150,7 +2132,7 @@
     "opcode": "BH_CONJ",
     "doc":  "Complex conjugates.",
     "code": "op1 = bh_conj(op2)",
-    "id":   "85",
+    "id":   "84",
     "nop":   2,
     "types": [
             [ "BH_COMPLEX64", "BH_COMPLEX64" ],

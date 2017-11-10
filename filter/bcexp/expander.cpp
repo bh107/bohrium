@@ -31,13 +31,11 @@ Expander::Expander(
     size_t threshold,
     int sign,
     int powk,
-    int reduce1d,
-    int repeat)
+    int reduce1d)
     : gc_threshold_(threshold),
       sign_(sign),
       powk_(powk),
-      reduce1d_(reduce1d),
-      repeat_(repeat) {
+      reduce1d_(reduce1d) {
           __verbose = verbose;
       }
 
@@ -60,14 +58,6 @@ void Expander::expand(BhIR& bhir)
         case BH_SIGN:
             if (sign_) {
                 increase = expand_sign(bhir, pc);
-                end += increase;
-                pc += increase;
-            }
-            break;
-
-        case BH_REPEAT:
-            if (repeat_) {
-                increase = expand_repeat(bhir, pc);
                 end += increase;
                 pc += increase;
             }
