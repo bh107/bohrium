@@ -4,8 +4,9 @@ Bohrium Loop
 """
 
 import sys
+import numpy_force as numpy
 from .target import runtime_flush, runtime_flush_count, runtime_flush_and_repeat, runtime_sync
-from .bhary import get_bhc
+from . import bhary
 
 
 def do_while(func, niters, *args, **kwargs):
@@ -50,13 +51,24 @@ def do_while(func, niters, *args, **kwargs):
     flush_count = runtime_flush_count()
     cond = func(*args, **kwargs)
     if flush_count != runtime_flush_count():
-        raise RuntimeError("Invalid function: the looped function contains operations not support "
-                           "by Bohrium or is simply too big!")
+        raise TypeError("Invalid `func`: the looped function contains operations not support "
+                           "by Bohrium, contain branches, or is simply too big!")
     if niters is None:
         niters = sys.maxsize-1
     if cond is None:
         runtime_flush_and_repeat(niters, None)
     else:
-        cond = get_bhc(cond)
+        if not bhary.check(cond):
+            raise TypeError("Invalid `func`: `func` may only return Bohrium arrays or nothing at all")
+        if cond.dtype.type is not numpy.bool_:
+            raise TypeError("Invalid `func`: `func` returned array of wrong type `%s`. "
+                            "It must be of type `bool`." % cond.dtype)
+        if len(cond.shape) != 0 and len(cond) > 1:
+            raise TypeError("Invalid `func`: `func` returned array of shape `%s`. "
+                            "It must be a scalar or an array with one element." % cond.shape)
+        if not bhary.is_base(cond):
+            raise TypeError("Invalid `func`: `func` returns an array view. It must return a base array.")
+
+        cond = bhary.get_bhc(cond)
         runtime_sync(cond)
         runtime_flush_and_repeat(niters, cond)
