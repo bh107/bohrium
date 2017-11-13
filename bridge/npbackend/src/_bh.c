@@ -58,8 +58,7 @@ int bh_mem_warn          = 0;    // Boolean: should we warn when about memory pr
 
 #define bhc_exist(x) (((BhArray*) x)->bhc_ary != Py_None)
 
-typedef struct
-{
+typedef struct {
     BH_PyArrayObject base;
     PyObject *bhc_ary;
     PyObject *bhc_ary_version;
@@ -82,8 +81,7 @@ static int64_t ary_nbytes(const BhArray *ary) {
 
 // Help function to retrieve the Bohrium-C data pointer
 // Return -1 on error
-static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocation, int nullify, void **out_data)
-{
+static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocation, int nullify, void **out_data) {
     if(((BhArray*) ary)->mmap_allocated == 0) {
         PyErr_SetString(
             PyExc_TypeError,
@@ -126,8 +124,7 @@ static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocati
 
 // Help function to set the Bohrium-C data from a numpy array
 // Return -1 on error
-static int set_bhc_data_from_ary(PyObject *self, PyObject *ary)
-{
+static int set_bhc_data_from_ary(PyObject *self, PyObject *ary) {
     if(((BhArray*) self)->mmap_allocated == 0) {
         PyErr_SetString(
             PyExc_TypeError,
@@ -147,8 +144,7 @@ static int set_bhc_data_from_ary(PyObject *self, PyObject *ary)
 
 // Help function for unprotect memory
 // Return -1 on error
-static int _munprotect(void *data, npy_intp size)
-{
+static int _munprotect(void *data, npy_intp size) {
     if(mprotect(data, size, PROT_WRITE) != 0) {
         int errsv = errno; // mprotect() sets the errno.
         PyErr_Format(
@@ -163,8 +159,7 @@ static int _munprotect(void *data, npy_intp size)
 
 // Help function for memory un-map
 // Return -1 on error
-static int _munmap(void *addr, npy_intp size)
-{
+static int _munmap(void *addr, npy_intp size) {
     if(munmap(addr, size) == -1) {
         int errsv = errno; // munmmap() sets the errno.
         PyErr_Format(
@@ -1089,6 +1084,7 @@ static PyMappingMethods array_as_mapping = {
     (binaryfunc) BhArray_GetItem,    // mp_subscript
     (objobjargproc) BhArray_SetItem, // mp_ass_subscript
 };
+
 static PySequenceMethods array_as_sequence = {
     (lenfunc) 0,                              // sq_length
     (binaryfunc) NULL,                        // sq_concat is handled by nb_add
@@ -1318,9 +1314,9 @@ PyMODINIT_FUNC init_bh(void)
 
     PyModule_AddObject(m, "ndarray", (PyObject*) &BhArrayType);
 
+    bohrium        = PyImport_ImportModule("bohrium");
     bhary          = PyImport_ImportModule("bohrium.bhary");
     ufuncs         = PyImport_ImportModule("bohrium.ufuncs");
-    bohrium        = PyImport_ImportModule("bohrium");
     array_create   = PyImport_ImportModule("bohrium.array_create");
     reorganization = PyImport_ImportModule("bohrium.reorganization");
     masking        = PyImport_ImportModule("bohrium.masking");

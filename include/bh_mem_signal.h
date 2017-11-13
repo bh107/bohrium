@@ -47,8 +47,7 @@ void bh_mem_signal_shutdown(void);
  * @param callback - Callback function which is executed when segfault hits in the memory
  *                   segment. The function is called with the memory idx and the address pointer
  */
-void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
-                         void (*callback)(void*, void*));
+void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size, void (*callback)(void*, void*));
 
 /** Detach signal
  *

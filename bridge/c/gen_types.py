@@ -5,33 +5,34 @@ from os.path import join, exists
 import argparse
 
 def main(args):
-
     prefix = os.path.abspath(os.path.dirname(__file__))
 
     # Let's read the opcode and type files
-    with open(join(prefix,'..','..','core','codegen','types.json')) as f:
-        types   = json.loads(f.read())
+    with open(join(prefix, '..', '..', 'core', 'codegen', 'types.json')) as f:
+        types    = json.loads(f.read())
         type_map = {}
         for t in types[:-1]:
-            type_map[t['enum']] = {'cpp'     : t['cpp'],
-                                   'bhc'     : t['bhc'],
-                                   'name'    : t['union'],
-                                   'bhc_ary' : "bhc_ndarray_%s_p"%t['union']}
+            type_map[t['enum']] = {
+                'cpp'     : t['cpp'],
+                'bhc'     : t['bhc'],
+                'name'    : t['union'],
+                'bhc_ary' : "bhc_ndarray_%s_p" % t['union']
+            }
 
     # Let's generate the header and implementation of all data types
     head = ""; impl = ""
-    head += "//Forward declaration of array types:\n"
+    head += "// Forward declaration of array types:\n"
     for key, val in type_map.items():
-        head += "struct bhc_ndarray_%s;\n"%val['name']
-    head += "\n//Pointer shorthands:\n"
+        head += "struct bhc_ndarray_%s;\n" % val['name']
+    head += "\n// Pointer shorthands:\n"
     for key, val in type_map.items():
-        head += "typedef struct bhc_ndarray_%s* %s;\n"%(val['name'], val['bhc_ary'])
+        head += "typedef struct bhc_ndarray_%s* %s;\n" % (val['name'], val['bhc_ary'])
 
-    impl += "//Array types:\n"
+    impl += "// Array types:\n"
     for key, val in type_map.items():
-        impl += "struct bhc_ndarray_%s {bhxx::BhArray<%s> me;};\n"%(val['name'], val['cpp'])
+        impl += "struct bhc_ndarray_%s {bhxx::BhArray<%s> me;};\n" % (val['name'], val['cpp'])
 
-    #Let's add header and footer
+    # Let's add header and footer
     head = """/* Bohrium C Bridge: data types. Auto generated! */
 
 #ifndef __BHC_TYPES_H
@@ -68,25 +69,24 @@ extern "C" {
 }
 #endif
 #endif // __BHC_TYPES_H
-"""%head
+""" % head
     impl = """/* Bohrium C Bridge: data types. Auto generated! */
 
 #include <bhxx/bhxx.hpp>
 #include "bhc.h"
 
 %s
-"""%impl
+""" % impl
 
-    #Finally, let's write the files
-    with open(join(args.output,'bhc_types.h'), 'w') as f:
+    # Finally, let's write the files
+    with open(join(args.output, 'bhc_types.h'), 'w') as f:
         f.write(head)
-    with open(join(args.output,'bhc_types.cpp'), 'w') as f:
+    with open(join(args.output, 'bhc_types.cpp'), 'w') as f:
         f.write(impl)
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
-        description = 'Generates the type source files for the Bohrium C bridge.',
+        description='Generates the type source files for the Bohrium C bridge.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(

@@ -5,25 +5,25 @@ from os.path import join, exists
 import argparse
 
 def main(args):
-
     prefix = os.path.abspath(os.path.dirname(__file__))
 
     # Let's read the opcode and type files
-    with open(join(prefix,'..','..','core','codegen','opcodes.json')) as f:
+    with open(join(prefix, '..', '..', 'core', 'codegen', 'opcodes.json')) as f:
         opcodes = json.loads(f.read())
-    with open(join(prefix,'..','..','core','codegen','types.json')) as f:
+    with open(join(prefix, '..', '..', 'core', 'codegen', 'types.json')) as f:
         types   = json.loads(f.read())
         type_map = {}
         for t in types[:-1]:
-            type_map[t['enum']] = {'cpp'     : t['cpp'],
-                                   'bhc'     : t['bhc'],
-                                   'name'    : t['union'],
-                                   'bhc_ary' : "bhc_ndarray_%s_p"%t['union']}
+            type_map[t['enum']] = {
+                'cpp'     : t['cpp'],
+                'bhc'     : t['bhc'],
+                'name'    : t['union'],
+                'bhc_ary' : "bhc_ndarray_%s_p"%t['union']
+            }
 
     # Let's generate the header and implementation of all array operations
     head = ""; impl = ""
     for op in opcodes:
-
         if op['opcode'] in ["BH_RANDOM"]:
             continue
         # Generate functions that takes no operands
@@ -120,9 +120,8 @@ namespace bhxx {
         f.write(impl)
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
-        description = 'Generates the array operation source files for the Bohrium CXX bridge.',
+        description='Generates the array operation source files for the Bohrium CXX bridge.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(

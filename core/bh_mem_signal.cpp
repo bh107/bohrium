@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <set>
 #include <iostream>
+#include <sstream>
 
 #include <bh_mem_signal.h>
 

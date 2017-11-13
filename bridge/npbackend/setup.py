@@ -159,91 +159,116 @@ set_timestamp(buildpath("_info.py"), time)
 # Furthermore, '_info.py' and 'bhc.py' should be copied to the build dir
 class CustomBuild(build):
     sub_commands = [
-        ('build_ext', build.has_ext_modules),
-        ('build_py', build.has_pure_modules),
-        ('build_clib', build.has_c_libraries),
+        ('build_ext',     build.has_ext_modules),
+        ('build_py',      build.has_pure_modules),
+        ('build_clib',    build.has_c_libraries),
         ('build_scripts', build.has_scripts),
     ]
 
     def run(self):
         if not self.dry_run:
             self.copy_file(buildpath('_info.py'), buildpath(self.build_lib, 'bohrium', '_info.py'))
-            self.copy_file(buildpath('bhc.py'), buildpath(self.build_lib, 'bohrium', 'bhc.py'))
+            self.copy_file(buildpath('bhc.py'),   buildpath(self.build_lib, 'bohrium', 'bhc.py'))
         build.run(self)
 
 # We need the pyx files in the build path for the Cython.Distutils to work
 shutil.copy2(srcpath('bohrium', 'random123.pyx'), buildpath('random123.pyx'))
-shutil.copy2(srcpath('bohrium', 'bhary.pyx'), buildpath('bhary.pyx'))
-shutil.copy2(srcpath('bohrium', '_util.pyx'), buildpath('_util.pyx'))
-shutil.copy2(srcpath('bohrium', 'ufuncs.pyx'), buildpath('ufuncs.pyx'))
+shutil.copy2(srcpath('bohrium', 'bhary.pyx'),     buildpath('bhary.pyx'))
+shutil.copy2(srcpath('bohrium', '_util.pyx'),     buildpath('_util.pyx'))
+shutil.copy2(srcpath('bohrium', 'ufuncs.pyx'),    buildpath('ufuncs.pyx'))
+
 try:
     os.makedirs(buildpath('nobh'))
 except OSError:
     pass
+
 shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
 
-setup(name='Bohrium',
-      version=_version,
-      description='Bohrium NumPy',
-      long_description='Bohrium NumPy',
-      author='The Bohrium Team',
-      author_email='contact@bh107.org',
-      url='http://www.bh107.org',
-      license='LGPLv3',
-      platforms='Linux, OSX',
-      cmdclass={'build': CustomBuild, 'build_ext': build_ext},
-      package_dir={'bohrium': srcpath('bohrium')},
-      packages=['bohrium', 'bohrium.target', 'bohrium.nobh'],
-      ext_package='bohrium',
-      ext_modules=[Extension(name='_bh',
-                             sources=[srcpath('src', '_bh.c')],
-                             depends=[srcpath('src', 'types.c'), srcpath('src', 'types.h'),
-                                      srcpath('src', 'operator_overload.c')],
-                             include_dirs=[buildpath("..", "c", "out"),
-                                           srcpath('..', '..', 'include')],
-                             libraries=['dl', 'bhc', 'bh'],
-                             library_dirs=[buildpath('..', 'c'),
-                                           buildpath('..', '..', 'core')],
-                             ),
-                   Extension(name='_bhc',
-                             sources=[buildpath('bhc.i')],
-                             include_dirs=[buildpath("..", "c", "out"),
-                                           srcpath('..', '..', 'include')],
-                             libraries=['dl', 'bhc', 'bh'],
-                             library_dirs=[buildpath('..', 'c'),
-                                           buildpath('..', '..', 'core')],
-                             ),
-                   Extension(name='random123',
-                             sources=[buildpath('random123.pyx')],
-                             include_dirs=[srcpath('.'),
-                                           srcpath('..', '..', 'thirdparty', 'Random123-1.09', 'include')],
-                             libraries=[],
-                             library_dirs=[],
-                             ),
-                   Extension(name='_util',
-                             sources=[buildpath('_util.pyx')],
-                             include_dirs=[srcpath('.')],
-                             libraries=[],
-                             library_dirs=[],
-                             ),
-                   Extension(name='bhary',
-                             sources=[buildpath('bhary.pyx')],
-                             include_dirs=[srcpath('.')],
-                             libraries=[],
-                             library_dirs=[],
-                             ),
-                   Extension(name='ufuncs',
-                             sources=[buildpath('ufuncs.pyx')],
-                             include_dirs=[srcpath('.')],
-                             libraries=[],
-                             library_dirs=[],
-                             ),
-                   Extension(name='nobh.bincount_cython',
-                             sources=[buildpath("nobh", 'bincount_cython.pyx')],
-                             include_dirs=[srcpath('.')],
-                             libraries=[],
-                             library_dirs=[],
-                             extra_compile_args=[args_extra.openmp_flag],
-                             extra_link_args=[args_extra.openmp_flag])
-                   ]
-      )
+setup(
+    name='Bohrium',
+    version=_version,
+    description='Bohrium NumPy',
+    long_description='Bohrium NumPy',
+    author='The Bohrium Team',
+    author_email='contact@bh107.org',
+    url='http://www.bh107.org',
+    license='LGPLv3',
+    platforms='Linux, OSX',
+    cmdclass={'build': CustomBuild, 'build_ext': build_ext},
+    package_dir={'bohrium': srcpath('bohrium')},
+    packages=['bohrium', 'bohrium.target', 'bohrium.nobh'],
+    ext_package='bohrium',
+    ext_modules=[
+        Extension(
+            name='_bh',
+            sources=[srcpath('src', '_bh.c')],
+            depends=[
+                srcpath('src', 'types.c'),
+                srcpath('src', 'types.h'),
+                srcpath('src', 'operator_overload.c')
+            ],
+            include_dirs=[
+                buildpath("..", "c", "out"),
+                srcpath('..', '..', 'include')
+            ],
+            libraries=['dl', 'bhc', 'bh'],
+            library_dirs=[
+                buildpath('..', 'c'),
+                buildpath('..', '..', 'core')
+            ],
+        ),
+        Extension(
+            name='_bhc',
+            sources=[buildpath('bhc.i')],
+            include_dirs=[
+                buildpath("..", "c", "out"),
+                srcpath('..', '..', 'include')
+            ],
+            libraries=['dl', 'bhc', 'bh'],
+            library_dirs=[
+                buildpath('..', 'c'),
+                buildpath('..', '..', 'core')
+            ],
+        ),
+        Extension(
+            name='random123',
+            sources=[buildpath('random123.pyx')],
+            include_dirs=[
+                srcpath('.'),
+                srcpath('..', '..', 'thirdparty', 'Random123-1.09', 'include')
+            ],
+            libraries=[],
+            library_dirs=[],
+        ),
+        Extension(
+            name='_util',
+            sources=[buildpath('_util.pyx')],
+            include_dirs=[srcpath('.')],
+            libraries=[],
+            library_dirs=[],
+        ),
+        Extension(
+            name='bhary',
+            sources=[buildpath('bhary.pyx')],
+            include_dirs=[srcpath('.')],
+            libraries=[],
+            library_dirs=[],
+        ),
+        Extension(
+            name='ufuncs',
+            sources=[buildpath('ufuncs.pyx')],
+            include_dirs=[srcpath('.')],
+            libraries=[],
+            library_dirs=[],
+        ),
+        Extension(
+            name='nobh.bincount_cython',
+            sources=[buildpath("nobh", 'bincount_cython.pyx')],
+            include_dirs=[srcpath('.')],
+            libraries=[],
+            library_dirs=[],
+            extra_compile_args=[args_extra.openmp_flag],
+            extra_link_args=[args_extra.openmp_flag]
+        )
+    ]
+)

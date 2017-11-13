@@ -16,12 +16,12 @@ def gen_headerfile( opcodes ):
     l = [int(o['id']) for o in opcodes]
     l = [x for x in l if l.count(x) > 1]
     if len(l) > 0:
-        raise ValueError("opcodes.json contains id duplicates: %s"%str(l))
+        raise ValueError("opcodes.json contains id duplicates: %s" % str(l))
 
     l = [o['opcode'] for o in opcodes]
     l = [x for x in l if l.count(x) > 1]
     if len(l) > 0:
-        raise ValueError("opcodes.json contains opcode duplicates: %s"%str(l))
+        raise ValueError("opcodes.json contains opcode duplicates: %s" % str(l))
 
     max_ops = max([int(o['id']) for o in opcodes])
     return """
@@ -40,8 +40,7 @@ extern "C" {
 #endif
 
 /* Codes for known oparations */
-enum /* bh_opcode */
-{
+enum { /* bh_opcode */
 __OPCODES__
 
     BH_NO_OPCODES = __NO_OPCODES__, // The amount of opcodes
@@ -99,13 +98,12 @@ DLLEXPORT bool bh_opcode_is_sweep(bh_opcode opcode);
 """.replace('__TIMESTAMP__', stamp).replace('__OPCODES__', '\n'.join(enums)).replace('__NO_OPCODES__', str(len(opcodes))).replace('__MAX_OP__',str(max_ops))
 
 def gen_cfile(opcodes):
-
-    text    = ['        case %s: return "%s";' % (opcode['opcode'], opcode['opcode']) for opcode in opcodes]
-    nops    = ['        case %s: return %s;' % (opcode['opcode'], opcode['nop']) for opcode in opcodes]
-    sys_op    = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
-    elem_op   = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['elementwise']]
-    reduce_op = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['reduction']]
-    accum_op  = ['        case %s: '%opcode['opcode'] for opcode in opcodes if opcode['accumulate']]
+    text      = ['        case %s: return "%s";' % (opcode['opcode'], opcode['opcode']) for opcode in opcodes]
+    nops      = ['        case %s: return %s;' % (opcode['opcode'], opcode['nop']) for opcode in opcodes]
+    sys_op    = ['        case %s: ' % opcode['opcode'] for opcode in opcodes if opcode['system_opcode']]
+    elem_op   = ['        case %s: ' % opcode['opcode'] for opcode in opcodes if opcode['elementwise']]
+    reduce_op = ['        case %s: ' % opcode['opcode'] for opcode in opcodes if opcode['reduction']]
+    accum_op  = ['        case %s: ' % opcode['opcode'] for opcode in opcodes if opcode['accumulate']]
     stamp   = time.strftime("%d/%m/%Y")
 
     return """
@@ -129,10 +127,8 @@ bool _opcode_text_initialized = false;
  * @opcode Opcode for operation
  * @return Text string.
  */
-const char* bh_opcode_text(bh_opcode opcode)
-{
-    switch(opcode)
-    {
+const char* bh_opcode_text(bh_opcode opcode) {
+    switch(opcode) {
 __TEXT__
 
         default: return "Unknown opcode";
@@ -144,10 +140,8 @@ __TEXT__
  * @opcode The operation opcode
  * @return The boolean answer
  */
-bool bh_opcode_is_system(bh_opcode opcode)
-{
-    switch(opcode)
-    {
+bool bh_opcode_is_system(bh_opcode opcode) {
+    switch(opcode) {
 __SYS_OP__
             return true;
 
@@ -161,10 +155,8 @@ __SYS_OP__
  * @opcode The operation opcode
  * @return The boolean answer
  */
-bool bh_opcode_is_elementwise(bh_opcode opcode)
-{
-    switch(opcode)
-    {
+bool bh_opcode_is_elementwise(bh_opcode opcode) {
+    switch(opcode) {
 __ELEM_OP__
             return true;
 
@@ -178,10 +170,8 @@ __ELEM_OP__
  * @opcode The operation opcode
  * @return The boolean answer
  */
-bool bh_opcode_is_reduction(bh_opcode opcode)
-{
-    switch(opcode)
-    {
+bool bh_opcode_is_reduction(bh_opcode opcode) {
+    switch(opcode) {
 __REDUCE_OP__
             return true;
 
@@ -195,10 +185,8 @@ __REDUCE_OP__
  * @opcode The operation opcode
  * @return The boolean answer
  */
-bool bh_opcode_is_accumulate(bh_opcode opcode)
-{
-    switch(opcode)
-    {
+bool bh_opcode_is_accumulate(bh_opcode opcode) {
+    switch(opcode) {
 __ACCUM_OP__
             return true;
 
@@ -213,8 +201,7 @@ __ACCUM_OP__
  * @opcode
  * @return The boolean answer
  */
-bool bh_opcode_is_sweep(bh_opcode opcode)
-{
+bool bh_opcode_is_sweep(bh_opcode opcode) {
     return (bh_opcode_is_reduction(opcode) || bh_opcode_is_accumulate(opcode));
 }
 
