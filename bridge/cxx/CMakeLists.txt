@@ -7,7 +7,6 @@ endif()
 set(SRC_H ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx/array_operations.hpp)
 set(SRC_CPP ${CMAKE_CURRENT_BINARY_DIR}/src/array_operations.cpp)
 
-
 add_custom_command(
     OUTPUT ${SRC_H} ${SRC_CPP}
     COMMAND ${PYTHON_EXECUTABLE} gen_array_operations.py ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -26,9 +25,6 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
-# Include the header of bxx. TODO: removed dependecy of the old C++ bridge
-include_directories("../cpp/")
-
 # Define the bhxx library
 file(GLOB SRC src/*.cpp)
 add_library(bhxx SHARED ${SRC} ${SRC_CPP})
@@ -41,7 +37,7 @@ target_link_libraries(bhxx bh)
 
 # Let's install header files (both static and generated headers)
 install(DIRECTORY include/bhxx DESTINATION include COMPONENT bohrium)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx DESTINATION include  COMPONENT bohrium)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/bhxx DESTINATION include COMPONENT bohrium)
 
 # Let's install the library
 install(TARGETS bhxx DESTINATION ${LIBDIR} COMPONENT bohrium)

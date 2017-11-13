@@ -30,6 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
+#include <boost/filesystem.hpp>
 
 #include "cl.hpp"
 

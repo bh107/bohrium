@@ -36,12 +36,9 @@ add_custom_command(
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_library(bhc SHARED ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_types.cpp
-                       ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_array_operations.cpp
-                       ${CMAKE_CURRENT_BINARY_DIR}/out/bhc_specials.cpp
-)
+add_library(bhc SHARED ${SRC_CPP})
 
-#We depend on bhxx.so
+# We depend on bhxx.so
 target_link_libraries(bhc bhxx)
 
 # Finally, let's install the compiled library and the combined header file

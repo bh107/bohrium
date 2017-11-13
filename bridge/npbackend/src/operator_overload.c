@@ -20,188 +20,162 @@ If not, see <http://www.gnu.org/licenses/>.
 
 //NB: 'bohrium' is declared in _bhmodule.c
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static PyObject *
-array_add(PyObject *m1, PyObject *m2)
-{
+array_add(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "add", "OO", m1, m2);
 }
 
 static PyObject *
-array_subtract(PyObject *m1, PyObject *m2)
-{
+array_subtract(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "subtract", "OO", m1, m2);
 }
 
 static PyObject *
-array_multiply(PyObject *m1, PyObject *m2)
-{
+array_multiply(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "multiply", "OO", m1, m2);
 }
 
 
 #if !defined(NPY_PY3K)
 static PyObject *
-array_divide(PyObject *m1, PyObject *m2)
-{
+array_divide(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "divide", "OO", m1, m2);
 }
 #endif
 
 static PyObject *
-array_remainder(PyObject *m1, PyObject *m2)
-{
+array_remainder(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "mod", "OO", m1, m2);
 }
 
 static PyObject *
-array_power(PyObject *m1, PyObject *m2, PyObject *modulo)
-{
+array_power(PyObject *m1, PyObject *m2, PyObject *modulo) {
     return PyObject_CallMethod(bohrium, "power", "OO", m1, m2);
 }
 
 static PyObject *
-array_negative(PyObject *m1)
-{
+array_negative(PyObject *m1) {
     return PyObject_CallMethod(bohrium, "negative", "O", m1);
 }
 
 static PyObject *
-array_absolute(PyObject *m1)
-{
+array_absolute(PyObject *m1) {
     return PyObject_CallMethod(bohrium, "absolute", "O", m1);
 }
 
 static PyObject *
-array_invert(PyObject *m1)
-{
+array_invert(PyObject *m1) {
     return PyObject_CallMethod(bohrium, "invert", "O", m1);
 }
 
 static PyObject *
-array_left_shift(PyObject *m1, PyObject *m2)
-{
+array_left_shift(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "left_shift", "OO", m1, m2);
 }
 
 static PyObject *
-array_right_shift(PyObject *m1, PyObject *m2)
-{
+array_right_shift(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "right_shift", "OO", m1, m2);
 }
 
 static PyObject *
-array_bitwise_and(PyObject *m1, PyObject *m2)
-{
+array_bitwise_and(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "bitwise_and", "OO", m1, m2);
 }
 
 static PyObject *
-array_bitwise_or(PyObject *m1, PyObject *m2)
-{
+array_bitwise_or(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "bitwise_or", "OO", m1, m2);
 }
 
 static PyObject *
-array_bitwise_xor(PyObject *m1, PyObject *m2)
-{
+array_bitwise_xor(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "bitwise_xor", "OO", m1, m2);
 }
 
 static PyObject *
-array_inplace_add(PyObject *m1, PyObject *m2)
-{
+array_inplace_add(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "add", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_subtract(PyObject *m1, PyObject *m2)
-{
+array_inplace_subtract(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "subtract", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_multiply(PyObject *m1, PyObject *m2)
-{
+array_inplace_multiply(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "multiply", "OOO", m1, m2, m1);
 }
 
 #if !defined(NPY_PY3K)
 static PyObject *
-array_inplace_divide(PyObject *m1, PyObject *m2)
-{
+array_inplace_divide(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "divide", "OOO", m1, m2, m1);
 }
 #endif
 
 static PyObject *
-array_inplace_remainder(PyObject *m1, PyObject *m2)
-{
+array_inplace_remainder(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "remainder", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_left_shift(PyObject *m1, PyObject *m2)
-{
+array_inplace_left_shift(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "left_shift", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_right_shift(PyObject *m1, PyObject *m2)
-{
+array_inplace_right_shift(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "right_shift", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_bitwise_and(PyObject *m1, PyObject *m2)
-{
+array_inplace_bitwise_and(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "bitwise_and", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_bitwise_or(PyObject *m1, PyObject *m2)
-{
+array_inplace_bitwise_or(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "bitwise_or", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_bitwise_xor(PyObject *m1, PyObject *m2)
-{
+array_inplace_bitwise_xor(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "bitwise_xor", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_floor_divide(PyObject *m1, PyObject *m2)
-{
+array_floor_divide(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "floor_divide", "OO", m1, m2);
 }
 
 static PyObject *
-array_true_divide(PyObject *m1, PyObject *m2)
-{
+array_true_divide(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "true_divide", "OO", m1, m2);
 }
 
 static PyObject *
-array_inplace_floor_divide(PyObject *m1, PyObject *m2)
-{
+array_inplace_floor_divide(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "floor_divide", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_power(PyObject *m1, PyObject *m2, PyObject *modulo)
-{
+array_inplace_power(PyObject *m1, PyObject *m2, PyObject *modulo) {
     return PyObject_CallMethod(bohrium, "power", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_inplace_true_divide(PyObject *m1, PyObject *m2)
-{
+array_inplace_true_divide(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "true_divide", "OOO", m1, m2, m1);
 }
 
 static PyObject *
-array_divmod(PyObject *op1, PyObject *op2)
-{
+array_divmod(PyObject *op1, PyObject *op2) {
     PyObject *divp, *modp, *result;
 
     divp = array_floor_divide(op1, op2);
@@ -227,8 +201,7 @@ array_divmod(PyObject *op1, PyObject *op2)
 }
 
 static int
-array_nonzero(PyArrayObject *mp)
-{
+array_nonzero(PyArrayObject *mp) {
     npy_intp n;
     int ret;
 
@@ -255,8 +228,7 @@ array_nonzero(PyArrayObject *mp)
 }
 
 static PyObject *
-array_float(PyArrayObject *v)
-{
+array_float(PyArrayObject *v) {
     if (PyArray_SIZE(v) != 1) {
         PyErr_SetString(PyExc_TypeError, "only length-1 arrays can be converted to Python scalars");
         return NULL;
@@ -301,8 +273,7 @@ array_float(PyArrayObject *v)
 }
 
 NPY_NO_EXPORT PyObject *
-array_int(PyArrayObject *v)
-{
+array_int(PyArrayObject *v) {
     if (PyArray_SIZE(v) != 1) {
         PyErr_SetString(PyExc_TypeError, "only length-1 arrays can be converted to Python scalars");
         return NULL;
@@ -348,8 +319,7 @@ array_int(PyArrayObject *v)
 
 #if !defined(NPY_PY3K)
 static PyObject *
-array_long(PyArrayObject *v)
-{
+array_long(PyArrayObject *v) {
     if (PyArray_SIZE(v) != 1) {
         PyErr_SetString(PyExc_TypeError, "only length-1 arrays can be converted to Python scalars");
         return NULL;
@@ -394,8 +364,7 @@ array_long(PyArrayObject *v)
 }
 
 static PyObject *
-array_oct(PyArrayObject *v)
-{
+array_oct(PyArrayObject *v) {
     if (PyArray_SIZE(v) != 1) {
         PyErr_SetString(PyExc_TypeError, "only length-1 arrays can be converted to Python scalars");
         return NULL;
@@ -440,8 +409,7 @@ array_oct(PyArrayObject *v)
 }
 
 static PyObject *
-array_hex(PyArrayObject *v)
-{
+array_hex(PyArrayObject *v) {
     if (PyArray_SIZE(v) != 1) {
         PyErr_SetString(PyExc_TypeError, "only length-1 arrays can be converted to Python scalars");
         return NULL;
@@ -487,8 +455,7 @@ array_hex(PyArrayObject *v)
 #endif
 
 static PyObject *
-array_positive(PyArrayObject *v)
-{
+array_positive(PyArrayObject *v) {
     PyErr_SetString(PyExc_TypeError, "to positive is not implemented");
     return NULL;
 }
@@ -549,8 +516,7 @@ PyNumberMethods array_as_number = {
 };
 
 static PyObject *
-array_richcompare(PyArrayObject *self, PyObject *other, int cmp_op)
-{
+array_richcompare(PyArrayObject *self, PyObject *other, int cmp_op) {
     switch (cmp_op) {
     case Py_LT:
         return PyObject_CallMethod(bohrium, "less", "OO", self, other);
@@ -568,3 +534,7 @@ array_richcompare(PyArrayObject *self, PyObject *other, int cmp_op)
         return NULL;
     }
 }
+
+#ifdef __cplusplus
+}
+#endif
