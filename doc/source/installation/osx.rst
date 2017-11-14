@@ -26,4 +26,5 @@ Check the current runtime stack::
 Manual install from source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO.
+.. todo::
+  Write me
