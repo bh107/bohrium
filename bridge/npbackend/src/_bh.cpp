@@ -299,7 +299,7 @@ static int _protected_malloc(BhArray *ary) {
 
     // Let's save the pointer to the NumPy allocated memory and use the mprotect'ed memory instead
     ary->npy_data = ary->base.data;
-    ary->base.data = addr;
+    ary->base.data = reinterpret_cast<char*>(addr);
 
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
     return 0;
@@ -459,7 +459,7 @@ static void BhArray_dealloc(BhArray* self) {
     }
 
     if (self->npy_data != NULL) {
-        self->base.data = self->npy_data;
+        self->base.data = reinterpret_cast<char*>(self->npy_data);
     }
 
     // Notice, we have to call the 'tp_dealloc' of the base class (<http://legacy.python.org/dev/peps/pep-0253/>).
@@ -1089,6 +1089,7 @@ static PyMappingMethods array_as_mapping = {
     (binaryfunc) BhArray_GetItem,    // mp_subscript
     (objobjargproc) BhArray_SetItem, // mp_ass_subscript
 };
+/*
 static PySequenceMethods array_as_sequence = {
     (lenfunc) 0,                              // sq_length
     (binaryfunc) NULL,                        // sq_concat is handled by nb_add
@@ -1101,7 +1102,7 @@ static PySequenceMethods array_as_sequence = {
     (binaryfunc) NULL,                        // sg_inplace_concat
     (ssizeargfunc) NULL,                      // sg_inplace_repeat
 };
-
+*/
 static PyObject* BhArray_Repr(PyObject *self) {
     assert(BhArray_CheckExact(self));
 
@@ -1173,69 +1174,6 @@ static PyObject* BhArray_Str(PyObject *self) {
 // Importing the array_as_number struct
 #include "operator_overload.c"
 
-static PyTypeObject BhArrayType = {
-#if defined(NPY_PY3K)
-    PyVarObject_HEAD_INIT(NULL, 0)
-#else
-    PyObject_HEAD_INIT(NULL)
-    0,                              // ob_size
-#endif
-    "bohrium.ndarray",              // tp_name
-    sizeof(BhArray),                // tp_basicsize
-    0,                              // tp_itemsize
-    (destructor) BhArray_dealloc,   // tp_dealloc
-    0,                              // tp_print
-    0,                              // tp_getattr
-    0,                              // tp_setattr
-#if defined(NPY_PY3K)
-    0,                              // tp_reserved
-#else
-    0,                              // tp_compare
-#endif
-    &BhArray_Repr,                  // tp_repr
-    &array_as_number,               // tp_as_number
-    &array_as_sequence,             // tp_as_sequence
-    &array_as_mapping,              // tp_as_mapping
-    0,                              // tp_hash
-    0,                              // tp_call
-    &BhArray_Str,                   // tp_str
-    0,                              // tp_getattro
-    0,                              // tp_setattro
-    0,                              // tp_as_buffer
-    Py_TPFLAGS_DEFAULT
-#if !defined(NPY_PY3K)
-    | Py_TPFLAGS_CHECKTYPES
-#endif
-    | Py_TPFLAGS_BASETYPE,          // tp_flags
-    0,                              // tp_doc
-    0,                              // tp_traverse
-    0,                              // tp_clear
-    (richcmpfunc)array_richcompare, // tp_richcompare
-    0,                              // tp_weaklistoffset
-    0,                              // tp_iter
-    0,                              // tp_iternext
-    BhArrayMethods,                 // tp_methods
-    BhArrayMembers,                 // tp_members
-    0,                              // tp_getset
-    0,                              // tp_base
-    0,                              // tp_dict
-    0,                              // tp_descr_get
-    0,                              // tp_descr_set
-    0,                              // tp_dictoffset
-    0,                              // tp_init
-    BhArray_alloc,                  // tp_alloc
-    BhArray_new,                    // tp_new
-    (freefunc)BhArray_free,         // tp_free
-    0,                              // tp_is_gc
-    0,                              // tp_bases
-    0,                              // tp_mro
-    0,                              // tp_cache
-    0,                              // tp_subclasses
-    0,                              // tp_weaklist
-    0,                              // tp_del
-    0,                              // tp_version_tag
-};
-
 #if defined(NPY_PY3K)
 static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
@@ -1259,6 +1197,70 @@ PyMODINIT_FUNC init_bh(void)
 #endif
 {
     PyObject *m;
+
+    BhArrayType = {
+#if defined(NPY_PY3K)
+            PyVarObject_HEAD_INIT(NULL, 0)
+#else
+            PyObject_HEAD_INIT(NULL)
+            0,                              // ob_size
+#endif
+            "bohrium.ndarray",              // tp_name
+            sizeof(BhArray),                // tp_basicsize
+            0,                              // tp_itemsize
+            (destructor) BhArray_dealloc,   // tp_dealloc
+            0,                              // tp_print
+            0,                              // tp_getattr
+            0,                              // tp_setattr
+#if defined(NPY_PY3K)
+            0,                              // tp_reserved
+#else
+            0,                              // tp_compare
+#endif
+            &BhArray_Repr,                  // tp_repr
+            &array_as_number,               // tp_as_number
+            //&array_as_sequence,             // tp_as_sequence
+            0,
+            &array_as_mapping,              // tp_as_mapping
+            0,                              // tp_hash
+            0,                              // tp_call
+            &BhArray_Str,                   // tp_str
+            0,                              // tp_getattro
+            0,                              // tp_setattro
+            0,                              // tp_as_buffer
+            Py_TPFLAGS_DEFAULT
+#if !defined(NPY_PY3K)
+            | Py_TPFLAGS_CHECKTYPES
+#endif
+            | Py_TPFLAGS_BASETYPE,          // tp_flags
+            0,                              // tp_doc
+            0,                              // tp_traverse
+            0,                              // tp_clear
+            (richcmpfunc)array_richcompare, // tp_richcompare
+            0,                              // tp_weaklistoffset
+            0,                              // tp_iter
+            0,                              // tp_iternext
+            BhArrayMethods,                 // tp_methods
+            BhArrayMembers,                 // tp_members
+            0,                              // tp_getset
+            0,                              // tp_base
+            0,                              // tp_dict
+            0,                              // tp_descr_get
+            0,                              // tp_descr_set
+            0,                              // tp_dictoffset
+            0,                              // tp_init
+            BhArray_alloc,                  // tp_alloc
+            BhArray_new,                    // tp_new
+            (freefunc)BhArray_free,         // tp_free
+            0,                              // tp_is_gc
+            0,                              // tp_bases
+            0,                              // tp_mro
+            0,                              // tp_cache
+            0,                              // tp_subclasses
+            0,                              // tp_weaklist
+            0,                              // tp_del
+            0,                              // tp_version_tag
+    };
 
 #if defined(NPY_PY3K)
     m = PyModule_Create(&moduledef);
