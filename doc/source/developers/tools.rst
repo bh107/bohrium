@@ -160,7 +160,7 @@ Render a html version of the docs::
 
   make html
 
-Push the html-rendered docs to http://bohrium.bitbucket.org, this command assumes that you have write-access to the doc-repos on bitbucket::
+Push the html-rendered docs to http://bohrium.bitbucket.org, this command assumes that you have write-access to the doc-repos on Bitbucket::
 
   make deploy
 
