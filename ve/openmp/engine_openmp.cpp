@@ -40,15 +40,15 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-                                           verbose(config.defaultGet<bool>("verbose", false)),
-                                           cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-                                           tmp_dir(jitk::get_tmp_path(config)),
-                                           tmp_src_dir(tmp_dir / "src"),
-                                           tmp_bin_dir(tmp_dir / "obj"),
-                                           cache_bin_dir(config.defaultGet<fs::path>("cache_dir", "")),
-                                           compiler(config.get<string>("compiler_cmd"), verbose),
-                                           compilation_hash(hasher(compiler.cmd_template)),
-                                           stat(stat)
+                                   verbose(config.defaultGet<bool>("verbose", false)),
+                                   cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
+                                   tmp_dir(jitk::get_tmp_path(config)),
+                                   tmp_src_dir(tmp_dir / "src"),
+                                   tmp_bin_dir(tmp_dir / "obj"),
+                                   cache_bin_dir(config.defaultGet<fs::path>("cache_dir", "")),
+                                   compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string()),
+                                   compilation_hash(hasher(compiler.cmd_template)),
+                                   stat(stat)
 {
     // Let's make sure that the directories exist
     jitk::create_directories(tmp_src_dir);

@@ -88,7 +88,8 @@ tmp_dir =
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
-# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
+# The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
+# and {CONF_PATH} with the path to this config file
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} ${VE_OPENMP_COMPILER_LIB} {IN} -o {OUT}"
 # JIT compile options
 compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
@@ -162,7 +163,8 @@ tmp_dir =
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
-# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
+# The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
+# and {CONF_PATH} with the path to this config file.
 # Additionally, {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
 compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # List of extension methods

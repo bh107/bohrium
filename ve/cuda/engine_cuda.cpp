@@ -91,7 +91,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     }
 
     // Init the compiler
-    compiler = jitk::Compiler(compiler_cmd, verbose);
+    compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
 }
 
 EngineCUDA::~EngineCUDA() {
