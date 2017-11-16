@@ -115,7 +115,7 @@ EngineCUDA::~EngineCUDA() {
         fs::remove_all(tmp_src_dir);
     }
 
-    if (cache_file_max != -1) {
+    if (cache_file_max != -1 and not cache_bin_dir.empty()) {
         util::remove_old_files(cache_bin_dir, cache_file_max);
     }
 }

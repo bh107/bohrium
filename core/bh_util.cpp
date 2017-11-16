@@ -32,6 +32,7 @@ namespace fs = boost::filesystem;
 namespace util {
 
 void remove_old_files(const fs::path &dir, int64_t num_of_newest_to_keep) {
+    assert(not dir.empty());
     fs::directory_iterator dir_first(dir), dir_last;
     std::vector<fs::path> files;
 
