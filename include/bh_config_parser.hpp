@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
 #include <string>
 #include <vector>
 
@@ -82,7 +83,9 @@ public:
 class ConfigParser {
   public:
     // Path to the config file e.g. ~/.bohrium/config.ini
-    const std::string file_path;
+    const boost::filesystem::path file_path;
+    // Path to the directory of the config file
+    const boost::filesystem::path file_dir;
     // The stack level of the calling component (-1 is the bridge,
     // 0 is the first component in the stack list, 1 is the second component etc.)
     const int stack_level;
@@ -139,6 +142,7 @@ class ConfigParser {
             throw ConfigBadCast(ss.str());
         }
     }
+    // Overload that use the default section
     template<typename T>
     T get(const std::string &option) const {
         return get<T>(_default_section, option);
@@ -210,7 +214,7 @@ class ConfigParser {
     /* Return the path to the library that implements
      * the calling component's child.
      *
-     * @return File path to shared library
+     * @return File path to shared library (as a string)
      * Throw ConfigNoChild exception if the calling component has not children
      */
     std::string getChildLibraryPath() const;
@@ -221,5 +225,16 @@ class ConfigParser {
      */
     std::string getName() const { return _default_section; };
 };
+
+// Path specialization of `ConfigParser::get()`, which makes sure that relative paths are converted to absolute paths
+template <>
+inline boost::filesystem::path ConfigParser::get(const std::string &section, const std::string &option) const {
+    boost::filesystem::path ret = boost::filesystem::path(get<std::string>(section, option));
+    if(ret.is_absolute() or ret.empty()) {
+        return ret;
+    } else {
+        return file_dir / ret;
+    }
+}
 
 } //namespace bohrium

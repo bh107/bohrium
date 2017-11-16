@@ -74,7 +74,7 @@ boost::filesystem::path write_source2file(const std::string &src,
 
 boost::filesystem::path get_tmp_path(const ConfigParser &config) {
     boost::filesystem::path tmp_path;
-    const string tmp_dir = config.defaultGet<string>("tmp_dir", "");
+    const boost::filesystem::path tmp_dir = config.defaultGet<boost::filesystem::path>("tmp_dir", "");
     if (tmp_dir.empty()) {
         tmp_path = boost::filesystem::temp_directory_path();
     } else {
