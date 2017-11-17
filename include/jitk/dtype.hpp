@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_DTYPE_HPP
-#define __BH_JITK_DTYPE_HPP
+#pragma once
 
 #include <sstream>
 #include <stdexcept>
@@ -122,5 +120,3 @@ void write_c99_dtype_union(std::stringstream& out) {
 
 } // jitk
 } // bohrium
-
-#endif

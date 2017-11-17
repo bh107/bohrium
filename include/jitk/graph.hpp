@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_GRAPH_HPP
-#define __BH_JITK_GRAPH_HPP
+#pragma once
 
 #include <set>
 #include <vector>
@@ -142,5 +140,3 @@ void greedy(DAG &dag, bool avoid_rank0_sweep);
 } // graph
 } // jit
 } // bohrium
-
-#endif

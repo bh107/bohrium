@@ -1,5 +1,4 @@
-#ifndef __PROTOTYPE
-#define __PROTOTYPE
+#pragma once
 
 #include <iostream>
 #include <stdlib.h>
@@ -81,5 +80,3 @@ class Visualizer
     float min;
     float max;
 };
-
-#endif

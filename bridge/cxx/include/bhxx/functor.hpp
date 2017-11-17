@@ -1,4 +1,3 @@
-#pragma once
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -18,6 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once
 
 #include <bhxx/array_operations.hpp>
 

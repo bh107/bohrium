@@ -16,9 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Bohrium. If not, see <http://www.gnu.org/licenses/>.
  */
-
-#ifndef __STATICSTORE_HPP
-#define __STATICSTORE_HPP
+#pragma once
 
 #include <cstdlib>
 #include <stdexcept>
@@ -82,13 +80,13 @@ template <typename T>
 StaticStore<T>::~StaticStore()
 {
 	typename std::list<T*>::iterator it;
-    
+
     if(counter > 0)
         std::cout << "[StaticStore] Warning " << counter << " arrays were not destroyed" << std::endl;
 
     for (it = allocatedBuffers.begin(); it != allocatedBuffers.end(); it++)
 	    free(*it);
-    
+
     allocatedBuffers.clear();
     free(buffer);
 }
@@ -115,7 +113,7 @@ T* StaticStore<T>::c_next()
 		{
 			throw std::runtime_error("Out of memory");
 		}
-		
+
 #ifdef DEBUG
     std::cout << "StaticStore<" << typeid(T).name() << ">(): ";
     std::cout << "Allocated " << bufferSize*sizeof(T) << " bytes; ";
@@ -154,10 +152,10 @@ void StaticStore<T>::clear()
 
     counter = 0;
     nextElement = buffer;
-    
+
     for (it = allocatedBuffers.begin(); it != allocatedBuffers.end(); it++)
 	    free(*it);
-    
+
     allocatedBuffers.clear();
     emptySlot.clear();
 }
@@ -168,5 +166,3 @@ void StaticStore<T>::erase(T* e)
     counter--;
     emptySlot.push_back(e);
 }
-
-#endif

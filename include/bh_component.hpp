@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_COMPONENT_HPP
-#define __BH_COMPONENT_HPP
+#pragma once
 
 #include <string>
 #include <boost/property_tree/ptree.hpp>
@@ -215,5 +213,3 @@ public:
 };
 
 }} //namespace bohrium::component
-
-#endif

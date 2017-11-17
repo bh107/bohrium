@@ -117,6 +117,7 @@ def main(args):
     bhxx::BhArray<%(cpp)s> *ret = new bhxx::BhArray<%(cpp)s>({size});
     return (%(bhc_ary)s) ret;
 }
+
 """ % t
 
     doc = "\n// Destroy array\n"
@@ -129,6 +130,7 @@ def main(args):
 {
     delete ((bhxx::BhArray<%(cpp)s>*)ary);
 }
+
 """ % t
 
     doc = "\n// Create view\n"
@@ -147,6 +149,7 @@ def main(args):
     bhxx::BhArray<%(cpp)s>* ret = new bhxx::BhArray<%(cpp)s>(b, _shape, _stride, start);
     return (%(bhc_ary)s) ret;
 }
+
 """ % t
 
     doc = "\n// Get data pointer from the first VE in the runtime stack\n"
@@ -163,6 +166,7 @@ def main(args):
     std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
     return bhxx::Runtime::instance().get_mem_ptr(b, copy2host, force_alloc, nullify);
 }
+
 """ % t
 
     doc = "\n// Set data pointer in the first VE in the runtime stack\n"
@@ -178,6 +182,7 @@ def main(args):
    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
    bhxx::Runtime::instance().set_mem_ptr(b, host_ptr, data);
 }
+
 """ % t
 
     doc = "\n// Informs the runtime system to make data synchronized and available after the next flush().\n"
@@ -191,6 +196,7 @@ def main(args):
    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
    bhxx::Runtime::instance().sync(b);
 }
+
 """ % t
 
     doc = "\n// Extension Method, returns 0 when the extension exist\n"
@@ -215,23 +221,28 @@ def main(args):
     }
     return 0;
 }
+
 """ % t
 
     #Let's add header and footer
     head = """/* Bohrium C Bridge: special functions. Auto generated! */
-
-#ifndef __BHC_SPECIALS_H
-#define __BHC_SPECIALS_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifdef _WIN32
+#define DLLEXPORT __declspec( dllexport )
+#else
+#define DLLEXPORT
 #endif
 
 %s
 #ifdef __cplusplus
 }
 #endif
-#endif // __BHC_SPECIALS_H
+
 """ % head
     impl = """/* Bohrium C Bridge: special functions. Auto generated! */
 
@@ -248,9 +259,8 @@ extern "C" {
         f.write(impl)
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
-        description = 'Generates the special source files for the Bohrium C bridge.',
+        description='Generates the special source files for the Bohrium C bridge.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(

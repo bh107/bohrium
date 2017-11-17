@@ -80,9 +80,7 @@ def main(args):
 
     # Let's add header and footer
     head = """/* Bohrium CXX Bridge: array operation functions. Auto generated! */
-
-#ifndef __BHXX_ARRAY_OPERATIONS_H
-#define __BHXX_ARRAY_OPERATIONS_H
+#pragma once
 
 #include <bhxx/BhArray.hpp>
 #include <complex>
@@ -93,7 +91,6 @@ namespace bhxx {
 
 } // namespace bhxx
 
-#endif
 """ % head
 
     impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */

@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_VE_OPENCL_ENGINE_OPENCL_HPP
-#define __BH_VE_OPENCL_ENGINE_OPENCL_HPP
+#pragma once
 
 #include <map>
 #include <memory>
@@ -214,5 +212,3 @@ public:
 };
 
 } // bohrium
-
-#endif

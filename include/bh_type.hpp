@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_TYPE_HPP
-#define __BH_TYPE_HPP
+#pragma once
 
 #include <stdexcept>
 #include <complex>
@@ -183,5 +181,3 @@ DLLEXPORT double bh_type_limit_max_float(bh_type type);
  * @type   The type.
  */
 DLLEXPORT double bh_type_limit_min_float(bh_type type);
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __BH_FILTER_COMPOSITE_CONTRACTER
-#define __BH_FILTER_COMPOSITE_CONTRACTER
+#pragma once
 
 #include <bh_component.hpp>
 
@@ -32,4 +31,3 @@ private:
 };
 
 }}}
-#endif

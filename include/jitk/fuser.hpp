@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_FUSER_HPP
-#define __BH_JITK_FUSER_HPP
+#pragma once
 
 #include <set>
 #include <vector>
@@ -60,5 +58,3 @@ void fuser_greedy(const ConfigParser &config, std::vector<Block> &block_list, bo
 
 } // jit
 } // bohrium
-
-#endif

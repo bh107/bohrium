@@ -142,8 +142,7 @@
  * \endcode
  *
  */
-#ifndef CL_HPP_
-#define CL_HPP_
+#pragma once
 
 #ifdef _WIN32
 
@@ -12500,5 +12499,3 @@ public:
 #ifdef _WIN32
 #pragma pop_macro("max")
 #endif // _WIN32
-
-#endif // CL_HPP_

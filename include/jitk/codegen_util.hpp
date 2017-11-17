@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_CODEGEN_UTIL_H
-#define __BH_JITK_CODEGEN_UTIL_H
+#pragma once
 
 #include <map>
 #include <vector>
@@ -519,5 +517,3 @@ void handle_gpu_execution(SelfType &self, BhIR *bhir, EngineType &engine, const 
 
 } // jitk
 } // bohrium
-
-#endif

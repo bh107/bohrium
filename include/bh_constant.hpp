@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_CONSTANT_H
-#define __BH_CONSTANT_H
+#pragma once
 
 #include <iostream>
 #include <bh_type.hpp>
@@ -102,5 +100,3 @@ public:
 
 //Implements pprint of a constant (by streaming)
 DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_constant& constant);
-
-#endif

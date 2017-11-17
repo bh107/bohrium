@@ -34,11 +34,10 @@ def main(args):
 
     # Let's add header and footer
     head = """/* Bohrium C Bridge: data types. Auto generated! */
-
-#ifndef __BHC_TYPES_H
-#define __BHC_TYPES_H
+#pragma once
 
 #include <stdint.h>
+
 typedef unsigned char bhc_bool;
 typedef int8_t        bhc_int8;
 typedef int16_t       bhc_int16;
@@ -68,7 +67,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif // __BHC_TYPES_H
+
 """ % head
     impl = """/* Bohrium C Bridge: data types. Auto generated! */
 

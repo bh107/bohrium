@@ -1,5 +1,4 @@
-#ifndef __BH_FILTER_COMPOSITE_EXPANDER
-#define __BH_FILTER_COMPOSITE_EXPANDER
+#pragma once
 
 #include <bh_component.hpp>
 
@@ -191,4 +190,3 @@ inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T 
 }
 
 }}}
-#endif

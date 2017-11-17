@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_APPLY_FUSION_HPP
-#define __BH_JITK_APPLY_FUSION_HPP
+#pragma once
 
 #include <iostream>
 #include <chrono>
@@ -42,5 +40,3 @@ std::vector<Block> get_block_list(const std::vector<bh_instruction*> &instr_list
 
 } // jitk
 } // bohrium
-
-#endif

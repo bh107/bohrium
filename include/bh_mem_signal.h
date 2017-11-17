@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_MEM_SIGNAL_H
-#define __BH_MEM_SIGNAL_H
+#pragma once
 
 #include <stdint.h>
 #include <sys/mman.h>
@@ -68,6 +66,4 @@ void bh_mem_signal_pprint_db(void);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

@@ -17,14 +17,12 @@ GNU Lesser General Public License along with Bohrium.
 next_message_body(void *buffer, size_t size)
 If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once
 
 #include <string>
 #include <boost/asio.hpp>
 
 #include "serialize.hpp"
-
-#ifndef __BH_VEM_PROXY_COMM_H
-#define __BH_VEM_PROXY_COMM_H
 
 class CommFrontend
 {
@@ -63,5 +61,3 @@ public:
     void send_array_data(const void *data, size_t nbytes);
     void recv_array_data(bh_base *base);
 };
-
-#endif

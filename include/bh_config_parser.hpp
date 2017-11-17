@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_CONFIG_PARSER_H
-#define __BH_CONFIG_PARSER_H
+#pragma once
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
@@ -225,6 +223,3 @@ class ConfigParser {
 };
 
 } //namespace bohrium
-
-#endif
-

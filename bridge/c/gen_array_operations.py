@@ -107,9 +107,7 @@ def main(args):
 
     #Let's add header and footer
     head = """/* Bohrium C Bridge: array operation functions. Auto generated! */
-
-#ifndef __BHC_ARRAY_OPERATIONS_H
-#define __BHC_ARRAY_OPERATIONS_H
+#pragma once
 
 #ifdef _WIN32
 #define DLLEXPORT __declspec( dllexport )
@@ -125,7 +123,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif // __BHC_ARRAY_OPERATIONS_H
+
 """ % head
     impl = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 

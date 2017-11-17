@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_VE_UNI_STORE_HPP
-#define __BH_VE_UNI_STORE_HPP
+#pragma once
 
 #include <vector>
 #include <iostream>
@@ -85,9 +83,4 @@ class EngineOpenMP {
     // Return a YAML string describing this component
     std::string info() const;
 };
-
-
-
 } // bohrium
-
-#endif

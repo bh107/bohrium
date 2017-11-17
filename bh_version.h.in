@@ -17,13 +17,9 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_VERSION_H
-#define __BH_VERSION_H
+#pragma once
 
 #define BH_VERSION_STRING "${BH_VERSION_STRING}"
 #define BH_VERSION_MAJOR (${BH_VERSION_MAJOR})
 #define BH_VERSION_MINOR (${BH_VERSION_MINOR})
 #define BH_VERSION_PATCH (${BH_VERSION_PATCH})
-
-#endif

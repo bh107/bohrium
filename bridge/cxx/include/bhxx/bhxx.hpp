@@ -20,13 +20,9 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BHXX_H
-#define __BHXX_H
+#pragma once
 
 #include <bhxx/BhArray.hpp>
 #include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
 #include <bhxx/util.hpp>
-
-#endif

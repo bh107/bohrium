@@ -1,5 +1,4 @@
-#ifndef VECTOR_3_H
-#define VECTOR_3_H
+#pragma once
 
 class Vector3
 {
@@ -30,5 +29,3 @@ class Vector3
     void normalize();
     float norm();
 };
-
-#endif
