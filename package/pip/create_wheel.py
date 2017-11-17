@@ -144,14 +144,14 @@ with open(join(_script_path(), "..", "..", "VERSION"), "r") as f:
     _version = f.read().strip()
 
 # Get the long description from the README file
-#with open(os.path.join(_script_path(), '../../README.md'), encoding='utf-8') as f:
-#    long_description = f.read()
+with open(os.path.join(_script_path(), '../../README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='bohrium',
     version=_version,
     description='Bohrium NumPy',
- #   long_description=long_description,
+    long_description=long_description,
     author='The Bohrium Team',
     author_email='contact@bh107.org',
     url='http://www.bh107.org',
@@ -190,7 +190,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='Benchmark, Bohrium, bh107',
+    keywords='Bohrium, bh107, Python, C, CUDA, OpenCL',
 
     package_dir={'bohrium': args_extra.npbackend_dir},
     packages=['bohrium', 'bohrium.target', 'bohrium.nobh'],
