@@ -60,15 +60,16 @@ def _li1st_files(path, prefix=None, regex_include="\.so|\.ini|\.dylib"):
     return ret
 
 
-def _find_data_files(root_path, regex_exclude="\.pyc|\.py"):
+def _find_data_files(root_path, regex_exclude=None, regex_include=None):
     """Return a list of paths relative to `root_path` of all files rooted in `root_path`"""
     root_path = os.path.abspath(root_path)
     ret = []
     for root, _, filenames in os.walk(root_path):
         for fname in filenames:
             fullname = join(root, fname)
-            if not re.search(regex_exclude, fullname):
-                ret.append(fullname.replace("%s/" % root_path, ""))
+            if regex_exclude is None or not re.search(regex_exclude, fullname):
+                if regex_include is None or re.search(regex_include, fullname):
+                    ret.append(fullname.replace("%s/" % root_path, ""))
     return ret
 
 
@@ -97,6 +98,15 @@ def _regex_replace(pattern, repl, src):
 # Copy the include dir for the JIT compilation into the Python package
 _copy_dirs(join(args_extra.bh_install_prefix, "share", "bohrium", "include"),
            join(args_extra.npbackend_dir, "include"))
+
+
+# Copy Python tests into the Python package
+_copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "python", "run.py"),
+            join(args_extra.npbackend_dir, "test"))
+_copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "python", "util.py"),
+            join(args_extra.npbackend_dir, "test"))
+_copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "python", "tests", "*.py"),
+            join(args_extra.npbackend_dir, "test", "tests"))
 
 
 # Copy Bohrium's shared libraries into the Python package
@@ -139,7 +149,6 @@ with open(_config_path, "w") as f:
 
 
 # The version if written in the VERSION file in the root of Bohrium
-_version = "0.0.0"
 with open(join(_script_path(), "..", "..", "VERSION"), "r") as f:
     _version = f.read().strip()
 
@@ -218,7 +227,9 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'bohrium': _find_data_files(args_extra.npbackend_dir)
+        'bohrium': _find_data_files(args_extra.npbackend_dir, regex_exclude="\.pyc|\.py") +
+                   _find_data_files(args_extra.npbackend_dir,
+                                    regex_include="test/run\.py|test/util\.py|test/tests/test.+\.py")
     },
 
     # To provide executable scripts, use entry points in preference to the
