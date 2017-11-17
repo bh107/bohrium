@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <pthread.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <stdint.h>
 #include <sys/mman.h>
 #include <signal.h>
 #include <stdio.h>
@@ -30,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <set>
 #include <iostream>
-#include <sstream>
 
 #include <bh_mem_signal.h>
 

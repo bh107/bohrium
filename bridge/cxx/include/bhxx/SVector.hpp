@@ -30,14 +30,17 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
-template <typename T, std::size_t MaxLength>
+template <typename T, size_t MaxLength>
 struct SVector : public std::vector<T> {
   public:
     using std::vector<T>::vector;
     SVector(const std::vector<T>& other) : SVector(other.begin(), other.end()) {}
     SVector() = default;
 
-    T sum() const { return std::accumulate(this->begin(), this->end(), T{0}); }
+    T sum() const {
+        return std::accumulate(this->begin(), this->end(), T{0});
+    }
+
     T prod() const {
         return std::accumulate(this->begin(), this->end(), T{1}, std::multiplies<T>());
     }
@@ -50,7 +53,7 @@ typedef SVector<size_t, BH_MAXDIM>  Shape;
 // Return a contiguous stride (row-major) based on `shape`
 Stride contiguous_stride(const Shape& shape);
 
-template <typename T, std::size_t MaxLength>
+template <typename T, size_t MaxLength>
 std::ostream& operator<<(std::ostream& o, const SVector<T, MaxLength>& vec) {
     o << '(';
 

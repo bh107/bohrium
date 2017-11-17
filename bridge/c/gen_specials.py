@@ -145,8 +145,12 @@ def main(args):
 {
     bhxx::Shape _shape(shape, shape+rank);
     bhxx::Stride _stride(stride, stride+rank);
-    const auto &b = ((bhxx::BhArray<%(cpp)s>*)src)->base;
-    bhxx::BhArray<%(cpp)s>* ret = new bhxx::BhArray<%(cpp)s>(b, _shape, _stride, start);
+    bhxx::BhArray<%(cpp)s>* ret = new bhxx::BhArray<%(cpp)s>(
+        ((bhxx::BhArray<%(cpp)s>*)src)->base,
+        _shape,
+        _stride,
+        start
+    );
     return (%(bhc_ary)s) ret;
 }
 

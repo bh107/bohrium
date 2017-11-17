@@ -20,8 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <string>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
 #include <bh_config_parser.hpp>
 #include <bh_ir.hpp>
