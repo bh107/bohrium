@@ -2,7 +2,6 @@
 from subprocess import Popen, PIPE, STDOUT
 from os import path
 import argparse
-import re
 import traceback
 import tempfile
 
@@ -48,7 +47,8 @@ def main(args):
 
     bash_cmd('cmake %s -DCMAKE_BUILD_TYPE=Debug -DCORE_LINK_FLAGS="-static-libgcc -static-libstdc++" '
              '-DBoost_NO_SYSTEM_PATHS=ON -DBoost_USE_STATIC_LIBS=ON -DBOOST_ROOT=%s -DCMAKE_INSTALL_PREFIX=%s '
-             '-DFORCE_CONFIG_PATH=%s' % (bh_dir, boost_dir, install_dir, install_dir), cwd=build_dir)
+             '-DFORCE_CONFIG_PATH=%s -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DCYTHON_OPENMP=OFF' %
+             (bh_dir, boost_dir, install_dir, install_dir), cwd=build_dir)
     bash_cmd("make install", cwd=build_dir)
     bash_cmd('python %s/create_wheel.py --npbackend-dir %s/lib/python2.7/site-packages/bohrium/ '
              '--bh-install-prefix %s --config %s/config.ini bdist_wheel' % (script_path(), install_dir,
@@ -58,8 +58,14 @@ def main(args):
              '--bh-install-prefix %s --config %s/config.ini bdist_wheel' % (script_path(), install_dir,
                                                                             install_dir, install_dir), cwd=build_dir)
 
-    # Upload the package to <https://pypi.python.org/pypi>
-    #bash_cmd('twine upload --sign --identity "%s" dist/*' % args.gpg_identity, cwd=build_dir)
+    if not args.no_upload:
+        # Upload the package to <https://pypi.python.org/pypi>
+        try:
+            bash_cmd('twine upload --sign --identity "%s" dist/*' % args.gpg_identity, cwd=build_dir)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt")
+
+    print ("Created wheel packages can be found here: '%s'" % path.join(build_dir, "dist"))
 
 
 if __name__ == "__main__":
@@ -96,6 +102,11 @@ if __name__ == "__main__":
         action="store_true",
         help='Only execute when the git repos has been changed.'
     )
+    parser.add_argument(
+        '--no-upload',
+        action="store_true",
+        help='Do not upload the wheel package.'
+    )
     args = parser.parse_args()
     status = "SUCCESS"
     try:
@@ -110,8 +121,7 @@ if __name__ == "__main__":
             log += e.output
         except:
             pass
-    print
-    print log
+
     if args.email:
         print ("send status email to '%s'" % args.email)
         p = Popen(['mail','-s','"[Bohrium PIP Build] The result of build was a %s"' % status, args.email],

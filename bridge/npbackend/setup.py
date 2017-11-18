@@ -41,11 +41,15 @@ parser.add_argument(
 )
 parser.add_argument(
     '--openmp-flag',
-    default="",
+    default=None,
     help='OpenMP flag for the Cython builds'
 )
 (args_extra, argv) = parser.parse_known_args()
 sys.argv = [sys.argv[0]] + argv  # Write the remaining arguments back to `sys.argv` for distutils to read
+if args_extra.openmp_flag is None:
+    args_extra.openmp_flag = []
+else:
+    args_extra.openmp_flag = [args_extra.openmp_flag]
 
 
 def buildpath(*paths):
@@ -269,8 +273,8 @@ setup(
             include_dirs=[srcpath('.')],
             libraries=[],
             library_dirs=[],
-            extra_compile_args=[args_extra.openmp_flag],
-            extra_link_args=[args_extra.openmp_flag]
+            extra_compile_args=args_extra.openmp_flag,
+            extra_link_args=args_extra.openmp_flag
         )
     ]
 )
