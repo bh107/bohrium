@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-set(BRIDGE_C true CACHE BOOL "BRIDGE-C: Build the C-bridge.")
+set(BRIDGE_C ${BRIDGE_BHXX} CACHE BOOL "BRIDGE-C: Build the C-bridge.")
 if(NOT BRIDGE_C)
     return()
+endif()
+if(NOT BRIDGE_BHXX)
+    message(FATAL_ERROR "BRIDGE_BHXX is required for BRIDGE_C, so please set BRIDGE_BHXX to ON or BRIDGE_C to OFF")
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
