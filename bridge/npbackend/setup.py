@@ -188,7 +188,14 @@ try:
 except OSError:
     pass
 
-shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
+# We might have to disable OpenMP in `bincount_cython.pyx`
+if len(args_extra.openmp_flag) == 0:
+    with open(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), "r") as fin:
+        with open(buildpath('nobh', 'bincount_cython.pyx'), "w") as fout:
+            fout.write(fin.read().replace("Linux", "OpenMP Disabled"))
+else:
+    shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
+
 
 setup(
     name='Bohrium',

@@ -12,7 +12,7 @@ cimport numpy as cnp
 ctypedef cnp.uint64_t uint64
 ctypedef cnp.int64_t int64
 
-IF UNAME_SYSNAME != "Darwin":
+IF UNAME_SYSNAME == "Linux":
     cimport openmp
 
 
@@ -23,7 +23,7 @@ cdef _count(uint64[:] x, uint64[:] out):
     cdef uint64 i, start, end
     cdef uint64* local_histo
 
-    IF UNAME_SYSNAME != "Darwin": # TODO: parallelize on OSX
+    IF UNAME_SYSNAME == "Linux": # TODO: parallelize on OSX
         with nogil, parallel():
             num_threads = openmp.omp_get_num_threads()
             thds_id = openmp.omp_get_thread_num()
@@ -60,7 +60,7 @@ cdef _count_int_weights(uint64[:] x, int64[:] w, int64[:] out):
     cdef uint64 i, start, end
     cdef int64* local_histo
 
-    IF UNAME_SYSNAME != "Darwin": # TODO: parallelize on OSX
+    IF UNAME_SYSNAME == "Linux": # TODO: parallelize on OSX
         with nogil, parallel():
             num_threads = openmp.omp_get_num_threads()
             thds_id = openmp.omp_get_thread_num()
@@ -97,7 +97,7 @@ cdef _count_float_weights(uint64[:] x, double[:] w, double[:] out):
     cdef uint64 i, start, end
     cdef double* local_histo
 
-    IF UNAME_SYSNAME != "Darwin": # TODO: parallelize on OSX
+    IF UNAME_SYSNAME == "Linux": # TODO: parallelize on OSX
         with nogil, parallel():
             num_threads = openmp.omp_get_num_threads()
             thds_id = openmp.omp_get_thread_num()
