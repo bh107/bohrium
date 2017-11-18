@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
-set(BRIDGE_NPBACKEND true CACHE BOOL "BRIDGE-NPBACKEND: Build the NPBACKEND-bridge.")
+set(BRIDGE_NPBACKEND ${BRIDGE_C} CACHE BOOL "BRIDGE-NPBACKEND: Build the NPBACKEND-bridge.")
 if(NOT BRIDGE_NPBACKEND)
     return()
+endif()
+if(NOT BRIDGE_C)
+    message(FATAL_ERROR "BRIDGE_C is required for BRIDGE_NPBACKEND, so please set BRIDGE_C to ON or BRIDGE_NPBACKEND to OFF")
 endif()
 
 find_package(NumPy)
