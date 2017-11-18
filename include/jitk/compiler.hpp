@@ -59,4 +59,8 @@ public:
     void compile(std::string object_abspath, std::string src_abspath) const;
 };
 
+/** Returns the command where {OUT}, {IN}, and {CONF_PATH} are expanded. */
+std::string expand_compile_cmd(const std::string &cmd_template, const std::string &out,
+                               const std::string &in, const std::string &config_path);
+
 }}

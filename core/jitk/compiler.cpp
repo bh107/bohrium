@@ -26,19 +26,16 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-namespace {
-    // Returns the command where {OUT}, {IN}, and {CONF_PATH} are expanded.
-    string expand_cmd(const string &cmd_template, const string &out, const string &in, const string &config_path) {
-        string ret = cmd_template;
-        boost::replace_all(ret, "{OUT}", out);
-        boost::replace_all(ret, "{IN}", in);
-        boost::replace_all(ret, "{CONF_PATH}", config_path);
-        return ret;
-    }
-}
-
 namespace bohrium {
 namespace jitk {
+
+string expand_compile_cmd(const string &cmd_template, const string &out, const string &in, const string &config_path) {
+    string ret = cmd_template;
+    boost::replace_all(ret, "{OUT}", out);
+    boost::replace_all(ret, "{IN}", in);
+    boost::replace_all(ret, "{CONF_PATH}", config_path);
+    return ret;
+}
 
 Compiler::Compiler(string cmd_template, bool verbose, string config_path) : cmd_template(std::move(cmd_template)),
                                                                             config_path(std::move(config_path)),
@@ -46,7 +43,7 @@ Compiler::Compiler(string cmd_template, bool verbose, string config_path) : cmd_
 
 
 void Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len) const {
-    const string cmd = expand_cmd(cmd_template, object_abspath, " - ", config_path);
+    const string cmd = expand_compile_cmd(cmd_template, object_abspath, " - ", config_path);
     if (verbose) {
         cout << "compile command: " << cmd << endl;
     }
@@ -83,7 +80,7 @@ void Compiler::compile(string object_abspath, const char* sourcecode, size_t sou
 }
 
 void Compiler::compile(string object_abspath, string src_abspath) const {
-    const string cmd = expand_cmd(cmd_template, object_abspath, src_abspath, config_path);
+    const string cmd = expand_compile_cmd(cmd_template, object_abspath, src_abspath, config_path);
     if (verbose) {
         cout << "compile command: " << cmd << endl;
     }

@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/filesystem.hpp>
 
 #include "engine_opencl.hpp"
+#include <jitk/compiler.hpp>
 
 namespace fs = boost::filesystem;
 using namespace std;
@@ -89,7 +90,8 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                                     work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
                                     work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
                                     work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
-                                    compile_flg(config.defaultGet<string>("compiler_flg", "")),
+                                    compile_flg(jitk::expand_compile_cmd(config.defaultGet<string>("compiler_flg", ""),
+                                                                         "", "", config.file_dir.string())),
                                     default_device_type(config.defaultGet<string>("device_type", "auto")),
                                     platform_no(config.defaultGet<int>("platform_no", -1)),
                                     verbose(config.defaultGet<bool>("verbose", false)),
