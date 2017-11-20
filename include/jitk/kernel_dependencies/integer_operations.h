@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_KERNEL_DEPENDENCIES_INTEGER_OPERATIONS_H
-#define __BH_JITK_KERNEL_DEPENDENCIES_INTEGER_OPERATIONS_H
+#pragma once
 
 #define IPOW(r,b,e) r = 1;                     \
                     while(e) {                 \
@@ -27,4 +25,3 @@ If not, see <http://www.gnu.org/licenses/>.
                         e >>= 1;               \
                         b *= b;                \
                     }
-#endif

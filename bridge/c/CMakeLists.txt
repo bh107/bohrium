@@ -9,8 +9,6 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(../cpp/bxx)
-include_directories(../cpp)
 include_directories(${CMAKE_SOURCE_DIR}/bridge/cxx/include)
 include_directories(${CMAKE_BINARY_DIR}/bridge/cxx/include)
 

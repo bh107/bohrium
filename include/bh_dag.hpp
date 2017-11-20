@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_IR_DAG_H
-#define __BH_IR_DAG_H
+#pragma once
 
 #include <boost/foreach.hpp>
 #include <boost/graph/graph_traits.hpp>
@@ -323,6 +321,3 @@ void fuse_greedy(GraphDW &dag);
 void fuse_greedy(GraphDW &dag, const std::set<Vertex> *ignores);
 
 }} //namespace bohrium::dag
-
-#endif
-

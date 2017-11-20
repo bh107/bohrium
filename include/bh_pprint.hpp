@@ -17,8 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __BH_PPRINT_H
-#define __BH_PPRINT_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -59,5 +58,3 @@ std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
     out << "]";
     return out;
 }
-
-#endif

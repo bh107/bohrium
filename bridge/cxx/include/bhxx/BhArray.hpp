@@ -17,13 +17,11 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
 #pragma once
 
 #include "BhBase.hpp"
 #include "SVector.hpp"
 #include <ostream>
-#include <vector>
 
 namespace bhxx {
 

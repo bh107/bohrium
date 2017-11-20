@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_STATISTICS_H
-#define __BH_JITK_STATISTICS_H
+#pragma once
 
 #include <chrono>
 #include <string>
@@ -233,5 +231,3 @@ class Statistics {
 
 } // jitk
 } // bohrium
-
-#endif

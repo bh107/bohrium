@@ -16,11 +16,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+#pragma once
 
 #ifdef _WIN32
-
-#ifndef DLFCN_H
-#define DLFCN_H
 
 /* POSIX says these are implementation-defined.
  * To simplify use with Windows API, we treat them the same way.
@@ -43,7 +41,5 @@ void *dlopen ( const char *file, int mode );
 int   dlclose( void *handle );
 void *dlsym  ( void *handle, const char *name );
 char *dlerror( void );
-
-#endif /* DLFCN_H */
 
 #endif /* _WIN32 */

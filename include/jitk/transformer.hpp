@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_TRANSFORMER_HPP
-#define __BH_JITK_TRANSFORMER_HPP
+#pragma once
 
 /* A collection of functions that transforms Blocks of Instructions */
 
@@ -42,5 +40,3 @@ void collapse_redundant_axes(std::vector<Block> &block_list);
 
 } // jitk
 } // bohrium
-
-#endif

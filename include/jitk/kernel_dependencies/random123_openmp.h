@@ -19,9 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 // This is the C99/OpenMP interface to Random123
-
-#ifndef __BH_JITK_KERNEL_DEPENDENCIES_RANDOM123_OPENMP_H
-#define __BH_JITK_KERNEL_DEPENDENCIES_RANDOM123_OPENMP_H
+#pragma once
 
 #include <Random123/philox.h>
 
@@ -37,5 +35,3 @@ uint64_t random123(uint64_t start, uint64_t key, uint64_t index) {
 
     return *((uint64_t*)&result);
 }
-
-#endif

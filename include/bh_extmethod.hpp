@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_EXTMETHOD_HPP
-#define __BH_EXTMETHOD_HPP
+#pragma once
 
 #include <string>
 #include <cassert>
@@ -133,5 +131,3 @@ public:
 };
 
 }} //namespace bohrium::extmethod
-
-#endif

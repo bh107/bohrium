@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_MEMORY_H
-#define __BH_MEMORY_H
+#pragma once
 
 #include <bh_type.hpp>
 
@@ -46,6 +44,3 @@ int64_t bh_memory_free(void* data, int64_t size);
 #ifdef __cplusplus
 }
 #endif
-
-#endif
-

@@ -19,9 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* inspired by pyopencl-complex.h */
-
-#ifndef __BH_JITK_KERNEL_DEPENDENCIES_COMPLEX_OPERATIONS_H
-#define __BH_JITK_KERNEL_DEPENDENCIES_COMPLEX_OPERATIONS_H
+#pragma once
 
 #include <cuComplex.h>
 
@@ -146,5 +144,3 @@ If not, see <http://www.gnu.org/licenses/>.
                          r.x = sinh(r.x) / d;            \
                          r.y = sin(r.y) / d;             \
                      }
-
-#endif

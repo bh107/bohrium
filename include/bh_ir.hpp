@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_IR_H
-#define __BH_IR_H
+#pragma once
 
 #include <vector>
 #include <map>
@@ -34,7 +32,7 @@ class BhIR
 public:
     // The list of Bohrium instructions in topological order
     std::vector<bh_instruction> instr_list;
-    // Set of sync'ed arrays 
+    // Set of sync'ed arrays
     std::set<bh_base *> _syncs;
     // Number of times to repeat this BhIR
     uint64_t _nrepeats;
@@ -103,5 +101,3 @@ public:
         return _repeat_condition;
     }
 };
-
-#endif

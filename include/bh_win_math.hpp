@@ -3,8 +3,8 @@ This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
 
 Bohrium is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as 
-published by the Free Software Foundation, either version 3 
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
 Bohrium is distributed in the hope that it will be useful,
@@ -12,14 +12,12 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the 
-GNU Lesser General Public License along with Bohrium. 
+You should have received a copy of the
+GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
- 
-#ifndef __BH_WIN_MATH_H
-#define __BH_WIN_MATH_H
+#pragma once
 
 #ifdef _WIN32
 
@@ -27,10 +25,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_type.h>
 
 //See: http://stackoverflow.com/questions/758001/log2-not-found-in-my-math-h
-inline double log2( double n )  
-{  
-    // log(n)/log(2) is log2.  
-    return log( n ) / log( 2.0 );  
+inline double log2( double n )
+{
+    // log(n)/log(2) is log2.
+    return log( n ) / log( 2.0 );
 }
 
 //http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
@@ -53,7 +51,7 @@ template <typename T> inline T expm1(T x)
 template <typename T> inline T isNaN(T x) { return x != x; }
 
 //Yikes, should use a library function!
-template <typename T> inline T trunc(T x) { 
+template <typename T> inline T trunc(T x) {
 	if (isNaN(x))
 		return x;
 	else {
@@ -70,7 +68,7 @@ template <typename T> inline T trunc(T x) {
 template <typename T> inline T log1p(T x) {
 	if (isNaN(x))
 		return x;
-	return log(T(1) + x); 
+	return log(T(1) + x);
 }
 
 //Add some missing overloads, Visual C++ compiler detects these as ambiguous
@@ -111,7 +109,5 @@ _MAKE_MATH_FUNCS(acsch, (log((sgn(n) * sqrt((n) * (n) + 1) + 1) / (n))))
 _MAKE_MATH_FUNCS(acoth, (log(((n) + 1) / ((n) - 1)) / 2))
 
 #undef _MAKE_MATH_FUNCS
-
-#endif
 
 #endif

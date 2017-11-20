@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_INSTRUCTION_HPP
-#define __BH_JITK_INSTRUCTION_HPP
+#pragma once
 
 #include <iostream>
 
@@ -52,5 +50,3 @@ InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim)
 
 } // jitk
 } // bohrium
-
-#endif

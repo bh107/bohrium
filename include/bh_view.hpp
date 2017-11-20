@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_VIEW_H
-#define __BH_VIEW_H
+#pragma once
 
 #include <algorithm>
 #include <stdbool.h>
@@ -308,5 +306,3 @@ DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b
  * @return The boolean answer
  */
 DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
-
-#endif

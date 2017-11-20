@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __OPENMP_OPENMP_UTIL_HPP
-#define __OPENMP_OPENMP_UTIL_HPP
+#pragma once
 
 #include <bh_opcode.h>
 #include <jitk/base_db.hpp>
@@ -95,5 +93,3 @@ bool openmp_atomic_compatible(bh_opcode opcode) {
             return false;
     }
 }
-
-#endif

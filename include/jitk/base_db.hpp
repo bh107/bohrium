@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_BASE_DB_H
-#define __BH_JITK_BASE_DB_H
+#pragma once
 
 #include <map>
 #include <vector>
@@ -436,5 +434,3 @@ public:
 
 } // jitk
 } // bohrium
-
-#endif

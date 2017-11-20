@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_JITK_VIEW_HPP
-#define __BH_JITK_VIEW_HPP
+#pragma once
 
 #include <iostream>
 
@@ -46,5 +44,3 @@ void write_array_subscription(const Scope &scope, const bh_view &view, std::stri
 
 } // jitk
 } // bohrium
-
-#endif

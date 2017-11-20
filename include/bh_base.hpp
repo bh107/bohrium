@@ -17,9 +17,7 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __BH_BASE_H
-#define __BH_BASE_H
+#pragma once
 
 #include "bh_type.hpp"
 #include <bh_constant.hpp>
@@ -93,5 +91,3 @@ DLLEXPORT void bh_data_malloc(bh_base* base);
  * @base    The base in question
  */
 void bh_data_free(bh_base* base);
-
-#endif

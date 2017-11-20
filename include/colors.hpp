@@ -1,5 +1,4 @@
-#ifndef __COLORS
-#define __COLORS
+#pragma once
 
 #include <unistd.h>
 
@@ -23,5 +22,3 @@
 
 #define BOLD (USE_COLORS ? "\x1B[1m" : "")
 #define UNDL (USE_COLORS ? "\x1B[4m" : "")
-
-#endif  // __COLORS
