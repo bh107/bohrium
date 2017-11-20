@@ -8,7 +8,7 @@ set(OPCODE_CPP  ${CMAKE_CURRENT_BINARY_DIR}/bh_opcode.cpp)
 set(OPCODE_JSON ${CMAKE_CURRENT_SOURCE_DIR}/codegen/opcodes.json)
 set(OPCODE_PY   ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_opcodes.py)
 add_custom_command(OUTPUT ${OPCODE_H} ${OPCODE_CPP}
-    COMMAND ${OPCODE_PY} ${OPCODE_JSON} ${OPCODE_H} ${OPCODE_CPP}
+    COMMAND ${PYTHON_EXECUTABLE} ${OPCODE_PY} ${OPCODE_JSON} ${OPCODE_H} ${OPCODE_CPP}
     DEPENDS ${OPCODE_JSON} ${OPCODE_PY})
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${INCLUDE_DIR})

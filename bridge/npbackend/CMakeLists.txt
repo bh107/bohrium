@@ -40,7 +40,9 @@ if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_
             DESTINATION ${LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages
             COMPONENT bohrium)
 else()
-    if (NOT NUMPY_INCLUDE_DIRS)
+    if (NOT NUMPY_FOUND)
+        message(STATUS "The Python/NumPy bridge cannot be built, because numpy was not found.")
+    elseif (NOT NUMPY_INCLUDE_DIRS)
         message(STATUS "The Python/NumPy bridge cannot be built, because the numpy headers are missing")
     else()
         message(STATUS "The Python/NumPy bridge cannot be built")

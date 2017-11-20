@@ -34,7 +34,7 @@ if(OpenCV_FOUND)
 
       add_custom_command(
         OUTPUT ${OpenCV_TEMPLATE_CPP}
-        COMMAND ${GEN_EXTMETHOD} ${OpenCV_TEMPLATE_DIR} ${OpenCV_TEMPLATE_CPP}
+        COMMAND ${PYTHON_EXECUTABLE} ${GEN_EXTMETHOD} ${OpenCV_TEMPLATE_DIR} ${OpenCV_TEMPLATE_CPP}
       )
 
       add_library(
