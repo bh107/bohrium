@@ -170,11 +170,11 @@ class Statistics {
                 KernelStats kernel_data = x.second;
                 out << "  "
                     << std::left         << std::setw(39) << kernel_filename
-                    << std::right << YEL << std::setw(10) << std::to_string(kernel_data.num_calls) << "    "
+                    << std::right << YEL << std::setw(10) << kernel_data.num_calls         << "    "
                     << std::scientific << std::setprecision(2)
                                          << std::setw(8) << kernel_data.total_time.count() << "s   "
-                                         << std::setw(8) << kernel_data.max_time.count() << "s   "
-                                         << std::setw(8) << kernel_data.min_time.count() << "s   "    << "\n" << RST;
+                                         << std::setw(8) << kernel_data.max_time.count()   << "s   "
+                                         << std::setw(8) << kernel_data.min_time.count()   << "s   " << "\n" << RST;
               }
             }
             out << endl;
