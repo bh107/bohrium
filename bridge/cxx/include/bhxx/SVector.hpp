@@ -51,7 +51,15 @@ typedef SVector<int64_t, BH_MAXDIM> Stride;
 typedef SVector<size_t, BH_MAXDIM>  Shape;
 
 // Return a contiguous stride (row-major) based on `shape`
-Stride contiguous_stride(const Shape& shape);
+extern inline Stride contiguous_stride(const Shape& shape) {
+    Stride  ret(shape.size());
+    int64_t stride = 1;
+    for (int64_t i = shape.size() - 1; i >= 0; --i) {
+        ret[i] = stride;
+        stride *= static_cast<int64_t>(shape[i]);
+    }
+    return ret;
+}
 
 template <typename T, size_t MaxLength>
 std::ostream& operator<<(std::ostream& o, const SVector<T, MaxLength>& vec) {
