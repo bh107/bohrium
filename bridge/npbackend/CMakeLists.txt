@@ -19,7 +19,7 @@ find_package(Cython)
 set_package_properties(Cython PROPERTIES DESCRIPTION "C-Extensions for Python" URL "cython.org")
 set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and SWIG).")
 
-if(APPLE) # Apply's default Python compiler dosn't support OpenMP
+if(APPLE) # Apple's default Python compiler doesn't support OpenMP
     set(CYTHON_OPENMP false CACHE BOOL "Use OpenMP in Cython extensions")
 else()
     set(CYTHON_OPENMP true CACHE BOOL "Use OpenMP in Cython extensions")

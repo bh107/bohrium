@@ -31,6 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_ir.hpp>
 #include <bh_instruction.hpp>
 #include <jitk/base_db.hpp>
+#include <bh_config_parser.hpp>
 
 namespace bohrium {
 namespace jitk {

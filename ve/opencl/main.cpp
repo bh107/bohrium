@@ -27,17 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <bh_util.hpp>
-#include <bh_opcode.h>
 #include <jitk/statistics.hpp>
-#include <jitk/block.hpp>
-#include <jitk/instruction.hpp>
-#include <jitk/fuser.hpp>
-#include <jitk/graph.hpp>
-#include <jitk/transformer.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_util.hpp>
-#include <jitk/dtype.hpp>
-#include <jitk/apply_fusion.hpp>
 
 #include "engine_opencl.hpp"
 
@@ -48,20 +38,18 @@ using namespace std;
 
 namespace {
 class Impl : public ComponentImplWithChild {
-  private:
+  public:
     // Some statistics
     Statistics stat;
-    // Fuse cache
-    FuseCache fcache;
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    set<bh_opcode> child_extmethods;
     // The OpenCL engine
     EngineOpenCL engine;
+    // Known extension methods
+    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
+    std::set<bh_opcode> child_extmethods;
 
-public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level), stat(config),
-                            fcache(stat), engine(config, stat) {}
+    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+                            stat(config),
+                            engine(config, stat) {}
     ~Impl();
     void execute(BhIR *bhir);
     void extmethod(const string &name, bh_opcode opcode) {
@@ -75,10 +63,6 @@ public:
             child_extmethods.insert(opcode);
         }
     }
-
-    // Write an OpenCL kernel
-    void write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
-                      const vector<const LoopB *> &threaded_blocks, stringstream &ss);
 
     // Handle messages from parent
     string message(const string &msg) {
@@ -102,7 +86,7 @@ public:
     void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         bh_base *b = &base;
         if (copy2host) {
-            bh_base* t[1] = {b};
+            std::set<bh_base*> t = { b };
             engine.copyToHost(t);
             engine.delBuffer(b);
             if (force_alloc) {
@@ -121,7 +105,7 @@ public:
     // Handle memory pointer obtainment
     void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
         if (host_ptr) {
-            bh_base* t[1] = {base};
+            std::set<bh_base*> t = { base };
             engine.copyToHost(t);
             engine.delBuffer(base);
             base->data = mem;
@@ -140,6 +124,7 @@ public:
 extern "C" ComponentImpl* create(int stack_level) {
     return new Impl(stack_level);
 }
+
 extern "C" void destroy(ComponentImpl* self) {
     delete self;
 }
@@ -150,82 +135,23 @@ Impl::~Impl() {
     }
 }
 
-
-// Writes the OpenCL specific for-loop header
-void loop_head_writer(const SymbolTable &symbols, Scope &scope, const LoopB &block, const ConfigParser &config,
-                      bool loop_is_peeled, const vector<const LoopB *> &threaded_blocks, stringstream &out) {
-    // Write the for-loop header
-    string itername;
-    {stringstream t; t << "i" << block.rank; itername = t.str();}
-    // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
-    if (std::find_if(threaded_blocks.begin(), threaded_blocks.end(),
-                     [&block](const LoopB* b){return *b == block;}) == threaded_blocks.end()) {
-        out << "for(" << write_opencl_type(bh_type::UINT64) << " " << itername;
-        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-            out << "=1; ";
-        else
-            out << "=0; ";
-        out << itername << " < " << block.size << "; ++" << itername << ") {\n";
-    } else {
-        assert(block._sweeps.size() == 0);
-        out << "{ // Threaded block (ID " << itername << ")\n";
-    }
-}
-
-void Impl::write_kernel(const Block &block, const SymbolTable &symbols, const ConfigParser &config,
-                        const vector<const LoopB *> &threaded_blocks, stringstream &ss) {
-
-    // Write the need includes
-    ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-    ss << "#include <kernel_dependencies/complex_opencl.h>\n";
-    ss << "#include <kernel_dependencies/integer_operations.h>\n";
-    if (symbols.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_opencl.h>\n";
-    }
-    ss << "\n";
-
-    // Write the header of the execute function
-    ss << "__kernel void execute";
-    write_kernel_function_arguments(symbols, write_opencl_type, ss, "__global", false);
-    ss << "{\n";
-
-    // Write the IDs of the threaded blocks
-    if (not threaded_blocks.empty()) {
-        spaces(ss, 4);
-        ss << "// The IDs of the threaded blocks: \n";
-        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
-            const LoopB *b = threaded_blocks[i];
-            spaces(ss, 4);
-            ss << "const " << write_opencl_type(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); " \
-               << "if (i" << b->rank << " >= " << b->size << ") {return;} // Prevent overflow\n";
-        }
-        ss << "\n";
-    }
-
-    // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, nullptr, block.getLoop(), config, threaded_blocks, true, write_opencl_type,
-                     loop_head_writer, ss);
-
-    ss << "}\n\n";
-}
-
-
 void Impl::execute(BhIR *bhir) {
     if (disabled) {
         child.execute(bhir);
         return;
     }
+
     bh_base *cond = bhir->getRepeatCondition();
-    for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {
+    for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        util_handle_extmethod(this, bhir, extmethods, child_extmethods, child, stat, &engine);
+        engine.handle_extmethod(*this, bhir, child_extmethods);
 
         // And then the regular instructions
-        handle_gpu_execution(*this, bhir, engine, config, stat, fcache, &child);
+        engine.handle_execution(*this, bhir);
 
         // Check condition
         if (cond != nullptr) {
-            const vector<bh_base*> t = {cond};
+            const vector<bh_base*> t = { cond };
             engine.copyToHost(t); // TODO: make it a read-only copy
             if (cond->data != nullptr and not ((bool*)cond->data)[0]) {
                 break;

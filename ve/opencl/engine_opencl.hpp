@@ -25,16 +25,20 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <chrono>
 
 #include <bh_config_parser.hpp>
+#include <bh_instruction.hpp>
+#include <bh_component.hpp>
 #include <bh_view.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
 #include <boost/filesystem.hpp>
 
+#include <jitk/engine.hpp>
+
 #include "cl.hpp"
 
 namespace bohrium {
 
-class EngineOpenCL {
+class EngineOpenCL : public jitk::Engine {
 private:
     // Map of all compiled OpenCL programs
     std::map<uint64_t, cl::Program> _programs;
@@ -86,14 +90,15 @@ public:
     ~EngineOpenCL();
 
     // Execute the 'source'
-    void execute(const std::string &source, const std::vector<bh_base*> &non_temps,
+    void execute(const std::string &source,
+                 const std::vector<bh_base*> &non_temps,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
                  const std::vector<const bh_view*> &offset_strides,
-                 const std::vector<const bh_instruction*> &constants);
+                 const std::vector<const bh_instruction*> &constants) override;
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>
-    void copyToHost(T &bases) {
+    void _copyToHost(T &bases) {
         auto tcopy = std::chrono::steady_clock::now();
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: bases) {
@@ -110,6 +115,13 @@ public:
         }
         queue.finish();
         stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
+    }
+    // TODO: Can this be done differently?
+    void copyToHost(const std::vector<bh_base*> &bases) override {
+        _copyToHost(bases);
+    }
+    void copyToHost(const std::set<bh_base*> &bases) override {
+        _copyToHost(bases);
     }
 
     cl::Buffer *createBuffer(bh_base *base) {
@@ -132,7 +144,7 @@ public:
 
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
     template <typename T>
-    void copyToDevice(T &base_list) {
+    void _copyToDevice(T &base_list) {
 
         // Let's update the maximum memory usage on the device
         if (prof) {
@@ -160,6 +172,13 @@ public:
         queue.finish();
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
     }
+    // TODO: Can this be done differently?
+    void copyToDevice(const std::vector<bh_base*> &base_list) override {
+        _copyToDevice(base_list);
+    }
+    void copyToDevice(const std::set<bh_base*> &base_list) override {
+        _copyToDevice(base_list);
+    }
 
     // Copy all bases to the host (ignoring bases that isn't on the device)
     void allBasesToHost() {
@@ -171,10 +190,10 @@ public:
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+    void set_constructor_flag(std::vector<bh_instruction*> &instr_list) override;
 
     // Return a YAML string describing this component
-    std::string info() const;
+    std::string info() const override;
 
     // Retrieve a single buffer
     cl::Buffer* getBuffer(bh_base* base) {
@@ -186,7 +205,7 @@ public:
     }
 
     // Delete a buffer
-    void delBuffer(bh_base* base) {
+    void delBuffer(bh_base* &base) override {
         buffers.erase(base);
     }
 
@@ -208,6 +227,62 @@ public:
     // Get C command queue from wrapped C++ object
     cl_command_queue getCQueue() {
         return queue();
+    }
+
+    void write_kernel(const jitk::Block &block,
+                      const jitk::SymbolTable &symbols,
+                      const std::vector<const jitk::LoopB*> &threaded_blocks,
+                      std::stringstream &ss) override;
+
+    // Writes the OpenCL specific for-loop header
+    void loop_head_writer(const jitk::SymbolTable &symbols,
+                          jitk::Scope &scope,
+                          const jitk::LoopB &block,
+                          bool loop_is_peeled,
+                          const std::vector<const jitk::LoopB *> &threaded_blocks,
+                          std::stringstream &out) override {
+        // Write the for-loop header
+        std::string itername;
+        { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
+        // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
+        if (std::find_if(threaded_blocks.begin(),
+                         threaded_blocks.end(),
+                         [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
+            out << "for(" << write_type(bh_type::UINT64) << " " << itername;
+            if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
+                out << " = 1; ";
+            else
+                out << " = 0; ";
+            out << itername << " < " << block.size << "; ++" << itername << ") {";
+        } else {
+            assert(block._sweeps.size() == 0);
+            out << "{ // Threaded block (ID " << itername << ")";
+        }
+
+        out << "\n";
+    }
+
+    // Return OpenCL API types, which are used inside the JIT kernels
+    const std::string write_type(bh_type dtype) override {
+        switch (dtype) {
+            case bh_type::BOOL:       return "uchar";
+            case bh_type::INT8:       return "char";
+            case bh_type::INT16:      return "short";
+            case bh_type::INT32:      return "int";
+            case bh_type::INT64:      return "long";
+            case bh_type::UINT8:      return "uchar";
+            case bh_type::UINT16:     return "ushort";
+            case bh_type::UINT32:     return "uint";
+            case bh_type::UINT64:     return "ulong";
+            case bh_type::FLOAT32:    return "float";
+            case bh_type::FLOAT64:    return "double";
+            case bh_type::COMPLEX64:  return "float2";
+            case bh_type::COMPLEX128: return "double2";
+            case bh_type::R123:       return "ulong2";
+            default:
+                std::cerr << "Unknown OpenCL type: " << bh_type_text(dtype) << std::endl;
+                throw std::runtime_error("Unknown OpenCL type");
+        }
     }
 };
 

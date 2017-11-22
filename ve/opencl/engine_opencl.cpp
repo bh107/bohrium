@@ -21,7 +21,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 #include <boost/functional/hash.hpp>
-#include <boost/filesystem.hpp>
+
+#include <bh_instruction.hpp>
+#include <bh_component.hpp>
 
 #include "engine_opencl.hpp"
 #include <jitk/compiler.hpp>
@@ -84,24 +86,24 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
-                                    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-                                    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-                                    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-                                    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-                                    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-                                    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
-                                    compile_flg(jitk::expand_compile_cmd(config.defaultGet<string>("compiler_flg", ""),
-                                                                         "", "", config.file_dir.string())),
-                                    default_device_type(config.defaultGet<string>("device_type", "auto")),
-                                    platform_no(config.defaultGet<int>("platform_no", -1)),
-                                    verbose(config.defaultGet<bool>("verbose", false)),
-                                    cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-                                    stat(stat),
-                                    prof(config.defaultGet<bool>("prof", false)),
-                                    tmp_dir(jitk::get_tmp_path(config)),
-                                    tmp_src_dir(tmp_dir / "src"),
-                                    tmp_bin_dir(tmp_dir / "obj"),
-                                    cache_bin_dir(config.defaultGet<fs::path>("cache_dir", ""))
+    Engine(config, stat),
+    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
+    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
+    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
+    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
+    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
+    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
+    compile_flg(jitk::expand_compile_cmd(config.defaultGet<string>("compiler_flg", ""), "", "", config.file_dir.string())),
+    default_device_type(config.defaultGet<string>("device_type", "auto")),
+    platform_no(config.defaultGet<int>("platform_no", -1)),
+    verbose(config.defaultGet<bool>("verbose", false)),
+    cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
+    stat(stat),
+    prof(config.defaultGet<bool>("prof", false)),
+    tmp_dir(jitk::get_tmp_path(config)),
+    tmp_src_dir(tmp_dir / "src"),
+    tmp_bin_dir(tmp_dir / "obj"),
+    cache_bin_dir(config.defaultGet<fs::path>("cache_dir", ""))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -289,7 +291,8 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     return program;
 }
 
-void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
+void EngineOpenCL::execute(const std::string &source,
+                           const std::vector<bh_base*> &non_temps,
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
@@ -378,6 +381,43 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
 
 void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
+}
+
+void EngineOpenCL::write_kernel(const jitk::Block &block,
+                                const jitk::SymbolTable &symbols,
+                                const vector<const jitk::LoopB*> &threaded_blocks,
+                                stringstream &ss) {
+    // Write the need includes
+    ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
+    ss << "#include <kernel_dependencies/complex_opencl.h>\n";
+    ss << "#include <kernel_dependencies/integer_operations.h>\n";
+    if (symbols.useRandom()) { // Write the random function
+        ss << "#include <kernel_dependencies/random123_opencl.h>\n";
+    }
+    ss << "\n";
+
+    // Write the header of the execute function
+    ss << "__kernel void execute";
+    write_kernel_function_arguments(symbols, ss, "__global");
+    ss << " {\n";
+
+    // Write the IDs of the threaded blocks
+    if (not threaded_blocks.empty()) {
+        util::spaces(ss, 4);
+        ss << "// The IDs of the threaded blocks: \n";
+        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
+            const jitk::LoopB *b = threaded_blocks[i];
+            util::spaces(ss, 4);
+            ss << "const " << write_type(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
+               << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
+        }
+        ss << "\n";
+    }
+
+    // Write the block that makes up the body of 'execute()'
+    write_loop_block(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+
+    ss << "}\n\n";
 }
 
 std::string EngineOpenCL::info() const {

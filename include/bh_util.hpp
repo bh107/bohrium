@@ -20,11 +20,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <algorithm>
+#include <sstream>
 #include <vector>
 #include <type_traits>
 #include <boost/filesystem.hpp>
 
 namespace util {
+
+// Write 'num' of spaces to 'out'
+inline extern void spaces(std::stringstream &out, int num) {
+    for (int i = 0; i < num; ++i) {
+        out << " ";
+    }
+}
 
 // Concatenate two vectors
 template <typename T>

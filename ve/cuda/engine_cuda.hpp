@@ -22,33 +22,34 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <memory>
 #include <vector>
-#include <tuple>
 #include <chrono>
-#include <boost/filesystem.hpp>
 
 #include <bh_config_parser.hpp>
+#include <bh_instruction.hpp>
+#include <bh_component.hpp>
 #include <bh_view.hpp>
+#include <jitk/compiler.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
-#include <jitk/compiler.hpp>
+#include <boost/filesystem.hpp>
+
+#include <jitk/engine.hpp>
 
 #include <cuda.h>
 
 namespace {
     // This will output the proper CUDA error strings
     // in the event that a CUDA host call returns an error
-    #define checkCudaErrors(err)  __checkCudaErrors (err, __FILE__, __LINE__)
+    #define checkCudaErrors(err) __checkCudaErrors (err, __FILE__, __LINE__)
 
-    inline void __checkCudaErrors( CUresult err, const char *file, const int line )
-    {
-        if( CUDA_SUCCESS != err) {
+    inline void __checkCudaErrors(CUresult err, const char *file, const int line) {
+        if(CUDA_SUCCESS != err) {
             const char* err_name;
             cuGetErrorName(err, &err_name);
             const char* err_desc;
             cuGetErrorString(err, &err_desc);
 
-            fprintf(stderr,
-                    "CUDA Error: %s \"%s\" from file <%s>, line %i.\n", err_name, err_desc, file, line);
+            fprintf(stderr, "CUDA Error: %s \"%s\" from file <%s>, line %i.\n", err_name, err_desc, file, line);
             throw std::runtime_error("CUDA API call fail");
         }
     }
@@ -56,7 +57,7 @@ namespace {
 
 namespace bohrium {
 
-class EngineCUDA {
+class EngineCUDA : public jitk::Engine {
 private:
     // Map of all compiled OpenCL programs
     std::map<uint64_t, CUfunction> _functions;
@@ -119,14 +120,19 @@ public:
     ~EngineCUDA();
 
     // Execute the 'source'
-    void execute(const std::string &source, const std::vector<bh_base*> &non_temps,
+    void execute(const std::string &source,
+                 const std::vector<bh_base*> &non_temps,
                  const std::vector<const jitk::LoopB*> &threaded_blocks,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
+    void write_kernel(const jitk::Block &block,
+                      const jitk::SymbolTable &symbols,
+                      const std::vector<const jitk::LoopB*> &threaded_blocks,
+                      std::stringstream &ss) override;
+
     // Delete a buffer
-    template <typename T>
-    void delBuffer(T &base) {
+    void delBuffer(bh_base* &base) override {
         checkCudaErrors(cuMemFree(buffers[base]));
         buffers.erase(base);
     }
@@ -143,7 +149,7 @@ public:
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
     template <typename T>
-    void copyToHost(T &bases) {
+    void _copyToHost(T &bases) {
         auto tcopy = std::chrono::steady_clock::now();
         // Let's copy sync'ed arrays back to the host
         for(bh_base *base: bases) {
@@ -160,10 +166,17 @@ public:
         }
         stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
     }
+    // TODO: Can this be done differently?
+    void copyToHost(const std::vector<bh_base*> &bases) override {
+        _copyToHost(bases);
+    }
+    void copyToHost(const std::set<bh_base*> &bases) override {
+        _copyToHost(bases);
+    }
 
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
     template <typename T>
-    void copyToDevice(T &base_list) {
+    void _copyToDevice(T &base_list) {
 
         // Let's update the maximum memory usage on the device
         if (prof) {
@@ -171,7 +184,7 @@ public:
             for (const auto &b: buffers) {
                 sum += bh_base_size(b.first);
             }
-            stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
+            stat.max_memory_usage = sum > stat.max_memory_usage ? sum : stat.max_memory_usage;
         }
 
         auto tcopy = std::chrono::steady_clock::now();
@@ -191,6 +204,13 @@ public:
             }
         }
         stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
+    }
+    // TODO: Can this be done differently?
+    void copyToDevice(const std::vector<bh_base*> &base_list) override {
+        _copyToDevice(base_list);
+    }
+    void copyToDevice(const std::set<bh_base*> &base_list) override {
+        _copyToDevice(base_list);
     }
 
     // Copy all bases to the host (ignoring bases that isn't on the device)
@@ -229,6 +249,69 @@ public:
 
     // Return a YAML string describing this component
     std::string info() const;
+
+    // Writes the CUDA specific for-loop header
+    void loop_head_writer(const jitk::SymbolTable &symbols,
+                          jitk::Scope &scope,
+                          const jitk::LoopB &block,
+                          bool loop_is_peeled,
+                          const std::vector<const jitk::LoopB *> &threaded_blocks,
+                          std::stringstream &out) {
+        // Write the for-loop header
+        std::string itername;
+        { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
+        // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
+        if (std::find_if(threaded_blocks.begin(),
+                         threaded_blocks.end(),
+                         [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
+            out << "for(" << write_type(bh_type::INT64) << " " << itername;
+            if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
+                out << " = 1; ";
+            else
+                out << " = 0; ";
+            out << itername << " < " << block.size << "; ++" << itername << ") {";
+        } else {
+            assert(block._sweeps.size() == 0);
+            out << "{ // Threaded block (ID " << itername << ")";
+        }
+        out << "\n";
+    }
+
+    // Return CUDA types, which are used inside the JIT kernels
+    const std::string write_type(bh_type dtype) {
+        switch (dtype) {
+            case bh_type::BOOL:       return "bool";
+            case bh_type::INT8:       return "char";
+            case bh_type::INT16:      return "short";
+            case bh_type::INT32:      return "int";
+            case bh_type::INT64:      return "long";
+            case bh_type::UINT8:      return "unsigned char";
+            case bh_type::UINT16:     return "unsigned short";
+            case bh_type::UINT32:     return "unsigned int";
+            case bh_type::UINT64:     return "unsigned long";
+            case bh_type::FLOAT32:    return "float";
+            case bh_type::FLOAT64:    return "double";
+            case bh_type::COMPLEX64:  return "cuFloatComplex";
+            case bh_type::COMPLEX128: return "cuDoubleComplex";
+            case bh_type::R123:       return "ulong2";
+            default:
+                std::cerr << "Unknown CUDA type: " << bh_type_text(dtype) << std::endl;
+                throw std::runtime_error("Unknown CUDA type");
+        }
+    }
+
+    const char *write_thread_id(unsigned int dim) {
+        switch (dim) {
+        case 0:
+            return "(blockIdx.x * blockDim.x + threadIdx.x)";
+        case 1:
+            return "(blockIdx.y * blockDim.y + threadIdx.y)";
+        case 2:
+            return "(blockIdx.z * blockDim.z + threadIdx.z)";
+        default:
+            throw std::runtime_error("CUDA only support 3 dimensions");
+        }
+    }
 };
 
 } // bohrium

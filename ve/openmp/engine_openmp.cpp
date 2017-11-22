@@ -27,10 +27,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <dlfcn.h>
 #include <jitk/codegen_util.hpp>
+#include <jitk/compiler.hpp>
+#include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_cache.hpp>
+#include <jitk/block.hpp>
+#include <jitk/engine.hpp>
 #include <thread>
 
 #include <bh_util.hpp>
 #include "engine_openmp.hpp"
+#include "openmp_util.hpp"
 
 using namespace std;
 namespace fs = boost::filesystem;
@@ -40,26 +46,13 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-                                   verbose(config.defaultGet<bool>("verbose", false)),
-                                   cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-                                   tmp_dir(jitk::get_tmp_path(config)),
-                                   tmp_src_dir(tmp_dir / "src"),
-                                   tmp_bin_dir(tmp_dir / "obj"),
-                                   cache_bin_dir(config.defaultGet<fs::path>("cache_dir", "")),
-                                   compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string()),
-                                   compilation_hash(hasher(compiler.cmd_template)),
-                                   stat(stat)
+    Engine(config, stat),
+    compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string())
 {
-    // Let's make sure that the directories exist
-    jitk::create_directories(tmp_src_dir);
-    jitk::create_directories(tmp_bin_dir);
-    if (not cache_bin_dir.empty()) {
-        jitk::create_directories(cache_bin_dir);
-    }
+    compilation_hash = hasher(compiler.cmd_template);
 }
 
 EngineOpenMP::~EngineOpenMP() {
-
     // Move JIT kernels to the cache dir
     if (not cache_bin_dir.empty()) {
         try {
@@ -222,6 +215,229 @@ void EngineOpenMP::set_constructor_flag(std::vector<bh_instruction*> &instr_list
     jitk::util_set_constructor_flag(instr_list, empty);
 }
 
+void EngineOpenMP::handle_execution(BhIR *bhir) {
+    using namespace std;
+
+    const auto texecution = chrono::steady_clock::now();
+
+    map<string, bool> kernel_config = {
+        { "strides_as_var", config.defaultGet<bool>("strides_as_var", true) },
+        { "index_as_var",   config.defaultGet<bool>("index_as_var",   true) },
+        { "const_as_var",   config.defaultGet<bool>("const_as_var",   true) },
+        { "monolithic",     config.defaultGet<bool>("monolithic",    false) },
+        { "use_volatile",   config.defaultGet<bool>("use_volatile",  false) }
+    };
+
+    // Some statistics
+    stat.record(*bhir);
+
+    // Let's start by cleanup the instructions from the 'bhir'
+    vector<bh_instruction*> instr_list;
+    set<bh_base*> frees;
+
+    instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
+
+    // Let's free device buffers and array memory
+    for(bh_base *base: frees) {
+        bh_data_free(base);
+    }
+
+    // Set the constructor flag
+    if (config.defaultGet<bool>("array_contraction", true)) {
+        set_constructor_flag(instr_list);
+    } else {
+        for (bh_instruction *instr: instr_list) {
+            instr->constructor = false;
+        }
+    }
+
+    // Let's get the block list
+    const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat, false);
+
+    if (kernel_config["monolithic"]) {
+        jitk::create_monolithic_kernel(*this, kernel_config, block_list);
+    } else {
+        jitk::create_kernel(*this, kernel_config, block_list);
+    }
+    stat.time_total_execution += chrono::steady_clock::now() - texecution;
+}
+
+// Writes the OpenMP specific for-loop header
+void EngineOpenMP::loop_head_writer(const jitk::SymbolTable &symbols,
+                                    jitk::Scope &scope,
+                                    const jitk::LoopB &block,
+                                    bool loop_is_peeled,
+                                    const vector<const jitk::LoopB *> &threaded_blocks,
+                                    stringstream &out) {
+
+    // Let's write the OpenMP loop header
+    {
+        int64_t for_loop_size = block.size;
+        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, its size is one less
+            --for_loop_size;
+        // No need to parallel one-sized loops
+        if (for_loop_size > 1) {
+            write_header(symbols, scope, block, out);
+        }
+    }
+
+    // Write the for-loop header
+    string itername;
+    { stringstream t; t << "i" << block.rank; itername = t.str(); }
+    out << "for(uint64_t " << itername;
+    if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
+        out << " = 1; ";
+    else
+        out << " = 0; ";
+    out << itername << " < " << block.size << "; ++" << itername << ") {\n";
+}
+
+// Writing the OpenMP header, which include "parallel for" and "simd"
+void EngineOpenMP::write_header(const jitk::SymbolTable &symbols,
+                                jitk::Scope &scope,
+                                const jitk::LoopB &block,
+                                std::stringstream &out) {
+    const bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
+
+    // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
+    std::vector<jitk::InstrPtr> openmp_reductions;
+
+    // Order all sweep instructions by the viewID of their first operand.
+    // This makes the source of the kernels more identical, which improve the code and compile caches.
+    const std::vector<jitk::InstrPtr> ordered_block_sweeps = order_sweep_set(block._sweeps, symbols);
+
+    stringstream ss;
+    // "OpenMP for" goes to the outermost loop
+    if (block.rank == 0 and openmp_compatible(block)) {
+        ss << " parallel for";
+        // Since we are doing parallel for, we should either do OpenMP reductions or protect the sweep instructions
+        for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
+            assert(instr->operand.size() == 3);
+            const bh_view &view = instr->operand[0];
+            if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
+                openmp_reductions.push_back(instr);
+            } else if (openmp_atomic_compatible(instr->opcode)) {
+                scope.insertOpenmpAtomic(view);
+            } else {
+                scope.insertOpenmpCritical(view);
+            }
+        }
+    }
+
+    // "OpenMP SIMD" goes to the innermost loop (which might also be the outermost loop)
+    if (enable_simd and block.isInnermost() and simd_compatible(block, scope)) {
+        ss << " simd";
+        if (block.rank > 0) { // NB: avoid multiple reduction declarations
+            for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
+                openmp_reductions.push_back(instr);
+            }
+        }
+    }
+
+    //Let's write the OpenMP reductions
+    for (const jitk::InstrPtr &instr: openmp_reductions) {
+        assert(instr->operand.size() == 3);
+        ss << " reduction(" << openmp_reduce_symbol(instr->opcode) << ":";
+        scope.getName(instr->operand[0], ss);
+        ss << ")";
+    }
+    const string ss_str = ss.str();
+    if(not ss_str.empty()) {
+        out << "#pragma omp" << ss_str << "\n";
+        util::spaces(out, 4 + block.rank*4);
+    }
+}
+
+void EngineOpenMP::write_kernel(const std::vector<jitk::Block> &block_list,
+                                const jitk::SymbolTable &symbols,
+                                const std::vector<bh_base*> &kernel_temps,
+                                std::stringstream &ss) {
+
+    // Write the need includes
+    ss << "#include <stdint.h>\n";
+    ss << "#include <stdlib.h>\n";
+    ss << "#include <stdbool.h>\n";
+    ss << "#include <complex.h>\n";
+    ss << "#include <tgmath.h>\n";
+    ss << "#include <math.h>\n";
+    if (symbols.useRandom()) { // Write the random function
+        ss << "#include <kernel_dependencies/random123_openmp.h>\n";
+    }
+    write_union_type(ss); // We always need to declare the union of all constant data types
+    ss << "\n";
+
+    // Write the header of the execute function
+    ss << "void execute";
+    write_kernel_function_arguments(symbols, ss, nullptr);
+
+    // Write the block that makes up the body of 'execute()'
+    ss << "{\n";
+    // Write allocations of the kernel temporaries
+    for(const bh_base* b: kernel_temps) {
+        util::spaces(ss, 4);
+        ss << write_type(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b)
+           << ");\n";
+    }
+    ss << "\n";
+
+    for(const jitk::Block &block: block_list) {
+        write_loop_block(symbols, nullptr, block.getLoop(), {}, false, ss);
+    }
+
+    // Write frees of the kernel temporaries
+    ss << "\n";
+    for(const bh_base* b: kernel_temps) {
+        util::spaces(ss, 4);
+        ss << "free(" << "a" << symbols.baseID(b) << ");\n";
+    }
+    ss << "}\n\n";
+
+    // Write the launcher function, which will convert the data_list of void pointers
+    // to typed arrays and call the execute function
+    {
+        ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
+        for(size_t i = 0; i < symbols.getParams().size(); ++i) {
+            util::spaces(ss, 4);
+            bh_base *b = symbols.getParams()[i];
+            ss << write_type(b->type) << " *a" << symbols.baseID(b);
+            ss << " = data_list[" << i << "];\n";
+        }
+
+        util::spaces(ss, 4);
+        ss << "execute(";
+
+        // We create the comma separated list of args and saves it in `stmp`
+        stringstream stmp;
+        for(size_t i = 0; i < symbols.getParams().size(); ++i) {
+            bh_base *b = symbols.getParams()[i];
+            stmp << "a" << symbols.baseID(b) << ", ";
+        }
+
+        uint64_t count = 0;
+        for (const bh_view *view: symbols.offsetStrideViews()) {
+            stmp << "offset_strides[" << count++ << "], ";
+            for (int i = 0; i<view->ndim; ++i) {
+                stmp << "offset_strides[" << count++ << "], ";
+            }
+        }
+
+        if (not symbols.constIDs().empty()) {
+            uint64_t i = 0;
+            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
+                const jitk::InstrPtr &instr = *it;
+                stmp << "constants[" << i++ << "]." << bh_type_text(instr->constant.type) << ", ";
+            }
+        }
+
+        // And then we write `stmp` into `ss` excluding the last comma
+        const string strtmp = stmp.str();
+        if (not strtmp.empty()) {
+            ss << strtmp.substr(0, strtmp.size()-2);
+        }
+        ss << ");\n";
+        ss << "}\n";
+    }
+}
 
 std::string EngineOpenMP::info() const {
     stringstream ss;
