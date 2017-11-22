@@ -24,7 +24,7 @@ include(CheckCCompilerFlag)
 include(FeatureSummary)
 
 # Import and detect OpenMP features
-find_package(OpenMP COMPONENTS bohrium)
+find_package(OpenMP)
 set_package_properties(OpenMP PROPERTIES TYPE RECOMMENDED PURPOSE "Multicore processing, essential for performance of the CPU VE.")
 
 # If not found on Apple with Clang, we try again with no warnings
@@ -43,7 +43,7 @@ if(NOT(OPENMP_FOUND OR OpenMP_C_FOUND) AND APPLE)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         set(OpenMP_CXX_FLAG "-fopenmp=libomp -Wno-unused-command-line-argument")
     endif()
-    find_package(OpenMP COMPONENTS bohrium)
+    find_package(OpenMP)
 endif()
 
 if(OPENMP_FOUND OR OpenMP_C_FOUND)

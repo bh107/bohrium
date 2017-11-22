@@ -12,7 +12,7 @@ add_library(bh_tdma SHARED main.cpp)
 
 target_link_libraries(bh_tdma bh)
 
-find_package(OpenMP COMPONENTS bohrium)
+find_package(OpenMP)
 if(OPENMP_FOUND OR OpenMP_CXX_FOUND)
     set_target_properties(bh_tdma PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} LINK_FLAGS ${OpenMP_CXX_FLAGS})
     install(TARGETS bh_tdma DESTINATION ${LIBDIR} COMPONENT bohrium)

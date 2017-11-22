@@ -4,7 +4,7 @@ if(NOT VEM_PROXY)
     return()
 endif()
 
-find_package(ZLIB REQUIRED COMPONENTS bohrium)
+find_package(ZLIB)
 set_package_properties(ZLIB PROPERTIES DESCRIPTION "zlib general purpose compression library" URL "www.zlib.net")
 set_package_properties(ZLIB PROPERTIES TYPE REQUIRED PURPOSE "zlib is required to build the Proxy-VEM")
 
