@@ -222,7 +222,8 @@ setup(
             ],
             include_dirs=[
                 buildpath("..", "c", "out"),
-                srcpath('..', '..', 'include')
+                srcpath('..', '..', 'include'),
+                np.get_include()
             ],
             libraries=['dl', 'bhc', 'bh'],
             library_dirs=[
@@ -248,7 +249,8 @@ setup(
             sources=[buildpath('random123.pyx')],
             include_dirs=[
                 srcpath('.'),
-                srcpath('..', '..', 'thirdparty', 'Random123-1.09', 'include')
+                srcpath('..', '..', 'thirdparty', 'Random123-1.09', 'include'),
+                np.get_include()
             ],
             libraries=[],
             library_dirs=[],
@@ -256,28 +258,28 @@ setup(
         Extension(
             name='_util',
             sources=[buildpath('_util.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
         ),
         Extension(
             name='bhary',
             sources=[buildpath('bhary.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
         ),
         Extension(
             name='ufuncs',
             sources=[buildpath('ufuncs.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
         ),
         Extension(
             name='nobh.bincount_cython',
             sources=[buildpath("nobh", 'bincount_cython.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
             extra_compile_args=args_extra.openmp_flag,
