@@ -33,6 +33,13 @@ parser.add_argument(
     type=argparse.FileType('r'),
     help='Path to the Bohrium config file'
 )
+parser.add_argument(
+    '-L',
+    '--lib',
+    type=str,
+    action='append',
+    help='Extra libraries to include'
+)
 (args_extra, argv) = parser.parse_known_args()
 sys.argv = [sys.argv[0]] + argv  # Write the remaining arguments back to `sys.argv` for distutils to read
 assert(args_extra.bh_install_prefix)
@@ -113,6 +120,12 @@ _copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "pyth
 _copy_files(join(args_extra.bh_install_prefix, 'lib64', 'lib*'), join(args_extra.npbackend_dir, "lib64"))
 
 
+# Copy extra libraries specified by the user
+if args_extra.lib is not None:
+    for lib in args_extra.lib:
+        _copy_files(lib, join(args_extra.npbackend_dir, "lib64"))
+
+
 # Update the RPATH of the Python extensions to look in the the `lib64` dir
 for filename in glob.glob(join(args_extra.npbackend_dir, '*.so')):
     cmd = "patchelf --set-rpath '$ORIGIN/lib64' %s" % filename
@@ -121,7 +134,7 @@ for filename in glob.glob(join(args_extra.npbackend_dir, '*.so')):
 
 
 # Update the RPATH of Bohrium's shared libraries to look in the current dir
-for filename in glob.glob(join(args_extra.npbackend_dir, 'lib64', '*.so')):
+for filename in glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')):
     cmd = "patchelf --set-rpath '$ORIGIN' %s" % filename
     print(cmd)
     subprocess.check_call(cmd, shell=True)
