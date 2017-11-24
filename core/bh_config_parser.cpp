@@ -243,6 +243,20 @@ vector<string> ConfigParser::getList(const std::string &section,
     return ret;
 }
 
+vector<boost::filesystem::path> ConfigParser::getListOfPaths(const std::string &section,
+                                                             const std::string &option) const {
+    vector<boost::filesystem::path> ret;
+    for (const string &path_str: getList(section, option)) {
+        const auto path = boost::filesystem::path(path_str);
+        if(path.is_absolute() or path.empty()) {
+            ret.push_back(path);
+        } else {
+            ret.push_back(file_dir / path);
+        }
+    }
+    return ret;
+}
+
 string ConfigParser::getChildLibraryPath() const {
     // Do we have a child?
     if (static_cast<int>(_stack_list.size()) <= stack_level+1) {

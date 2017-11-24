@@ -188,6 +188,21 @@ class ConfigParser {
     }
 
     /* Get the value of the 'option' within the 'section' and convert the value,
+     * which must be a comma separated list, into a vector of paths.
+     *
+     * @section        The ini section e.g. [gpu]. If omitted, the
+     *                 default section is used.
+     * @option         The ini option e.g. timing = True
+     * @return         Vector of paths
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     */
+    std::vector<boost::filesystem::path> getListOfPaths(const std::string &section,
+                                                        const std::string &option) const;
+    std::vector<boost::filesystem::path> getListOfPaths(const std::string &option) const {
+        return getListOfPaths(_default_section, option);
+    }
+
+    /* Get the value of the 'option' within the 'section' and convert the value,
      * which must be a comma separated list, into a vector of strings.
      * If it does not exist return 'default_value' instead.
      *
@@ -236,5 +251,9 @@ inline boost::filesystem::path ConfigParser::get(const std::string &section, con
         return file_dir / ret;
     }
 }
+
+
+
+
 
 } //namespace bohrium
