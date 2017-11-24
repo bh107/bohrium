@@ -62,6 +62,9 @@ ENV LD_LIBRARY_PATH "/opt/gcc7/lib64:$LD_LIBRARY_PATH"
 RUN echo $LD_LIBRARY_PATH
 RUN echo $PATH
 
+# Install extmethod dependencies
+RUN yum install -y atlas-devel-3.8.3-1.el5.x86_64
+
 # Clean up
 WORKDIR /
 RUN rm -Rf /b
