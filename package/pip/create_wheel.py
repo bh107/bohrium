@@ -110,18 +110,18 @@ _copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "pyth
 
 
 # Copy Bohrium's shared libraries into the Python package
-_copy_files(join(args_extra.bh_install_prefix, 'lib', 'lib*'), join(args_extra.npbackend_dir, "lib"))
+_copy_files(join(args_extra.bh_install_prefix, 'lib64', 'lib*'), join(args_extra.npbackend_dir, "lib64"))
 
 
-# Update the RPATH of the Python extensions to look in the the `lib` dir
+# Update the RPATH of the Python extensions to look in the the `lib64` dir
 for filename in glob.glob(join(args_extra.npbackend_dir, '*.so')):
-    cmd = "patchelf --set-rpath '$ORIGIN/lib' %s" % filename
+    cmd = "patchelf --set-rpath '$ORIGIN/lib64' %s" % filename
     print(cmd)
     subprocess.check_call(cmd, shell=True)
 
 
 # Update the RPATH of Bohrium's shared libraries to look in the current dir
-for filename in glob.glob(join(args_extra.npbackend_dir, 'lib', '*.so')):
+for filename in glob.glob(join(args_extra.npbackend_dir, 'lib64', '*.so')):
     cmd = "patchelf --set-rpath '$ORIGIN' %s" % filename
     print(cmd)
     subprocess.check_call(cmd, shell=True)
@@ -136,6 +136,9 @@ with open(_config_path, "w") as f:
     # Unset the `cache_dir` option
     config_str = _regex_replace("cache_dir = .*", "cache_dir = ", config_str)
 
+    # Set the JIT compiler to gcc
+    config_str = _regex_replace("compiler_cmd = \".* -x c", "compiler_cmd = \"gcc -x c", config_str)
+
     # Compile command: replace absolute include path with a path relative to {CONF_PATH}.
     config_str = _regex_replace("-I%s/share/bohrium/" % args_extra.bh_install_prefix, "-I{CONF_PATH}/", config_str)
 
@@ -148,9 +151,22 @@ with open(_config_path, "w") as f:
     print("writing config file: %s" % f.name)
 
 
-# The version if written in the VERSION file in the root of Bohrium
-with open(join(_script_path(), "..", "..", "VERSION"), "r") as f:
-    _version = f.read().strip()
+# Let's find the version
+cmd = "git describe --tags --long --match v[0-9]*"
+print(cmd)
+try:
+    # Let's get the Bohrium version without the 'v' and hash (e.g. v0.8.9-47-g6464 => v0.8.9-47)
+    _version = subprocess.check_output(cmd, shell=True, cwd=join(_script_path(), '..', '..'))
+    print("_version: '%s'" % str(_version))
+    _version = re.match(".*v(.+-\d+)-", str(_version)).group(1)
+except subprocess.CalledProcessError as e:
+    print("Couldn't find the Bohrium version through `git describe`, are we not in the git repos?\n"
+          "Using the VERSION file instead")
+    # The version if written in the VERSION file in the root of Bohrium
+    with open(join(_script_path(), "..", "..", "VERSION"), "r") as f:
+        _version = f.read().strip()
+print("Bohrium version: %s" % _version)
+
 
 # Get the long description from the README file
 with open(os.path.join(_script_path(), '../../README.md'), encoding='utf-8') as f:
