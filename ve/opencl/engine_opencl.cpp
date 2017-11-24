@@ -242,6 +242,8 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     // If the binary file of the kernel doesn't exist we compile the source
     if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
+        std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
+        stat.add_kernel(source_filename);
         program = cl::Program(context, source);
         if (verbose) {
             const string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
@@ -250,9 +252,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
                      << log
                      << "^^^^^^^^^^^^^ Log END ^^^^^^^^^^^^^" << endl << endl;
             }
-            cout << "************ SOURCE ************" << endl
-                 << source
-                 << "^^^^^^^^^^^^^ SOURCE^^^^^^^^^^^^" << endl << endl;
+            fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
         }
     } else { // If the binary file exist we load the binary into the program
 
@@ -291,6 +291,9 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
                            const vector<const jitk::LoopB*> &threaded_blocks,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
+    size_t hash = hasher(source);
+    std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
+
     auto tcompile = chrono::steady_clock::now();
     cl::Program program = getFunction(source);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
@@ -363,10 +366,12 @@ void EngineOpenCL::execute(const std::string &source, const std::vector<bh_base*
     }
 
     const auto ranges = NDRanges(threaded_blocks);
-    auto texec = chrono::steady_clock::now();
+    auto start_exec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
-    stat.time_exec += chrono::steady_clock::now() - texec;
+    auto texec = chrono::steady_clock::now() - start_exec;
+    stat.time_exec += texec;
+    stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
 void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {

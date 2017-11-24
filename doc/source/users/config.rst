@@ -109,7 +109,7 @@ Environment Variables
 The configuration of a component can be overwritten with environment variables using the naming convention ``BH_[COMPONENT]_[OPTION]``, below are a couple of examples controlling the behavior of the CPU vector engine::
 
   BH_OPENMP_PROF=true    -- Prints a performance profile at the end of execution.
-  BH_OPENMP_VERBOSE=true -- Prints a lot of information including the source of the JIT compiled kernels.
+  BH_OPENMP_VERBOSE=true -- Prints a lot of information including the source of the JIT compiled kernels. Enables per-kernel profiling when used together with BH_OPENMP_PROF=true.
 
 Useful environment variables::
 

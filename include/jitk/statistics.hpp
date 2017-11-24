@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <ostream>
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 #include <vector>
 
 #include <colors.hpp>
@@ -43,10 +44,30 @@ std::string pprint_ratio(uint64_t a, uint64_t b) {
 }
 }
 
+struct KernelStats {
+  uint64_t num_calls = 0;
+  std::chrono::duration<double> total_time{0};
+  std::chrono::duration<double> max_time{0};
+  std::chrono::duration<double> min_time{std::numeric_limits<double>::infinity()};
+
+  bool operator< (const KernelStats& rhs) const {
+    // default ordering: by total time
+    return this->total_time.count() < rhs.total_time.count();
+  }
+
+  void register_exec_time(const std::chrono::duration<double>& exec_time) {
+    ++num_calls;
+    total_time += exec_time;
+    max_time = max(max_time, exec_time);
+    min_time = min(min_time, exec_time);
+  }
+};
+
 class Statistics {
   public:
     bool enabled;
     bool print_on_exit; // On exist, write to file or pprint to stdout
+    bool verbose; // Print per-kernel statistics
     uint64_t num_base_arrays           = 0;
     uint64_t num_temp_arrays           = 0;
     uint64_t num_syncs                 = 0;
@@ -72,11 +93,18 @@ class Statistics {
     std::chrono::duration<double> time_copy2host{0};
     std::chrono::duration<double> time_ext_method{0};
 
+    // key: kernel source filename, value: kernel statistics
+    std::map<std::string, KernelStats> time_per_kernel;
+
     std::chrono::duration<double> wallclock{0};
     std::chrono::time_point<std::chrono::steady_clock> time_started{std::chrono::steady_clock::now()};
 
-    Statistics(bool enabled) : enabled(enabled), print_on_exit(enabled) {}
-    Statistics(bool enabled, bool print_on_exit) : enabled(enabled), print_on_exit(print_on_exit) {}
+    Statistics(const ConfigParser &config) : enabled(config.defaultGet("prof", false)),
+                                             print_on_exit(config.defaultGet("prof", false)),
+                                             verbose(config.defaultGet("verbose", false)) {}
+    Statistics(bool enabled, const ConfigParser &config) : enabled(enabled),
+                                                           print_on_exit(config.defaultGet("prof", false)),
+                                                           verbose(config.defaultGet("verbose", false)) {}
 
     void write(std::string backend_name, std::string filename, std::ostream &out) {
         if (filename == "") {
@@ -120,6 +148,33 @@ class Statistics {
             out << "  Other:                         " << YEL << time_other() << "s"                 << "\n" << RST;
             out << "\n";
             out << BOLD << RED << "Unaccounted for (wall - total):  " << unaccounted() << "s\n" << RST;
+
+            if (verbose) {
+              out << "\n";
+              out << BLU << "Per-kernel Profiling:"                                                  << "\n" << RST;
+              out << "  " << std::left << std::setw(39) << "Kernel filename"
+                                       << std::setw(14) << "Calls"
+                                       << std::setw(12) << "Total time"
+                                       << std::setw(12) << "Max time"
+                                       << std::setw(12) << "Min time"                                << "\n" << RST;
+              auto cmp = [](std::pair<std::string, KernelStats> const & a, std::pair<std::string, KernelStats> const & b) {
+                // compare map by values (descending)
+                return !(a.second < b.second);
+              };
+              std::vector<std::pair<std::string, KernelStats> > tpk_sorted(time_per_kernel.begin(), time_per_kernel.end());
+              std::sort(std::begin(tpk_sorted), std::end(tpk_sorted), cmp);
+              for (auto const& x : tpk_sorted) {
+                std::string kernel_filename = x.first;
+                KernelStats kernel_data = x.second;
+                out << "  "
+                    << std::left         << std::setw(39) << kernel_filename
+                    << std::right << YEL << std::setw(10) << kernel_data.num_calls         << "    "
+                    << std::scientific << std::setprecision(2)
+                                         << std::setw(8) << kernel_data.total_time.count() << "s   "
+                                         << std::setw(8) << kernel_data.max_time.count()   << "s   "
+                                         << std::setw(8) << kernel_data.min_time.count()   << "s   " << "\n" << RST;
+              }
+            }
             out << endl;
         } else {
             out << BLU << "[" << backend_name << "] Profiling: " << RST;
@@ -137,31 +192,42 @@ class Statistics {
             ofstream file;
             file.open(filename);
 
-            file << "----"                                                      << "\n";
-            file << backend_name << ":"                                         << "\n";
-            file << "  fuse_cache_hits: "       << fuse_cache_hits()            << "\n";
-            file << "  codegen_cache_hits: "    << codegen_cache_hits()         << "\n";
-            file << "  kernel_cache_hits: "     << kernel_cache_hits()          << "\n";
-            file << "  array_contractions: "    << array_contractions()         << "\n";
-            file << "  outer_fusion_ratio: "    << outer_fusion_ratio()         << "\n";
-            file << "  memory_usage: "          << memory_usage()               << "\n"; // mb
-            file << "  syncs: "                 << num_syncs                    << "\n";
-            file << "  total_work: "            << totalwork                    << "\n"; // ops
-            file << "  throughput: "            << throughput()                 << "\n"; // ops
-            file << "  work_below_thredshold: " << work_below_thredshold()      << "\n"; // %
-            file << "  timing:"                                                 << "\n";
-            file << "    wall_clock: "          << wallclock.count()            << "\n"; // s
-            file << "    total_execution: "     << time_total_execution.count() << "\n"; // s
-            file << "    pre_fusion: "          << time_pre_fusion.count()      << "\n"; // s
-            file << "    fusion: "              << time_fusion.count()          << "\n"; // s
-            file << "    compile: "             << time_compile.count()         << "\n"; // s
-            file << "    exec: "                << time_exec.count()            << "\n"; // s
-            file << "    copy2dev: "            << time_copy2dev.count()        << "\n"; // s
-            file << "    copy2host: "           << time_copy2host.count()       << "\n"; // s
-            file << "    offload: "             << time_offload.count()         << "\n"; // s
-            file << "    other: "               << time_other()                 << "\n"; // s
-            file << "    unaccounted: "         << unaccounted()                << "\n"; // s
-
+            file << "----"                                                           << "\n";
+            file << backend_name << ":"                                              << "\n";
+            file << "  fuse_cache_hits: "       << fuse_cache_hits()                 << "\n";
+            file << "  codegen_cache_hits: "    << codegen_cache_hits()              << "\n";
+            file << "  kernel_cache_hits: "     << kernel_cache_hits()               << "\n";
+            file << "  array_contractions: "    << array_contractions()              << "\n";
+            file << "  outer_fusion_ratio: "    << outer_fusion_ratio()              << "\n";
+            file << "  memory_usage: "          << memory_usage()                    << "\n"; // mb
+            file << "  syncs: "                 << num_syncs                         << "\n";
+            file << "  total_work: "            << totalwork                         << "\n"; // ops
+            file << "  throughput: "            << throughput()                      << "\n"; // ops
+            file << "  work_below_thredshold: " << work_below_thredshold()           << "\n"; // %
+            file << "  timing:"                                                      << "\n";
+            file << "    wall_clock: "          << wallclock.count()                 << "\n"; // s
+            file << "    total_execution: "     << time_total_execution.count()      << "\n"; // s
+            file << "    pre_fusion: "          << time_pre_fusion.count()           << "\n"; // s
+            file << "    fusion: "              << time_fusion.count()               << "\n"; // s
+            file << "    compile: "             << time_compile.count()              << "\n"; // s
+            file << "    exec: "                                                     << "\n";
+            file << "      total: "             << time_exec.count()                 << "\n"; // s
+            if (verbose) {
+              file << "      per_kernel: "                                           << "\n";
+              for (auto const& x : time_per_kernel) {
+                KernelStats kernel_data = x.second;
+                file << "        - " << x.first << ": "                              << "\n";
+                file << "            num_calls: "  << kernel_data.num_calls          << "\n";
+                file << "            total_time: " << kernel_data.total_time.count() << "\n"; // s
+                file << "            max_time: "   << kernel_data.max_time.count()   << "\n"; // s
+                file << "            min_time: "   << kernel_data.min_time.count()   << "\n"; // s
+              }
+            }
+            file << "    copy2dev: "            << time_copy2dev.count()             << "\n"; // s
+            file << "    copy2host: "           << time_copy2host.count()            << "\n"; // s
+            file << "    offload: "             << time_offload.count()              << "\n"; // s
+            file << "    other: "               << time_other()                      << "\n"; // s
+            file << "    unaccounted: "         << unaccounted()                     << "\n"; // s
             file.close();
         }
     }
@@ -183,6 +249,10 @@ class Statistics {
     void record(const SymbolTable& symbols) {
       num_base_arrays += symbols.getNumBaseArrays();
       num_temp_arrays += symbols.getNumBaseArrays() - symbols.getParams().size();
+    }
+
+    void add_kernel(const std::string& kernel_name) {
+      time_per_kernel.insert(std::make_pair(kernel_name, KernelStats()));
     }
 
   private:
