@@ -4,12 +4,13 @@
  **********************************************************/
 #include <bh_extmethod.hpp>
 
+extern "C" {
 #if defined(__APPLE__) || defined(__MACOSX)
-    #include <Accelerate/Accelerate.h>
+#include <Accelerate/Accelerate.h>
 #else
-    #include <cblas.h>
+#include <cblas.h>
 #endif
-
+}
 #include <stdexcept>
 
 using namespace bohrium;
