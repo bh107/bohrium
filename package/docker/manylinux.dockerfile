@@ -62,8 +62,9 @@ ENV LD_LIBRARY_PATH "/opt/gcc7/lib64:$LD_LIBRARY_PATH"
 RUN echo $LD_LIBRARY_PATH
 RUN echo $PATH
 
-# Install extmethod dependencies
+# Install BLAS/LAPACK extmethod dependencies
 RUN yum install -y atlas-devel-3.8.3-1.el5.x86_64
+RUN yum install -y openblas-devel-0.2.18-5.el5.x86_64
 
 # Clean up
 WORKDIR /
