@@ -8,6 +8,19 @@ RUN ln -s /usr/bin/cmake28 /usr/bin/cmake
 RUN mkdir /b
 WORKDIR /b
 
+# Install gcc7 (/opt/gcc7)
+RUN wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-7.2.0/gcc-7.2.0.tar.gz
+RUN tar -xzf gcc-7.2.0.tar.gz
+WORKDIR gcc-7.2.0
+RUN ./contrib/download_prerequisites
+RUN mkdir -p /b/gcc_build
+WORKDIR /b/gcc_build
+RUN /b/gcc-7.2.0/configure --prefix /opt/gcc7 --enable-languages=c --disable-bootstrap
+RUN make -j4
+RUN make install
+ENV PATH /opt/gcc7/bin:$PATH
+ENV LD_LIBRARY_PATH "/opt/gcc7/lib64:$LD_LIBRARY_PATH"
+
 # Install Boost with -fPIC (system-wide)
 RUN wget --no-check-certificate  https://downloads.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.gz
 RUN tar -xzf boost_1_63_0.tar.gz
@@ -26,12 +39,14 @@ RUN make -j4
 RUN make install
 WORKDIR /b
 
-# Choose Python 2.7
+# Use Python 2.7 for the reset of the installation
 ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
 
-# Python dependencies
-RUN pip install numpy
-RUN pip install cython
+# Install Python dependencies
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install numpy cython scipy
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install 'subprocess32==3.5.0rc1'
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install matplotlib netCDF4
+RUN PATH=/opt/python/cp36-cp36m/bin:$PATH  pip install numpy cython scipy matplotlib netCDF4
 
 # Install AMD SDK for OpenCL (/opt/AMDAPPSDK-2.9-1)
 RUN yum install -y redhat-lsb
@@ -45,26 +60,19 @@ ENV OpenCL_INCPATH "/opt/AMDAPPSDK-2.9-1/include"
 ENV LD_LIBRARY_PATH "$OpenCL_LIBPATH:$LD_LIBRARY_PATH"
 WORKDIR /b
 
-# Install gcc7 (/opt/gcc7)
-RUN wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-7.2.0/gcc-7.2.0.tar.gz
-RUN tar -xzf gcc-7.2.0.tar.gz
-WORKDIR gcc-7.2.0
-RUN ./contrib/download_prerequisites
-
-RUN mkdir -p /b/gcc_build
-WORKDIR /b/gcc_build
-RUN /b/gcc-7.2.0/configure --prefix /opt/gcc7 --enable-languages=c --disable-bootstrap
-RUN make -j4
-RUN make install
-
-ENV PATH /opt/gcc7/bin:$PATH
-ENV LD_LIBRARY_PATH "/opt/gcc7/lib64:$LD_LIBRARY_PATH"
-RUN echo $LD_LIBRARY_PATH
-RUN echo $PATH
-
 # Install BLAS/LAPACK extmethod dependencies
 RUN yum install -y atlas-devel-3.8.3-1.el5.x86_64
 RUN yum install -y openblas-devel-0.2.18-5.el5.x86_64
+
+# Install OpenCV 3
+WORKDIR /b
+ADD https://github.com/opencv/opencv/archive/3.2.0.zip .
+RUN unzip 3.2.0.zip
+RUN mkdir -p opencv-3.2.0/build
+WORKDIR opencv-3.2.0/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_LAPACK=OFF
+RUN make install -j4
+RUN ldconfig
 
 # Clean up
 WORKDIR /

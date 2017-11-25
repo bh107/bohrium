@@ -9,22 +9,20 @@ COPY . .
 RUN echo "mkdir -p /bh/b\$1 && cd /bh/b\$1 && cmake .. -DCMAKE_BUILD_TYPE=Release -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DCYTHON_OPENMP=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/i\$1 -DFORCE_CONFIG_PATH=/bh/i\$1 -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas && make install" > /bh/build.sh
 
 # Create a script `/bh/wheel.sh` that build a Python wheel of the given python version
-RUN echo "cd /bh/b\$1 && python /bh/package/pip/create_wheel.py --npbackend-dir /bh/i\$1/lib64/python\$1/site-packages/bohrium/ --bh-install-prefix /bh/i\$1 --config /bh/i\$1/config.ini bdist_wheel -L/usr/lib64/atlas/libatlas.so.3 -L/usr/lib64/atlas/libcblas.so.3 -L/usr/lib64/atlas/libf77blas.so.3 -L/usr/lib64/atlas/liblapack.so.3" > /bh/wheel.sh
+RUN echo "cd /bh/b\$1 && python /bh/package/pip/create_wheel.py --npbackend-dir /bh/i\$1/lib64/python\$1/site-packages/bohrium/ --bh-install-prefix /bh/i\$1 --config /bh/i\$1/config.ini bdist_wheel \\" > /bh/wheel.sh
+# Include BLAS/LAPACK
+RUN echo "-L/usr/lib64/atlas/libatlas.so.3 -L/usr/lib64/atlas/libcblas.so.3 -L/usr/lib64/atlas/libf77blas.so.3 -L/usr/lib64/atlas/liblapack.so.3 \\" >> /bh/wheel.sh
+# Include OpenCV
+RUN echo "-L/usr/local/lib/libopencv_core.so.3.2 -L/usr/local/lib/libopencv_flann.so.3.2 -L/usr/local/lib/libopencv_imgproc.so.3.2 -L/usr/local/lib/libopencv_ml.so.3.2 -L/usr/local/lib/libopencv_photo.so.3.2 -L/usr/local/lib/libopencv_video.so.3.2 -L/usr/local/lib/libopencv_imgcodecs.so.3.2 -L/usr/local/lib/libopencv_shape.so.3.2 -L/usr/local/lib/libopencv_videoio.so.3.2 -L/usr/local/lib/libopencv_highgui.so.3.2 -L/usr/local/lib/libopencv_objdetect.so.3.2 -L/usr/local/lib/libopencv_superres.so.3.2 -L/usr/local/lib/libopencv_features2d.so.3.2 -L/usr/local/lib/libopencv_calib3d.so.3.2 -L/usr/local/lib/libopencv_stitching.so.3.2 -L/usr/local/lib/libopencv_videostab.so.3.2" >> /bh/wheel.sh
 
 # Build Bohrium with python2.7
 ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
-RUN pip install numpy
-RUN pip install cython
-RUN pip install scipy
 RUN bash /bh/build.sh 2.7
 RUN bash /bh/wheel.sh 2.7
 RUN pip install /bh/b2.7/dist/*
 
 # Build Bohrium with python3.6
 ENV PATH /opt/python/cp36-cp36m/bin/:$PATH
-RUN pip install numpy
-RUN pip install cython
-RUN pip install scipy
 RUN bash /bh/build.sh 3.6
 RUN bash /bh/wheel.sh 3.6
 RUN pip install /bh/b3.6/dist/*
