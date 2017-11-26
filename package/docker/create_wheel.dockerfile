@@ -12,8 +12,6 @@ RUN echo "mkdir -p /bh/b\$1 && cd /bh/b\$1 && cmake .. -DCMAKE_BUILD_TYPE=Releas
 RUN echo "cd /bh/b\$1 && python /bh/package/pip/create_wheel.py --npbackend-dir /bh/i\$1/lib64/python\$1/site-packages/bohrium/ --bh-install-prefix /bh/i\$1 --config /bh/i\$1/config.ini bdist_wheel \\" > /bh/wheel.sh
 # Include BLAS/LAPACK
 RUN echo "-L/usr/lib64/atlas/libatlas.so.3 -L/usr/lib64/atlas/libcblas.so.3 -L/usr/lib64/atlas/libf77blas.so.3 -L/usr/lib64/atlas/liblapack.so.3 \\" >> /bh/wheel.sh
-# Include OpenCV
-RUN echo "-L/usr/local/lib/libopencv_core.so.3.2 -L/usr/local/lib/libopencv_flann.so.3.2 -L/usr/local/lib/libopencv_imgproc.so.3.2 -L/usr/local/lib/libopencv_ml.so.3.2 -L/usr/local/lib/libopencv_photo.so.3.2 -L/usr/local/lib/libopencv_video.so.3.2 -L/usr/local/lib/libopencv_imgcodecs.so.3.2 -L/usr/local/lib/libopencv_shape.so.3.2 -L/usr/local/lib/libopencv_videoio.so.3.2 -L/usr/local/lib/libopencv_highgui.so.3.2 -L/usr/local/lib/libopencv_objdetect.so.3.2 -L/usr/local/lib/libopencv_superres.so.3.2 -L/usr/local/lib/libopencv_features2d.so.3.2 -L/usr/local/lib/libopencv_calib3d.so.3.2 -L/usr/local/lib/libopencv_stitching.so.3.2 -L/usr/local/lib/libopencv_videostab.so.3.2" >> /bh/wheel.sh
 
 # Build Bohrium with python2.7
 ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH

@@ -66,15 +66,15 @@ RUN yum install -y openblas-devel-0.2.18-5.el5.x86_64
 
 # Install OpenCV 3
 WORKDIR /b
-ADD https://github.com/opencv/opencv/archive/3.2.0.zip .
-RUN unzip 3.2.0.zip
+RUN wget --no-check-certificate https://github.com/opencv/opencv/archive/3.2.0.zip
+RUN unzip 3.2.0
 RUN mkdir -p opencv-3.2.0/build
 WORKDIR opencv-3.2.0/build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_LAPACK=OFF
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_LAPACK=OFF -DBUILD_SHARED_LIBS=NO -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
 RUN make install -j4
 RUN ldconfig
 
-# Clean up
+## Clean up
 WORKDIR /
 RUN rm -Rf /b
 RUN yum clean all
