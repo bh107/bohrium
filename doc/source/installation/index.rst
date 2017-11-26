@@ -10,5 +10,6 @@ Bohrium supports Linux and Mac OS.
 
    linux
    osx
+   spack
    nonpriv
 
