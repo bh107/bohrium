@@ -155,7 +155,7 @@ for filename in glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')):
 
 # Update the RPATH of Bohrium's binaries to look in the current dir
 for filename in glob.glob(join(args_extra.npbackend_dir, 'bin', '*')):
-    cmd = "patchelf --set-rpath '$ORIGIN' %s" % filename
+    cmd = "patchelf --set-rpath '$ORIGIN/../lib64' %s" % filename
     print(cmd)
     subprocess.check_call(cmd, shell=True)
 
