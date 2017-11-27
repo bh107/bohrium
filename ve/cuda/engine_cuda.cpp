@@ -38,24 +38,13 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
-    Engine(config, stat),
+    EngineGPU(config, stat),
     work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
     work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
     work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
     work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
     work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
-    compile_flg(config.defaultGet<string>("compiler_flg", "")),
-    default_device_type(config.defaultGet<string>("device_type", "auto")),
-    platform_no(config.defaultGet<int>("platform_no", -1)),
-    verbose(config.defaultGet<bool>("verbose", false)),
-    cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-    stat(stat),
-    prof(config.defaultGet<bool>("prof", false)),
-    tmp_dir(jitk::get_tmp_path(config)),
-    tmp_src_dir(tmp_dir / "src"),
-    tmp_bin_dir(tmp_dir / "obj"),
-    cache_bin_dir(config.defaultGet<fs::path>("cache_dir", ""))
+    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
 {
     int deviceCount = 0;
     CUresult err = cuInit(0);

@@ -105,11 +105,15 @@ public:
 
     SymbolTable(const std::vector<InstrPtr> &instr_list,
                 const std::set<bh_base *> &non_temp_arrays,
-                std::map<std::string, bool> conf) : _useRandom(false),
-                                                    use_volatile(conf["use_volatile"]),
-                                                    strides_as_var(conf["strides_as_var"]),
-                                                    index_as_var(conf["index_as_var"]),
-                                                    const_as_var(conf["const_as_var"]) {
+                bool use_volatile,
+                bool strides_as_var,
+                bool index_as_var,
+                bool const_as_var) :
+        _useRandom(false),
+        use_volatile(use_volatile),
+        strides_as_var(strides_as_var),
+        index_as_var(index_as_var),
+        const_as_var(const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {

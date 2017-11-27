@@ -151,8 +151,7 @@ void Impl::execute(BhIR *bhir) {
 
         // Check condition
         if (cond != nullptr) {
-            const vector<bh_base*> t = { cond };
-            engine.copyToHost(t); // TODO: make it a read-only copy
+            engine.copyToHost({ cond }); // TODO: make it a read-only copy
             if (cond->data != nullptr and not ((bool*)cond->data)[0]) {
                 break;
             }

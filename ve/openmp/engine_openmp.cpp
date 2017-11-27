@@ -31,7 +31,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_cache.hpp>
 #include <jitk/block.hpp>
-#include <jitk/engine.hpp>
 #include <thread>
 
 #include <bh_util.hpp>
@@ -46,7 +45,7 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-    Engine(config, stat),
+    EngineCPU(config, stat),
     compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string())
 {
     compilation_hash = hasher(compiler.cmd_template);
@@ -213,53 +212,6 @@ void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*
 void EngineOpenMP::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
     const std::set<bh_base*> empty;
     jitk::util_set_constructor_flag(instr_list, empty);
-}
-
-void EngineOpenMP::handle_execution(BhIR *bhir) {
-    using namespace std;
-
-    const auto texecution = chrono::steady_clock::now();
-
-    map<string, bool> kernel_config = {
-        { "strides_as_var", config.defaultGet<bool>("strides_as_var", true) },
-        { "index_as_var",   config.defaultGet<bool>("index_as_var",   true) },
-        { "const_as_var",   config.defaultGet<bool>("const_as_var",   true) },
-        { "monolithic",     config.defaultGet<bool>("monolithic",    false) },
-        { "use_volatile",   config.defaultGet<bool>("use_volatile",  false) }
-    };
-
-    // Some statistics
-    stat.record(*bhir);
-
-    // Let's start by cleanup the instructions from the 'bhir'
-    vector<bh_instruction*> instr_list;
-    set<bh_base*> frees;
-
-    instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
-
-    // Let's free device buffers and array memory
-    for(bh_base *base: frees) {
-        bh_data_free(base);
-    }
-
-    // Set the constructor flag
-    if (config.defaultGet<bool>("array_contraction", true)) {
-        set_constructor_flag(instr_list);
-    } else {
-        for (bh_instruction *instr: instr_list) {
-            instr->constructor = false;
-        }
-    }
-
-    // Let's get the block list
-    const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat, false);
-
-    if (kernel_config["monolithic"]) {
-        jitk::create_monolithic_kernel(*this, kernel_config, block_list);
-    } else {
-        jitk::create_kernel(*this, kernel_config, block_list);
-    }
-    stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
 // Writes the OpenMP specific for-loop header
@@ -446,6 +398,29 @@ std::string EngineOpenMP::info() const {
     ss << "  Hardware threads: " << std::thread::hardware_concurrency()    << "\n";
     ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
     return ss.str();
+}
+
+// Return C99 types, which are used inside the C99 kernels
+const std::string EngineOpenMP::write_type(bh_type dtype) {
+    switch (dtype) {
+        case bh_type::BOOL:       return "bool";
+        case bh_type::INT8:       return "int8_t";
+        case bh_type::INT16:      return "int16_t";
+        case bh_type::INT32:      return "int32_t";
+        case bh_type::INT64:      return "int64_t";
+        case bh_type::UINT8:      return "uint8_t";
+        case bh_type::UINT16:     return "uint16_t";
+        case bh_type::UINT32:     return "uint32_t";
+        case bh_type::UINT64:     return "uint64_t";
+        case bh_type::FLOAT32:    return "float";
+        case bh_type::FLOAT64:    return "double";
+        case bh_type::COMPLEX64:  return "float complex";
+        case bh_type::COMPLEX128: return "double complex";
+        case bh_type::R123:       return "r123_t"; // Defined by `write_c99_dtype_union()`
+        default:
+            std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
+            throw std::runtime_error("Unknown C99 type");
+    }
 }
 
 } // bohrium

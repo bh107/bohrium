@@ -33,13 +33,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/codegen_cache.hpp>
 
-#include <jitk/engine.hpp>
+#include <jitk/engines/engine_cpu.hpp>
 
 namespace bohrium {
 
 typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[], bh_constant_value constants[]);
 
-class EngineOpenMP : public jitk::Engine {
+class EngineOpenMP : public jitk::EngineCPU {
   private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
@@ -61,8 +61,6 @@ class EngineOpenMP : public jitk::Engine {
                  const std::vector<const bh_instruction*> &constants) override;
 
     void set_constructor_flag(std::vector<bh_instruction*> &instr_list) override;
-
-    void handle_execution(BhIR *bhir) override;
 
     void write_kernel(const std::vector<jitk::Block> &block_list,
                       const jitk::SymbolTable &symbols,
@@ -86,27 +84,7 @@ class EngineOpenMP : public jitk::Engine {
     std::string info() const override;
 
     // Return C99 types, which are used inside the C99 kernels
-    const std::string write_type(bh_type dtype) override {
-        switch (dtype) {
-            case bh_type::BOOL:       return "bool";
-            case bh_type::INT8:       return "int8_t";
-            case bh_type::INT16:      return "int16_t";
-            case bh_type::INT32:      return "int32_t";
-            case bh_type::INT64:      return "int64_t";
-            case bh_type::UINT8:      return "uint8_t";
-            case bh_type::UINT16:     return "uint16_t";
-            case bh_type::UINT32:     return "uint32_t";
-            case bh_type::UINT64:     return "uint64_t";
-            case bh_type::FLOAT32:    return "float";
-            case bh_type::FLOAT64:    return "double";
-            case bh_type::COMPLEX64:  return "float complex";
-            case bh_type::COMPLEX128: return "double complex";
-            case bh_type::R123:       return "r123_t"; // Defined by `write_c99_dtype_union()`
-            default:
-                std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
-                throw std::runtime_error("Unknown C99 type");
-        }
-    }
+    const std::string write_type(bh_type dtype) override;
 
   private:
     // Writes the union of C99 types that can make up a constant

@@ -25,8 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 
-#include "engine_opencl.hpp"
 #include <jitk/compiler.hpp>
+
+#include "engine_opencl.hpp"
 
 namespace fs = boost::filesystem;
 using namespace std;
@@ -36,11 +37,11 @@ namespace {
 #define CL_DEVICE_AUTO 1024 // More than maximum in the bitmask
 
 map<const string, cl_device_type> device_map = {
-    {"auto",        CL_DEVICE_AUTO},
-    {"gpu",         CL_DEVICE_TYPE_GPU},
-    {"accelerator", CL_DEVICE_TYPE_ACCELERATOR},
-    {"default",     CL_DEVICE_TYPE_DEFAULT},
-    {"cpu",         CL_DEVICE_TYPE_CPU}
+    { "auto",        CL_DEVICE_AUTO             },
+    { "gpu",         CL_DEVICE_TYPE_GPU         },
+    { "accelerator", CL_DEVICE_TYPE_ACCELERATOR },
+    { "default",     CL_DEVICE_TYPE_DEFAULT     },
+    { "cpu",         CL_DEVICE_TYPE_CPU         }
 };
 
 // Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
@@ -86,24 +87,13 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
-    Engine(config, stat),
+    EngineGPU(config, stat),
     work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
     work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
     work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
     work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
     work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
-    compile_flg(jitk::expand_compile_cmd(config.defaultGet<string>("compiler_flg", ""), "", "", config.file_dir.string())),
-    default_device_type(config.defaultGet<string>("device_type", "auto")),
-    platform_no(config.defaultGet<int>("platform_no", -1)),
-    verbose(config.defaultGet<bool>("verbose", false)),
-    cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-    stat(stat),
-    prof(config.defaultGet<bool>("prof", false)),
-    tmp_dir(jitk::get_tmp_path(config)),
-    tmp_src_dir(tmp_dir / "src"),
-    tmp_bin_dir(tmp_dir / "obj"),
-    cache_bin_dir(config.defaultGet<fs::path>("cache_dir", ""))
+    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -379,8 +369,72 @@ void EngineOpenCL::execute(const std::string &source,
     stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
+// Copy 'bases' to the host (ignoring bases that isn't on the device)
+void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
+    auto tcopy = std::chrono::steady_clock::now();
+    // Let's copy sync'ed arrays back to the host
+    for(bh_base *base: bases) {
+        if (buffers.find(base) != buffers.end()) {
+            bh_data_malloc(base);
+            if (verbose) {
+                std::cout << "Copy to host: " << *base << std::endl;
+            }
+            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+            // When syncing we assume that the host writes to the data and invalidate the device data thus
+            // we have to remove its data buffer
+            buffers.erase(base);
+        }
+    }
+    queue.finish();
+    stat.time_copy2host += std::chrono::steady_clock::now() - tcopy;
+}
+
+// Copy 'base_list' to the device (ignoring bases that is already on the device)
+void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
+
+    // Let's update the maximum memory usage on the device
+    if (prof) {
+        uint64_t sum = 0;
+        for (const auto &b: buffers) {
+            sum += bh_base_size(b.first);
+        }
+        stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
+    }
+
+    auto tcopy = std::chrono::steady_clock::now();
+    for(bh_base *base: base_list) {
+        if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+            cl::Buffer *buf = createBuffer(base);
+
+            // If the host data is non-null we should copy it to the device
+            if (base->data != NULL) {
+                if (verbose) {
+                    std::cout << "Copy to device: " << *base << std::endl;
+                }
+                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+            }
+        }
+    }
+    queue.finish();
+    stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
+}
+
 void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
+}
+
+// Copy all bases to the host (ignoring bases that isn't on the device)
+void EngineOpenCL::allBasesToHost() {
+    std::set<bh_base*> bases_on_device;
+    for(auto &buf_pair: buffers) {
+        bases_on_device.insert(buf_pair.first);
+    }
+    copyToHost(bases_on_device);
+}
+
+// Delete a buffer
+void EngineOpenCL::delBuffer(bh_base* &base) {
+    buffers.erase(base);
 }
 
 void EngineOpenCL::write_kernel(const jitk::Block &block,
@@ -420,6 +474,34 @@ void EngineOpenCL::write_kernel(const jitk::Block &block,
     ss << "}\n\n";
 }
 
+// Writes the OpenCL specific for-loop header
+void EngineOpenCL::loop_head_writer(const jitk::SymbolTable &symbols,
+                                    jitk::Scope &scope,
+                                    const jitk::LoopB &block,
+                                    bool loop_is_peeled,
+                                    const std::vector<const jitk::LoopB *> &threaded_blocks,
+                                    std::stringstream &out) {
+    // Write the for-loop header
+    std::string itername;
+    { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
+    // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
+    if (std::find_if(threaded_blocks.begin(),
+                     threaded_blocks.end(),
+                     [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
+        out << "for(" << write_type(bh_type::UINT64) << " " << itername;
+        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
+            out << " = 1; ";
+        else
+            out << " = 0; ";
+        out << itername << " < " << block.size << "; ++" << itername << ") {";
+    } else {
+        assert(block._sweeps.size() == 0);
+        out << "{ // Threaded block (ID " << itername << ")";
+    }
+
+    out << "\n";
+}
+
 std::string EngineOpenCL::info() const {
     stringstream ss;
     ss << "----"                                                                        << "\n";
@@ -429,6 +511,29 @@ std::string EngineOpenCL::info() const {
                            << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()              << ")\"\n";
     ss << "  Memory:   \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024 << " MB\"\n";
     return ss.str();
+}
+
+// Return OpenCL API types, which are used inside the JIT kernels
+const std::string EngineOpenCL::write_type(bh_type dtype) {
+    switch (dtype) {
+        case bh_type::BOOL:       return "uchar";
+        case bh_type::INT8:       return "char";
+        case bh_type::INT16:      return "short";
+        case bh_type::INT32:      return "int";
+        case bh_type::INT64:      return "long";
+        case bh_type::UINT8:      return "uchar";
+        case bh_type::UINT16:     return "ushort";
+        case bh_type::UINT32:     return "uint";
+        case bh_type::UINT64:     return "ulong";
+        case bh_type::FLOAT32:    return "float";
+        case bh_type::FLOAT64:    return "double";
+        case bh_type::COMPLEX64:  return "float2";
+        case bh_type::COMPLEX128: return "double2";
+        case bh_type::R123:       return "ulong2";
+        default:
+            std::cerr << "Unknown OpenCL type: " << bh_type_text(dtype) << std::endl;
+            throw std::runtime_error("Unknown OpenCL type");
+    }
 }
 
 } // bohrium
