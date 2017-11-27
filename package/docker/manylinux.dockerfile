@@ -74,6 +74,9 @@ RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_LAPACK=OFF -DBUILD_SHARED_LIBS=NO
 RUN make install -j4
 RUN ldconfig
 
+# Install deploy dependencies
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install twine
+
 ## Clean up
 WORKDIR /
 RUN rm -Rf /b
