@@ -106,6 +106,8 @@ The ``stacks`` define different default configurations of the runtime environmen
 Environment Variables
 ---------------------
 
+.. highlight:: python
+
 The configuration of a component can be overwritten with environment variables using the naming convention ``BH_[COMPONENT]_[OPTION]``, below are a couple of examples controlling the behavior of the CPU vector engine::
 
   BH_OPENMP_PROF=true    -- Prints a performance profile at the end of execution.
