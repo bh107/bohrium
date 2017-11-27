@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-# Always prefer setuptools over distutils
 from setuptools import setup
 from distutils.dir_util import mkpath, copy_tree
-
-# To use a consistent encoding
-from codecs import open
+from wheel.bdist_wheel import bdist_wheel, pep425tags
+from codecs import open  # To use a consistent encoding
 import os
 import re
 import argparse
@@ -15,7 +12,6 @@ import sys
 import shutil
 import glob
 import subprocess
-
 from os.path import join
 
 # We overload the setup.py with some extra arguments
@@ -205,7 +201,23 @@ print("Bohrium version: %s" % _version)
 with open(os.path.join(_script_path(), '../../README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+
+# We have to manually set the package tags. At this point, setuptools thinks that this is a pure python package.
+class taged_bdist_wheel(bdist_wheel):
+    def finalize_options(self):
+        bdist_wheel.finalize_options(self)
+        self.root_is_pure = False
+
+    def get_tag(self):
+        impl_name = pep425tags.get_abbr_impl()
+        impl_ver = pep425tags.get_impl_ver()
+        abi_tag = str(pep425tags.get_abi_tag()).lower()
+        return (impl_name + impl_ver, abi_tag, "manylinux1_x86_64")
+
+
+# Finally, we call the setup
 setup(
+    cmdclass={'bdist_wheel': taged_bdist_wheel},
     name='bohrium',
     version=_version,
     description='Bohrium NumPy',
