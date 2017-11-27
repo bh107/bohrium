@@ -25,7 +25,13 @@ RUN bash /bh/build.sh 3.6
 RUN bash /bh/wheel.sh 3.6
 RUN pip install /bh/b3.6/dist/*
 
-# Test Suite
+# Deploy script
+WORKDIR /bh
+RUN echo "#/usr/bin/env bash"          > deploy.sh && \
+    echo "python2.7 -m twine upload /bh/b*/dist/*" >> deploy.sh && \
+    chmod +x deploy.sh
+
+# Execute script
 WORKDIR /bh
 RUN echo "#/usr/bin/env bash" > exec.sh && \
     echo "shopt -s extglob" >> exec.sh  && \
