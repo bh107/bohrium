@@ -41,11 +41,15 @@ parser.add_argument(
 )
 parser.add_argument(
     '--openmp-flag',
-    default="",
+    default=None,
     help='OpenMP flag for the Cython builds'
 )
 (args_extra, argv) = parser.parse_known_args()
 sys.argv = [sys.argv[0]] + argv  # Write the remaining arguments back to `sys.argv` for distutils to read
+if args_extra.openmp_flag is None:
+    args_extra.openmp_flag = []
+else:
+    args_extra.openmp_flag = [args_extra.openmp_flag]
 
 
 def buildpath(*paths):
@@ -184,7 +188,14 @@ try:
 except OSError:
     pass
 
-shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
+# We might have to disable OpenMP in `bincount_cython.pyx`
+if len(args_extra.openmp_flag) == 0:
+    with open(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), "r") as fin:
+        with open(buildpath('nobh', 'bincount_cython.pyx'), "w") as fout:
+            fout.write(fin.read().replace("Linux", "OpenMP Disabled"))
+else:
+    shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
+
 
 setup(
     name='Bohrium',
@@ -211,7 +222,8 @@ setup(
             ],
             include_dirs=[
                 buildpath("..", "c", "out"),
-                srcpath('..', '..', 'include')
+                srcpath('..', '..', 'include'),
+                np.get_include()
             ],
             libraries=['dl', 'bhc', 'bh'],
             library_dirs=[
@@ -237,7 +249,8 @@ setup(
             sources=[buildpath('random123.pyx')],
             include_dirs=[
                 srcpath('.'),
-                srcpath('..', '..', 'thirdparty', 'Random123-1.09', 'include')
+                srcpath('..', '..', 'thirdparty', 'Random123-1.09', 'include'),
+                np.get_include()
             ],
             libraries=[],
             library_dirs=[],
@@ -245,32 +258,32 @@ setup(
         Extension(
             name='_util',
             sources=[buildpath('_util.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
         ),
         Extension(
             name='bhary',
             sources=[buildpath('bhary.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
         ),
         Extension(
             name='ufuncs',
             sources=[buildpath('ufuncs.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
         ),
         Extension(
             name='nobh.bincount_cython',
             sources=[buildpath("nobh", 'bincount_cython.pyx')],
-            include_dirs=[srcpath('.')],
+            include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
-            extra_compile_args=[args_extra.openmp_flag],
-            extra_link_args=[args_extra.openmp_flag]
+            extra_compile_args=args_extra.openmp_flag,
+            extra_link_args=args_extra.openmp_flag
         )
     ]
 )

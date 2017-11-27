@@ -208,15 +208,16 @@ string ConfigParser::lookup(const string &section, const string &option) const {
 }
 
 ConfigParser::ConfigParser(int stack_level) : file_path(get_config_path()),
+                                              file_dir(boost::filesystem::path(file_path).remove_filename()),
                                               stack_level(stack_level) {
 
     // Load the bohrium configuration file
-    property_tree::ini_parser::read_ini(file_path, _config);
+    property_tree::ini_parser::read_ini(file_path.string(), _config);
 
     // Find the stack name specified by 'BH_STACK'
     const char *env = getenv("BH_STACK");
     string stack_name;
-    if (env == NULL){
+    if (env == nullptr) {
         stack_name = "default";
     } else {
         stack_name = env;
@@ -242,15 +243,28 @@ vector<string> ConfigParser::getList(const std::string &section,
     return ret;
 }
 
-string ConfigParser::getChildLibraryPath() const
-{
+vector<boost::filesystem::path> ConfigParser::getListOfPaths(const std::string &section,
+                                                             const std::string &option) const {
+    vector<boost::filesystem::path> ret;
+    for (const string &path_str: getList(section, option)) {
+        const auto path = boost::filesystem::path(path_str);
+        if(path.is_absolute() or path.empty()) {
+            ret.push_back(path);
+        } else {
+            ret.push_back(file_dir / path);
+        }
+    }
+    return ret;
+}
+
+string ConfigParser::getChildLibraryPath() const {
     // Do we have a child?
     if (static_cast<int>(_stack_list.size()) <= stack_level+1) {
         throw ConfigNoChild("ConfigParser: " + getName() + " has no child!");
     }
     // Our child is our stack level plus one
-    string child_name = _stack_list[stack_level+1];
-    return get<string>(child_name, "impl");
+    const string child_name = _stack_list[stack_level+1];
+    return get<boost::filesystem::path>(child_name, "impl").string();
 }
 
 } //namespace bohrium

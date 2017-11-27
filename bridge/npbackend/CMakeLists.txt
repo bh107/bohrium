@@ -19,10 +19,16 @@ find_package(Cython)
 set_package_properties(Cython PROPERTIES DESCRIPTION "C-Extensions for Python" URL "cython.org")
 set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and SWIG).")
 
+if(APPLE) # Apply's default Python compiler dosn't support OpenMP
+    set(CYTHON_OPENMP false CACHE BOOL "Use OpenMP in Cython extensions")
+else()
+    set(CYTHON_OPENMP true CACHE BOOL "Use OpenMP in Cython extensions")
+endif()
+
 if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
 
     # Get the OpenMP flag for the Cython OpenMP builds
-    if(${VE_OPENMP_COMPILER_OPENMP} AND NOT APPLE)
+    if(${VE_OPENMP_COMPILER_OPENMP} AND ${CYTHON_OPENMP})
         set(OPENMP_ARG "--openmp-flag=\"${OpenMP_C_FLAGS}\"")
     else()
         set(OPENMP_ARG "")

@@ -3,10 +3,15 @@ The module initialization of npbackend/bohrium imports and exposes all methods
 required to become a drop-in replacement for numpy.
 """
 import sys
+import os
+
+# If there is a Bohrium config file within this Python package, we should use it
+_conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini")
+if os.path.exists(_conf_path) and "BH_CONFIG" not in os.environ:
+    os.environ["BH_CONFIG"] = _conf_path
 
 if 'numpy_force' not in sys.modules:
     import numpy
-
     sys.modules['numpy_force'] = numpy
     del numpy
 

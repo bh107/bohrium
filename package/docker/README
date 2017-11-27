@@ -1,7 +1,7 @@
-In order to update the docker image that travis builds at each run, simply modify bohrium.dockerfile.
+In order to update the docker image that travis builds at each run, simply modify create_wheel.dockerfile.
 NB: no need to upload a new image to docker hub!
 
-When modifying the base image, you have to upload a new docker image to docker hub.
+When modifying the base image (manylinux), you have to upload a new docker image to docker hub.
 
 In the root dir of Bohrium first download:
 AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2
@@ -10,5 +10,5 @@ http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-pro
 
 and then run:
 
-sudo docker build -t bohrium/ubuntu:16.04 -f package/docker/base.dockerfile .
-sudo docker push bohrium/ubuntu:16.04
+sudo docker build -t bohrium/manylinux:latest -f package/docker/manylinux.dockerfile .
+sudo docker push bohrium/manylinux:latest

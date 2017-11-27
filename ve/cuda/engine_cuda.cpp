@@ -50,7 +50,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
                                     tmp_dir(jitk::get_tmp_path(config)),
                                     tmp_src_dir(tmp_dir / "src"),
                                     tmp_bin_dir(tmp_dir / "obj"),
-                                    cache_bin_dir(fs::path(config.defaultGet<string>("cache_dir", "")))
+                                    cache_bin_dir(config.defaultGet<fs::path>("cache_dir", ""))
 {
     int deviceCount = 0;
     CUresult err = cuInit(0);
@@ -91,7 +91,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     }
 
     // Init the compiler
-    compiler = jitk::Compiler(compiler_cmd, verbose);
+    compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
 }
 
 EngineCUDA::~EngineCUDA() {

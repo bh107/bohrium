@@ -33,15 +33,15 @@ namespace extmethod {
 ExtmethodFace::ExtmethodFace(const ConfigParser &parent_config,
                              const string &name) : _name(name) {
 
-    vector<string> libs = parent_config.getList("libs");
+    vector<boost::filesystem::path> libs = parent_config.getListOfPaths("libs");
     const string name_func_create = name + "_create";
     const string name_func_destroy = name + "_destroy";
     stringstream err_msg;
 
     bool fail = true;
-    for (string lib_path: libs) {
+    for (const boost::filesystem::path &lib_path: libs) {
         // Load the shared library
-        _lib_handle = dlopen(lib_path.c_str(), RTLD_NOW);
+        _lib_handle = dlopen(lib_path.string().c_str(), RTLD_NOW);
         if (_lib_handle == NULL) {
             cerr << "Cannot load library: " << dlerror() << '\n';
             throw runtime_error("Extmethod: Cannot load library");

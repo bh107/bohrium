@@ -16,7 +16,6 @@ target_link_libraries(bh_ve_openmp bh)
 
 install(TARGETS bh_ve_openmp DESTINATION ${LIBDIR} COMPONENT bohrium)
 
-
 #
 # The rest of the this file is finding the compiler and flags to write in the config file
 #
@@ -32,10 +31,6 @@ if(OPENMP_FOUND OR OpenMP_C_FOUND)
     # Check for the SIMD flag
     set(OpenMP_SIMD_C_FLAGS "${OpenMP_C_FLAGS} ${OpenMP_C_FLAGS}-simd")
     check_c_compiler_flag("${OpenMP_SIMD_C_FLAGS}" OPENMP_SIMD_FLAG_FOUND)
-    # If the openmp-simd flag is supported, we should use it
-    if(OPENMP_SIMD_FLAG_FOUND)
-        set(OpenMP_C_FLAGS "${OpenMP_SIMD_C_FLAGS}")
-    endif()
 
     # Check for SIMD support
     set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -82,17 +77,25 @@ if (FLAG_WERROR_FOUND)
     set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} -Werror")
 endif()
 
+# Do the user want OpenMP?
+set(VE_OPENMP_COMPILER_OPENMP      ${OPENMP_FOUND}          CACHE BOOL   "VE_OPENMP: JIT-Compiler use OpenMP")
+set(VE_OPENMP_COMPILER_OPENMP_SIMD ${OPENMP_SIMD_FOUND}     CACHE BOOL   "VE_OPENMP: JIT-Compiler use OpenMP-SIMD")
+
+# Let's set the openmp-simd flag if it is supported and wanted
+if(VE_OPENMP_COMPILER_OPENMP_SIMD)
+    set(OpenMP_C_FLAGS "${OpenMP_SIMD_C_FLAGS}")
+endif()
+
 # Parallelization
-if(OPENMP_FOUND)
+if(VE_OPENMP_COMPILER_OPENMP)
     set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG} ${OpenMP_C_FLAGS}")
 endif()
 
+# Let the user overwrite the compile command
 set(VE_OPENMP_COMPILER_CMD         "${CMAKE_C_COMPILER}"                             CACHE STRING "VE_OPENMP: JIT-Compiler")
 set(VE_OPENMP_COMPILER_INC         "-I${CMAKE_INSTALL_PREFIX}/share/bohrium/include" CACHE STRING "VE_OPENMP: JIT-Compiler includes")
 set(VE_OPENMP_COMPILER_LIB         "-lm -L${CMAKE_INSTALL_PREFIX}/${LIBDIR} -lbh"    CACHE STRING "VE_OPENMP: JIT-Compiler libraries")
 set(VE_OPENMP_COMPILER_FLG         "${VE_OPENMP_COMPILER_FLG}"                       CACHE STRING "VE_OPENMP: JIT-Compiler flags")
-set(VE_OPENMP_COMPILER_OPENMP      ${OPENMP_FOUND}                                   CACHE BOOL   "VE_OPENMP: JIT-Compiler use OpenMP")
-set(VE_OPENMP_COMPILER_OPENMP_SIMD ${OPENMP_SIMD_FOUND}                              CACHE BOOL   "VE_OPENMP: JIT-Compiler use OpenMP-SIMD")
 
 # We need to cleanup the variables for the config file
 if(VE_OPENMP_COMPILER_OPENMP)

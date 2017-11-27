@@ -34,9 +34,10 @@ namespace jitk {
 class Compiler {
 public:
     std::string cmd_template;
+    std::string config_path;
     bool verbose;
 
-    Compiler(std::string cmd_template, bool verbose);
+    Compiler(std::string cmd_template, bool verbose, std::string config_path);
     Compiler() = default;
 
     /**
@@ -57,5 +58,9 @@ public:
      */
     void compile(std::string object_abspath, std::string src_abspath) const;
 };
+
+/** Returns the command where {OUT}, {IN}, and {CONF_PATH} are expanded. */
+std::string expand_compile_cmd(const std::string &cmd_template, const std::string &out,
+                               const std::string &in, const std::string &config_path);
 
 }}
