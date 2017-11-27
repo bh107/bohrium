@@ -41,5 +41,11 @@ jobs:
     - env: BH_STACK=openmp EXEC="python3.6 $BENCHMARK_RUN"
     - env: BH_STACK=opencl EXEC="python3.6 $BENCHMARK_RUN"
 
+deploy:
+  provider: script
+  script: docker pull bohrium/wheel:latest && docker run -e TWINE_USERNAME=$TWINE_USERNAME -e TWINE_PASSWORD=$TWINE_PASSWORD -e EXEC="/bh/deploy.sh" bohrium/wheel
+  on:
+    branch: master
+
 notifications:
   slack: bohrium:BCAEW8qYK5fmkt8f5mW95GUe
