@@ -74,8 +74,9 @@ and especially the
 `Getting Started <https://spack.readthedocs.io/en/latest/getting_started.html>`_
 section for a good overview.
 
-Most importantly in the so-called `spec` one specifies on the commandline
-for installing Bohrium one may enable and disable the set of configured features.
+Most importantly the so-called `spec` allows to specify features or requirements
+with respect to versions and dependencies,
+that should be enabled or disabled when building the package.
 For example:
 
 .. code:: sh
@@ -90,5 +91,27 @@ On the other hand:
 
   spec install bohrium@develop
 
-will install specifically the development version of Bohrium, in other words
-the current commit on the master branch, and not the most recent release.
+will install specifically the development version of Bohrium.
+This the current `HEAD` of the `master` branch in the github repository.
+One may also influence the versions of the dependencies by themselves.
+For example
+
+.. code:: sh
+
+  spec install bohrium+python^python@3:
+
+will specifically compile Bohrium with a python version larger than 3.
+
+The current list of features the Bohrium package has to offer can be listed
+by the command
+
+.. code:: sh
+
+  spack info bohrium
+
+and the list of dependencies which will be installed by a particlar `spec`
+can be easily reviewed by something like
+
+.. code:: sh
+
+  spack spec bohrium@develop~cuda~opencl

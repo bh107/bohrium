@@ -56,11 +56,12 @@ PROGRAMFILES
 protoc
 repos
 Skovhede
+spack
 tmp
 Troels
 Ubuntu
-Valgrind
 valgrind
+Valgrind
 Vinter
 wget
 Xeon
