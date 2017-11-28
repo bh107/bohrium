@@ -37,3 +37,16 @@ class test_reduce_primitives:
         cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.reduce(a)" % op
         return cmd
+
+
+class test_mean_like:
+    def init(self):
+        for op in ['mean', 'average']:
+            for dtype in util.TYPES.NORMAL:
+                yield (op, dtype)
+
+    def test_mean_like(self, arg):
+        (op, dtype) = arg
+        cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
+        cmd += "res = M.%s(a)" % op
+        return cmd

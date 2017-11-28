@@ -80,10 +80,9 @@ class test_extra_binary_ops:
         (op, dtype) = arg
 
         cmd =  "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
-        cmd += "res = M.%s(a0, a1)"%op
-
+        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "res = M.%s(a0, a1)" % op
         return cmd
 
 
@@ -97,6 +96,6 @@ class test_power:
         (op, dtype) = arg
 
         cmd =  "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); "%dtype
-        cmd += "res = M.%s(a0, 1.42)"%op
+        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "res = M.%s(a0, 1.42)" % op
         return cmd
