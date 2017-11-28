@@ -109,6 +109,13 @@ class ConfigParser {
      */
     ConfigParser(int stack_level);
 
+    /* Expand `~` in `path` to the home dir of the user
+     *
+     * @path    Path to expand.
+     * @return  The expanded path.
+     */
+    boost::filesystem::path expand(boost::filesystem::path path) const;
+
     /* Get the value of the 'option' within the 'section'
      *
      * @section  The ini section e.g. [gpu]. If omitted, the default
@@ -244,7 +251,7 @@ class ConfigParser {
 // Path specialization of `ConfigParser::get()`, which makes sure that relative paths are converted to absolute paths
 template <>
 inline boost::filesystem::path ConfigParser::get(const std::string &section, const std::string &option) const {
-    boost::filesystem::path ret = boost::filesystem::path(get<std::string>(section, option));
+    boost::filesystem::path ret = expand(boost::filesystem::path(get<std::string>(section, option)));
     if(ret.is_absolute() or ret.empty()) {
         return ret;
     } else {

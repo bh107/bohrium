@@ -235,6 +235,22 @@ ConfigParser::ConfigParser(int stack_level) : file_path(get_config_path()),
     }
 }
 
+boost::filesystem::path ConfigParser::expand(boost::filesystem::path path) const {
+    if (path.empty())
+        return path;
+
+    string s = path.string();
+    if (s[0] == '~') {
+        const char *home = getenv("HOME");
+        if (home == nullptr) {
+            throw std::invalid_argument("Couldn't expand `~` since $HOME environment variable not set.");
+        }
+        return boost::filesystem::path(home) / boost::filesystem::path(s.substr(1));
+    } else {
+        return path;
+    }
+}
+
 vector<string> ConfigParser::getList(const std::string &section,
                                      const std::string &option) const {
     vector<string> ret;
@@ -247,7 +263,7 @@ vector<boost::filesystem::path> ConfigParser::getListOfPaths(const std::string &
                                                              const std::string &option) const {
     vector<boost::filesystem::path> ret;
     for (const string &path_str: getList(section, option)) {
-        const auto path = boost::filesystem::path(path_str);
+        const auto path = expand(boost::filesystem::path(path_str));
         if(path.is_absolute() or path.empty()) {
             ret.push_back(path);
         } else {
