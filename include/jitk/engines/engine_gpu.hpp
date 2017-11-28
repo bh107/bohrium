@@ -130,84 +130,21 @@ public:
 
             // We might have to offload the execution to the CPU
             if (threaded_blocks.size() == 0 and kernel_is_computing) {
-                if (config.defaultGet<bool>("verbose", false)) {
-                    cout << "Offloading to CPU\n";
+                cpu_offload(comp, bhir, block, symbols);
+            } else {
+                // Let's execute the kernel
+                if (kernel_is_computing) {
+                    execute_kernel(block, symbols, threaded_blocks);
                 }
 
-                if (&(comp.child) == nullptr) {
-                    throw runtime_error("handle_execution(): threaded_blocks cannot be empty when child == NULL!");
-                }
-
-                auto toffload = chrono::steady_clock::now();
-
-                // Let's copy all non-temporary to the host
-                const vector<bh_base*> v = symbols.getParams();
-                copyToHost(set<bh_base*>(v.begin(), v.end()));
+                // Let's copy sync'ed arrays back to the host
+                copyToHost(bhir->getSyncs());
 
                 // Let's free device buffers
-                for (bh_base *base: symbols.getFrees()) {
+                for(bh_base *base: symbols.getFrees()) {
                     delBuffer(base);
+                    bh_data_free(base);
                 }
-
-                // Let's send the kernel instructions to our child
-                vector<bh_instruction> child_instr_list;
-                for (const jitk::InstrPtr &instr: block.getAllInstr()) {
-                    child_instr_list.push_back(*instr);
-                }
-                BhIR tmp_bhir(std::move(child_instr_list), bhir->getSyncs());
-                comp.child.execute(&tmp_bhir);
-                stat.time_offload += chrono::steady_clock::now() - toffload;
-                continue;
-            }
-
-            // Let's execute the kernel
-            if (kernel_is_computing) {
-                // We need a memory buffer on the device for each non-temporary array in the kernel
-                const vector<bh_base*> v = symbols.getParams();
-                copyToDevice(set<bh_base*>(v.begin(), v.end()));
-
-                // Create the constant vector
-                vector<const bh_instruction*> constants;
-                constants.reserve(symbols.constIDs().size());
-                for (const jitk::InstrPtr &instr: symbols.constIDs()) {
-                    constants.push_back(&(*instr));
-                }
-
-                const auto lookup = codegen_cache.get({ block }, symbols);
-                if(lookup.second) {
-                    // In debug mode, we check that the cached source code is correct
-                    #ifndef NDEBUG
-                        stringstream ss;
-                        write_kernel(block, symbols, threaded_blocks, ss);
-                        if (ss.str().compare(lookup.first) != 0) {
-                            cout << "\nCached source code: \n" << lookup.first;
-                            cout << "\nReal source code: \n" << ss.str();
-                            assert(1 == 2);
-                        }
-                    #endif
-                    execute(lookup.first, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
-                } else {
-                    const auto tcodegen = chrono::steady_clock::now();
-                    stringstream ss;
-                    write_kernel(block, symbols, threaded_blocks, ss);
-                    string source = ss.str();
-                    stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-                    execute(source, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
-                    codegen_cache.insert(std::move(source), { block }, symbols);
-                }
-            }
-
-            // Let's copy sync'ed arrays back to the host
-            copyToHost(bhir->getSyncs());
-
-            // Let's free device buffers
-            for(bh_base *base: symbols.getFrees()) {
-                delBuffer(base);
-            }
-
-            // Finally, let's cleanup
-            for(bh_base *base: symbols.getFrees()) {
-                bh_data_free(base);
             }
         }
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
@@ -248,6 +185,83 @@ public:
         }
 
         bhir->instr_list = instr_list;
+    }
+
+private:
+    void cpu_offload(component::ComponentImplWithChild &comp,
+                     BhIR *bhir,
+                     const Block &block,
+                     const SymbolTable &symbols)
+    {
+        using namespace std;
+
+        if (config.defaultGet<bool>("verbose", false)) {
+            cout << "Offloading to CPU\n";
+        }
+
+        if (&(comp.child) == nullptr) {
+            throw runtime_error("handle_execution(): threaded_blocks cannot be empty when child == NULL!");
+        }
+
+        auto toffload = chrono::steady_clock::now();
+
+        // Let's copy all non-temporary to the host
+        const vector<bh_base*> v = symbols.getParams();
+        copyToHost(set<bh_base*>(v.begin(), v.end()));
+
+        // Let's free device buffers
+        for (bh_base *base: symbols.getFrees()) {
+            delBuffer(base);
+        }
+
+        // Let's send the kernel instructions to our child
+        vector<bh_instruction> child_instr_list;
+        for (const jitk::InstrPtr &instr: block.getAllInstr()) {
+            child_instr_list.push_back(*instr);
+        }
+        BhIR tmp_bhir(std::move(child_instr_list), bhir->getSyncs());
+        comp.child.execute(&tmp_bhir);
+        stat.time_offload += chrono::steady_clock::now() - toffload;
+    }
+
+    void execute_kernel(const Block &block,
+                        const SymbolTable &symbols,
+                        const std::vector<const LoopB*> &threaded_blocks)
+    {
+        using namespace std;
+        // We need a memory buffer on the device for each non-temporary array in the kernel
+        const vector<bh_base*> v = symbols.getParams();
+        copyToDevice(set<bh_base*>(v.begin(), v.end()));
+
+        // Create the constant vector
+        vector<const bh_instruction*> constants;
+        constants.reserve(symbols.constIDs().size());
+        for (const jitk::InstrPtr &instr: symbols.constIDs()) {
+            constants.push_back(&(*instr));
+        }
+
+        const auto lookup = codegen_cache.get({ block }, symbols);
+        if(lookup.second) {
+            // In debug mode, we check that the cached source code is correct
+            #ifndef NDEBUG
+                stringstream ss;
+                write_kernel(block, symbols, threaded_blocks, ss);
+                if (ss.str().compare(lookup.first) != 0) {
+                    cout << "\nCached source code: \n" << lookup.first;
+                    cout << "\nReal source code: \n" << ss.str();
+                    assert(1 == 2);
+                }
+            #endif
+            execute(lookup.first, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
+        } else {
+            const auto tcodegen = chrono::steady_clock::now();
+            stringstream ss;
+            write_kernel(block, symbols, threaded_blocks, ss);
+            string source = ss.str();
+            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
+            execute(source, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
+            codegen_cache.insert(std::move(source), { block }, symbols);
+        }
     }
 };
 

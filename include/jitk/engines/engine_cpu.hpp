@@ -138,35 +138,7 @@ private:
 
             // Let's execute the kernel
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
-
-                // Create the constant vector
-                vector<const bh_instruction*> constants;
-                constants.reserve(symbols.constIDs().size());
-                for (const InstrPtr &instr: symbols.constIDs()) {
-                    constants.push_back(&(*instr));
-                }
-                const auto lookup = codegen_cache.get({ block }, symbols);
-                if(lookup.second) {
-                    // In debug mode, we check that the cached source code is correct
-                    #ifndef NDEBUG
-                        stringstream ss;
-                        write_kernel({block}, symbols, {}, ss);
-                        if (ss.str().compare(lookup.first) != 0) {
-                            cout << "\nCached source code: \n" << lookup.first;
-                            cout << "\nReal source code: \n" << ss.str();
-                            assert(1 == 2);
-                        }
-                    #endif
-                    execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
-                } else {
-                    const auto tcodegen = chrono::steady_clock::now();
-                    stringstream ss;
-                    write_kernel({block}, symbols, {}, ss);
-                    string source = ss.str();
-                    stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-                    execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);
-                    codegen_cache.insert(std::move(source), {block}, symbols);
-                }
+                execute_kernel({ block }, symbols, {});
             }
 
             // Finally, let's cleanup
@@ -218,40 +190,46 @@ private:
 
         // Let's execute the kernel
         if (kernel_is_computing) { // We can skip this step if the kernel does no computation
-            // Create the constant vector
-            vector<const bh_instruction*> constants;
-            constants.reserve(symbols.constIDs().size());
-            for (const InstrPtr &instr: symbols.constIDs()) {
-                constants.push_back(&(*instr));
-            }
-
-            const auto lookup = codegen_cache.get(block_list, symbols);
-            if(lookup.second) {
-                // In debug mode, we check that the cached source code is correct
-                #ifndef NDEBUG
-                    stringstream ss;
-                    write_kernel(block_list, symbols, kernel_temps, ss);
-                    if (ss.str().compare(lookup.first) != 0) {
-                        cout << "\nCached source code: \n" << lookup.first;
-                        cout << "\nReal source code: \n" << ss.str();
-                        assert(1 == 2);
-                    }
-                #endif
-                execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
-            } else {
-                const auto tcodegen = chrono::steady_clock::now();
-                stringstream ss;
-                write_kernel(block_list, symbols, kernel_temps, ss);
-                string source = ss.str();
-                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-                execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);
-                codegen_cache.insert(std::move(source), block_list, symbols);
-            }
+            execute_kernel(block_list, symbols, kernel_temps);
         }
 
         // Finally, let's cleanup
         for(bh_base *base: symbols.getFrees()) {
             bh_data_free(base);
+        }
+    }
+private:
+    void execute_kernel(const std::vector<Block> &block_list, const SymbolTable &symbols, std::vector<bh_base*> kernel_temps) {
+        using namespace std;
+
+        // Create the constant vector
+        vector<const bh_instruction*> constants;
+        constants.reserve(symbols.constIDs().size());
+        for (const InstrPtr &instr: symbols.constIDs()) {
+            constants.push_back(&(*instr));
+        }
+
+        const auto lookup = codegen_cache.get(block_list, symbols);
+        if(lookup.second) {
+            // In debug mode, we check that the cached source code is correct
+            #ifndef NDEBUG
+                stringstream ss;
+                write_kernel(block_list, symbols, kernel_temps, ss);
+                if (ss.str().compare(lookup.first) != 0) {
+                    cout << "\nCached source code: \n" << lookup.first;
+                    cout << "\nReal source code: \n" << ss.str();
+                    assert(1 == 2);
+                }
+            #endif
+            execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
+        } else {
+            const auto tcodegen = chrono::steady_clock::now();
+            stringstream ss;
+            write_kernel(block_list, symbols, kernel_temps, ss);
+            string source = ss.str();
+            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
+            execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);
+            codegen_cache.insert(std::move(source), block_list, symbols);
         }
     }
 };
