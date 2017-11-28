@@ -190,9 +190,13 @@ except OSError:
 
 # We might have to disable OpenMP in `bincount_cython.pyx`
 if len(args_extra.openmp_flag) == 0:
-    with open(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), "r") as fin:
-        with open(buildpath('nobh', 'bincount_cython.pyx'), "w") as fout:
+    src = srcpath('bohrium', 'nobh', 'bincount_cython.pyx')
+    dst = buildpath('nobh', 'bincount_cython.pyx')
+    time = get_timestamp(src)
+    with open(src, "r") as fin:
+        with open(dst, "w") as fout:
             fout.write(fin.read().replace("Linux", "OpenMP Disabled"))
+    set_timestamp(dst, time) # Avoid triggering unnecessary builds
 else:
     shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
 

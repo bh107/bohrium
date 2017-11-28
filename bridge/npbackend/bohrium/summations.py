@@ -475,3 +475,115 @@ def argmin(a, axis=None, out=None):
     else:
         out[...] = ret
         return out
+
+
+def mean(a, axis=None, dtype=None, out=None):
+    """
+    Compute the arithmetic mean along the specified axis.
+    Returns the average of the array elements.  The average is taken over
+    the flattened array by default, otherwise over the specified axis.
+    `float64` intermediate and return values are used for integer inputs.
+    Parameters
+    ----------
+    a : array_like
+        Array containing numbers whose mean is desired. If `a` is not an
+        array, a conversion is attempted.
+    axis : None or int or tuple of ints, optional
+        Axis or axes along which the means are computed. The default is to
+        compute the mean of the flattened array.
+        .. versionadded:: 1.7.0
+        If this is a tuple of ints, a mean is performed over multiple axes,
+        instead of a single axis or all the axes as before.
+    dtype : data-type, optional
+        Type to use in computing the mean.  For integer inputs, the default
+        is `float64`; for floating point inputs, it is the same as the
+        input dtype.
+    out : ndarray, optional
+        Alternate output array in which to place the result.  The default
+        is ``None``; if provided, it must have the same shape as the
+        expected output, but the type will be cast if necessary.
+        See `doc.ufuncs` for details.
+
+    Returns
+    -------
+    m : ndarray, see dtype parameter above
+        If `out=None`, returns a new array containing the mean values,
+        otherwise a reference to the output array is returned.
+    See Also
+    --------
+    average : Weighted average
+    std, var, nanmean, nanstd, nanvar
+    Notes
+    -----
+    The arithmetic mean is the sum of the elements along the axis divided
+    by the number of elements.
+    Note that for floating-point input, the mean is computed using the
+    same precision the input has.  Depending on the input data, this can
+    cause the results to be inaccurate, especially for `float32` (see
+    example below).  Specifying a higher-precision accumulator using the
+    `dtype` keyword can alleviate this issue.
+    By default, `float16` results are computed using `float32` intermediates
+    for extra precision.
+    Examples
+    --------
+    >>> a = np.array([[1, 2], [3, 4]])
+    >>> np.mean(a)
+    2.5
+    >>> np.mean(a, axis=0)
+    array([ 2.,  3.])
+    >>> np.mean(a, axis=1)
+    array([ 1.5,  3.5])
+    In single precision, `mean` can be inaccurate:
+    >>> a = np.zeros((2, 512*512), dtype=np.float32)
+    >>> a[0, :] = 1.0
+    >>> a[1, :] = 0.1
+    >>> np.mean(a)
+    0.54999924
+    Computing the mean in float64 is more accurate:
+    >>> np.mean(a, dtype=np.float64)
+    0.55000000074505806
+    """
+
+    def _count_reduce_items(arr, axis):
+        if axis is None:
+            axis = tuple(range(arr.ndim))
+        if not isinstance(axis, tuple):
+            axis = (axis,)
+        items = 1
+        for ax in axis:
+            items *= arr.shape[ax]
+        return items
+
+    def _mean(a, axis=None, dtype=None, out=None):
+        arr = array_create.array(a)
+        is_float16_result = False
+        rcount = _count_reduce_items(arr, axis)
+        # Make this warning show up first
+        if rcount == 0:
+            warnings.warn("Mean of empty slice.", RuntimeWarning, stacklevel=2)
+
+        # Cast bool, unsigned int, and int to float64 by default
+        if dtype is None:
+            if issubclass(arr.dtype.type, (numpy.integer, numpy.bool_)):
+                dtype = numpy.dtype('f8')
+            elif issubclass(arr.dtype.type, numpy.float16):
+                dtype = numpy.dtype('f4')
+                is_float16_result = True
+
+        ret = sum(arr, axis, dtype, out)
+        if isinstance(ret, numpy.ndarray):
+            ret = ufuncs.true_divide(ret, rcount, out=ret)
+            if is_float16_result and out is None:
+                ret = a.dtype.type(ret)
+        elif hasattr(ret, 'dtype'):
+            if is_float16_result:
+                ret = a.dtype.type(ret / rcount)
+            else:
+                ret = ret.dtype.type(ret / rcount)
+        else:
+            ret = ret / rcount
+        return ret
+    return _mean(a, axis=axis, dtype=dtype, out=out)
+
+
+average = mean
