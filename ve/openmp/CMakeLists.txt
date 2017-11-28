@@ -31,21 +31,22 @@ if(OPENMP_FOUND OR OpenMP_C_FOUND)
     # Check for the SIMD flag
     set(OpenMP_SIMD_C_FLAGS "${OpenMP_C_FLAGS} ${OpenMP_C_FLAGS}-simd")
     check_c_compiler_flag("${OpenMP_SIMD_C_FLAGS}" OPENMP_SIMD_FLAG_FOUND)
-
-    # Check for SIMD support
-    set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    check_c_source_compiles("
-    #include <omp.h>
-    int main() {
-      int i;
-      int sum=42;
-      #pragma omp parallel for simd reduction(+:sum)
-      for(i=0; i<100; ++i)
-        sum += i;
-      return 0;
-    }
-    " OPENMP_SIMD_FOUND)
-    unset(CMAKE_REQUIRED_FLAGS)
+    if(OPENMP_SIMD_FLAG_FOUND)
+        # Check for SIMD support
+        set(CMAKE_REQUIRED_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        check_c_source_compiles("
+        #include <omp.h>
+        int main() {
+          int i;
+          int sum=42;
+          #pragma omp parallel for simd reduction(+:sum)
+          for(i=0; i<100; ++i)
+            sum += i;
+          return 0;
+        }
+        " OPENMP_SIMD_FOUND)
+        unset(CMAKE_REQUIRED_FLAGS)
+    endif()
 endif()
 
 # Check highly RECOMMENDED flags
