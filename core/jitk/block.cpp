@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
+#include <jitk/codegen_util.hpp>
 
 using namespace std;
 
@@ -31,11 +32,6 @@ namespace bohrium {
 namespace jitk {
 
 namespace {
-void spaces(stringstream &out, int num) {
-    for (int i = 0; i < num; ++i) {
-        out << " ";
-    }
-}
 
 // Returns true if a block consisting of 'instr_list' is reshapable
 bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
@@ -337,7 +333,7 @@ uint64_t LoopB::localThreading() const {
 
 string LoopB::pprint(const char *newline) const {
     stringstream ss;
-    spaces(ss, rank * 4);
+    util::spaces(ss, rank * 4);
     ss << "rank: " << rank << ", size: " << size;
     if (_sweeps.size() > 0) {
         ss << ", sweeps: { ";
@@ -433,7 +429,7 @@ string Block::pprint(const char *newline) const {
     if (isInstr()) {
         stringstream ss;
         if (getInstr() != NULL) {
-            spaces(ss, rank() * 4);
+            util::spaces(ss, rank() * 4);
             ss << *getInstr() << newline;
         }
         return ss.str();

@@ -21,8 +21,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 #include <boost/functional/hash.hpp>
+
 #include <boost/algorithm/string/replace.hpp>
 #include <iomanip>
+
+#include <bh_instruction.hpp>
+#include <bh_component.hpp>
 
 #include "engine_cuda.hpp"
 
@@ -34,23 +38,13 @@ namespace bohrium {
 static boost::hash<string> hasher;
 
 EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
-                                    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-                                    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-                                    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-                                    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-                                    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-                                    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)),
-                                    compile_flg(config.defaultGet<string>("compiler_flg", "")),
-                                    default_device_type(config.defaultGet<string>("device_type", "auto")),
-                                    platform_no(config.defaultGet<int>("platform_no", -1)),
-                                    verbose(config.defaultGet<bool>("verbose", false)),
-                                    cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-                                    stat(stat),
-                                    prof(config.defaultGet<bool>("prof", false)),
-                                    tmp_dir(jitk::get_tmp_path(config)),
-                                    tmp_src_dir(tmp_dir / "src"),
-                                    tmp_bin_dir(tmp_dir / "obj"),
-                                    cache_bin_dir(config.defaultGet<fs::path>("cache_dir", ""))
+    EngineGPU(config, stat),
+    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
+    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
+    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
+    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
+    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
+    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
 {
     int deviceCount = 0;
     CUresult err = cuInit(0);
@@ -83,12 +77,11 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
     string compiler_cmd = config.get<string>("compiler_cmd");
-    {
-        int major = 0, minor = 0;
-        checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
-        boost::replace_all(compiler_cmd, "{MAJOR}", std::to_string(major));
-        boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
-    }
+
+    int major = 0, minor = 0;
+    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+    boost::replace_all(compiler_cmd, "{MAJOR}", std::to_string(major));
+    boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
     // Init the compiler
     compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
@@ -210,6 +203,39 @@ CUfunction EngineCUDA::getFunction(const string &source) {
     }
     _functions[hash] = program;
     return program;
+}
+
+void EngineCUDA::write_kernel(const jitk::Block &block,
+                              const jitk::SymbolTable &symbols,
+                              const std::vector<const jitk::LoopB*> &threaded_blocks,
+                              std::stringstream &ss) {
+    // Write the need includes
+    ss << "#include <kernel_dependencies/complex_cuda.h>\n";
+    ss << "#include <kernel_dependencies/integer_operations.h>\n";
+    if (symbols.useRandom()) { // Write the random function
+        ss << "#include <kernel_dependencies/random123_cuda.h>\n";
+    }
+    ss << "\n";
+
+    // Write the header of the execute function
+    ss << "extern \"C\" __global__ void execute";
+    write_kernel_function_arguments(symbols, ss, nullptr);
+    ss << " {\n";
+
+    // Write the IDs of the threaded blocks
+    if (not threaded_blocks.empty()) {
+        util::spaces(ss, 4);
+        ss << "// The IDs of the threaded blocks: \n";
+        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
+            const jitk::LoopB *b = threaded_blocks[i];
+            util::spaces(ss, 4);
+            ss << "const " << write_type(bh_type::INT64) << " i" << b->rank << " = " << write_thread_id(i) << "; "
+               << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
+        }
+        ss << "\n";
+    }
+    write_loop_block(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+    ss << "}\n\n";
 }
 
 void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> &non_temps,

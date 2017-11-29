@@ -24,6 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <bh_ir.hpp>
 #include <bh_opcode.h>
+#include <bh_extmethod.hpp>
+#include <jitk/statistics.hpp>
 
 namespace bohrium {
 namespace component {
@@ -52,6 +54,7 @@ class ComponentImpl {
     const int stack_level;
     // The configure file
     const ConfigParser config;
+
     // Constructor
     ComponentImpl(int stack_level) : stack_level(stack_level), config(stack_level) {};
     virtual ~ComponentImpl() {}; // NB: a destructor implementation must exist
@@ -177,15 +180,17 @@ class ComponentFace {
 // pass-through implementations of the required component methods.
 class ComponentImplWithChild : public ComponentImpl {
 protected:
-    // The interface of the child
-    ComponentFace child;
     // Flag that indicate whether the component is enabled or disabled.
     // When disabled, the component should pass through instructions untouched to its child
     bool disabled;
 public:
+    // The interface of the child
+    ComponentFace child;
+
     ComponentImplWithChild(int stack_level)
             : ComponentImpl(stack_level),
-              child(ComponentImpl::config.getChildLibraryPath(), stack_level+1), disabled(false) {}
+              disabled(false),
+              child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
     virtual ~ComponentImplWithChild() {};
     virtual void execute(BhIR *bhir) {
         child.execute(bhir);

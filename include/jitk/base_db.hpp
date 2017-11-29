@@ -26,7 +26,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_view.hpp>
 #include <bh_util.hpp>
-#include <bh_config_parser.hpp>
 
 #include <jitk/block.hpp>
 
@@ -104,11 +103,17 @@ public:
     // Should we use constants as variables?
     const bool const_as_var;
 
-    SymbolTable(const std::vector<InstrPtr> &instr_list, const std::set<bh_base *> &non_temp_arrays,
-                bool strides_as_var, bool index_as_var, bool const_as_var,
-                bool use_volatile) : _useRandom(false), use_volatile(use_volatile), strides_as_var(strides_as_var),
-                                     index_as_var(index_as_var), const_as_var(const_as_var) {
-
+    SymbolTable(const std::vector<InstrPtr> &instr_list,
+                const std::set<bh_base *> &non_temp_arrays,
+                bool use_volatile,
+                bool strides_as_var,
+                bool index_as_var,
+                bool const_as_var) :
+        _useRandom(false),
+        use_volatile(use_volatile),
+        strides_as_var(strides_as_var),
+        index_as_var(index_as_var),
+        const_as_var(const_as_var) {
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -238,8 +243,7 @@ public:
           const Scope *parent,
           const std::set<bh_base *> &tmps,
           const T1 &scalar_replacements_rw,
-          const T2 &scalar_replacements_r,
-          const ConfigParser &config) : symbols(symbols), parent(parent) {
+          const T2 &scalar_replacements_r) : symbols(symbols), parent(parent) {
         for(const bh_base* base: tmps) {
             if (not symbols.isAlwaysArray(base))
                 _tmps.insert(base);

@@ -29,58 +29,83 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/statistics.hpp>
 #include <jitk/block.hpp>
 #include <jitk/compiler.hpp>
+#include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_util.hpp>
+#include <jitk/codegen_cache.hpp>
+
+#include <jitk/engines/engine_cpu.hpp>
 
 namespace bohrium {
 
 typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[], bh_constant_value constants[]);
 
-class EngineOpenMP {
+class EngineOpenMP : public jitk::EngineCPU {
   private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
 
-    // Verbose flag
-    const bool verbose;
-
-    // Maximum number of cache files
-    const int64_t cache_file_max;
-
-    // Path to a temporary directory for the source and object files
-    const boost::filesystem::path tmp_dir;
-
-    // Path to the temporary directory of the source files
-    const boost::filesystem::path tmp_src_dir;
-
-    // Path to the temporary directory of the binary files (e.g. .so files)
-    const boost::filesystem::path tmp_bin_dir;
-
-    // Path to the directory of the cached binary files (e.g. .so files)
-    const boost::filesystem::path cache_bin_dir;
-
     // The compiler to use when function doesn't exist
     const jitk::Compiler compiler;
-
-    // The hash of the JIT compilation command
-    const size_t compilation_hash;
-
-    // Some statistics
-    jitk::Statistics &stat;
 
     // Return a kernel function based on the given 'source'
     KernelFunction getFunction(const std::string &source);
 
   public:
     EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
+
     ~EngineOpenMP();
 
-    // The following methods implements the methods required by jitk::handle_cpu_execution()
-
-    void execute(const std::string &source, const std::vector<bh_base*> &non_temps,
+    void execute(const std::string &source,
+                 const std::vector<bh_base*> &non_temps,
                  const std::vector<const bh_view*> &offset_strides,
-                 const std::vector<const bh_instruction*> &constants);
-    void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+                 const std::vector<const bh_instruction*> &constants) override;
+
+    void set_constructor_flag(std::vector<bh_instruction*> &instr_list) override;
+
+    void write_kernel(const std::vector<jitk::Block> &block_list,
+                      const jitk::SymbolTable &symbols,
+                      const std::vector<bh_base*> &kernel_temps,
+                      std::stringstream &ss) override;
+
+     // Writing the OpenMP header, which include "parallel for" and "simd"
+    void write_header(const jitk::SymbolTable &symbols,
+                      jitk::Scope &scope,
+                      const jitk::LoopB &block,
+                      std::stringstream &out);
+
+    void loop_head_writer(const jitk::SymbolTable &symbols,
+                          jitk::Scope &scope,
+                          const jitk::LoopB &block,
+                          bool loop_is_peeled,
+                          const std::vector<const jitk::LoopB *> &threaded_blocks,
+                          std::stringstream &out) override;
 
     // Return a YAML string describing this component
-    std::string info() const;
+    std::string info() const override;
+
+    // Return C99 types, which are used inside the C99 kernels
+    const std::string write_type(bh_type dtype) override;
+
+  private:
+    // Writes the union of C99 types that can make up a constant
+    inline void write_union_type(std::stringstream& out) {
+        out << "\ntypedef struct { uint64_t x, y; } r123_t" << ";\n";
+        out << "union dtype {\n";
+        util::spaces(out, 4); out << write_type(bh_type::BOOL)       << " " << bh_type_text(bh_type::BOOL)       << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::INT8)       << " " << bh_type_text(bh_type::INT8)       << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::INT16)      << " " << bh_type_text(bh_type::INT16)      << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::INT32)      << " " << bh_type_text(bh_type::INT32)      << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::INT64)      << " " << bh_type_text(bh_type::INT64)      << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::UINT8)      << " " << bh_type_text(bh_type::UINT8)      << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::UINT16)     << " " << bh_type_text(bh_type::UINT16)     << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::UINT32)     << " " << bh_type_text(bh_type::UINT32)     << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::UINT64)     << " " << bh_type_text(bh_type::UINT64)     << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::FLOAT32)    << " " << bh_type_text(bh_type::FLOAT32)    << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::FLOAT64)    << " " << bh_type_text(bh_type::FLOAT64)    << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::COMPLEX64)  << " " << bh_type_text(bh_type::COMPLEX64)  << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::COMPLEX128) << " " << bh_type_text(bh_type::COMPLEX128) << ";\n";
+        util::spaces(out, 4); out << write_type(bh_type::R123)       << " " << bh_type_text(bh_type::R123)       << ";\n";
+        out << "};\n";
+    }
 };
 } // bohrium
