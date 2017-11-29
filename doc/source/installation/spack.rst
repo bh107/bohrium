@@ -24,18 +24,15 @@ which set the required environment up.
 Installation overview
 ---------------------
 
-First step is to clone and setup Spack:
+.. highlight:: ruby
 
-.. code:: sh
+First step is to clone and setup Spack::
 
-  git clone https://github.com/llnl/spack.git
   export SPACK_ROOT="$PWD/spack"
+  git clone https://github.com/llnl/spack.git
   . $SPACK_ROOT/share/spack/setup-env.sh
 
-
-Afterwards the installation of Bohrium is instructed:
-
-.. code:: sh
+Afterwards the installation of Bohrium is instructed::
 
   spack install bohrium
 
@@ -44,9 +41,7 @@ unpack, configure and compile them. But since everything happens in the right or
 automatically, you could easily do this over night.
 
 That's it. If you want to use Bohrium, setup up Spack as above,
-then load the required modules:
-
-.. code:: sh
+then load the required modules::
 
   spack module loads -r bohrium > /tmp/bohrium.modules
   . /tmp/bohrium.modules
@@ -57,9 +52,7 @@ to get going.
 
 If you get some errors about the command `module` not being found, you need
 to install the Spack package `environment-modules` beforehand. Again,
-just a plain:
-
-.. code:: sh
+just a plain::
 
   spack install environment-modules
 
@@ -77,41 +70,33 @@ section for a good overview.
 Most importantly the so-called `spec` allows to specify features or requirements
 with respect to versions and dependencies,
 that should be enabled or disabled when building the package.
-For example:
-
-.. code:: sh
+For example::
 
   spec install bohrium~cuda~opencl
 
+.. highlight:: python
+
 Will install Bohrium *without* CUDA or OpenCL support, which has a dramatic impact
 on the install time due to the reduced amount of dependencies to be installed.
-On the other hand:
-
-.. code:: sh
+On the other hand::
 
   spec install bohrium@develop
 
 will install specifically the development version of Bohrium.
 This the current `HEAD` of the `master` branch in the github repository.
 One may also influence the versions of the dependencies by themselves.
-For example
-
-.. code:: sh
+For example::
 
   spec install bohrium+python^python@3:
 
 will specifically compile Bohrium with a python version larger than 3.
 
 The current list of features the Bohrium package has to offer can be listed
-by the command
-
-.. code:: sh
+by the command::
 
   spack info bohrium
 
 and the list of dependencies which will be installed by a particlar `spec`
-can be easily reviewed by something like
-
-.. code:: sh
+can be easily reviewed by something like::
 
   spack spec bohrium@develop~cuda~opencl
