@@ -163,7 +163,7 @@ with open(_config_path, "w") as f:
     config_str = args_extra.config.read()
 
     # Unset the `cache_dir` option
-    config_str = _regex_replace("cache_dir = .*", "cache_dir = ", config_str)
+    config_str = _regex_replace("cache_dir = .*", "cache_dir = ~/.bohrium/cache", config_str)
 
     # Set the JIT compiler to gcc
     config_str = _regex_replace("compiler_cmd = \".* -x c", "compiler_cmd = \"gcc -x c", config_str)

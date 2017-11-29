@@ -62,15 +62,19 @@ EngineOpenMP::~EngineOpenMP() {
 
     // Move JIT kernels to the cache dir
     if (not cache_bin_dir.empty()) {
-     //   cout << "filling cache_bin_dir: " << cache_bin_dir.string() << endl;
-        for (const auto &kernel: _functions) {
-            const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
-            if (fs::exists(src)) {
-                const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
-                if (not fs::exists(dst)) {
-                    fs::copy(src, dst);
+        try {
+            for (const auto &kernel: _functions) {
+                const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
+                if (fs::exists(src)) {
+                    const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
+                    if (not fs::exists(dst)) {
+                        fs::copy_file(src, dst);
+                    }
                 }
             }
+        } catch (const boost::filesystem::filesystem_error &e) {
+            cout << "Warning: couldn't write JIT kernels to disk to " << cache_bin_dir
+                 << ". " << e.what() << endl;
         }
     }
 

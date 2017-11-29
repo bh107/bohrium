@@ -99,14 +99,19 @@ EngineCUDA::~EngineCUDA() {
 
     // Move JIT kernels to the cache dir
     if (not cache_bin_dir.empty()) {
-        for (const auto &kernel: _functions) {
-            const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".cubin");
-            if (fs::exists(src)) {
-                const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".cubin");
-                if (not fs::exists(dst)) {
-                    fs::copy_file(src, dst);
+        try {
+            for (const auto &kernel: _functions) {
+                const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".cubin");
+                if (fs::exists(src)) {
+                    const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".cubin");
+                    if (not fs::exists(dst)) {
+                        fs::copy_file(src, dst);
+                    }
                 }
             }
+        } catch (const boost::filesystem::filesystem_error &e) {
+            cout << "Warning: couldn't write CUDA kernels to disk to " << cache_bin_dir
+                 << ". " << e.what() << endl;
         }
     }
 
