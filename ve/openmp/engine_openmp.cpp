@@ -221,26 +221,27 @@ void EngineOpenMP::loop_head_writer(const jitk::SymbolTable &symbols,
                                     bool loop_is_peeled,
                                     const vector<const jitk::LoopB *> &threaded_blocks,
                                     stringstream &out) {
-
     // Let's write the OpenMP loop header
-    {
-        int64_t for_loop_size = block.size;
-        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, its size is one less
-            --for_loop_size;
-        // No need to parallel one-sized loops
-        if (for_loop_size > 1) {
-            write_header(symbols, scope, block, out);
-        }
+    int64_t for_loop_size = block.size;
+    // If the for-loop has been peeled, its size is one less
+    if (block._sweeps.size() > 0 and loop_is_peeled) {
+        --for_loop_size;
+    }
+    // No need to parallel one-sized loops
+    if (for_loop_size > 1) {
+        write_header(symbols, scope, block, out);
     }
 
     // Write the for-loop header
     string itername;
     { stringstream t; t << "i" << block.rank; itername = t.str(); }
     out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
+    if (block._sweeps.size() > 0 and loop_is_peeled) {
+         // If the for-loop has been peeled, we should start at 1
         out << " = 1; ";
-    else
+    } else {
         out << " = 0; ";
+    }
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
@@ -249,6 +250,9 @@ void EngineOpenMP::write_header(const jitk::SymbolTable &symbols,
                                 jitk::Scope &scope,
                                 const jitk::LoopB &block,
                                 std::stringstream &out) {
+    if (not config.defaultGet<bool>("compiler_openmp", false)) {
+        return;
+    }
     const bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)

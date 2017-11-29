@@ -92,6 +92,7 @@ cache_file_max = 50000
 # and {CONF_PATH} with the path to this config file
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} ${VE_OPENMP_COMPILER_LIB} {IN} -o {OUT}"
 # JIT compile options
+compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
 libs = ${BH_OPENMP_LIBS}
