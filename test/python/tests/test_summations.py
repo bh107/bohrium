@@ -8,7 +8,7 @@ class test_sums:
     def init(self):
         for cmd, shape in util.gen_random_arrays("R", 3, dtype="np.float32"):
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
-            for op in ["sum", "prod", "all", "any"]:
+            for op in ["sum", "prod", "all", "any", "mean"]:
                 yield (cmd, op, None)
                 for axis in range(len(shape)):
                     yield (cmd, op, axis)
