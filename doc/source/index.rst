@@ -18,8 +18,6 @@ Features
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
 | Mac OS    | ✓               |  ✓              | ✓             |               | ✓   |  ✓   |
 +-----------+-----------------+-----------------+---------------+---------------+-----+------+
-| Windows   |                 |                 |               |               |     |      |
-+-----------+-----------------+-----------------+---------------+---------------+-----+------+
 
 - **Lazy Evaluation**, Bohrium will lazy evaluate all Python/NumPy operations until it encounters a “Python Read” such a printing an array or having a if-statement testing the value of an array.
 - **Views** Bohrium supports NumPy views fully thus operating on array slices does not involve data copying.
@@ -36,7 +34,6 @@ Features
 
 Please note:
     * Bohrium is a 64-bit project exclusively.
-    * We are working on a Windows version.
     * Source code is available here: https://github.com/bh107/bohrium
 
 Get Started!

@@ -1,15 +1,69 @@
 Runtime Configuration
 ---------------------
 
+.. highlight:: python
+
 Bohrium supports a broad range of front and back-ends.
-In order to configure the runtime setup of Bohrium you must provide a configuration file to Bohrium. The installation of Bohrium installs a default configuration file in ``/etc/bohrium/config.ini`` when doing a system-wide installation and ``~/.bohrium/config.ini`` when doing a local installation.
+The default backend is OpenMP. You can change which backend to use by defining the ``BH_STACK`` environment variable:
+
+* The CPU backend that make use of OpenMP: ``BH_STACK=openmp``
+* The GPU backend that make use of OpenCL: ``BH_STACK=opencl``
+* The GPU backend that make use of CUDA: ``BH_STACK=cude``
+
+For debug information when running Bohrium, use the following environment variables::
+
+  BH_<backend>_PROF=true     -- Prints a performance profile at the end of execution.
+  BH_<backend>_VERBOSE=true  -- Prints a lot of information including the source of the JIT compiled kernels. Enables per-kernel profiling when used together with BH_OPENMP_PROF=true.
+  BH_SYNC_WARN=true          -- Show Python warnings in all instances when copying data to Python.
+  BH_MEM_WARN=true           -- Show warnings when memory accesses are problematic.
+  BH_<backend>_GRAPH=true    -- Dump a dependency graph of the instructions send to the back-ends (.dot file).
+  BH_<backend>_VOLATILE=true -- Declare temporary variables using `volatile`, which avoid precision differences because of Intel's use of 80-bit floats internally.
+
+Particularly, ``BH_<backend>_PROF=true`` is very useful to explore why Bohrium might not perform as expected::
+
+    BH_OPENMP_PROF=1 python -m bohrium heat_equation.py --size=4000*4000*100
+    heat_equation.py - target: bhc, bohrium: True, size: 4000*4000*100, elapsed-time: 6.446084
+
+    [OpenMP] Profiling:
+    Fuse cache hits:                 199/203 (98.0296%)
+    Codegen cache hits               299/304 (98.3553%)
+    Kernel cache hits                300/304 (98.6842%)
+    Array contractions:              700/1403 (49.8931%)
+    Outer-fusion ratio:              13/23 (56.5217%)
+
+    Max memory usage:                0 MB
+    Syncs to NumPy:                  99
+    Total Work:                      12800400099 operations
+    Throughput:                      1.9235e+09ops
+    Work below par-threshold (1000): 0%
+
+    Wall clock:                      6.65473s
+    Total Execution:                 6.04354s
+      Pre-fusion:                    0.000761211s
+      Fusion:                        0.00411354s
+      Codegen:                       0.00192224s
+      Compile:                       0.285544s
+      Exec:                          4.91214s
+      Copy2dev:                      0s
+      Copy2host:                     0s
+      Ext-method:                    0s
+      Offload:                       0s
+      Other:                         0.839052s
+
+    Unaccounted for (wall - total):  0.611198s
+
+Which tells us, among other things, that the execution of the compiled JIT kernels (``Exec``) takes 4.91 seconds, the JIT compilation (``Compile``) takes 0.29 seconds, and the time spend outside of Bohrium (``Unaccounted for``) takes 0.61.
+
+Advanced Configuration
+~~~~~~~~~~~~~~~~~~~~~~
+
+In order to configure the runtime setup of Bohrium you must provide a configuration file to Bohrium. The installation of Bohrium installs a default configuration file in ``/etc/bohrium/config.ini`` when doing a system-wide installation, ``~/.bohrium/config.ini`` when doing a local installation, and ``<python library>/bohrium/config.ini`` when doing a pip installation.
 
 At runtime Bohrium will search through the following prioritized list in order to find the configuration file:
 
 * The environment variable ``BH_CONFIG``
-* The home directory config ``~/.bohrium/config.ini`` (Windows: %APPDATA%\bohrium\config.ini)
-* The system-wide config ``/etc/bohrium/config.ini`` (Windows: %PROGRAMFILES%\bohrium\config.ini)
-
+* The home directory config ``~/.bohrium/config.ini`` (ignored in a pip installation)
+* The system-wide config ``/etc/bohrium/config.ini`` (ignored in a pip installation)
 
 The default configuration file looks similar to the config below::
 
@@ -102,9 +156,6 @@ The configuration file consists of two things: ``components`` and orchestration 
 Components marked with square brackets. For example ``[node]``, ``[openmp]``, ``[opencl]`` are all components available for the runtime system.
 
 The ``stacks`` define different default configurations of the runtime environment and one can switch between them using the environment var ``BH_STACK``.
-
-Environment Variables
----------------------
 
 .. highlight:: python
 
