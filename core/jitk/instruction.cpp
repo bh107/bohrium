@@ -560,182 +560,149 @@ void dtype_min(bh_type dtype, stringstream &out) {
 
 } // Anon namespace
 
-void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    if (bh_opcode_is_system(instr.opcode))
-        return;
-    if (instr.opcode == BH_RANGE) {
-        vector<string> ops;
-        // Write output operand
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        // Let's find the flatten index of the output view
-        {
-            stringstream ss;
-            ss << "(";
-            if (scope.symbols.strides_as_var) {
-                ss << " vo" << scope.symbols.offsetStridesID(instr.operand[0]);
-            } else {
-                ss << instr.operand[0].start;
-            }
-            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                ss << "+ i" << i << " * ";
-                if (scope.symbols.strides_as_var) {
-                    ss << " vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
-                } else {
-                    ss << instr.operand[0].stride[i];
-                }
-            }
-            ss << ")";
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
+void get_name_and_subscription(const Scope &scope, const bh_view &view, stringstream &out) {
+    scope.getName(view, out);
+    if (scope.isArray(view)) {
+        write_array_subscription(scope, view, out);
     }
-    if (instr.opcode == BH_RANDOM) {
-        vector<string> ops;
-        // Write output operand
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        // Write the random generation
-        {
-            stringstream ss;
-            // Find the random `start` and `key`
-            const int64_t constID = scope.symbols.constID(instr);
-            if (constID >= 0) {
-                ss << "random123(" << "c" << constID << ".x, " << "c" << constID << ".y, " ;
-            } else {
-                ss << "random123(" << instr.constant.value.r123.start << ", " << instr.constant.value.r123.key << ", ";
-            }
+}
 
-            // Let's find the flatten index of the output view
-            if (scope.symbols.strides_as_var) {
-                ss << " vo" << scope.symbols.offsetStridesID(instr.operand[0]);
-            } else {
-                ss << instr.operand[0].start;
-            }
-            for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-                ss << " + i" << i << " * ";
-                if (scope.symbols.strides_as_var) {
-                    ss << " vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
-                } else {
-                    ss << instr.operand[0].stride[i];
-                }
-            }
-            ss << ")";
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
-    if (bh_opcode_is_accumulate(instr.opcode)) {
-        vector<string> ops;
-        // Write output operand
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        // Write the previous element access, NB: this works because of loop peeling
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            write_array_subscription(scope, instr.operand[0], ss, true, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
-            ops.push_back(ss.str());
-        }
-        // Write the current element access
-        {
-            stringstream ss;
-            scope.getName(instr.operand[1], ss);
-            if (scope.isArray(instr.operand[1])) {
-                write_array_subscription(scope, instr.operand[1], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
-    if (instr.opcode == BH_GATHER) {
-        // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
-        vector<string> ops;
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            if (scope.isArray(instr.operand[0])) {
-                write_array_subscription(scope, instr.operand[0], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        {
-            assert(not bh_is_constant(&instr.operand[1]));
-            stringstream ss;
-            scope.getName(instr.operand[1], ss);
-            ss << "[" << instr.operand[1].start << " + ";
-            scope.getName(instr.operand[2], ss);
-            if (scope.isArray(instr.operand[2])) {
-                write_array_subscription(scope, instr.operand[2], ss);
-            }
-            ss << "]";
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
-    if (instr.opcode == BH_SCATTER or instr.opcode == BH_COND_SCATTER) {
-        // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
-        vector<string> ops;
-        {
-            stringstream ss;
-            scope.getName(instr.operand[0], ss);
-            ss << "[" << instr.operand[0].start << " + ";
-            scope.getName(instr.operand[2], ss);
-            if (scope.isArray(instr.operand[2])) {
-                write_array_subscription(scope, instr.operand[2], ss);
-            }
-            ss << "]";
-            ops.push_back(ss.str());
-        }
-        {
-            stringstream ss;
-            scope.getName(instr.operand[1], ss);
-            if (scope.isArray(instr.operand[1])) {
-                write_array_subscription(scope, instr.operand[1], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
-            stringstream ss;
-            scope.getName(instr.operand[3], ss);
-            if (scope.isArray(instr.operand[3])) {
-                write_array_subscription(scope, instr.operand[3], ss);
-            }
-            ops.push_back(ss.str());
-        }
-        write_operation(instr, ops, out, opencl);
-        return;
-    }
+string get_name_and_subscription(const Scope &scope, const bh_view &view) {
+    stringstream ss;
+    get_name_and_subscription(scope, view, ss);
+    return ss.str();
+}
 
-
+void write_range_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
     vector<string> ops;
+
+    // Write output operand
+    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
+
+    // Let's find the flatten index of the output view
+    stringstream ss;
+    ss << "(";
+    if (scope.symbols.strides_as_var) {
+        ss << "vo" << scope.symbols.offsetStridesID(instr.operand[0]);
+    } else {
+        ss << instr.operand[0].start;
+    }
+    for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+        ss << "+ i" << i << " * ";
+        if (scope.symbols.strides_as_var) {
+            ss << " vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
+        } else {
+            ss << " " << instr.operand[0].stride[i];
+        }
+    }
+    ss << ")";
+    ops.push_back(ss.str());
+
+    write_operation(instr, ops, out, opencl);
+}
+
+void write_random_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
+    vector<string> ops;
+
+    // Write output operand
+    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
+
+    // Write the random generation
+    stringstream ss;
+    // Find the random `start` and `key`
+    const int64_t constID = scope.symbols.constID(instr);
+    if (constID >= 0) {
+        ss << "random123(" << "c" << constID << ".x, " << "c" << constID << ".y, " ;
+    } else {
+        ss << "random123(" << instr.constant.value.r123.start << ", " << instr.constant.value.r123.key << ", ";
+    }
+
+    // Let's find the flatten index of the output view
+    if (scope.symbols.strides_as_var) {
+        ss << "vo" << scope.symbols.offsetStridesID(instr.operand[0]);
+    } else {
+        ss << instr.operand[0].start;
+    }
+    for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
+        ss << " + i" << i << " * ";
+        if (scope.symbols.strides_as_var) {
+            ss << " vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
+        } else {
+            ss << " " << instr.operand[0].stride[i];
+        }
+    }
+    ss << ")";
+    ops.push_back(ss.str());
+
+    write_operation(instr, ops, out, opencl);
+}
+
+void write_gather_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
+    assert(not bh_is_constant(&instr.operand[1]));
+
+    // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
+    vector<string> ops;
+
+    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
+
+    stringstream ss;
+    scope.getName(instr.operand[1], ss);
+    ss << "[" << instr.operand[1].start << " + ";
+    get_name_and_subscription(scope, instr.operand[2], ss);
+    ss << "]";
+    ops.push_back(ss.str());
+
+    write_operation(instr, ops, out, opencl);
+}
+
+void write_scatter_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
+     // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
+    vector<string> ops;
+
+    stringstream ss;
+    scope.getName(instr.operand[0], ss);
+    ss << "[" << instr.operand[0].start << " + ";
+    get_name_and_subscription(scope, instr.operand[2], ss);
+    ss << "]";
+    ops.push_back(ss.str());
+
+    ops.push_back(get_name_and_subscription(scope, instr.operand[1]));
+
+    if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
+        ops.push_back(get_name_and_subscription(scope, instr.operand[3]));
+    }
+
+    write_operation(instr, ops, out, opencl);
+}
+
+void write_accumulate_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
+    vector<string> ops;
+
+    // Write output operand
+    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
+
+    // Write the previous element access, NB: this works because of loop peeling
+    stringstream ss;
+    scope.getName(instr.operand[0], ss);
+    write_array_subscription(scope, instr.operand[0], ss, true, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
+    ops.push_back(ss.str());
+
+    // Write the current element access
+    ops.push_back(get_name_and_subscription(scope, instr.operand[1]));
+
+    write_operation(instr, ops, out, opencl);
+}
+
+void write_other_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
+    vector<string> ops;
+
     for (size_t o = 0; o < instr.operand.size(); ++o) {
         const bh_view &view = instr.operand[o];
         stringstream ss;
+
         if (bh_is_constant(&view)) {
             const int64_t constID = scope.symbols.constID(instr);
+
             if (constID >= 0) {
                 ss << "c" << scope.symbols.constID(instr);
             } else {
@@ -743,6 +710,7 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
             }
         } else {
             scope.getName(view, ss);
+
             if (scope.isArray(view)) {
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
@@ -753,9 +721,40 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
                 }
             }
         }
+
         ops.push_back(ss.str());
     }
+
     write_operation(instr, ops, out, opencl);
+}
+
+void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
+    if (bh_opcode_is_system(instr.opcode)) {
+        return;
+    }
+
+    switch(instr.opcode) {
+        case BH_RANGE:
+            write_range_instr(scope, instr, out, opencl);
+            break;
+        case BH_RANDOM:
+            write_random_instr(scope, instr, out, opencl);
+            break;
+        case BH_GATHER:
+            write_gather_instr(scope, instr, out, opencl);
+            break;
+        case BH_SCATTER:
+        case BH_COND_SCATTER:
+            write_scatter_instr(scope, instr, out, opencl);
+            break;
+        default:
+            if (bh_opcode_is_accumulate(instr.opcode)) {
+                write_accumulate_instr(scope, instr, out, opencl);
+            } else {
+                write_other_instr(scope, instr, out, opencl);
+            }
+            break;
+    }
 }
 
 bool has_reduce_identity(bh_opcode opcode) {
@@ -826,8 +825,9 @@ InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim)
     assert(size >= size_of_rank_dim);
     shape[rank] = size_of_rank_dim;
     if (size != size_of_rank_dim) { // We might have to add an extra dimension
-        if (size % size_of_rank_dim != 0)
+        if (size % size_of_rank_dim != 0) {
             throw runtime_error("reshape_rank(): shape is not divisible with 'size_of_rank_dim'");
+        }
         shape.push_back(size / size_of_rank_dim);
     }
     bh_instruction ret = bh_instruction(*instr);
