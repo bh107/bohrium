@@ -88,12 +88,12 @@ static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     EngineGPU(config, stat),
-    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
+    work_group_size_1dx(config.defaultGet<cl_ulong>("work_group_size_1dx", 128)),
+    work_group_size_2dx(config.defaultGet<cl_ulong>("work_group_size_2dx", 32)),
+    work_group_size_2dy(config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
+    work_group_size_3dx(config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
+    work_group_size_3dy(config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
+    work_group_size_3dz(config.defaultGet<cl_ulong>("work_group_size_3dz", 2))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -110,7 +110,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                 platform = pform;
                 device = getDevice(platform, default_device_type);
                 found = true;
-            } catch(cl::Error err) {
+            } catch(const cl::Error &err) {
                 // We try next platform
             }
         }
