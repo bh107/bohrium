@@ -203,6 +203,7 @@ public:
     InstrPtr getInstr() {return boost::get<InstrB>(_var).instr;}
     void setInstr(const bh_instruction &instr) {
         assert(_var.which() == 0 or _var.which() == 2);
+        boost::get<InstrB>(_var).rank = instr.ndim();
         boost::get<InstrB>(_var).instr.reset(new bh_instruction(instr));
     }
 

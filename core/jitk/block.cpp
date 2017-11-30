@@ -267,7 +267,7 @@ bool LoopB::validation() const {
         assert(1 == 2);
         return false;
     }
-    for (const InstrPtr instr: allInstr) {
+    for (const InstrPtr &instr: allInstr) {
         if (bh_opcode_is_system(instr->opcode))
             continue;
         if (instr->ndim() <= rank) {
@@ -288,9 +288,13 @@ bool LoopB::validation() const {
             return false;
     }
     set<bh_base*> frees;
-    for (const InstrPtr instr: getLocalInstr()) {
+    for (const InstrPtr &instr: getLocalInstr()) {
         if (instr->opcode == BH_FREE) {
             frees.insert(instr->operand[0].base);
+        }
+        if (instr->ndim() != rank+1) {
+            assert(1 == 2);
+            return false;
         }
     }
     if (frees != _frees) {
@@ -402,6 +406,9 @@ void LoopB::metadata_update() {
 
 bool Block::validation() const {
     if (isInstr()) {
+        if (getInstr()->ndim() != rank()) {
+            assert(1 == 2);
+        }
         return true;
     } else {
         return getLoop().validation();
@@ -473,7 +480,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
     if (rank == ndim - 1) { // The innermost rank
         ret_loop.rank = ndim-1;
         ret_loop.size = shape[ndim-1];
-        for (InstrPtr instr: instr_list) {
+        for (const InstrPtr &instr: instr_list) {
             if (bh_opcode_is_system(instr->opcode)) {
                 bh_instruction tmp = *instr;
                 tmp.reshape_force(shape);
