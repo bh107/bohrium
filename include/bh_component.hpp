@@ -92,7 +92,7 @@ class ComponentImpl {
      * @return       The data pointer (NB: might point to device memory)
      * Throws exceptions on error
      */
-    virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
+    virtual void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
 
     /* Set data pointer in the first VE in the runtime stack
      * NB: The component will deallocate the memory when encountering a BH_FREE.
@@ -103,7 +103,7 @@ class ComponentImpl {
      * @mem       The data pointer
      * Throws exceptions on error
      */
-    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) = 0;
+    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) = 0;
 
     /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
@@ -111,7 +111,7 @@ class ComponentImpl {
      * @return  The device handle
      * Throws exceptions on error
      */
-    virtual void* get_device_context() = 0;
+    virtual void* getDeviceContext() = 0;
 
     /* Set the device context, such as CUDA's context, of the first VE in the runtime stack.
      * If the first VE isn't a device, nothing happens
@@ -119,7 +119,7 @@ class ComponentImpl {
      * @device_context  The new device context
      * Throws exceptions on error
      */
-    virtual void set_device_context(void* device_context) = 0;
+    virtual void setDeviceContext(void* device_context) = 0;
 };
 
 // Representation of a component interface, which consist of a create()
@@ -157,21 +157,21 @@ class ComponentFace {
         assert(_implementation != NULL);
         return _implementation->message(msg);
     }
-    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         assert(_implementation != NULL);
-        return _implementation->get_mem_ptr(base, copy2host, force_alloc, nullify);
+        return _implementation->getMemoryPointer(base, copy2host, force_alloc, nullify);
     }
-    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
         assert(_implementation != NULL);
-        return _implementation->set_mem_ptr(base, host_ptr, mem);
+        return _implementation->setMemoryPointer(base, host_ptr, mem);
     }
-    void* get_device_context() {
+    void* getDeviceContext() {
         assert(_implementation != NULL);
-        return _implementation->get_device_context();
+        return _implementation->getDeviceContext();
     };
-    void set_device_context(void* device_context) {
+    void setDeviceContext(void* device_context) {
         assert(_implementation != NULL);
-        _implementation->set_device_context(device_context);
+        _implementation->setDeviceContext(device_context);
     };
 };
 
@@ -201,17 +201,17 @@ public:
     virtual std::string message(const std::string &msg) {
         return child.message(msg);
     }
-    virtual void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
-        return child.get_mem_ptr(base, copy2host, force_alloc, nullify);
+    virtual void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        return child.getMemoryPointer(base, copy2host, force_alloc, nullify);
     };
-    virtual void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
-        return child.set_mem_ptr(base, host_ptr, mem);
+    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+        return child.setMemoryPointer(base, host_ptr, mem);
     }
-    virtual void* get_device_context() {
-        return child.get_device_context();
+    virtual void* getDeviceContext() {
+        return child.getDeviceContext();
     };
-    virtual void set_device_context(void* device_context) {
-        child.set_device_context(device_context);
+    virtual void setDeviceContext(void* device_context) {
+        child.setDeviceContext(device_context);
     };
 };
 

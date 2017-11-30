@@ -109,7 +109,7 @@ or in the case of our byte-code:
   BH_MULTIPLY a3 5 a0
 */
 
-void Contracter::contract_muladd(BhIR &bhir)
+void Contracter::muladd(BhIR &bhir)
 {
     bool rewritten = false;
 

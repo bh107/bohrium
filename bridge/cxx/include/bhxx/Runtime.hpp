@@ -36,6 +36,14 @@ namespace bhxx {
 class Runtime {
   public:
     Runtime();
+    Runtime(Runtime&&) = default;
+    Runtime& operator=(Runtime&&) = default;
+    Runtime(const Runtime&) = delete;
+    Runtime& operator=(const Runtime&) = delete;
+
+    ~Runtime() {
+        flush();
+    }
 
     // Get the singleton instance of the Runtime class
     static Runtime& instance() {
@@ -52,18 +60,18 @@ class Runtime {
     void enqueue(BhInstruction instr);
 
     // We have to handle random specially because of the `BH_R123` scalar type
-    void enqueue_random(BhArray<uint64_t>& out, uint64_t seed, uint64_t key);
+    void enqueueRandom(BhArray<uint64_t>& out, uint64_t seed, uint64_t key);
 
     // Enqueue an extension method
     template <typename T>
-    void enqueue_extmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
-                           BhArray<T>& in2);
+    void enqueueExtmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
+                          BhArray<T>& in2);
 
     /** Schedule a base object for deletion
      *
      * Will call BH_FREE on it first at the next flush
      */
-    void enqueue_deletion(std::unique_ptr<BhBase> base_ptr);
+    void enqueueDeletion(std::unique_ptr<BhBase> base_ptr);
 
     // Send enqueued instructions to Bohrium for execution
     void flush();
@@ -73,7 +81,7 @@ class Runtime {
      * @nrepeats  Number of maximum repeats
      * @base_ptr  Repeat while `base_ptr` is true or is null. NB: must be an array with one element of type BH_BOOL
      */
-    void flush_and_repeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr);
+    void flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr);
 
     // Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);
@@ -91,7 +99,7 @@ class Runtime {
      * @return       The data pointer (NB: might point to device memory)
      * Throws exceptions on error
      */
-    void* get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
+    void* getMemoryPointer(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
 
     /** Set data pointer in the first VE in the runtime stack
      * NB: The component will deallocate the memory when encountering a BH_FREE.
@@ -102,7 +110,7 @@ class Runtime {
      * @mem       The data pointer
      * Throws exceptions on error
      */
-    void set_mem_ptr(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
+    void setMemoryPointer(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
 
 
     /** Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
@@ -111,7 +119,7 @@ class Runtime {
      * @return  The device handle
      * Throws exceptions on error
      */
-    void* get_device_context();
+    void* getDeviceContext();
 
     /** Set the device context, such as CUDA's context, of the first VE in the runtime stack.
      * If the first VE isn't a device, nothing happens
@@ -119,30 +127,23 @@ class Runtime {
      * @device_context  The new device context
      * Throws exceptions on error
      */
-    void set_device_context(void *device_context);
+    void setDeviceContext(void *device_context);
 
     // Get the number of calls to flush so far
     uint64_t getFlushCount() {return _flush_count;}
-
-    ~Runtime() { flush(); }
-
-    Runtime(Runtime&&) = default;
-    Runtime& operator=(Runtime&&) = default;
-    Runtime(const Runtime&)       = delete;
-    Runtime& operator=(const Runtime&) = delete;
 
   private:
     //@{
     /** BH_FREE for arrays is special, since we deal with the deletion of the
      * base implictly via the BhBaseDeleter (which in turn calls
-     * enqueue_deletion in this object).
+     * enqueueDeletion in this object).
      *
      * This function just resets the shared pointers of the array, which
-     * might trigger the call of enqueue_deletion, but only if the
+     * might trigger the call of enqueueDeletion, but only if the
      * array is really no longer needed.
      * */
     template <typename T>
-    void bh_free(BhArray<T>& ary);
+    void freeMemory(BhArray<T>& ary);
     //@}
 
     // The lazy evaluated instructions
@@ -178,19 +179,19 @@ class Runtime {
 template <typename T, typename... Ts>
 void Runtime::enqueue(bh_opcode opcode, T& op, Ts&... ops) {
     if (opcode == BH_FREE) {
-        // BH_FREE is special, see the bh_free function why.
+        // BH_FREE is special, see the freeMemory function why.
         assert(sizeof...(Ts) == 0);
-        bh_free(op);
+        freeMemory(op);
     } else {
         BhInstruction instr(opcode);
-        instr.append_operand(op, ops...);
+        instr.appendOperand(op, ops...);
         enqueue(std::move(instr));
     }
 }
 
 template <typename T>
-void Runtime::enqueue_extmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
-                                BhArray<T>& in2) {
+void Runtime::enqueueExtmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
+                               BhArray<T>& in2) {
     bh_opcode opcode;
 
     // Look for the extension opcode
@@ -209,10 +210,10 @@ void Runtime::enqueue_extmethod(const std::string& name, BhArray<T>& out, BhArra
 }
 
 template <typename T>
-void Runtime::bh_free(BhArray<T>& ary) {
+void Runtime::freeMemory(BhArray<T>& ary) {
     // Calling BH_FREE on an array with external
     // storage management is undefined behaviour
-    if (!ary.base->own_memory()) {
+    if (!ary.base->ownMemory()) {
         throw std::runtime_error(
               "Cannot call BH_FREE on a BhArray object, which uses external storage "
               "in its BhBase.");

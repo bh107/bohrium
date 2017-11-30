@@ -125,7 +125,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
             std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
-            stat.add_kernel(source_filename);
+            stat.addKernel(source_filename);
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {
@@ -209,18 +209,18 @@ void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*
 
 }
 
-void EngineOpenMP::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
+void EngineOpenMP::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
     const std::set<bh_base*> empty;
     jitk::util_set_constructor_flag(instr_list, empty);
 }
 
 // Writes the OpenMP specific for-loop header
-void EngineOpenMP::loop_head_writer(const jitk::SymbolTable &symbols,
-                                    jitk::Scope &scope,
-                                    const jitk::LoopB &block,
-                                    bool loop_is_peeled,
-                                    const vector<const jitk::LoopB *> &threaded_blocks,
-                                    stringstream &out) {
+void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
+                                  jitk::Scope &scope,
+                                  const jitk::LoopB &block,
+                                  bool loop_is_peeled,
+                                  const vector<const jitk::LoopB*> &threaded_blocks,
+                                  stringstream &out) {
     // Let's write the OpenMP loop header
     int64_t for_loop_size = block.size;
     // If the for-loop has been peeled, its size is one less
@@ -229,7 +229,7 @@ void EngineOpenMP::loop_head_writer(const jitk::SymbolTable &symbols,
     }
     // No need to parallel one-sized loops
     if (for_loop_size > 1) {
-        write_header(symbols, scope, block, out);
+        writeHeader(symbols, scope, block, out);
     }
 
     // Write the for-loop header
@@ -246,10 +246,10 @@ void EngineOpenMP::loop_head_writer(const jitk::SymbolTable &symbols,
 }
 
 // Writing the OpenMP header, which include "parallel for" and "simd"
-void EngineOpenMP::write_header(const jitk::SymbolTable &symbols,
-                                jitk::Scope &scope,
-                                const jitk::LoopB &block,
-                                std::stringstream &out) {
+void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
+                               jitk::Scope &scope,
+                               const jitk::LoopB &block,
+                               std::stringstream &out) {
     if (not config.defaultGet<bool>("compiler_openmp", false)) {
         return;
     }
@@ -304,10 +304,10 @@ void EngineOpenMP::write_header(const jitk::SymbolTable &symbols,
     }
 }
 
-void EngineOpenMP::write_kernel(const std::vector<jitk::Block> &block_list,
-                                const jitk::SymbolTable &symbols,
-                                const std::vector<bh_base*> &kernel_temps,
-                                std::stringstream &ss) {
+void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
+                               const jitk::SymbolTable &symbols,
+                               const std::vector<bh_base*> &kernel_temps,
+                               std::stringstream &ss) {
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -319,25 +319,25 @@ void EngineOpenMP::write_kernel(const std::vector<jitk::Block> &block_list,
     if (symbols.useRandom()) { // Write the random function
         ss << "#include <kernel_dependencies/random123_openmp.h>\n";
     }
-    write_union_type(ss); // We always need to declare the union of all constant data types
+    writeUnionType(ss); // We always need to declare the union of all constant data types
     ss << "\n";
 
     // Write the header of the execute function
     ss << "void execute";
-    write_kernel_function_arguments(symbols, ss, nullptr);
+    writeKernelFunctionArguments(symbols, ss, nullptr);
 
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
     // Write allocations of the kernel temporaries
     for(const bh_base* b: kernel_temps) {
         util::spaces(ss, 4);
-        ss << write_type(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b)
+        ss << writeType(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b)
            << ");\n";
     }
     ss << "\n";
 
     for(const jitk::Block &block: block_list) {
-        write_loop_block(symbols, nullptr, block.getLoop(), {}, false, ss);
+        writeLoopBlock(symbols, nullptr, block.getLoop(), {}, false, ss);
     }
 
     // Write frees of the kernel temporaries
@@ -355,7 +355,7 @@ void EngineOpenMP::write_kernel(const std::vector<jitk::Block> &block_list,
         for(size_t i = 0; i < symbols.getParams().size(); ++i) {
             util::spaces(ss, 4);
             bh_base *b = symbols.getParams()[i];
-            ss << write_type(b->type) << " *a" << symbols.baseID(b);
+            ss << writeType(b->type) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
 
@@ -405,7 +405,7 @@ std::string EngineOpenMP::info() const {
 }
 
 // Return C99 types, which are used inside the C99 kernels
-const std::string EngineOpenMP::write_type(bh_type dtype) {
+const std::string EngineOpenMP::writeType(bh_type dtype) {
     switch (dtype) {
         case bh_type::BOOL:       return "bool";
         case bh_type::INT8:       return "int8_t";

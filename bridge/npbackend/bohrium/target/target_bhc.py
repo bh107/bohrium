@@ -168,14 +168,14 @@ def set_data_pointer(ary, mem_ptr_as_int, host_ptr=True):
     bhc.call_single_dtype("data_set", dtype, ary, host_ptr, mem_ptr_as_int)
 
 
-def get_device_context():
+def getDeviceContext():
     """Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack."""
-    return int(bhc.get_device_context())
+    return int(bhc.getDeviceContext())
 
 
-def set_device_context(device_context):
+def setDeviceContext(device_context):
     """Set the device context, such as CUDA's cl_context, of the first VE in the runtime stack."""
-    bhc.set_device_context(device_context)
+    bhc.setDeviceContext(device_context)
 
 
 def set_bhc_data_from_ary(self, ary):

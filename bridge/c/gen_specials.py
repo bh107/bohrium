@@ -52,7 +52,7 @@ def main(args):
     impl += """
 {
     std::shared_ptr<bhxx::BhBase> dummy;
-    bhxx::Runtime::instance().flush_and_repeat(nrepeats, dummy);
+    bhxx::Runtime::instance().flushAndRepeat(nrepeats, dummy);
 }
 """
 
@@ -64,7 +64,7 @@ def main(args):
     impl += """
 {
     std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<bool>*)condition)->base;
-    bhxx::Runtime::instance().flush_and_repeat(nrepeats, b);
+    bhxx::Runtime::instance().flushAndRepeat(nrepeats, b);
 }
 """
 
@@ -85,12 +85,12 @@ def main(args):
     doc = "\n// Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack.\n"
     doc += "// If the first VE isn't a device, NULL is returned.\n"
     impl += doc; head += doc
-    decl = "void* bhc_get_device_context(void)"
+    decl = "void* bhc_getDeviceContext(void)"
     head += "DLLEXPORT %s;\n" % decl
     impl += "%s" % decl
     impl += """
 {
-    return bhxx::Runtime::instance().get_device_context();
+    return bhxx::Runtime::instance().getDeviceContext();
 }
 """
 
@@ -102,7 +102,7 @@ def main(args):
     impl += "%s" % decl
     impl += """
 {
-    bhxx::Runtime::instance().set_device_context((void*)device_context);
+    bhxx::Runtime::instance().setDeviceContext((void*)device_context);
 }
 """
 
@@ -168,7 +168,7 @@ def main(args):
         impl += """\
 {
     std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
-    return bhxx::Runtime::instance().get_mem_ptr(b, copy2host, force_alloc, nullify);
+    return bhxx::Runtime::instance().getMemoryPointer(b, copy2host, force_alloc, nullify);
 }
 
 """ % t
@@ -184,7 +184,7 @@ def main(args):
         impl += """\
 {
    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
-   bhxx::Runtime::instance().set_mem_ptr(b, host_ptr, data);
+   bhxx::Runtime::instance().setMemoryPointer(b, host_ptr, data);
 }
 
 """ % t
@@ -214,7 +214,7 @@ def main(args):
         impl += """
 {
     try {
-        bhxx::Runtime::instance().enqueue_extmethod(
+        bhxx::Runtime::instance().enqueueExtmethod(
             name,
             *((bhxx::BhArray<%(cpp)s>*) out),
             *((bhxx::BhArray<%(cpp)s>*) in1),

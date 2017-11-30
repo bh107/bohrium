@@ -76,7 +76,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
         assert(max_ndim == rank + 1);
         block._block_list.emplace_back(*instr, rank + 1);
     }
-    block.metadata_update();
+    block.metadataUpdate();
 }
 
 } // Anonymous name space
@@ -117,7 +117,7 @@ bool LoopB::isSystemOnly() const {
     return true;
 }
 
-void LoopB::getAllSubBlocks(std::vector<const LoopB *> &out) const {
+void LoopB::getAllSubBlocks(std::vector<const LoopB*> &out) const {
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             out.push_back(&b.getLoop());
@@ -126,8 +126,8 @@ void LoopB::getAllSubBlocks(std::vector<const LoopB *> &out) const {
     }
 }
 
-vector<const LoopB *> LoopB::getLocalSubBlocks() const {
-    vector<const LoopB *> ret;
+vector<const LoopB*> LoopB::getLocalSubBlocks() const {
+    vector<const LoopB*> ret;
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             ret.push_back(&b.getLoop());
@@ -304,7 +304,7 @@ bool LoopB::validation() const {
     return true;
 }
 
-void LoopB::insert_system_after(InstrPtr instr, const bh_base *base) {
+void LoopB::insertSystemAfter(InstrPtr instr, const bh_base *base) {
     assert(validation());
 
     LoopB *block;
@@ -380,7 +380,7 @@ string LoopB::pprint(const char *newline) const {
     return ss.str();
 }
 
-void LoopB::metadata_update() {
+void LoopB::metadataUpdate() {
     _news.clear();
     _frees.clear();
     _sweeps.clear();
@@ -493,7 +493,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
     } else {
         ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1));
     }
-    ret_loop.metadata_update();
+    ret_loop.metadataUpdate();
     assert(ret_loop.validation());
     return Block(std::move(ret_loop));
 }
@@ -514,11 +514,11 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     return Block(std::move(ret));
 }
 
-pair<vector<const LoopB *>, uint64_t> util_find_threaded_blocks(const LoopB &block) {
+pair<vector<const LoopB*>, uint64_t> util_find_threaded_blocks(const LoopB &block) {
     pair<vector<const LoopB*>, uint64_t> ret;
 
     // We should search in 'this' block and its sub-blocks
-    vector<const LoopB *> block_list = {&block};
+    vector<const LoopB*> block_list = {&block};
     block.getAllSubBlocks(block_list);
 
     // Find threaded blocks

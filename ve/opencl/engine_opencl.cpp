@@ -237,7 +237,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
         std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
-        stat.add_kernel(source_filename);
+        stat.addKernel(source_filename);
         program = cl::Program(context, source);
         if (verbose) {
             const string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
@@ -391,7 +391,6 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
 
 // Copy 'base_list' to the device (ignoring bases that is already on the device)
 void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
-
     // Let's update the maximum memory usage on the device
     if (prof) {
         uint64_t sum = 0;
@@ -419,12 +418,12 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
     stat.time_copy2dev += std::chrono::steady_clock::now() - tcopy;
 }
 
-void EngineOpenCL::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
+void EngineOpenCL::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
 }
 
 // Copy all bases to the host (ignoring bases that isn't on the device)
-void EngineOpenCL::allBasesToHost() {
+void EngineOpenCL::copyAllBasesToHost() {
     std::set<bh_base*> bases_on_device;
     for(auto &buf_pair: buffers) {
         bases_on_device.insert(buf_pair.first);
@@ -437,10 +436,10 @@ void EngineOpenCL::delBuffer(bh_base* &base) {
     buffers.erase(base);
 }
 
-void EngineOpenCL::write_kernel(const jitk::Block &block,
-                                const jitk::SymbolTable &symbols,
-                                const vector<const jitk::LoopB*> &threaded_blocks,
-                                stringstream &ss) {
+void EngineOpenCL::writeKernel(const jitk::Block &block,
+                               const jitk::SymbolTable &symbols,
+                               const vector<const jitk::LoopB*> &threaded_blocks,
+                               stringstream &ss) {
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
     ss << "#include <kernel_dependencies/complex_opencl.h>\n";
@@ -452,7 +451,7 @@ void EngineOpenCL::write_kernel(const jitk::Block &block,
 
     // Write the header of the execute function
     ss << "__kernel void execute";
-    write_kernel_function_arguments(symbols, ss, "__global");
+    writeKernelFunctionArguments(symbols, ss, "__global");
     ss << " {\n";
 
     // Write the IDs of the threaded blocks
@@ -462,25 +461,25 @@ void EngineOpenCL::write_kernel(const jitk::Block &block,
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const jitk::LoopB *b = threaded_blocks[i];
             util::spaces(ss, 4);
-            ss << "const " << write_type(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
+            ss << "const " << writeType(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
                << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
 
     // Write the block that makes up the body of 'execute()'
-    write_loop_block(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+    writeLoopBlock(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
 
     ss << "}\n\n";
 }
 
 // Writes the OpenCL specific for-loop header
-void EngineOpenCL::loop_head_writer(const jitk::SymbolTable &symbols,
-                                    jitk::Scope &scope,
-                                    const jitk::LoopB &block,
-                                    bool loop_is_peeled,
-                                    const std::vector<const jitk::LoopB *> &threaded_blocks,
-                                    std::stringstream &out) {
+void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
+                                  jitk::Scope &scope,
+                                  const jitk::LoopB &block,
+                                  bool loop_is_peeled,
+                                  const std::vector<const jitk::LoopB*> &threaded_blocks,
+                                  std::stringstream &out) {
     // Write the for-loop header
     std::string itername;
     { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
@@ -488,7 +487,7 @@ void EngineOpenCL::loop_head_writer(const jitk::SymbolTable &symbols,
     if (std::find_if(threaded_blocks.begin(),
                      threaded_blocks.end(),
                      [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
-        out << "for(" << write_type(bh_type::UINT64) << " " << itername;
+        out << "for(" << writeType(bh_type::UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << " = 1; ";
         else
@@ -514,7 +513,7 @@ std::string EngineOpenCL::info() const {
 }
 
 // Return OpenCL API types, which are used inside the JIT kernels
-const std::string EngineOpenCL::write_type(bh_type dtype) {
+const std::string EngineOpenCL::writeType(bh_type dtype) {
     switch (dtype) {
         case bh_type::BOOL:       return "uchar";
         case bh_type::INT8:       return "char";

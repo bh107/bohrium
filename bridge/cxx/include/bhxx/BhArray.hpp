@@ -70,7 +70,8 @@ class BhArray {
     }
 
     /** Create a new view (contiguous stride, row-major) */
-    BhArray(Shape shape) : BhArray(shape, contiguous_stride(shape), 0) {}
+    BhArray(Shape shape) :
+        BhArray(shape, contiguous_stride(shape), 0) {}
 
     /** Create a view that points to the given base
      *
@@ -80,8 +81,7 @@ class BhArray {
      *        construct a BhBase object, use the make_base_ptr
      *        helper function.
      */
-    BhArray(std::shared_ptr<BhBase> base_, Shape shape_, Stride stride_,
-            const size_t offset_ = 0)
+    BhArray(std::shared_ptr<BhBase> base_, Shape shape_, Stride stride_, const size_t offset_ = 0)
           : offset(offset_),
             shape(std::move(shape_)),
             stride(std::move(stride_)),
@@ -114,19 +114,20 @@ class BhArray {
     }
 
     /** Return the number of elements */
-    size_t n_elem() const { return shape.prod(); }
+    size_t numberOfElements() const {
+        return shape.prod();
+    }
 
     /** Return whether the view is contiguous and row-major */
-    bool is_contiguous() const;
+    bool isContiguous() const;
 
     //
     // Data access
     //
     /** Is the data referenced by this view's base array already
      *  allocated, i.e. initialised */
-    bool is_data_initialised() const { return base->data != nullptr; }
+    bool isDataInitialised() const { return base->data != nullptr; }
 
-    //@{
     /** Obtain the data pointer of the base array, not taking
      *  ownership of any kind.
      *
@@ -137,8 +138,7 @@ class BhArray {
      *        out of sync with Bohrium.
      */
     const T* data() const { return static_cast<T*>(base->data); }
-    T*       data() { return static_cast<T*>(base->data); }
-    //@}
+          T* data()       { return static_cast<T*>(base->data); }
 
     //
     // Routines

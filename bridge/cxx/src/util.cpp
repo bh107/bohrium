@@ -32,7 +32,7 @@ T as_scalar(BhArray<T> ary) {
               "Cannot call bhxx::as_scalar on BhArray objects without base");
     }
 
-    if (ary.n_elem() != 1) {
+    if (ary.numberOfElements() != 1) {
         throw std::runtime_error(
               "Cannot call bhxx::as_scalar on BhArray objects with more than one "
               "element");
@@ -74,14 +74,14 @@ BhArray<T> transpose(BhArray<T> ary) {
 
 template <typename T>
 BhArray<T> reshape(BhArray<T> ary, Shape shape) {
-    if (ary.n_elem() != shape.prod()) {
+    if (ary.numberOfElements() != shape.prod()) {
         throw std::runtime_error(
               "Changing the shape cannot change the number of elements");
     }
 
     if (ary.shape == shape) return ary;
 
-    if (!ary.is_contiguous()) {
+    if (!ary.isContiguous()) {
         throw std::runtime_error(
               "Reshape not yet implemented for non-contiguous arrays.");
     }
@@ -118,18 +118,18 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     Shape result_shape{lhs.shape.front(), rhs.shape.back()};
     if (lhs.rank() == 1) {
         result_shape = {rhs.shape.back()};
-        lhs          = reshape(std::move(lhs), {1, lhs.n_elem()});
+        lhs          = reshape(std::move(lhs), {1, lhs.numberOfElements()});
     }
     if (rhs.rank() == 1) {
         result_shape = {lhs.shape.front()};
-        rhs          = reshape(std::move(rhs), {rhs.n_elem(), 1});
+        rhs          = reshape(std::move(rhs), {rhs.numberOfElements(), 1});
     }
 
     BhArray<T> result({lhs.shape.front(), rhs.shape.back()});
     try {
         lhs = as_contiguous(std::move(lhs));
         rhs = as_contiguous(std::move(rhs));
-        Runtime::instance().enqueue_extmethod("blas_gemm", result, lhs, rhs);
+        Runtime::instance().enqueueExtmethod("blas_gemm", result, lhs, rhs);
     } catch (...) {
         // No blas could be found.
         // TODO Use check function once it is available

@@ -77,7 +77,7 @@ public:
     bool isInnermost() const;
 
     // Return all sub-blocks (incl. nested blocks)
-    void getAllSubBlocks(std::vector<const LoopB *> &out) const;
+    void getAllSubBlocks(std::vector<const LoopB*> &out) const;
 
     // Return all sub-blocks (excl. nested blocks)
     std::vector<const LoopB*> getLocalSubBlocks() const;
@@ -135,7 +135,7 @@ public:
     // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
     // If no instruction accesses 'base' we insert it after the last instruction.
     // NB: Force reshape the instruction to match the instructions accesses 'base' last.
-    void insert_system_after(InstrPtr instr, const bh_base *base);
+    void insertSystemAfter(InstrPtr instr, const bh_base *base);
 
     // Returns the amount of threading in this block (excl. nested blocks)
     uint64_t localThreading() const;
@@ -144,7 +144,7 @@ public:
     std::string pprint(const char *newline="\n") const;
 
     // Updates the metadata such as the sets of sweeps, news, frees etc.
-    void metadata_update();
+    void metadataUpdate();
 
     // Equality test based on the unique ID
     bool operator==(const LoopB &loop_block) const {
@@ -256,7 +256,7 @@ public:
     }
 
     // Determines whether this block must be executed after 'other'
-    bool depend_on(const Block &other) const {
+    bool dependOn(const Block &other) const {
         const std::vector<InstrPtr> this_instr_list = getAllInstr();
         const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
         for (const InstrPtr this_instr: this_instr_list) {
@@ -287,7 +287,7 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int
 
 // Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
 // and the total amount of parallelism (in number of possible parallel threads)
-std::pair<std::vector<const LoopB *>, uint64_t> util_find_threaded_blocks(const LoopB &block);
+std::pair<std::vector<const LoopB*>, uint64_t> util_find_threaded_blocks(const LoopB &block);
 
 // Check if the two blocks 'b1' and 'b2' (in that order) are mergeable.
 // 'avoid_rank0_sweep' will not allow fusion of sweeped and non-sweeped blocks at the root level

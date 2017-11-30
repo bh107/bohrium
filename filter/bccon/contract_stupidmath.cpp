@@ -72,7 +72,7 @@ static inline bool is_doing_stupid_math(const bh_instruction& instr)
            is_entire_view(instr);
 }
 
-void Contracter::contract_stupidmath(BhIR &bhir)
+void Contracter::stupidmath(BhIR &bhir)
 {
     for(bh_instruction& instr: bhir.instr_list) {
         if (is_doing_stupid_math(instr)) {

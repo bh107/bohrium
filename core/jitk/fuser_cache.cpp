@@ -104,11 +104,11 @@ size_t hash_instr_list(const vector<bh_instruction *> &instr_list) {
     return hasher(ss.str());
 }
 
-void updateWithOrigin(bh_view &view, const bh_view &origin) {
+void update_with_origin(bh_view &view, const bh_view &origin) {
     view.base = origin.base;
 }
 
-void updateWithOrigin(bh_instruction &instr, const bh_instruction *origin) {
+void update_with_origin(bh_instruction &instr, const bh_instruction *origin) {
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
 
@@ -117,23 +117,23 @@ void updateWithOrigin(bh_instruction &instr, const bh_instruction *origin) {
             // NB: sweeped axis values shouldn't be updated
             instr.constant = origin->constant;
         } else {
-            updateWithOrigin(instr.operand[i], origin->operand[i]);
+            update_with_origin(instr.operand[i], origin->operand[i]);
         }
     }
 }
 
-void updateWithOrigin(Block &block, const map<int64_t, const bh_instruction *> &origin_id_to_instr) {
+void update_with_origin(Block &block, const map<int64_t, const bh_instruction *> &origin_id_to_instr) {
     if (block.isInstr()) {
         assert(block.getInstr()->origin_id >= 0);
         bh_instruction instr(*block.getInstr());
-        updateWithOrigin(instr, origin_id_to_instr.at(instr.origin_id));
+        update_with_origin(instr, origin_id_to_instr.at(instr.origin_id));
         block.setInstr(instr);
     } else {
         LoopB &loop = block.getLoop();
         for (Block &b: loop._block_list) {
-            updateWithOrigin(b, origin_id_to_instr);
+            update_with_origin(b, origin_id_to_instr);
         }
-        loop.metadata_update();
+        loop.metadataUpdate();
     }
 }
 
@@ -153,7 +153,7 @@ pair<vector<Block>, bool> FuseCache::get(const vector<bh_instruction *> &instr_l
         }
         // Let's update the cached blocks in 'ret' with the base data from origin
         for(Block &block: ret) {
-            updateWithOrigin(block, origin_id_to_instr);
+            update_with_origin(block, origin_id_to_instr);
         }
         return make_pair(ret, true);
     } else { // Cache miss!

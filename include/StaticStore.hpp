@@ -53,7 +53,7 @@ class StaticStore
     template <typename... As>
     T* next(As... as);
 #endif
-    T* c_next();
+    T* cNext();
 };
 
 
@@ -92,7 +92,7 @@ StaticStore<T>::~StaticStore()
 }
 
 template <typename T>
-T* StaticStore<T>::c_next()
+T* StaticStore<T>::cNext()
 {
     counter++;
     if (!emptySlot.empty())
@@ -133,7 +133,7 @@ template <typename T>
 template <typename... As>
 T* StaticStore<T>::next(As... as)
 {
-	return new(c_next()) T(as...);
+	return new(cNext()) T(as...);
 }
 #endif
 

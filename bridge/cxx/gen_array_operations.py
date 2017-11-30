@@ -74,7 +74,7 @@ def main(args):
     impl += "%s\n" % decl
     impl += """
 {
-    \tRuntime::instance().enqueue_random(out, seed, key);
+    \tRuntime::instance().enqueueRandom(out, seed, key);
 }
 """
 

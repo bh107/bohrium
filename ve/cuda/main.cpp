@@ -74,7 +74,7 @@ class Impl : public ComponentImplWithChild {
         } else if (msg == "statistic") {
             stat.write("CUDA", "", ss);
         } else if (msg == "GPU: disable") {
-            engine.allBasesToHost();
+            engine.copyAllBasesToHost();
             disabled = true;
         } else if (msg == "GPU: enable") {
             disabled = false;
@@ -87,7 +87,7 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle memory pointer retrieval
-    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         bh_base *b = &base;
         if (copy2host) {
             std::set <bh_base*> t = { b };
@@ -129,10 +129,10 @@ void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handle_extmethod(*this, bhir, child_extmethods);
+        engine.handleExtmethod(*this, bhir, child_extmethods);
 
         // And then the regular instructions
-        engine.handle_execution(*this, bhir);
+        engine.handleExecution(*this, bhir);
 
         // Check condition
         if (cond != nullptr) {

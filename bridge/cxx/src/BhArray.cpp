@@ -34,7 +34,7 @@ void RuntimeDeleter::operator()(BhBase* ptr) const {
     // Simply hand the deletion over to Bohrium
     // including the ownership of the pointer to be deleted
     // by the means of a unique pointer.
-    Runtime::instance().enqueue_deletion(std::unique_ptr<BhBase>(ptr));
+    Runtime::instance().enqueueDeletion(std::unique_ptr<BhBase>(ptr));
 }
 
 //
@@ -42,7 +42,7 @@ void RuntimeDeleter::operator()(BhBase* ptr) const {
 //
 
 template <typename T>
-bool BhArray<T>::is_contiguous() const {
+bool BhArray<T>::isContiguous() const {
     assert(shape.size() == stride.size());
 
     auto itshape  = shape.rbegin();
@@ -54,7 +54,7 @@ bool BhArray<T>::is_contiguous() const {
         acc *= static_cast<int64_t>(*itshape);
     }
 
-    assert(acc == static_cast<int64_t>(n_elem()));
+    assert(acc == static_cast<int64_t>(numberOfElements()));
     return offset == 0;
 }
 

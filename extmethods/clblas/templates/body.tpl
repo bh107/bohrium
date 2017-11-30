@@ -17,7 +17,7 @@ public:
         cl_command_queue queue = engine->getCQueue();
 
         // All matrices must be contigous
-        assert(instr->is_contiguous());
+        assert(instr->isContiguous());
 
         // A is a m*k matrix
         bh_view* A = &instr->operand[1];

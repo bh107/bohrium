@@ -38,9 +38,9 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace {
     // This will output the proper CUDA error strings
     // in the event that a CUDA host call returns an error
-    #define checkCudaErrors(err) __checkCudaErrors(err, __FILE__, __LINE__)
+    #define check_cuda_errors(err) __check_cuda_errors(err, __FILE__, __LINE__)
 
-    inline void __checkCudaErrors(CUresult err, const char *file, const int line) {
+    inline void __check_cuda_errors(CUresult err, const char *file, const int line) {
         if(CUDA_SUCCESS != err) {
             const char* err_name;
             cuGetErrorName(err, &err_name);
@@ -96,15 +96,14 @@ public:
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
-    void write_kernel(const jitk::Block &block,
-                      const jitk::SymbolTable &symbols,
-                      const std::vector<const jitk::LoopB*> &threaded_blocks,
-                      std::stringstream &ss) override;
-
+    void writeKernel(const jitk::Block &block,
+                     const jitk::SymbolTable &symbols,
+                     const std::vector<const jitk::LoopB*> &threaded_blocks,
+                     std::stringstream &ss) override;
 
     // Delete a buffer
     void delBuffer(bh_base* &base) override {
-        checkCudaErrors(cuMemFree(buffers[base]));
+        check_cuda_errors(cuMemFree(buffers[base]));
         buffers.erase(base);
     }
 
@@ -127,7 +126,7 @@ public:
                 if (verbose) {
                     std::cout << "Copy to host: " << *base << std::endl;
                 }
-                checkCudaErrors(cuMemcpyDtoH(base->data, buffers.at(base), bh_base_size(base)));
+                check_cuda_errors(cuMemcpyDtoH(base->data, buffers.at(base), bh_base_size(base)));
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
                 delBuffer(base);
@@ -152,7 +151,7 @@ public:
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
                 CUdeviceptr new_buf;
-                checkCudaErrors(cuMemAlloc(&new_buf, bh_base_size(base)));
+                check_cuda_errors(cuMemAlloc(&new_buf, bh_base_size(base)));
                 buffers[base] = new_buf;
 
                 // If the host data is non-null we should copy it to the device
@@ -160,7 +159,7 @@ public:
                     if (verbose) {
                         std::cout << "Copy to device: " << *base << std::endl;
                     }
-                    checkCudaErrors(cuMemcpyHtoD(new_buf, base->data, bh_base_size(base)));
+                    check_cuda_errors(cuMemcpyHtoD(new_buf, base->data, bh_base_size(base)));
                 }
             }
         }
@@ -168,7 +167,7 @@ public:
     }
 
     // Copy all bases to the host (ignoring bases that isn't on the device)
-    void allBasesToHost() override {
+    void copyAllBasesToHost() override {
         std::set<bh_base*> bases_on_device;
         for(auto &buf_pair: buffers) {
             bases_on_device.insert(buf_pair.first);
@@ -179,13 +178,13 @@ public:
     // Tell the engine to use the current CUDA context
     void useCurrentContext() {
         CUcontext new_context;
-        checkCudaErrors(cuCtxGetCurrent(&new_context));
+        check_cuda_errors(cuCtxGetCurrent(&new_context));
         if (new_context == nullptr or new_context == context) {
             return; // Nothing to do
         }
 
         // Empty the context for buffers and deallocate it
-        allBasesToHost();
+        copyAllBasesToHost();
         cuCtxDetach(context);
 
         // Save and attach (increase the refcount) the new context
@@ -199,18 +198,18 @@ public:
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void set_constructor_flag(std::vector<bh_instruction*> &instr_list);
+    void setConstructorFlag(std::vector<bh_instruction*> &instr_list);
 
     // Return a YAML string describing this component
     std::string info() const;
 
     // Writes the CUDA specific for-loop header
-    void loop_head_writer(const jitk::SymbolTable &symbols,
-                          jitk::Scope &scope,
-                          const jitk::LoopB &block,
-                          bool loop_is_peeled,
-                          const std::vector<const jitk::LoopB *> &threaded_blocks,
-                          std::stringstream &out) {
+    void loopHeadWriter(const jitk::SymbolTable &symbols,
+                        jitk::Scope &scope,
+                        const jitk::LoopB &block,
+                        bool loop_is_peeled,
+                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        std::stringstream &out) {
         // Write the for-loop header
         std::string itername;
         { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
@@ -218,7 +217,7 @@ public:
         if (std::find_if(threaded_blocks.begin(),
                          threaded_blocks.end(),
                          [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
-            out << "for(" << write_type(bh_type::INT64) << " " << itername;
+            out << "for(" << writeType(bh_type::INT64) << " " << itername;
             if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
                 out << " = 1; ";
             else
@@ -232,7 +231,7 @@ public:
     }
 
     // Return CUDA types, which are used inside the JIT kernels
-    const std::string write_type(bh_type dtype) {
+    const std::string writeType(bh_type dtype) {
         switch (dtype) {
             case bh_type::BOOL:       return "bool";
             case bh_type::INT8:       return "char";
@@ -254,16 +253,16 @@ public:
         }
     }
 
-    const char *write_thread_id(unsigned int dim) {
+    const char *writeThreadId(unsigned int dim) {
         switch (dim) {
-        case 0:
-            return "(blockIdx.x * blockDim.x + threadIdx.x)";
-        case 1:
-            return "(blockIdx.y * blockDim.y + threadIdx.y)";
-        case 2:
-            return "(blockIdx.z * blockDim.z + threadIdx.z)";
-        default:
-            throw std::runtime_error("CUDA only support 3 dimensions");
+            case 0:
+                return "(blockIdx.x * blockDim.x + threadIdx.x)";
+            case 1:
+                return "(blockIdx.y * blockDim.y + threadIdx.y)";
+            case 2:
+                return "(blockIdx.z * blockDim.z + threadIdx.z)";
+            default:
+                throw std::runtime_error("CUDA only support 3 dimensions");
         }
     }
 };

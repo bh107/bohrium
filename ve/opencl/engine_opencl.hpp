@@ -79,32 +79,32 @@ public:
     void copyToDevice(const std::set<bh_base*> &base_list) override;
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void set_constructor_flag(std::vector<bh_instruction*> &instr_list) override;
+    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
 
     // Copy all bases to the host (ignoring bases that isn't on the device)
-    void allBasesToHost() override;
+    void copyAllBasesToHost() override;
 
     // Delete a buffer
     void delBuffer(bh_base* &base) override;
 
-    void write_kernel(const jitk::Block &block,
-                      const jitk::SymbolTable &symbols,
-                      const std::vector<const jitk::LoopB*> &threaded_blocks,
-                      std::stringstream &ss) override;
+    void writeKernel(const jitk::Block &block,
+                     const jitk::SymbolTable &symbols,
+                     const std::vector<const jitk::LoopB*> &threaded_blocks,
+                     std::stringstream &ss) override;
 
     // Writes the OpenCL specific for-loop header
-    void loop_head_writer(const jitk::SymbolTable &symbols,
-                          jitk::Scope &scope,
-                          const jitk::LoopB &block,
-                          bool loop_is_peeled,
-                          const std::vector<const jitk::LoopB *> &threaded_blocks,
-                          std::stringstream &out) override;
+    void loopHeadWriter(const jitk::SymbolTable &symbols,
+                        jitk::Scope &scope,
+                        const jitk::LoopB &block,
+                        bool loop_is_peeled,
+                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        std::stringstream &out) override;
 
     // Return a YAML string describing this component
     std::string info() const override;
 
     // Return OpenCL API types, which are used inside the JIT kernels
-    const std::string write_type(bh_type dtype) override;
+    const std::string writeType(bh_type dtype) override;
 
     cl::Buffer *createBuffer(bh_base *base) {
         cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));

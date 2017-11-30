@@ -54,20 +54,20 @@ public:
     virtual ~EngineGPU() {}
 
     virtual void copyToHost(const std::set<bh_base*> &bases) = 0;
-    virtual void allBasesToHost() = 0;
+    virtual void copyAllBasesToHost() = 0;
     virtual void copyToDevice(const std::set<bh_base*> &base_list) = 0;
     virtual void delBuffer(bh_base* &base) = 0;
-    virtual void write_kernel(const Block &block,
-                              const SymbolTable &symbols,
-                              const std::vector<const LoopB*> &threaded_blocks,
-                              std::stringstream &ss) = 0;
+    virtual void writeKernel(const Block &block,
+                             const SymbolTable &symbols,
+                             const std::vector<const LoopB*> &threaded_blocks,
+                             std::stringstream &ss) = 0;
     virtual void execute(const std::string &source,
                          const std::vector<bh_base*> &non_temps,
                          const std::vector<const LoopB*> &threaded_blocks,
                          const std::vector<const bh_view*> &offset_strides,
                          const std::vector<const bh_instruction*> &constants) = 0;
 
-    void handle_execution(component::ComponentImplWithChild &comp, BhIR *bhir) {
+    void handleExecution(component::ComponentImplWithChild &comp, BhIR *bhir) {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -97,7 +97,7 @@ public:
 
         // Set the constructor flag
         if (config.defaultGet<bool>("array_contraction", true)) {
-            set_constructor_flag(instr_list);
+            setConstructorFlag(instr_list);
         } else {
             for (bh_instruction *instr: instr_list) {
                 instr->constructor = false;
@@ -130,11 +130,11 @@ public:
 
             // We might have to offload the execution to the CPU
             if (threaded_blocks.size() == 0 and kernel_is_computing) {
-                cpu_offload(comp, bhir, block, symbols);
+                cpuOffload(comp, bhir, block, symbols);
             } else {
                 // Let's execute the kernel
                 if (kernel_is_computing) {
-                    execute_kernel(block, symbols, threaded_blocks);
+                    executeKernel(block, symbols, threaded_blocks);
                 }
 
                 // Let's copy sync'ed arrays back to the host
@@ -151,7 +151,7 @@ public:
     }
 
     template <typename T>
-    void handle_extmethod(T &comp, BhIR *bhir, std::set<bh_opcode> child_extmethods) {
+    void handleExtmethod(T &comp, BhIR *bhir, std::set<bh_opcode> child_extmethods) {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {
@@ -188,10 +188,10 @@ public:
     }
 
 private:
-    void cpu_offload(component::ComponentImplWithChild &comp,
-                     BhIR *bhir,
-                     const Block &block,
-                     const SymbolTable &symbols)
+    void cpuOffload(component::ComponentImplWithChild &comp,
+                    BhIR *bhir,
+                    const Block &block,
+                    const SymbolTable &symbols)
     {
         using namespace std;
 
@@ -200,7 +200,7 @@ private:
         }
 
         if (&(comp.child) == nullptr) {
-            throw runtime_error("handle_execution(): threaded_blocks cannot be empty when child == NULL!");
+            throw runtime_error("handleExecution(): threaded_blocks cannot be empty when child == NULL!");
         }
 
         auto toffload = chrono::steady_clock::now();
@@ -224,9 +224,9 @@ private:
         stat.time_offload += chrono::steady_clock::now() - toffload;
     }
 
-    void execute_kernel(const Block &block,
-                        const SymbolTable &symbols,
-                        const std::vector<const LoopB*> &threaded_blocks)
+    void executeKernel(const Block &block,
+                       const SymbolTable &symbols,
+                       const std::vector<const LoopB*> &threaded_blocks)
     {
         using namespace std;
         // We need a memory buffer on the device for each non-temporary array in the kernel
@@ -245,7 +245,7 @@ private:
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                write_kernel(block, symbols, threaded_blocks, ss);
+                writeKernel(block, symbols, threaded_blocks, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
@@ -256,7 +256,7 @@ private:
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            write_kernel(block, symbols, threaded_blocks, ss);
+            writeKernel(block, symbols, threaded_blocks, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
             execute(source, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);

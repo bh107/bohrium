@@ -111,7 +111,7 @@ class Statistics {
         if (filename == "") {
             pprint(backend_name, out);
         } else {
-            export_yaml(backend_name, filename);
+            exportYAML(backend_name, filename);
         }
     }
 
@@ -123,17 +123,17 @@ class Statistics {
             wallclock = chrono::steady_clock::now() - time_started;
 
             out << BLU << "[" << backend_name << "] Profiling: \n" << RST;
-            out << "Fuse cache hits:                 " << GRN << fuse_cache_hits()                   << "\n" << RST;
-            out << "Codegen cache hits               " << GRN << codegen_cache_hits()                << "\n" << RST;
-            out << "Kernel cache hits                " << GRN << kernel_cache_hits()                 << "\n" << RST;
-            out << "Array contractions:              " << GRN << array_contractions()                << "\n" << RST;
-            out << "Outer-fusion ratio:              " << GRN << outer_fusion_ratio()                << "\n" << RST;
+            out << "Fuse cache hits:                 " << GRN << fuseCacheHits()                     << "\n" << RST;
+            out << "Codegen cache hits               " << GRN << codegenCacheHits()                  << "\n" << RST;
+            out << "Kernel cache hits                " << GRN << kernelCacheHits()                   << "\n" << RST;
+            out << "Array contractions:              " << GRN << arrayContractions()                 << "\n" << RST;
+            out << "Outer-fusion ratio:              " << GRN << outerFusionRatio()                  << "\n" << RST;
             out << "\n";
-            out << "Max memory usage:                " << GRN << memory_usage() << " MB"             << "\n" << RST;
+            out << "Max memory usage:                " << GRN << memoryUsage() << " MB"              << "\n" << RST;
             out << "Syncs to NumPy:                  " << GRN << num_syncs                           << "\n" << RST;
             out << "Total Work:                      " << GRN << totalwork << " operations"          << "\n" << RST;
             out << "Throughput:                      " << GRN << throughput() << "ops"               << "\n" << RST;
-            out << "Work below par-threshold (1000): " << GRN << work_below_thredshold() << "%"      << "\n" << RST;
+            out << "Work below par-threshold (1000): " << GRN << workBelowThredshold() << "%"        << "\n" << RST;
             out << "\n";
             out << "Wall clock:                      " << BLU << wallclock.count() << "s"            << "\n" << RST;
             out << "Total Execution:                 " << BLU << time_total_execution.count() << "s" << "\n" << RST;
@@ -146,7 +146,7 @@ class Statistics {
             out << "  Copy2host:                     " << YEL << time_copy2host.count() << "s"       << "\n" << RST;
             out << "  Ext-method:                    " << YEL << time_ext_method.count() << "s"      << "\n" << RST;
             out << "  Offload:                       " << YEL << time_offload.count() << "s"         << "\n" << RST;
-            out << "  Other:                         " << YEL << time_other() << "s"                 << "\n" << RST;
+            out << "  Other:                         " << YEL << timeOther() << "s"                  << "\n" << RST;
             out << "\n";
             out << BOLD << RED << "Unaccounted for (wall - total):  " << unaccounted() << "s\n" << RST;
 
@@ -170,7 +170,7 @@ class Statistics {
                 out << "  "
                     << std::left         << std::setw(39) << kernel_filename
                     << std::right << YEL << std::setw(10) << kernel_data.num_calls         << "    "
-                    << std::scientific << std::setprecision(2)
+                    << std::scientific   << std::setprecision(2)
                                          << std::setw(8) << kernel_data.total_time.count() << "s   "
                                          << std::setw(8) << kernel_data.max_time.count()   << "s   "
                                          << std::setw(8) << kernel_data.min_time.count()   << "s   " << "\n" << RST;
@@ -184,7 +184,7 @@ class Statistics {
     }
 
     // Export statistic using the YAML format <http://yaml.org>
-    void export_yaml(std::string backend_name, std::string filename) {
+    void exportYAML(std::string backend_name, std::string filename) {
         using namespace std;
 
         if (enabled) {
@@ -195,16 +195,16 @@ class Statistics {
 
             file << "----"                                                           << "\n";
             file << backend_name << ":"                                              << "\n";
-            file << "  fuse_cache_hits: "       << fuse_cache_hits()                 << "\n";
-            file << "  codegen_cache_hits: "    << codegen_cache_hits()              << "\n";
-            file << "  kernel_cache_hits: "     << kernel_cache_hits()               << "\n";
-            file << "  array_contractions: "    << array_contractions()              << "\n";
-            file << "  outer_fusion_ratio: "    << outer_fusion_ratio()              << "\n";
-            file << "  memory_usage: "          << memory_usage()                    << "\n"; // mb
+            file << "  fuse_cache_hits: "       << fuseCacheHits()                   << "\n";
+            file << "  codegen_cache_hits: "    << codegenCacheHits()                << "\n";
+            file << "  kernel_cache_hits: "     << kernelCacheHits()                 << "\n";
+            file << "  array_contractions: "    << arrayContractions()               << "\n";
+            file << "  outer_fusion_ratio: "    << outerFusionRatio()                << "\n";
+            file << "  memory_usage: "          << memoryUsage()                     << "\n"; // mb
             file << "  syncs: "                 << num_syncs                         << "\n";
             file << "  total_work: "            << totalwork                         << "\n"; // ops
             file << "  throughput: "            << throughput()                      << "\n"; // ops
-            file << "  work_below_thredshold: " << work_below_thredshold()           << "\n"; // %
+            file << "  work_below_thredshold: " << workBelowThredshold()             << "\n"; // %
             file << "  timing:"                                                      << "\n";
             file << "    wall_clock: "          << wallclock.count()                 << "\n"; // s
             file << "    total_execution: "     << time_total_execution.count()      << "\n"; // s
@@ -227,7 +227,7 @@ class Statistics {
             file << "    copy2dev: "            << time_copy2dev.count()             << "\n"; // s
             file << "    copy2host: "           << time_copy2host.count()            << "\n"; // s
             file << "    offload: "             << time_offload.count()              << "\n"; // s
-            file << "    other: "               << time_other()                      << "\n"; // s
+            file << "    other: "               << timeOther()                       << "\n"; // s
             file << "    unaccounted: "         << unaccounted()                     << "\n"; // s
             file.close();
         }
@@ -252,32 +252,32 @@ class Statistics {
       num_temp_arrays += symbols.getNumBaseArrays() - symbols.getParams().size();
     }
 
-    void add_kernel(const std::string& kernel_name) {
+    void addKernel(const std::string& kernel_name) {
       time_per_kernel.insert(std::make_pair(kernel_name, KernelStats()));
     }
 
   private:
-    std::string fuse_cache_hits() {
+    std::string fuseCacheHits() {
         return pprint_ratio(fuser_cache_lookups - fuser_cache_misses, fuser_cache_lookups);
     }
 
-    std::string codegen_cache_hits() {
+    std::string codegenCacheHits() {
         return pprint_ratio(codegen_cache_lookups - codegen_cache_misses, codegen_cache_lookups);
     }
 
-    std::string kernel_cache_hits() {
+    std::string kernelCacheHits() {
         return pprint_ratio(kernel_cache_lookups - kernel_cache_misses, kernel_cache_lookups);
     }
 
-    std::string array_contractions() {
+    std::string arrayContractions() {
         return pprint_ratio(num_temp_arrays, num_base_arrays);
     }
 
-    std::string outer_fusion_ratio() {
+    std::string outerFusionRatio() {
         return pprint_ratio(num_blocks_out_of_fuser, num_instrs_into_fuser);
     }
 
-    double memory_usage() {
+    double memoryUsage() {
         return (double) max_memory_usage / 1024.0 / 1024.0;
     }
 
@@ -285,11 +285,11 @@ class Statistics {
         return (double) totalwork / (double) wallclock.count();
     }
 
-    double work_below_thredshold() {
+    double workBelowThredshold() {
         return (double) threading_below_threshold / (double) totalwork * 100.0;
     }
 
-    double time_other() {
+    double timeOther() {
         std::chrono::duration<double> time_other{0};
         return (time_total_execution - time_pre_fusion - time_fusion - time_codegen - time_compile - time_exec
                 - time_copy2dev - time_copy2host - time_offload).count();

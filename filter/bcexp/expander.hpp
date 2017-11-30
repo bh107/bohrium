@@ -49,9 +49,9 @@ public:
      *
      * @return Pointer to the created base.
      */
-    bh_base* make_base(bh_type type, int64_t nelem);
-    bh_view make_temp(bh_view& meta, bh_type type, int64_t nelem);
-    bh_view make_temp(bh_type type, int64_t nelem);
+    bh_base* createBase(bh_type type, int64_t nelem);
+    bh_view createTemp(bh_view& meta, bh_type type, int64_t nelem);
+    bh_view createTemp(bh_type type, int64_t nelem);
 
     /**
      *  Inject an instruction.
@@ -79,10 +79,10 @@ public:
     template <typename T>
     inline void inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2);
 
-    int expand_sign(BhIR& bhir, int pc);
-    int expand_powk(BhIR& bhir, int pc);
-    int expand_reduce1d(BhIR& bhir, int pc, int fold_limit);
-    int expand_repeat(BhIR& bhir, int pc);
+    int expandSign(BhIR& bhir, int pc);
+    int expandPowk(BhIR& bhir, int pc);
+    int expandReduce1d(BhIR& bhir, int pc, int fold_limit);
+    int expandRepeat(BhIR& bhir, int pc);
 
 private:
     static const char TAG[];

@@ -22,14 +22,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
-void BhInstruction::append_operand(bh_constant cnt) {
+void BhInstruction::appendOperand(bh_constant cnt) {
     bh_view view;
     view.base = nullptr;
     operand.push_back(view);
     constant = cnt;
 }
 
-void BhInstruction::append_operand(BhBase& base) {
+void BhInstruction::appendOperand(BhBase& base) {
     if (opcode != BH_FREE) {
         throw std::runtime_error(
               "BhBase objects can only be freed. Use a full BhArray if you want to "
@@ -48,7 +48,7 @@ void BhInstruction::append_operand(BhBase& base) {
 }
 
 template <typename T>
-void BhInstruction::append_operand(BhArray<T>& ary) {
+void BhInstruction::appendOperand(BhArray<T>& ary) {
     if (opcode == BH_FREE) {
         throw std::runtime_error(
               "BH_FREE cannot be used as an instruction on arrays in the bhxx interface. "
@@ -56,11 +56,11 @@ void BhInstruction::append_operand(BhArray<T>& ary) {
     }
 
     // Forward to the const version below.
-    append_operand(const_cast<const BhArray<T>&>(ary));
+    appendOperand(const_cast<const BhArray<T>&>(ary));
 }
 
 template <typename T>
-void BhInstruction::append_operand(const BhArray<T>& ary) {
+void BhInstruction::appendOperand(const BhArray<T>& ary) {
     if (opcode == BH_FREE) {
         throw std::runtime_error(
               "BH_FREE cannot be used as an instruction on arrays in the bhxx interface. "
@@ -77,7 +77,7 @@ void BhInstruction::append_operand(const BhArray<T>& ary) {
 }
 
 template <typename T>
-void BhInstruction::append_operand(T scalar) {
+void BhInstruction::appendOperand(T scalar) {
     bh_view view;
     view.base = nullptr;
     operand.push_back(view);
@@ -86,9 +86,9 @@ void BhInstruction::append_operand(T scalar) {
 
 // Instantiate all possible types for bh_instruction
 #define INSTANTIATE(TYPE)                                              \
-    template void BhInstruction::append_operand(TYPE);                 \
-    template void BhInstruction::append_operand(const BhArray<TYPE>&); \
-    template void BhInstruction::append_operand(BhArray<TYPE>&)
+    template void BhInstruction::appendOperand(TYPE);                 \
+    template void BhInstruction::appendOperand(const BhArray<TYPE>&); \
+    template void BhInstruction::appendOperand(BhArray<TYPE>&)
 
 INSTANTIATE(bool);
 INSTANTIATE(int8_t);

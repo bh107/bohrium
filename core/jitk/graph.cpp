@@ -101,7 +101,7 @@ DAG from_block_list(const vector<Block> &block_list) {
 
         // Finally, let's add edges to 'vertex'
         BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices) {
-            if (vertex != v and block.depend_on(graph[v])) {
+            if (vertex != v and block.dependOn(graph[v])) {
                 boost::add_edge(v, vertex, graph);
             }
         }

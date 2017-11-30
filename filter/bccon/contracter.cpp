@@ -45,10 +45,10 @@ Contracter::~Contracter(void) {}
 
 void Contracter::contract(BhIR& bhir)
 {
-    if(reduction_)  contract_reduction(bhir);
-    if(stupidmath_) contract_stupidmath(bhir);
-    if(collect_)    contract_collect(bhir);
-    if(muladd_)     contract_muladd(bhir);
+    if(reduction_)  reduction(bhir);
+    if(stupidmath_) stupidmath(bhir);
+    if(collect_)    collect(bhir);
+    if(muladd_)     muladd(bhir);
 }
 
 void verbose_print(std::string str)

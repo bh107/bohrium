@@ -18,10 +18,10 @@ public:
 
     void contract(BhIR& bhir);
 
-    void contract_reduction(BhIR& bhir);
-    void contract_stupidmath(BhIR& bhir);
-    void contract_collect(BhIR& bhir);
-    void contract_muladd(BhIR& bhir);
+    void reduction(BhIR& bhir);
+    void stupidmath(BhIR& bhir);
+    void collect(BhIR& bhir);
+    void muladd(BhIR& bhir);
 private:
     bool repeats_;
     bool reduction_;

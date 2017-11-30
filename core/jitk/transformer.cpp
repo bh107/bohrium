@@ -53,7 +53,7 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
             const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
             loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
         }
-        loop.metadata_update();
+        loop.metadataUpdate();
         ret.push_back(Block(std::move(loop)));
     }
     return ret;
@@ -114,7 +114,7 @@ bool collapse_instr_axes(LoopB &loop, const int axis) {
             }
         }
     }
-    loop.metadata_update();
+    loop.metadataUpdate();
     assert(loop.validation());
     return true;
 }
@@ -192,7 +192,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint
                         ++it;
                     }
                     if (not newloop._block_list.empty()) {
-                        newloop.metadata_update();
+                        newloop.metadataUpdate();
                         ret.push_back(Block(std::move(newloop)));
                     }
                 }
@@ -204,7 +204,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint
                     newloop.rank = loop.rank;
                     newloop.size = loop.size;
                     newloop._block_list.push_back(*it);
-                    newloop.metadata_update();
+                    newloop.metadataUpdate();
                     ret.push_back(Block(std::move(newloop)));
                 } else {
                     break;
