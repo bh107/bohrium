@@ -105,6 +105,15 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
         graph::pprint(dag, "dag", avoid_rank0_sweep);
     }
 
+    // Full block validation
+    #ifndef NDEBUG
+        for (const Block &b: block_list) {
+            if (b.isInstr()) {
+                assert(b.rank() == 1);
+            }
+            assert(b.validation());
+        }
+    #endif
     return block_list;
 }
 
