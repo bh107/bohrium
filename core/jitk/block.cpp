@@ -480,7 +480,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
     if (rank == ndim - 1) { // The innermost rank
         ret_loop.rank = ndim-1;
         ret_loop.size = shape[ndim-1];
-        for (InstrPtr instr: instr_list) {
+        for (const InstrPtr &instr: instr_list) {
             if (bh_opcode_is_system(instr->opcode)) {
                 bh_instruction tmp = *instr;
                 tmp.reshape_force(shape);
