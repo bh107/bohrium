@@ -139,8 +139,6 @@ protected:
             return;
         }
 
-        util::spaces(out, 4 + block.rank*4);
-
         // Order all sweep instructions by the viewID of their first operand.
         // This makes the source of the kernels more identical, which improve the code and compile caches.
         const vector<jitk::InstrPtr> ordered_block_sweeps = order_sweep_set(block._sweeps, symbols);
@@ -172,9 +170,9 @@ protected:
                 const bh_view &output = instr->operand[0];
                 if (not scope.isDeclared(output) and not scope.isArray(output)) {
                     // Let's write the declaration of the scalar variable
+                    util::spaces(out, 4 + block.rank * 4);
                     scope.writeDeclaration(output, write_type(output.base->type), out);
                     out << "\n";
-                    util::spaces(out, 4 + block.rank * 4);
                 }
             }
         }
@@ -190,15 +188,15 @@ protected:
             for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
                 const bh_view &view = instr->operand[0];
                 if (not scope.isArray(view) and not scope.isDeclared(view)) {
+                    util::spaces(out, 4 + block.rank * 4);
                     scope.writeDeclaration(view, write_type(view.base->type), out);
                     out << "\n";
-                    util::spaces(out, 4 + block.rank * 4);
                 }
+                util::spaces(out, 4 + block.rank * 4);
                 scope.getName(view, out);
                 out << " = ";
                 write_reduce_identity(instr->opcode, view.base->type, out);
                 out << ";\n";
-                util::spaces(out, 4 + block.rank * 4);
             }
         }
 
@@ -219,6 +217,7 @@ protected:
             }
             string itername;
             { stringstream t; t << "i" << block.rank; itername = t.str(); }
+            util::spaces(out, 4 + block.rank * 4);
             out << "{ // Peeled loop, 1. sweep iteration\n";
             util::spaces(out, 8 + block.rank*4);
             out << write_type(bh_type::UINT64) << " " << itername << " = 0;\n";
@@ -263,10 +262,10 @@ protected:
             }
             util::spaces(out, 4 + block.rank*4);
             out << "}\n";
-            util::spaces(out, 4 + block.rank*4);
         }
 
         // Write the for-loop header
+        util::spaces(out, 4 + block.rank*4);
         loop_head_writer(symbols, scope, block, peel, threaded_blocks, out);
 
         // Write temporary and scalar replaced array declarations
