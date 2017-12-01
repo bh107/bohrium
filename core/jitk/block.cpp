@@ -536,6 +536,18 @@ pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_dep
     return ret;
 }
 
+void get_first_loop_blocks(const LoopB &block, vector<const LoopB*> &out) {
+    out.push_back(&block);
+    if (not block._block_list.empty() and not block._block_list[0].isInstr()) {
+        get_first_loop_blocks(block._block_list[0].getLoop(), out);
+    }
+}
+vector<const LoopB*> get_first_loop_blocks(const LoopB &block) {
+    vector<const LoopB*> ret;
+    get_first_loop_blocks(block, ret);
+    return ret;
+}
+
 // Unnamed namespace for all some merge help functions
 namespace {
 

@@ -290,6 +290,11 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int
 // Use `max_depth` the limit the search depth (e.g. OpenCL and CUDA only supports parallelism in three dimensions)
 std::pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth=3);
 
+// Return a list of `block` and all its first sub-blocks.
+// Use this function to easily access the blocks that makes up the parallel ranks.
+void get_first_loop_blocks(const LoopB &block, std::vector<const LoopB*> &out);
+std::vector<const LoopB*> get_first_loop_blocks(const LoopB &block);
+
 // Check if the two blocks 'b1' and 'b2' (in that order) are mergeable.
 // 'avoid_rank0_sweep' will not allow fusion of sweeped and non-sweeped blocks at the root level
 bool mergeable(const Block &b1, const Block &b2, bool avoid_rank0_sweep);
