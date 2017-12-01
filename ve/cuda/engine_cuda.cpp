@@ -227,16 +227,11 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        {
-            auto b = &block.getLoop();
-            for (uint64_t i=0; i < thread_stack.size(); ++i) {
-                assert(not block.isInstr());
-                assert(block.getLoop()._block_list.size() == 1);
-                util::spaces(ss, 4);
-                ss << "const " << writeType(bh_type::INT64) << " i" << i << " = " << writeThreadId(i) << "; "
-                   << "if (i" << i << " >= " << b->size << ") { return; } // Prevent overflow\n";
-                b = &b->_block_list[0].getLoop();
-            }
+        const auto first_loop_blocks = get_first_loop_blocks(block.getLoop());
+        for (unsigned int i=0; i < thread_stack.size(); ++i) {
+            util::spaces(ss, 4);
+            ss << "const " << writeType(bh_type::INT64) << " i" << i << " = " << writeThreadId(i) << "; "
+               << "if (i" << i << " >= " << first_loop_blocks[i]->size << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
@@ -274,14 +269,10 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
     tie(blocks, threads) = NDRanges(thread_stack);
 
-    check_cuda_errors(
-        cuLaunchKernel(
-            program,
-            get<0>(blocks),  get<1>(blocks),  get<2>(blocks),  // NxNxN blocks
-            get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
-            0, 0, &args[0], 0
-        )
-    );
+    check_cuda_errors(cuLaunchKernel(program,
+                                     get<0>(blocks), get<1>(blocks), get<2>(blocks),  // NxNxN blocks
+                                     get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
+                                     0, 0, &args[0], 0));
     check_cuda_errors(cuCtxSynchronize());
 
     auto texec = chrono::steady_clock::now() - exec_start;
@@ -294,6 +285,7 @@ void EngineCUDA::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
 }
 
 std::string EngineCUDA::info() const {
+
     char device_name[1000];
     cuDeviceGetName(device_name, 1000, device);
     int major = 0, minor = 0;

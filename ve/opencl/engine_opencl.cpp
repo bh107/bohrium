@@ -457,16 +457,11 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        {
-            auto b = &block.getLoop();
-            for (uint64_t i=0; i < thread_stack.size(); ++i) {
-                assert(not block.isInstr());
-                assert(block.getLoop()._block_list.size() == 1);
-                util::spaces(ss, 4);
-                ss << "const " << writeType(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
-                   << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
-                b = &b->_block_list[0].getLoop();
-            }
+        const auto first_loop_blocks = get_first_loop_blocks(block.getLoop());
+        for (unsigned int i=0; i < thread_stack.size(); ++i) {
+            util::spaces(ss, 4);
+            ss << "const " << writeType(bh_type::UINT32) << " i" << i << " = get_global_id(" << i << "); "
+               << "if (i" << i << " >= " << first_loop_blocks[i]->size << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
@@ -487,17 +482,16 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
     // Write the for-loop header
     std::string itername;
     { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
-    // Notice that we use find_if() with a lambda function since 'thread_stack' contains pointers not objects
-    if (thread_stack.size() >= static_cast<size_t >(block.rank)) {
+    if (thread_stack.size() > static_cast<size_t >(block.rank)) {
+        assert(block._sweeps.size() == 0);
+        out << "{ // Threaded block (ID " << itername << ")";
+    } else {
         out << "for(" << writeType(bh_type::UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << " = 1; ";
         else
             out << " = 0; ";
         out << itername << " < " << block.size << "; ++" << itername << ") {";
-    } else {
-        assert(block._sweeps.size() == 0);
-        out << "{ // Threaded block (ID " << itername << ")";
     }
     out << "\n";
 }

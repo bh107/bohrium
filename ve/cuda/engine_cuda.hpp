@@ -213,17 +213,16 @@ public:
         // Write the for-loop header
         std::string itername;
         { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
-        // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
-        if (thread_stack.size() >= static_cast<uint64_t >(block.rank)) {
+        if (thread_stack.size() > static_cast<uint64_t >(block.rank)) {
+            assert(block._sweeps.size() == 0);
+            out << "{ // Threaded block (ID " << itername << ")";
+        } else {
             out << "for(" << writeType(bh_type::INT64) << " " << itername;
             if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
                 out << " = 1; ";
             else
                 out << " = 0; ";
             out << itername << " < " << block.size << "; ++" << itername << ") {";
-        } else {
-            assert(block._sweeps.size() == 0);
-            out << "{ // Threaded block (ID " << itername << ")";
         }
         out << "\n";
     }

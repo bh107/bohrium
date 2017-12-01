@@ -127,13 +127,10 @@ public:
             // Find the parallel blocks
             std::vector<uint64_t> thread_stack;
             {
-                auto prank = parallel_ranks(block.getLoop());
-                auto b = &block;
-                for (uint64_t rank=0; rank < prank.first; ++rank) {
-                    assert(not b->isInstr());
-                    assert(b->getLoop()._block_list.size() == 1);
-                    thread_stack.push_back(b->getLoop().size);
-                    b = &b->getLoop()._block_list[0];
+                uint64_t nranks = parallel_ranks(block.getLoop()).first;
+                auto first_block_list = get_first_loop_blocks(block.getLoop());
+                for (uint64_t i=0; i < nranks; ++i) {
+                    thread_stack.push_back(first_block_list[i]->size);
                 }
             }
 
