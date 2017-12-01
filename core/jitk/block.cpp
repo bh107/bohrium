@@ -545,6 +545,28 @@ pair<vector<const LoopB*>, uint64_t> util_find_threaded_blocks(const LoopB &bloc
     return ret;
 }
 
+pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth) {
+    assert(max_depth > 0);
+    pair<uint64_t, uint64_t> ret = make_pair(0,0);
+    const uint64_t thds = block.localThreading();
+    --max_depth;
+    if (thds > 0) {
+        if (max_depth > 0) {
+            const size_t nblocks = block.getLocalSubBlocks().size();
+            const size_t ninstr = block.getLocalInstr().size();
+            // Multiple blocks or mixing instructions and blocks makes the sub-blocks non-parallel
+            if (nblocks == 1 and ninstr == 0) {
+                auto sub = parallel_ranks(block._block_list[0].getLoop(), max_depth);
+                ret.first += sub.first;
+                ret.second += sub.second;
+            }
+        }
+        ret.second += thds;
+        ++ret.first;
+    }
+    return ret;
+}
+
 // Unnamed namespace for all some merge help functions
 namespace {
 
