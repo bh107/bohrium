@@ -114,7 +114,7 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
 
 }
 
-std::vector<char> BhIR::write_serialized_archive(set<bh_base *> &known_base_arrays, vector<bh_base *> &new_data) {
+std::vector<char> BhIR::writeSerializedArchive(set<bh_base *> &known_base_arrays, vector<bh_base *> &new_data) {
 
     // Find new base arrays in 'bhir', which the de-serializing component should know about, and their data (if any)
     vector<bh_base> new_bases; // New base arrays in the order they appear in the instruction list

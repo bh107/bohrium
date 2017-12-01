@@ -40,7 +40,7 @@ namespace bohrium {
 typedef void (*KernelFunction)(void* data_list[], uint64_t offset_strides[], bh_constant_value constants[]);
 
 class EngineOpenMP : public jitk::EngineCPU {
-  private:
+private:
     std::map<uint64_t, KernelFunction> _functions;
     std::vector<void*> _lib_handles;
 
@@ -50,7 +50,7 @@ class EngineOpenMP : public jitk::EngineCPU {
     // Return a kernel function based on the given 'source'
     KernelFunction getFunction(const std::string &source);
 
-  public:
+public:
     EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
 
     ~EngineOpenMP();
@@ -60,51 +60,51 @@ class EngineOpenMP : public jitk::EngineCPU {
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants) override;
 
-    void set_constructor_flag(std::vector<bh_instruction*> &instr_list) override;
+    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
 
-    void write_kernel(const std::vector<jitk::Block> &block_list,
-                      const jitk::SymbolTable &symbols,
-                      const std::vector<bh_base*> &kernel_temps,
-                      std::stringstream &ss) override;
+    void writeKernel(const std::vector<jitk::Block> &block_list,
+                     const jitk::SymbolTable &symbols,
+                     const std::vector<bh_base*> &kernel_temps,
+                     std::stringstream &ss) override;
 
      // Writing the OpenMP header, which include "parallel for" and "simd"
-    void write_header(const jitk::SymbolTable &symbols,
-                      jitk::Scope &scope,
-                      const jitk::LoopB &block,
-                      std::stringstream &out);
+    void writeHeader(const jitk::SymbolTable &symbols,
+                     jitk::Scope &scope,
+                     const jitk::LoopB &block,
+                     std::stringstream &out);
 
-    void loop_head_writer(const jitk::SymbolTable &symbols,
-                          jitk::Scope &scope,
-                          const jitk::LoopB &block,
-                          bool loop_is_peeled,
-                          const std::vector<const jitk::LoopB *> &threaded_blocks,
-                          std::stringstream &out) override;
+    void loopHeadWriter(const jitk::SymbolTable &symbols,
+                        jitk::Scope &scope,
+                        const jitk::LoopB &block,
+                        bool loop_is_peeled,
+                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        std::stringstream &out) override;
 
     // Return a YAML string describing this component
     std::string info() const override;
 
     // Return C99 types, which are used inside the C99 kernels
-    const std::string write_type(bh_type dtype) override;
+    const std::string writeType(bh_type dtype) override;
 
-  private:
+private:
     // Writes the union of C99 types that can make up a constant
-    inline void write_union_type(std::stringstream& out) {
+    inline void writeUnionType(std::stringstream& out) {
         out << "\ntypedef struct { uint64_t x, y; } r123_t" << ";\n";
         out << "union dtype {\n";
-        util::spaces(out, 4); out << write_type(bh_type::BOOL)       << " " << bh_type_text(bh_type::BOOL)       << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::INT8)       << " " << bh_type_text(bh_type::INT8)       << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::INT16)      << " " << bh_type_text(bh_type::INT16)      << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::INT32)      << " " << bh_type_text(bh_type::INT32)      << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::INT64)      << " " << bh_type_text(bh_type::INT64)      << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::UINT8)      << " " << bh_type_text(bh_type::UINT8)      << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::UINT16)     << " " << bh_type_text(bh_type::UINT16)     << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::UINT32)     << " " << bh_type_text(bh_type::UINT32)     << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::UINT64)     << " " << bh_type_text(bh_type::UINT64)     << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::FLOAT32)    << " " << bh_type_text(bh_type::FLOAT32)    << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::FLOAT64)    << " " << bh_type_text(bh_type::FLOAT64)    << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::COMPLEX64)  << " " << bh_type_text(bh_type::COMPLEX64)  << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::COMPLEX128) << " " << bh_type_text(bh_type::COMPLEX128) << ";\n";
-        util::spaces(out, 4); out << write_type(bh_type::R123)       << " " << bh_type_text(bh_type::R123)       << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::BOOL)       << " " << bh_type_text(bh_type::BOOL)       << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::INT8)       << " " << bh_type_text(bh_type::INT8)       << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::INT16)      << " " << bh_type_text(bh_type::INT16)      << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::INT32)      << " " << bh_type_text(bh_type::INT32)      << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::INT64)      << " " << bh_type_text(bh_type::INT64)      << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::UINT8)      << " " << bh_type_text(bh_type::UINT8)      << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::UINT16)     << " " << bh_type_text(bh_type::UINT16)     << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::UINT32)     << " " << bh_type_text(bh_type::UINT32)     << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::UINT64)     << " " << bh_type_text(bh_type::UINT64)     << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::FLOAT32)    << " " << bh_type_text(bh_type::FLOAT32)    << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::FLOAT64)    << " " << bh_type_text(bh_type::FLOAT64)    << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::COMPLEX64)  << " " << bh_type_text(bh_type::COMPLEX64)  << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::COMPLEX128) << " " << bh_type_text(bh_type::COMPLEX128) << ";\n";
+        util::spaces(out, 4); out << writeType(bh_type::R123)       << " " << bh_type_text(bh_type::R123)       << ";\n";
         out << "};\n";
     }
 };

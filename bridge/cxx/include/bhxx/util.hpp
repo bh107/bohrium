@@ -33,7 +33,7 @@ T as_scalar(BhArray<T> ary);
  *  contiguous. */
 template <typename T>
 BhArray<T> as_contiguous(BhArray<T> ary) {
-    if (ary.is_contiguous()) return ary;
+    if (ary.isContiguous()) return ary;
 
     BhArray<T> contiguous{ary.shape};
     identity(contiguous, ary);
@@ -91,7 +91,7 @@ BhArray<T> accumulate(BhArray<T> op, AddReduction&& reduction) {
         op = reduction(op, op.rank() - 1);
     }
     assert(op.rank() == 1);
-    assert(op.n_elem() == 1);
+    assert(op.numberOfElements() == 1);
     return op;
 }
 

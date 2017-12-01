@@ -259,8 +259,4 @@ inline boost::filesystem::path ConfigParser::get(const std::string &section, con
     }
 }
 
-
-
-
-
 } //namespace bohrium

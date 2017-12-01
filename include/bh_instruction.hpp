@@ -82,7 +82,7 @@ struct bh_instruction
     }
 
     // Check if all views in this instruction is contiguous
-    bool is_contiguous() const;
+    bool isContiguous() const;
 
     // Check if all view in this instruction have the same shape
     bool all_same_shape() const;

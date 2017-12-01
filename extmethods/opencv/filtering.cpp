@@ -31,7 +31,7 @@ class ErodeImpl : public ExtmethodImpl {
 public:
     void execute(bh_instruction *instr, void* arg) {
         // All matrices must be contigous
-        assert(instr->is_contiguous());
+        assert(instr->isContiguous());
 
         // A is our image
         bh_view* A = &instr->operand[1];
@@ -95,7 +95,7 @@ class DilateImpl : public ExtmethodImpl {
 public:
     void execute(bh_instruction *instr, void* arg) {
         // All matrices must be contigous
-        assert(instr->is_contiguous());
+        assert(instr->isContiguous());
 
         // A is our image
         bh_view* A = &instr->operand[1];
@@ -160,7 +160,7 @@ class ConnectedComponentsImpl : public ExtmethodImpl {
 public:
     void execute(bh_instruction *instr, void* arg) {
         // All matrices must be contigous
-        assert(instr->is_contiguous());
+        assert(instr->isContiguous());
 
         // A is our image
         bh_view* A = &instr->operand[1];

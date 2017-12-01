@@ -173,7 +173,7 @@ static void rewrite_chain(BhIR &bhir, vector<bh_instruction*>& chain)
     }
 }
 
-void Contracter::contract_collect(BhIR &bhir)
+void Contracter::collect(BhIR &bhir)
 {
     bh_opcode collect_opcode = BH_NONE;
     vector<const bh_view*> views;

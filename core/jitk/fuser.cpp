@@ -229,7 +229,7 @@ vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
         block_lists.push_back({*it});
         vector<InstrPtr> &block = block_lists.back();
         if (bh_opcode_is_system((*it)->opcode)) {
-            // We should not make blocks that start with a sysop since we only have LoopB::insert_system_after()
+            // We should not make blocks that start with a sysop since we only have LoopB::insertSystemAfter()
             continue;
         }
         ++it;

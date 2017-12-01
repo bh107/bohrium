@@ -27,33 +27,36 @@ namespace bhxx {
 /** Helper class to build instructions */
 class BhInstruction : public bh_instruction {
   public:
-    BhInstruction(bh_opcode code) : bh_instruction{} { opcode = code; }
+    BhInstruction(bh_opcode code) :
+        bh_instruction() {
+        opcode = code;
+    }
 
     /** Append a single array to the list of operands */
     template <typename T>
-    void append_operand(BhArray<T>& ary);
+    void appendOperand(BhArray<T>& ary);
 
     /** Append a const array to the list of operands */
     template <typename T>
-    void append_operand(const BhArray<T>& ary);
+    void appendOperand(const BhArray<T>& ary);
 
     /** Append a single scalar to the list of operands */
     template <typename T>
-    void append_operand(T scalar);
+    void appendOperand(T scalar);
 
     /** Append a list of operands  */
     template <typename T, typename... Ts>
-    void append_operand(T& op, Ts&... ops) {
-        append_operand(op);
-        append_operand(ops...);
+    void appendOperand(T& op, Ts&... ops) {
+        appendOperand(op);
+        appendOperand(ops...);
     }
 
     /** Append a special bh_constant */
-    void append_operand(bh_constant cnt);
+    void appendOperand(bh_constant cnt);
 
     /** Append a base object for deletion
      *
      * \note Only valid for BH_FREE */
-    void append_operand(BhBase& base);
+    void appendOperand(BhBase& base);
 };
 }

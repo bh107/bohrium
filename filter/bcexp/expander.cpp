@@ -49,7 +49,7 @@ void Expander::expand(BhIR& bhir)
 
         case BH_POWER:
             if (powk_) {
-                increase = expand_powk(bhir, pc);
+                increase = expandPowk(bhir, pc);
                 end += increase;
                 pc += increase;
             }
@@ -57,7 +57,7 @@ void Expander::expand(BhIR& bhir)
 
         case BH_SIGN:
             if (sign_) {
-                increase = expand_sign(bhir, pc);
+                increase = expandSign(bhir, pc);
                 end += increase;
                 pc += increase;
             }
@@ -75,7 +75,7 @@ void Expander::expand(BhIR& bhir)
         case BH_BITWISE_XOR_REDUCE:
             if (reduce1d_ && instr.operand[1].ndim == 1)
             {
-                increase = expand_reduce1d(bhir, pc, reduce1d_);
+                increase = expandReduce1d(bhir, pc, reduce1d_);
                 end += increase;
                 pc += increase;
             }
@@ -102,15 +102,15 @@ size_t Expander::gc(void)
     return collected;
 }
 
-bh_base* Expander::make_base(bh_type type, int64_t nelem)
+bh_base* Expander::createBase(bh_type type, int64_t nelem)
 {
     bh_base* base = NULL;
     try {
         base = new bh_base;
     } catch (std::bad_alloc& ba) {
         base = NULL;
-        fprintf(stderr, "Expander::make_base(...) bh_base allocation failed.\n");
-        throw std::runtime_error("Expander::make_base(...) bh_base allocation failed.\n");
+        fprintf(stderr, "Expander::createBase(...) bh_base allocation failed.\n");
+        throw std::runtime_error("Expander::createBase(...) bh_base allocation failed.\n");
     }
 
     base->type = type;
@@ -121,17 +121,17 @@ bh_base* Expander::make_base(bh_type type, int64_t nelem)
     return base;
 }
 
-bh_view Expander::make_temp(bh_view& meta, bh_type type, int64_t nelem)
+bh_view Expander::createTemp(bh_view& meta, bh_type type, int64_t nelem)
 {
     bh_view view = meta;
-    view.base = make_base(type, nelem);
+    view.base = createBase(type, nelem);
     return view;
 }
 
-bh_view Expander::make_temp(bh_type type, int64_t nelem)
+bh_view Expander::createTemp(bh_type type, int64_t nelem)
 {
     bh_view view;
-    view.base = make_base(type, nelem);
+    view.base = createBase(type, nelem);
     view.start = 0;
     view.ndim = 1;
     view.shape[0] = nelem;

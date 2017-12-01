@@ -57,7 +57,7 @@ vector<const bh_view*> bh_instruction::get_views() const {
     return ret;
 }
 
-bool bh_instruction::is_contiguous() const {
+bool bh_instruction::isContiguous() const {
     for(const bh_view &view: operand) {
         if ((not bh_is_constant(&view)) and (not bh_is_contiguous(&view)))
             return false;
@@ -83,7 +83,7 @@ bool bh_instruction::all_same_shape() const {
 bool bh_instruction::reshapable() const {
     // It is not meaningful to reshape instructions with different shaped views
     // and for now we cannot reshape non-contiguous or sweeping instructions
-    return all_same_shape() and is_contiguous() and not bh_opcode_is_sweep(opcode);
+    return all_same_shape() and isContiguous() and not bh_opcode_is_sweep(opcode);
 }
 
 vector<int64_t> bh_instruction::shape() const {

@@ -42,18 +42,21 @@ public:
 
 public:
     /** The regular constructor that takes the instructions, the sync'ed arrays, and number of times to run the BhIR */
-    BhIR(std::vector<bh_instruction> instr_list, std::set<bh_base *> syncs,
-         uint64_t nrepeats = 1, bh_base *repeat_condition = nullptr) : instr_list(std::move(instr_list)),
-                                                                       _syncs(std::move(syncs)),
-                                                                       _nrepeats(nrepeats),
-                                                                       _repeat_condition(repeat_condition) {}
+    BhIR(std::vector<bh_instruction> instr_list,
+         std::set<bh_base *> syncs,
+         uint64_t nrepeats = 1,
+         bh_base *repeat_condition = nullptr) :
+        instr_list(std::move(instr_list)),
+        _syncs(std::move(syncs)),
+        _nrepeats(nrepeats),
+        _repeat_condition(repeat_condition) {}
 
     /** Constructor that takes a serialized archive. All base array pointers are updated so that they point to
      *  local base arrays in `remote2local`.
      *
      *
      * \param serialized_archive Byte vector that makes up the serialized archive. The archive should be created with
-     *                           `write_serialized_archive`, which uses `boost::archive::binary_iarchive`.
+     *                           `writeSerializedArchive`, which uses `boost::archive::binary_iarchive`.
      *
      * \param remote2local Map that maps remote array bases to local bases. The map is updated to include the new
      *                     array bases encountered in this BhIR thus this map should stay allocated throughout the
@@ -67,8 +70,10 @@ public:
      *       Use `remote2local` to translate remote base arrays to local base arrays, which are regular base arrays
      *       that can dereferenced.
      */
-    BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*, bh_base> &remote2local,
-         std::vector<bh_base*> &data_recv, std::set<bh_base*> &frees);
+    BhIR(const std::vector<char> &serialized_archive,
+         std::map<const bh_base*, bh_base> &remote2local,
+         std::vector<bh_base*> &data_recv,
+         std::set<bh_base*> &frees);
 
 
     /** Write the BhIR into a serialized archive.
@@ -81,8 +86,7 @@ public:
      *                 in the BhIR, thus their data should be transferred to the de-serializing component in the order
      *                 they appear.
      */
-    std::vector<char> write_serialized_archive(std::set<bh_base *> &known_base_arrays,
-                                               std::vector<bh_base *> &new_data);
+    std::vector<char> writeSerializedArchive(std::set<bh_base*> &known_base_arrays, std::vector<bh_base*> &new_data);
 
     /** Returns the set of sync'ed arrays */
     const std::set<bh_base *> getSyncs() const {

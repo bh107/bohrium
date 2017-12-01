@@ -112,12 +112,12 @@ def set_data_pointer(ary, mem_ptr_as_int, host_ptr=True):
     raise NotImplementedError()
 
 
-def get_device_context():
+def getDeviceContext():
     """Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack."""
     raise NotImplementedError()
 
 
-def set_device_context(device_context):
+def setDeviceContext(device_context):
     """Set the device context, such as CUDA's cl_context, of the first VE in the runtime stack."""
     raise NotImplementedError()
 

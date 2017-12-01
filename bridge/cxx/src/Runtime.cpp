@@ -41,30 +41,30 @@ void Runtime::enqueue(BhInstruction instr) {
     }
 }
 
-void Runtime::enqueue_random(BhArray<uint64_t>& out, uint64_t seed, uint64_t key) {
+void Runtime::enqueueRandom(BhArray<uint64_t>& out, uint64_t seed, uint64_t key) {
     BhInstruction instr(BH_RANDOM);
-    instr.append_operand(out);  // Append output array
+    instr.appendOperand(out);  // Append output array
 
     // Append the special BH_R123 constant
     bh_constant cnt;
     cnt.type             = bh_type::R123;
     cnt.value.r123.start = seed;
     cnt.value.r123.key   = key;
-    instr.append_operand(cnt);
+    instr.appendOperand(cnt);
 
     enqueue(std::move(instr));
 }
 
-void Runtime::enqueue_deletion(std::unique_ptr<BhBase> base_ptr) {
+void Runtime::enqueueDeletion(std::unique_ptr<BhBase> base_ptr) {
     // Check whether we are responsible for the memory or not.
-    if (!base_ptr->own_memory()) {
+    if (!base_ptr->ownMemory()) {
         // Externally managed
         // => set it to null to avoid deletion by Bohrium
         base_ptr->data = nullptr;
     }
 
     BhInstruction instr(BH_FREE);
-    instr.append_operand(*base_ptr);
+    instr.appendOperand(*base_ptr);
     bases_for_deletion.push_back(std::move(base_ptr));
     enqueue(std::move(instr));
 }
@@ -100,7 +100,7 @@ void Runtime::flush() {
     _flush(1, dummy, instr_list, syncs, runtime, bases_for_deletion, _flush_count);
 }
 
-void Runtime::flush_and_repeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr) {
+void Runtime::flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr) {
     _flush(nrepeats, base_ptr, instr_list, syncs, runtime, bases_for_deletion, _flush_count);
 }
 
@@ -112,20 +112,20 @@ std::string Runtime::message(const std::string &msg) {
     return runtime.message(msg);
 }
 
-void* Runtime::get_mem_ptr(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify) {
-    return runtime.get_mem_ptr(*base, copy2host, force_alloc, nullify);
+void* Runtime::getMemoryPointer(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify) {
+    return runtime.getMemoryPointer(*base, copy2host, force_alloc, nullify);
 }
 
-void Runtime::set_mem_ptr(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem) {
-    return runtime.set_mem_ptr(base.get(), host_ptr, mem);
+void Runtime::setMemoryPointer(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem) {
+    return runtime.setMemoryPointer(base.get(), host_ptr, mem);
 }
 
-void* Runtime::get_device_context() {
-    return runtime.get_device_context();
+void* Runtime::getDeviceContext() {
+    return runtime.getDeviceContext();
 }
 
-void Runtime::set_device_context(void *device_context) {
-    runtime.set_device_context(device_context);
+void Runtime::setDeviceContext(void *device_context) {
+    runtime.setDeviceContext(device_context);
 }
 
 }  // namespace bhxx

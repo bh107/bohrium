@@ -84,9 +84,9 @@ class Impl : public ComponentImpl {
     }
 
     // Handle memory pointer retrieval
-    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         if (not copy2host) {
-            throw runtime_error("OpenMP - get_mem_ptr(): `copy2host` is not True");
+            throw runtime_error("OpenMP - getMemoryPointer(): `copy2host` is not True");
         }
         if (force_alloc) {
             bh_data_malloc(&base);
@@ -99,23 +99,23 @@ class Impl : public ComponentImpl {
     }
 
     // Handle memory pointer obtainment
-    void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
         if (not host_ptr) {
-            throw runtime_error("OpenMP - set_mem_ptr(): `host_ptr` is not True");
+            throw runtime_error("OpenMP - setMemoryPointer(): `host_ptr` is not True");
         }
         if (base->data != nullptr) {
-            throw runtime_error("OpenMP - set_mem_ptr(): `base->data` is not NULL");
+            throw runtime_error("OpenMP - setMemoryPointer(): `base->data` is not NULL");
         }
         base->data = mem;
     }
 
     // We have no context so returning NULL
-    void* get_device_context() {
+    void* getDeviceContext() {
         return nullptr;
     };
 
     // We have no context so doing nothing
-    void set_device_context(void* device_context) {};
+    void setDeviceContext(void* device_context) {};
 };
 }
 
@@ -136,10 +136,10 @@ void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handle_extmethod(*this, bhir);
+        engine.handleExtmethod(*this, bhir);
 
         // And then the regular instructions
-        engine.handle_execution(bhir);
+        engine.handleExecution(bhir);
 
         // Check condition
         if (cond != nullptr and cond->data != nullptr and not ((bool*) cond->data)[0]) {

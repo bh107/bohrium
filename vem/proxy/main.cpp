@@ -54,9 +54,9 @@ public:
     }
 
     // Handle memory pointer retrieval
-    void* get_mem_ptr(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
         if (not copy2host) {
-            throw runtime_error("PROXY - get_mem_ptr(): `copy2host` is not True");
+            throw runtime_error("PROXY - getMemoryPointer(): `copy2host` is not True");
         }
 
         // Serialize message body
@@ -89,20 +89,20 @@ public:
     }
 
     // Handle memory pointer obtainment
-    void set_mem_ptr(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
         if (not host_ptr) {
-            throw runtime_error("PROXY - set_mem_ptr(): `host_ptr` is not True");
+            throw runtime_error("PROXY - setMemoryPointer(): `host_ptr` is not True");
         }
-        throw runtime_error("PROXY - set_mem_ptr(): not implemented");
+        throw runtime_error("PROXY - setMemoryPointer(): not implemented");
     }
 
     // We have no context so returning NULL
-    void* get_device_context() {
+    void* getDeviceContext() {
         return nullptr;
     };
 
     // We have no context so doing nothing
-    void set_device_context(void* device_context) {};
+    void setDeviceContext(void* device_context) {};
 };
 } //Unnamed namespace
 
@@ -119,7 +119,7 @@ void Impl::execute(BhIR *bhir) {
 
     // Serialize the BhIR, which becomes the message body
     vector<bh_base *> new_data; // New data in the order they appear in the instruction list
-    vector<char> buf_body = bhir->write_serialized_archive(known_base_arrays, new_data);
+    vector<char> buf_body = bhir->writeSerializedArchive(known_base_arrays, new_data);
 
     // Serialize message head
     vector<char> buf_head;

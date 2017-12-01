@@ -65,7 +65,7 @@ namespace bcexp {
  *
  *  Returns the number of instructions used (12 or 17).
  */
-int Expander::expand_sign(BhIR& bhir, int pc)
+int Expander::expandSign(BhIR& bhir, int pc)
 {
     int start_pc = pc;
     bh_instruction& composite = bhir.instr_list[pc];
@@ -97,9 +97,9 @@ int Expander::expand_sign(BhIR& bhir, int pc)
         verbose_print("[Sign] Expanding complex sign");
         // For non-complex: sign(x) = (x>0)-(x<0)
         // Temps
-        bh_view lss    = make_temp(meta, input_type, nelements);
-        bh_view gtr    = make_temp(meta, input_type, nelements);
-        bh_view t_bool = make_temp(meta, bh_type::BOOL,    nelements);
+        bh_view lss    = createTemp(meta, input_type, nelements);
+        bh_view gtr    = createTemp(meta, input_type, nelements);
+        bh_view t_bool = createTemp(meta, bh_type::BOOL,    nelements);
 
         // Sequence
         inject(bhir, ++pc, BH_GREATER,  t_bool, input, 0.0);
@@ -120,9 +120,9 @@ int Expander::expand_sign(BhIR& bhir, int pc)
 
         // General form: sign(z) = z/(|z|+(z==0))
         // Temps
-        bh_view f_abs  = make_temp(meta, float_type, nelements);
-        bh_view b_zero = make_temp(meta, bh_type::BOOL,    nelements);
-        bh_view f_zero = make_temp(meta, float_type, nelements);
+        bh_view f_abs  = createTemp(meta, float_type, nelements);
+        bh_view b_zero = createTemp(meta, bh_type::BOOL,    nelements);
+        bh_view f_zero = createTemp(meta, float_type, nelements);
 
         // Sequence
         inject(bhir, ++pc, BH_ABSOLUTE, f_abs,  input);

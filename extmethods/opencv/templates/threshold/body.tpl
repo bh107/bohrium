@@ -1,7 +1,7 @@
 struct @!uname!@Impl : public ExtmethodImpl {
 public:
     void execute(bh_instruction *instr, void* arg) {
-        assert(instr->is_contiguous());
+        assert(instr->isContiguous());
 
         // A is our image
         bh_view* A = &instr->operand[1];

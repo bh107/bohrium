@@ -81,13 +81,13 @@ public:
     virtual ~Engine() {}
 
     virtual std::string info() const = 0;
-    virtual const std::string write_type(bh_type dtype) = 0;
-    virtual void set_constructor_flag(std::vector<bh_instruction*> &instr_list) = 0;
+    virtual const std::string writeType(bh_type dtype) = 0;
+    virtual void setConstructorFlag(std::vector<bh_instruction*> &instr_list) = 0;
 
 protected:
-    void write_kernel_function_arguments(const jitk::SymbolTable &symbols,
-                                         std::stringstream &ss,
-                                         const char *array_type_prefix) {
+    void writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
+                                      std::stringstream &ss,
+                                      const char *array_type_prefix) {
         // We create the comma separated list of args and saves it in `stmp`
         std::stringstream stmp;
         for (size_t i = 0; i < symbols.getParams().size(); ++i) {
@@ -95,21 +95,21 @@ protected:
             if (array_type_prefix != nullptr) {
                 stmp << array_type_prefix << " ";
             }
-            stmp << write_type(b->type) << "* __restrict__ a" << symbols.baseID(b) << ", ";
+            stmp << writeType(b->type) << "* __restrict__ a" << symbols.baseID(b) << ", ";
         }
 
         for (const bh_view *view: symbols.offsetStrideViews()) {
-            stmp << write_type(bh_type::UINT64);
+            stmp << writeType(bh_type::UINT64);
             stmp << " vo" << symbols.offsetStridesID(*view) << ", ";
             for (int i = 0; i < view->ndim; ++i) {
-                stmp << write_type(bh_type::UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i << ", ";
+                stmp << writeType(bh_type::UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i << ", ";
             }
         }
 
         if (not symbols.constIDs().empty()) {
             for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
                 const InstrPtr &instr = *it;
-                stmp << "const " << write_type(instr->constant.type) << " c" << symbols.constID(*instr) << ", ";
+                stmp << "const " << writeType(instr->constant.type) << " c" << symbols.constID(*instr) << ", ";
             }
         }
 
@@ -126,12 +126,12 @@ protected:
     // Writes a loop block, which corresponds to a parallel for-loop.
     // The two functions 'type_writer' and 'head_writer' should write the
     // backend specific data type names and for-loop headers respectively.
-    void write_loop_block(const jitk::SymbolTable &symbols,
-                          const jitk::Scope *parent_scope,
-                          const jitk::LoopB &block,
-                          const std::vector<const jitk::LoopB*> &threaded_blocks,
-                          bool opencl,
-                          std::stringstream &out) {
+    void writeLoopBlock(const jitk::SymbolTable &symbols,
+                        const jitk::Scope *parent_scope,
+                        const jitk::LoopB &block,
+                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        bool opencl,
+                        std::stringstream &out) {
         using namespace std;
 
         if (block.isSystemOnly()) {
@@ -171,17 +171,17 @@ protected:
                 if (not scope.isDeclared(output) and not scope.isArray(output)) {
                     // Let's write the declaration of the scalar variable
                     util::spaces(out, 4 + block.rank * 4);
-                    scope.writeDeclaration(output, write_type(output.base->type), out);
+                    scope.writeDeclaration(output, writeType(output.base->type), out);
                     out << "\n";
                 }
             }
         }
 
         // Find indexes we will declare later
-        vector<const bh_view*> indexes = get_indexes(block, scope, symbols);
+        vector<const bh_view*> indexes = getIndexes(block, scope, symbols);
 
         // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
-        bool peel = need_to_peel(ordered_block_sweeps, scope);
+        bool peel = needToPeel(ordered_block_sweeps, scope);
 
         // When not peeling, we need a neutral initial reduction value
         if (not peel) {
@@ -189,7 +189,7 @@ protected:
                 const bh_view &view = instr->operand[0];
                 if (not scope.isArray(view) and not scope.isDeclared(view)) {
                     util::spaces(out, 4 + block.rank * 4);
-                    scope.writeDeclaration(view, write_type(view.base->type), out);
+                    scope.writeDeclaration(view, writeType(view.base->type), out);
                     out << "\n";
                 }
                 util::spaces(out, 4 + block.rank * 4);
@@ -220,7 +220,7 @@ protected:
             util::spaces(out, 4 + block.rank * 4);
             out << "{ // Peeled loop, 1. sweep iteration\n";
             util::spaces(out, 8 + block.rank*4);
-            out << write_type(bh_type::UINT64) << " " << itername << " = 0;\n";
+            out << writeType(bh_type::UINT64) << " " << itername << " = 0;\n";
 
             // Write temporary and scalar replaced array declarations
             for (const InstrPtr &instr: block.getLocalInstr()) {
@@ -228,11 +228,11 @@ protected:
                     if (not peeled_scope.isDeclared(*view)) {
                         if (peeled_scope.isTmp(view->base)) {
                             util::spaces(out, 8 + block.rank * 4);
-                            peeled_scope.writeDeclaration(*view, write_type(view->base->type), out);
+                            peeled_scope.writeDeclaration(*view, writeType(view->base->type), out);
                             out << "\n";
                         } else if (peeled_scope.isScalarReplaced_R(*view)) {
                             util::spaces(out, 8 + block.rank * 4);
-                            peeled_scope.writeDeclaration(*view, write_type(view->base->type), out);
+                            peeled_scope.writeDeclaration(*view, writeType(view->base->type), out);
                             out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
                             write_array_subscription(peeled_scope, *view, out);
                             out << ";";
@@ -245,7 +245,7 @@ protected:
             for (const bh_view *view: indexes) {
                 if (not peeled_scope.isIdxDeclared(*view)) {
                     util::spaces(out, 8 + block.rank * 4);
-                    peeled_scope.writeIdxDeclaration(*view, write_type(bh_type::UINT64), out);
+                    peeled_scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
                     out << "\n";
                 }
             }
@@ -257,7 +257,7 @@ protected:
                         write_instr(peeled_scope, *b.getInstr(), out, opencl);
                     }
                 } else {
-                    write_loop_block(symbols, &peeled_scope, b.getLoop(), threaded_blocks, opencl, out);
+                    writeLoopBlock(symbols, &peeled_scope, b.getLoop(), threaded_blocks, opencl, out);
                 }
             }
             util::spaces(out, 4 + block.rank*4);
@@ -266,7 +266,7 @@ protected:
 
         // Write the for-loop header
         util::spaces(out, 4 + block.rank*4);
-        loop_head_writer(symbols, scope, block, peel, threaded_blocks, out);
+        loopHeadWriter(symbols, scope, block, peel, threaded_blocks, out);
 
         // Write temporary and scalar replaced array declarations
         for (const InstrPtr &instr: block.getLocalInstr()) {
@@ -274,11 +274,11 @@ protected:
                 if (not scope.isDeclared(*view)) {
                     if (scope.isTmp(view->base)) {
                         util::spaces(out, 8 + block.rank * 4);
-                        scope.writeDeclaration(*view, write_type(view->base->type), out);
+                        scope.writeDeclaration(*view, writeType(view->base->type), out);
                         out << "\n";
                     } else if (scope.isScalarReplaced_R(*view)) {
                         util::spaces(out, 8 + block.rank * 4);
-                        scope.writeDeclaration(*view, write_type(view->base->type), out);
+                        scope.writeDeclaration(*view, writeType(view->base->type), out);
                         out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
                         write_array_subscription(scope, *view, out);
                         out << ";";
@@ -291,7 +291,7 @@ protected:
         for (const bh_view *view: indexes) {
             if (not scope.isIdxDeclared(*view)) {
                 util::spaces(out, 8 + block.rank * 4);
-                scope.writeIdxDeclaration(*view, write_type(bh_type::UINT64), out);
+                scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
                 out << "\n";
             }
         }
@@ -306,7 +306,7 @@ protected:
                         write_instr(scope, *b.getInstr(), out, true);
                     }
                 } else {
-                    write_loop_block(symbols, &scope, b.getLoop(), threaded_blocks, opencl, out);
+                    writeLoopBlock(symbols, &scope, b.getLoop(), threaded_blocks, opencl, out);
                 }
             }
         } else {
@@ -327,7 +327,7 @@ protected:
                         write_instr(scope, *instr, out);
                     }
                 } else {
-                    write_loop_block(symbols, &scope, b.getLoop(), threaded_blocks, opencl, out);
+                    writeLoopBlock(symbols, &scope, b.getLoop(), threaded_blocks, opencl, out);
                 }
             }
         }
@@ -345,15 +345,15 @@ protected:
         }
     }
 
-    virtual void loop_head_writer(const SymbolTable &symbols,
-                                  Scope &scope,
-                                  const LoopB &block,
-                                  bool loop_is_peeled,
-                                  const std::vector<const LoopB *> &threaded_blocks,
-                                  std::stringstream &out) = 0;
+    virtual void loopHeadWriter(const SymbolTable &symbols,
+                                Scope &scope,
+                                const LoopB &block,
+                                bool loop_is_peeled,
+                                const std::vector<const LoopB*> &threaded_blocks,
+                                std::stringstream &out) = 0;
 
 private:
-    bool need_to_peel(const std::vector<InstrPtr> &ordered_block_sweeps, const Scope &scope) {
+    bool needToPeel(const std::vector<InstrPtr> &ordered_block_sweeps, const Scope &scope) {
         for (const InstrPtr &instr: ordered_block_sweeps) {
             const bh_view &v = instr->operand[0];
             if (not (has_reduce_identity(instr->opcode) and (scope.isScalarReplaced(v) or scope.isTmp(v.base)))) {
@@ -363,7 +363,7 @@ private:
         return false;
     }
 
-    std::vector<const bh_view*> get_indexes(const LoopB &block, const Scope &scope, const SymbolTable &symbols) {
+    std::vector<const bh_view*> getIndexes(const LoopB &block, const Scope &scope, const SymbolTable &symbols) {
         std::vector<const bh_view*> indexes;
         std::set<bh_view, idx_less> candidates;
         for (const InstrPtr &instr: block.getLocalInstr()) {

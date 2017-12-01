@@ -39,7 +39,7 @@ static inline int find_fold(int64_t elements, int thread_limit)
 }
 
 // TODO: What does this do? Give example like expand_sign.cpp
-int Expander::expand_reduce1d(BhIR& bhir, int pc, int thread_limit)
+int Expander::expandReduce1d(BhIR& bhir, int pc, int thread_limit)
 {
     int start_pc = pc;
     bh_instruction& instr = bhir.instr_list[pc];
@@ -78,7 +78,7 @@ int Expander::expand_reduce1d(BhIR& bhir, int pc, int thread_limit)
     in.stride[1] = in.stride[0];
     in.stride[0] = in.stride[0] * elements / fold;
 
-    bh_view temp = make_temp(in.base->type, elements/fold);
+    bh_view temp = createTemp(in.base->type, elements/fold);
 
     inject(bhir, ++pc, opcode,  temp, in,   0, bh_type::INT64);
     inject(bhir, ++pc, opcode,  out,  temp, 0, bh_type::INT64);

@@ -39,16 +39,16 @@ public:
 
     virtual ~EngineCPU() {}
 
-    virtual void write_kernel(const std::vector<Block> &block_list,
-                              const SymbolTable &symbols,
-                              const std::vector<bh_base*> &kernel_temps,
-                              std::stringstream &ss) = 0;
+    virtual void writeKernel(const std::vector<Block> &block_list,
+                             const SymbolTable &symbols,
+                             const std::vector<bh_base*> &kernel_temps,
+                             std::stringstream &ss) = 0;
     virtual void execute(const std::string &source,
                          const std::vector<bh_base*> &non_temps,
                          const std::vector<const bh_view*> &offset_strides,
                          const std::vector<const bh_instruction*> &constants) = 0;
 
-    virtual void handle_execution(BhIR *bhir) {
+    virtual void handleExecution(BhIR *bhir) {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -76,7 +76,7 @@ public:
 
         // Set the constructor flag
         if (config.defaultGet<bool>("array_contraction", true)) {
-            set_constructor_flag(instr_list);
+            setConstructorFlag(instr_list);
         } else {
             for (bh_instruction *instr: instr_list) {
                 instr->constructor = false;
@@ -87,15 +87,15 @@ public:
         const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat, false);
 
         if (config.defaultGet<bool>("monolithic", false)) {
-            create_monolithic_kernel(kernel_config, block_list);
+            createMonolithicKernel(kernel_config, block_list);
         } else {
-            create_kernel(kernel_config, block_list);
+            createKernel(kernel_config, block_list);
         }
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
     template <typename T>
-    void handle_extmethod(T &comp, BhIR *bhir) {
+    void handleExtmethod(T &comp, BhIR *bhir) {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {
@@ -117,7 +117,7 @@ public:
     }
 
 private:
-    void create_kernel(std::map<std::string, bool> kernel_config, const std::vector<Block> &block_list) {
+    void createKernel(std::map<std::string, bool> kernel_config, const std::vector<Block> &block_list) {
         using namespace std;
 
         // When creating a regular kernels (a block-nest per shared library), we create one kernel at a time
@@ -138,7 +138,7 @@ private:
 
             // Let's execute the kernel
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
-                execute_kernel({ block }, symbols, {});
+                executeKernel({ block }, symbols, {});
             }
 
             // Finally, let's cleanup
@@ -148,7 +148,7 @@ private:
         }
     }
 
-    void create_monolithic_kernel(std::map<std::string, bool> kernel_config, const std::vector<Block> &block_list) {
+    void createMonolithicKernel(std::map<std::string, bool> kernel_config, const std::vector<Block> &block_list) {
         using namespace std;
 
         // When creating a monolithic kernel (all instructions in one shared library), we first combine
@@ -190,7 +190,7 @@ private:
 
         // Let's execute the kernel
         if (kernel_is_computing) { // We can skip this step if the kernel does no computation
-            execute_kernel(block_list, symbols, kernel_temps);
+            executeKernel(block_list, symbols, kernel_temps);
         }
 
         // Finally, let's cleanup
@@ -199,7 +199,7 @@ private:
         }
     }
 private:
-    void execute_kernel(const std::vector<Block> &block_list, const SymbolTable &symbols, std::vector<bh_base*> kernel_temps) {
+    void executeKernel(const std::vector<Block> &block_list, const SymbolTable &symbols, std::vector<bh_base*> kernel_temps) {
         using namespace std;
 
         // Create the constant vector
@@ -214,7 +214,7 @@ private:
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                write_kernel(block_list, symbols, kernel_temps, ss);
+                writeKernel(block_list, symbols, kernel_temps, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
@@ -225,7 +225,7 @@ private:
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            write_kernel(block_list, symbols, kernel_temps, ss);
+            writeKernel(block_list, symbols, kernel_temps, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
             execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);

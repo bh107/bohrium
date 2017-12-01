@@ -50,14 +50,14 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     CUresult err = cuInit(0);
 
     if (err == CUDA_SUCCESS)
-        checkCudaErrors(cuDeviceGetCount(&deviceCount));
+        check_cuda_errors(cuDeviceGetCount(&deviceCount));
 
     if (deviceCount == 0) {
         throw runtime_error("Error: no devices supporting CUDA");
     }
 
     // get first CUDA device
-    checkCudaErrors(cuDeviceGet(&device, 0));
+    check_cuda_errors(cuDeviceGet(&device, 0));
 
     err = cuCtxCreate(&context, 0, device);
     if (err != CUDA_SUCCESS) {
@@ -79,7 +79,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     string compiler_cmd = config.get<string>("compiler_cmd");
 
     int major = 0, minor = 0;
-    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+    check_cuda_errors(cuDeviceComputeCapability(&major, &minor, device));
     boost::replace_all(compiler_cmd, "{MAJOR}", std::to_string(major));
     boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
@@ -118,7 +118,7 @@ EngineCUDA::~EngineCUDA() {
     }
 }
 
-pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> > EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
+pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t>> EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
     const auto &b = threaded_blocks;
     switch (b.size()) {
         case 1: {
@@ -166,7 +166,7 @@ CUfunction EngineCUDA::getFunction(const string &source) {
         {
             std::string kernel_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
             if (verbose) {
-              stat.add_kernel(kernel_filename);
+              stat.addKernel(kernel_filename);
             }
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
                                                        kernel_filename, verbose);
@@ -205,10 +205,10 @@ CUfunction EngineCUDA::getFunction(const string &source) {
     return program;
 }
 
-void EngineCUDA::write_kernel(const jitk::Block &block,
-                              const jitk::SymbolTable &symbols,
-                              const std::vector<const jitk::LoopB*> &threaded_blocks,
-                              std::stringstream &ss) {
+void EngineCUDA::writeKernel(const jitk::Block &block,
+                             const jitk::SymbolTable &symbols,
+                             const std::vector<const jitk::LoopB*> &threaded_blocks,
+                             std::stringstream &ss) {
     // Write the need includes
     ss << "#include <kernel_dependencies/complex_cuda.h>\n";
     ss << "#include <kernel_dependencies/integer_operations.h>\n";
@@ -219,7 +219,7 @@ void EngineCUDA::write_kernel(const jitk::Block &block,
 
     // Write the header of the execute function
     ss << "extern \"C\" __global__ void execute";
-    write_kernel_function_arguments(symbols, ss, nullptr);
+    writeKernelFunctionArguments(symbols, ss, nullptr);
     ss << " {\n";
 
     // Write the IDs of the threaded blocks
@@ -229,19 +229,19 @@ void EngineCUDA::write_kernel(const jitk::Block &block,
         for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
             const jitk::LoopB *b = threaded_blocks[i];
             util::spaces(ss, 4);
-            ss << "const " << write_type(bh_type::INT64) << " i" << b->rank << " = " << write_thread_id(i) << "; "
+            ss << "const " << writeType(bh_type::INT64) << " i" << b->rank << " = " << writeThreadId(i) << "; "
                << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
-    write_loop_block(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+    writeLoopBlock(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
     ss << "}\n\n";
 }
 
 void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
-                           const vector<const jitk::LoopB*> &threaded_blocks,
-                           const vector<const bh_view*> &offset_strides,
-                           const vector<const bh_instruction*> &constants) {
+                         const vector<const jitk::LoopB*> &threaded_blocks,
+                         const vector<const bh_view*> &offset_strides,
+                         const vector<const bh_instruction*> &constants) {
     size_t hash = hasher(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
@@ -268,33 +268,36 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
     tie(blocks, threads) = NDRanges(threaded_blocks);
 
-    checkCudaErrors(cuLaunchKernel(program,
-                                   get<0>(blocks), get<1>(blocks), get<2>(blocks),  // NxNxN blocks
-                                   get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
-                                   0, 0, &args[0], 0));
-    checkCudaErrors(cuCtxSynchronize());
+    check_cuda_errors(
+        cuLaunchKernel(
+            program,
+            get<0>(blocks),  get<1>(blocks),  get<2>(blocks),  // NxNxN blocks
+            get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
+            0, 0, &args[0], 0
+        )
+    );
+    check_cuda_errors(cuCtxSynchronize());
 
     auto texec = chrono::steady_clock::now() - exec_start;
     stat.time_exec += texec;
     stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
-void EngineCUDA::set_constructor_flag(std::vector<bh_instruction*> &instr_list) {
+void EngineCUDA::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
 }
 
 std::string EngineCUDA::info() const {
-
     char device_name[1000];
     cuDeviceGetName(device_name, 1000, device);
     int major = 0, minor = 0;
-    checkCudaErrors(cuDeviceComputeCapability(&major, &minor, device));
+    check_cuda_errors(cuDeviceComputeCapability(&major, &minor, device));
     size_t totalGlobalMem;
-    checkCudaErrors(cuDeviceTotalMem(&totalGlobalMem, device));
+    check_cuda_errors(cuDeviceTotalMem(&totalGlobalMem, device));
 
     stringstream ss;
-    ss << "----"                                                                        << "\n";
-    ss << "CUDA:"                                                                       << "\n";
+    ss << "----" << "\n";
+    ss << "CUDA:" << "\n";
     ss << "  Device: \"" << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
     ss << "  Memory: \"" <<totalGlobalMem / 1024 / 1024 << " MB\"\n";
     ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";

@@ -25,14 +25,16 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bhxx {
 // The base underlying (multiple) arrays
 class BhBase : public bh_base {
-  public:
+public:
     /** Is the memory managed referenced by bh_base's data pointer
      *  managed by Bohrium or is it owned externally
      *
      * \note If this flag is false, the class will make sure that
      *       the memory is not deleted when going out of scope.
      *  */
-    bool own_memory() { return m_own_memory; }
+    bool ownMemory() {
+        return m_own_memory;
+    }
 
     /** Construct a base array with nelem elements using
      * externally managed storage.
@@ -44,7 +46,8 @@ class BhBase : public bh_base {
      * incorporate nelem_ elements.
      * */
     template <typename T>
-    BhBase(size_t nelem_, T* memory) : m_own_memory(false) {
+    BhBase(size_t nelem_, T* memory) :
+        m_own_memory(false) {
         data  = memory;
         nelem = static_cast<int64_t>(nelem_);
         set_type<T>();
@@ -57,8 +60,7 @@ class BhBase : public bh_base {
      *  provide external storage to Bohrium use the constructor
      *  BhBase(size_t nelem, T* memory) instead.
      */
-    template <typename InputIterator,
-              typename T = typename std::iterator_traits<InputIterator>::value_type>
+    template <typename InputIterator, typename T = typename std::iterator_traits<InputIterator>::value_type>
     BhBase(InputIterator begin, InputIterator end)
           : BhBase(T(0), static_cast<size_t>(std::distance(begin, end))) {
         assert(std::distance(begin, end) > 0);
@@ -81,7 +83,8 @@ class BhBase : public bh_base {
      *       do this via the BhArray interface and not using this constructor.
      */
     template <typename T>
-    BhBase(T dummy, size_t nelem_) : m_own_memory(true) {
+    BhBase(T dummy, size_t nelem_) :
+        m_own_memory(true) {
         data  = nullptr;
         nelem = nelem_;
         set_type<T>();
@@ -112,12 +115,14 @@ class BhBase : public bh_base {
     // would theoretically need to free it here.
 
     /** Move another BhBase object here */
-    BhBase(BhBase&& other) : bh_base(std::move(other)), m_own_memory(other.m_own_memory) {
+    BhBase(BhBase&& other) :
+        bh_base(std::move(other)),
+        m_own_memory(other.m_own_memory) {
         other.m_own_memory = true;
         other.data         = nullptr;
     }
 
-  private:
+private:
     /** Set the data type of the data pointed by data. */
     template <typename T>
     void set_type();
