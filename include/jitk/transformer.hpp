@@ -33,7 +33,7 @@ namespace jitk {
 void push_reductions_inwards(std::vector<Block> &block_list);
 
 // Splits the 'block_list' in order to achieve a minimum amount of threading (if possible)
-void split_for_threading(std::vector<Block> &block_list, uint64_t min_threading=1000, uint64_t cur_threading=0);
+void split_for_threading(std::vector<Block> &block_list, uint64_t min_threading=1000);
 
 // Collapses redundant axes within the 'block_list'
 void collapse_redundant_axes(std::vector<Block> &block_list);
