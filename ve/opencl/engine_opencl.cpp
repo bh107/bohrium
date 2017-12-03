@@ -195,23 +195,23 @@ EngineOpenCL::~EngineOpenCL() {
     }
 }
 
-pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
-    const auto &b = threaded_blocks;
+pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<uint64_t> &thread_stack) const {
+    const auto &b = thread_stack;
     switch (b.size()) {
         case 1: {
-            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]->size);
+            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]);
             return make_pair(cl::NDRange(gsize_and_lsize.first), cl::NDRange(gsize_and_lsize.second));
         }
         case 2: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]->size);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]->size);
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]);
             return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first),
                              cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second));
         }
         case 3: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]->size);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]->size);
-            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]->size);
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]);
+            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]);
             return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
                              cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }
@@ -219,7 +219,6 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
             throw runtime_error("NDRanges: maximum of three dimensions!");
     }
 }
-
 
 cl::Program EngineOpenCL::getFunction(const string &source) {
     size_t hash = hasher(source);
@@ -283,7 +282,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
 
 void EngineOpenCL::execute(const std::string &source,
                            const std::vector<bh_base*> &non_temps,
-                           const vector<const jitk::LoopB*> &threaded_blocks,
+                           const vector<uint64_t> &thread_stack,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
     size_t hash = hasher(source);
@@ -360,7 +359,7 @@ void EngineOpenCL::execute(const std::string &source,
         }
     }
 
-    const auto ranges = NDRanges(threaded_blocks);
+    const auto ranges = NDRanges(thread_stack);
     auto start_exec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
@@ -438,7 +437,7 @@ void EngineOpenCL::delBuffer(bh_base* &base) {
 
 void EngineOpenCL::writeKernel(const jitk::Block &block,
                                const jitk::SymbolTable &symbols,
-                               const vector<const jitk::LoopB*> &threaded_blocks,
+                               const vector<uint64_t> &thread_stack,
                                stringstream &ss) {
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -455,20 +454,25 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     ss << " {\n";
 
     // Write the IDs of the threaded blocks
-    if (not threaded_blocks.empty()) {
+    if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
-            const jitk::LoopB *b = threaded_blocks[i];
-            util::spaces(ss, 4);
-            ss << "const " << writeType(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
-               << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
+        {
+            auto b = &block.getLoop();
+            for (uint64_t i=0; i < thread_stack.size(); ++i) {
+                assert(not block.isInstr());
+                assert(block.getLoop()._block_list.size() == 1);
+                util::spaces(ss, 4);
+                ss << "const " << writeType(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
+                   << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
+                b = &b->_block_list[0].getLoop();
+            }
         }
         ss << "\n";
     }
 
     // Write the block that makes up the body of 'execute()'
-    writeLoopBlock(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+    writeLoopBlock(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
 
     ss << "}\n\n";
 }
@@ -478,15 +482,13 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
                                   bool loop_is_peeled,
-                                  const std::vector<const jitk::LoopB*> &threaded_blocks,
+                                  const std::vector<uint64_t> &thread_stack,
                                   std::stringstream &out) {
     // Write the for-loop header
     std::string itername;
     { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
-    // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
-    if (std::find_if(threaded_blocks.begin(),
-                     threaded_blocks.end(),
-                     [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
+    // Notice that we use find_if() with a lambda function since 'thread_stack' contains pointers not objects
+    if (thread_stack.size() >= static_cast<size_t >(block.rank)) {
         out << "for(" << writeType(bh_type::UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << " = 1; ";
@@ -497,7 +499,6 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
         assert(block._sweeps.size() == 0);
         out << "{ // Threaded block (ID " << itername << ")";
     }
-
     out << "\n";
 }
 

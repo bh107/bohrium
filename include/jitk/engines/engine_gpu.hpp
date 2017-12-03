@@ -59,11 +59,11 @@ public:
     virtual void delBuffer(bh_base* &base) = 0;
     virtual void writeKernel(const Block &block,
                              const SymbolTable &symbols,
-                             const std::vector<const LoopB*> &threaded_blocks,
+                             const std::vector<uint64_t> &thread_stack,
                              std::stringstream &ss) = 0;
     virtual void execute(const std::string &source,
                          const std::vector<bh_base*> &non_temps,
-                         const std::vector<const LoopB*> &threaded_blocks,
+                         const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_view*> &offset_strides,
                          const std::vector<const bh_instruction*> &constants) = 0;
 
@@ -78,7 +78,6 @@ public:
             { "const_as_var",   config.defaultGet<bool>("const_as_var",   true) },
             { "use_volatile",   config.defaultGet<bool>("use_volatile",  false) }
         };
-        const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
 
         // Some statistics
         stat.record(*bhir);
@@ -126,15 +125,25 @@ public:
             const bool kernel_is_computing = not block.isSystemOnly();
 
             // Find the parallel blocks
-            const vector<const jitk::LoopB*> threaded_blocks = find_threaded_blocks(block, stat, parallel_threshold);
+            std::vector<uint64_t> thread_stack;
+            {
+                auto prank = parallel_ranks(block.getLoop());
+                auto b = &block;
+                for (uint64_t rank=0; rank < prank.first; ++rank) {
+                    assert(not b->isInstr());
+                    assert(b->getLoop()._block_list.size() == 1);
+                    thread_stack.push_back(b->getLoop().size);
+                    b = &b->getLoop()._block_list[0];
+                }
+            }
 
             // We might have to offload the execution to the CPU
-            if (threaded_blocks.size() == 0 and kernel_is_computing) {
+            if (thread_stack.empty() and kernel_is_computing) {
                 cpuOffload(comp, bhir, block, symbols);
             } else {
                 // Let's execute the kernel
                 if (kernel_is_computing) {
-                    executeKernel(block, symbols, threaded_blocks);
+                    executeKernel(block, symbols, thread_stack);
                 }
 
                 // Let's copy sync'ed arrays back to the host
@@ -200,7 +209,7 @@ private:
         }
 
         if (&(comp.child) == nullptr) {
-            throw runtime_error("handleExecution(): threaded_blocks cannot be empty when child == NULL!");
+            throw runtime_error("handleExecution(): thread_stack cannot be empty when child == NULL!");
         }
 
         auto toffload = chrono::steady_clock::now();
@@ -226,7 +235,7 @@ private:
 
     void executeKernel(const Block &block,
                        const SymbolTable &symbols,
-                       const std::vector<const LoopB*> &threaded_blocks)
+                       const std::vector<uint64_t> &thread_stack)
     {
         using namespace std;
         // We need a memory buffer on the device for each non-temporary array in the kernel
@@ -245,21 +254,21 @@ private:
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                writeKernel(block, symbols, threaded_blocks, ss);
+                writeKernel(block, symbols, thread_stack, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
                     assert(1 == 2);
                 }
             #endif
-            execute(lookup.first, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
+            execute(lookup.first, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block, symbols, threaded_blocks, ss);
+            writeKernel(block, symbols, thread_stack, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-            execute(source, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
+            execute(source, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
             codegen_cache.insert(std::move(source), { block }, symbols);
         }
     }

@@ -77,7 +77,7 @@ public:
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
                         bool loop_is_peeled,
-                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
 
     // Return a YAML string describing this component

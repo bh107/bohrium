@@ -219,7 +219,7 @@ void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
                                   bool loop_is_peeled,
-                                  const vector<const jitk::LoopB*> &threaded_blocks,
+                                  const vector<uint64_t> &thread_stack,
                                   stringstream &out) {
     // Let's write the OpenMP loop header
     int64_t for_loop_size = block.size;
@@ -231,7 +231,6 @@ void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
     if (for_loop_size > 1) {
         writeHeader(symbols, scope, block, out);
     }
-
     // Write the for-loop header
     string itername;
     { stringstream t; t << "i" << block.rank; itername = t.str(); }

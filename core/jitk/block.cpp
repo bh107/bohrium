@@ -514,37 +514,6 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     return Block(std::move(ret));
 }
 
-pair<vector<const LoopB*>, uint64_t> util_find_threaded_blocks(const LoopB &block) {
-    pair<vector<const LoopB*>, uint64_t> ret;
-
-    // We should search in 'this' block and its sub-blocks
-    vector<const LoopB*> block_list = {&block};
-    block.getAllSubBlocks(block_list);
-
-    // Find threaded blocks
-    constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
-    ret.second = 1;
-    for (const LoopB *b: block_list) {
-        if (b->_sweeps.size() > 0) {
-            break;
-        }
-        const uint64_t thds = b->localThreading();
-        if (thds > 0) {
-            ret.first.push_back(b);
-            ret.second *= thds;
-        }
-        // Multiple blocks or mixing instructions and blocks makes all the following blocks non-threadable
-        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
-            break;
-        }
-        // Too much threading can be a bad thing e.g. OpenCL only supports three dimensions
-        if (ret.first.size() == MAX_NUM_OF_THREADED_BLOCKS) {
-            break;
-        }
-    }
-    return ret;
-}
-
 pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth) {
     assert(max_depth > 0);
     pair<uint64_t, uint64_t> ret = make_pair(0,0);

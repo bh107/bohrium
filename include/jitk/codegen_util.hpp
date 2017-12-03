@@ -139,20 +139,5 @@ void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const 
     }
 }
 
-// Returns the blocks that can be parallelized in 'block' (incl. sub-blocks)
-inline std::vector<const LoopB*> find_threaded_blocks(const Block &block, Statistics &stat, uint64_t parallel_threshold) {
-    std::vector<const LoopB*> threaded_blocks;
-    uint64_t total_threading;
-    tie(threaded_blocks, total_threading) = util_find_threaded_blocks(block.getLoop());
-    if (total_threading < parallel_threshold) {
-        for (const InstrPtr instr: block.getAllInstr()) {
-            if (not bh_opcode_is_system(instr->opcode)) {
-                stat.threading_below_threshold += bh_nelements(instr->operand[0]);
-            }
-        }
-    }
-    return threaded_blocks;
-}
-
 } // jitk
 } // bohrium

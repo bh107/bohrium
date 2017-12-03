@@ -129,7 +129,7 @@ protected:
     void writeLoopBlock(const jitk::SymbolTable &symbols,
                         const jitk::Scope *parent_scope,
                         const jitk::LoopB &block,
-                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        const std::vector<uint64_t> &thread_stack,
                         bool opencl,
                         std::stringstream &out) {
         using namespace std;
@@ -257,7 +257,7 @@ protected:
                         write_instr(peeled_scope, *b.getInstr(), out, opencl);
                     }
                 } else {
-                    writeLoopBlock(symbols, &peeled_scope, b.getLoop(), threaded_blocks, opencl, out);
+                    writeLoopBlock(symbols, &peeled_scope, b.getLoop(), thread_stack, opencl, out);
                 }
             }
             util::spaces(out, 4 + block.rank*4);
@@ -266,7 +266,7 @@ protected:
 
         // Write the for-loop header
         util::spaces(out, 4 + block.rank*4);
-        loopHeadWriter(symbols, scope, block, peel, threaded_blocks, out);
+        loopHeadWriter(symbols, scope, block, peel, thread_stack, out);
 
         // Write temporary and scalar replaced array declarations
         for (const InstrPtr &instr: block.getLocalInstr()) {
@@ -306,7 +306,7 @@ protected:
                         write_instr(scope, *b.getInstr(), out, true);
                     }
                 } else {
-                    writeLoopBlock(symbols, &scope, b.getLoop(), threaded_blocks, opencl, out);
+                    writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
                 }
             }
         } else {
@@ -327,7 +327,7 @@ protected:
                         write_instr(scope, *instr, out);
                     }
                 } else {
-                    writeLoopBlock(symbols, &scope, b.getLoop(), threaded_blocks, opencl, out);
+                    writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
                 }
             }
         }
@@ -349,7 +349,7 @@ protected:
                                 Scope &scope,
                                 const LoopB &block,
                                 bool loop_is_peeled,
-                                const std::vector<const LoopB*> &threaded_blocks,
+                                const std::vector<uint64_t> &thread_stack,
                                 std::stringstream &out) = 0;
 
 private:

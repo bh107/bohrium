@@ -285,10 +285,6 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0)
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
 Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim);
 
-// Returns the blocks that can be parallelized in 'block' (incl. 'block' and its sub-blocks)
-// and the total amount of parallelism (in number of possible parallel threads)
-std::pair<std::vector<const LoopB*>, uint64_t> util_find_threaded_blocks(const LoopB &block);
-
 // Returns the number of ranks with no horizontal dependencies (thus support parallelism)
 // and the total amount of parallelism.
 // Use `max_depth` the limit the search depth (e.g. OpenCL and CUDA only supports parallelism in three dimensions)
