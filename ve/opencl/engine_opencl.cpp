@@ -479,13 +479,28 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   const std::vector<uint64_t> &thread_stack,
                                   std::stringstream &out) {
     // Write the for-loop header
-    std::string itername;
-    { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
+    std::string itername; { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
     if (thread_stack.size() > static_cast<size_t >(block.rank)) {
         assert(block._sweeps.size() == 0);
-        out << "{ // Threaded block (ID " << itername << ")";
+        if (num_threads > 0 and thread_stack[block.rank] > 0) {
+            if (num_threads_round_robin) {
+                out << "for (" << writeType(bh_type::UINT64) << " " << itername << " = g" << block.rank << "; "
+                    << itername << " < " << block.size << "; "
+                    << itername << " += " << thread_stack[block.rank] << ") {";
+            } else {
+                const uint64_t job_size = static_cast<uint64_t>(ceil(block.size / (double)thread_stack[block.rank]));
+                std::string job_start; {
+                    std::stringstream t; t << "(g" << block.rank << " * " << job_size << ")"; job_start = t.str();
+                }
+                out << "for (" << writeType(bh_type::UINT64) << " " << itername << " = " << job_start << "; "
+                    << itername << " < "  << job_start <<  " + " << job_size << " && " << itername << " < " << block.size
+                    << "; ++" << itername << ") {";
+            }
+        } else {
+            out << "{const " << writeType(bh_type::UINT64) << " " << itername << " = g" << block.rank << ";";
+        }
     } else {
-        out << "for(" << writeType(bh_type::UINT64) << " " << itername;
+        out << "for (" << writeType(bh_type::UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << " = 1; ";
         else

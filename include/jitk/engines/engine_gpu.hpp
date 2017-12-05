@@ -42,13 +42,19 @@ public:
     const int platform_no;
     // Record profiling statistics
     const bool prof;
+    // Maximum number of thread to use
+    const uint64_t num_threads;
+    // Maximum number of thread to use
+    const bool num_threads_round_robin;
 
     EngineGPU(const ConfigParser &config, Statistics &stat) :
       Engine(config, stat),
       compile_flg(jitk::expand_compile_cmd(config.defaultGet<std::string>("compiler_flg", ""), "", "", config.file_dir.string())),
       default_device_type(config.defaultGet<std::string>("device_type", "auto")),
       platform_no(config.defaultGet<int>("platform_no", -1)),
-      prof(config.defaultGet<bool>("prof", false)) {
+      prof(config.defaultGet<bool>("prof", false)),
+      num_threads(config.defaultGet<uint64_t>("num_threads", 0)),
+      num_threads_round_robin(config.defaultGet<bool>("num_threads_round_robin", false)){
     }
 
     virtual ~EngineGPU() {}
@@ -128,9 +134,17 @@ public:
             std::vector<uint64_t> thread_stack;
             {
                 uint64_t nranks = parallel_ranks(block.getLoop()).first;
-                auto first_block_list = get_first_loop_blocks(block.getLoop());
-                for (uint64_t i=0; i < nranks; ++i) {
-                    thread_stack.push_back(first_block_list[i]->size);
+                if (num_threads > 0 and nranks > 0) {
+                    uint64_t nthds = static_cast<uint64_t >(block.getLoop().size);
+                    if (nthds > num_threads) {
+                        nthds = num_threads;
+                    }
+                    thread_stack.push_back(nthds);
+                } else {
+                    auto first_block_list = get_first_loop_blocks(block.getLoop());
+                    for (uint64_t i=0; i < nranks; ++i) {
+                         thread_stack.push_back(first_block_list[i]->size);
+                     }
                 }
             }
 
