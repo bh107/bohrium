@@ -457,11 +457,10 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        const auto first_loop_blocks = get_first_loop_blocks(block.getLoop());
         for (unsigned int i=0; i < thread_stack.size(); ++i) {
             util::spaces(ss, 4);
-            ss << "const " << writeType(bh_type::UINT32) << " i" << i << " = get_global_id(" << i << "); "
-               << "if (i" << i << " >= " << first_loop_blocks[i]->size << ") { return; } // Prevent overflow\n";
+            ss << "const " << writeType(bh_type::UINT32) << " g" << i << " = get_global_id(" << i << "); "
+               << "if (g" << i << " >= " << thread_stack[i] << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }

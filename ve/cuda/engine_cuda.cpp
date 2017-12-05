@@ -227,11 +227,10 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        const auto first_loop_blocks = get_first_loop_blocks(block.getLoop());
         for (unsigned int i=0; i < thread_stack.size(); ++i) {
             util::spaces(ss, 4);
             ss << "const " << writeType(bh_type::INT64) << " i" << i << " = " << writeThreadId(i) << "; "
-               << "if (i" << i << " >= " << first_loop_blocks[i]->size << ") { return; } // Prevent overflow\n";
+               << "if (i" << i << " >= " << thread_stack[i] << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
