@@ -42,8 +42,11 @@ public:
     virtual void writeKernel(const std::vector<Block> &block_list,
                              const SymbolTable &symbols,
                              const std::vector<bh_base*> &kernel_temps,
+                             uint64_t codegen_hash,
                              std::stringstream &ss) = 0;
+
     virtual void execute(const std::string &source,
+                         uint64_t codegen_hash,
                          const std::vector<bh_base*> &non_temps,
                          const std::vector<const bh_view*> &offset_strides,
                          const std::vector<const bh_instruction*> &constants) = 0;
@@ -199,7 +202,9 @@ private:
         }
     }
 private:
-    void executeKernel(const std::vector<Block> &block_list, const SymbolTable &symbols, std::vector<bh_base*> kernel_temps) {
+    void executeKernel(const std::vector<Block> &block_list,
+                       const SymbolTable &symbols,
+                       std::vector<bh_base*> kernel_temps) {
         using namespace std;
 
         // Create the constant vector
@@ -210,25 +215,26 @@ private:
         }
 
         const auto lookup = codegen_cache.get(block_list, symbols);
-        if(lookup.second) {
+        if(not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                writeKernel(block_list, symbols, kernel_temps, ss);
+                writeKernel(block_list, symbols, kernel_temps, lookup.second, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
                     assert(1 == 2);
                 }
             #endif
-            execute(lookup.first, symbols.getParams(), symbols.offsetStrideViews(), constants);
+            execute(lookup.first, lookup.second, symbols.getParams(), symbols.offsetStrideViews(), constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block_list, symbols, kernel_temps, ss);
+            writeKernel(block_list, symbols, kernel_temps, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-            execute(source, symbols.getParams(), symbols.offsetStrideViews(), constants);
+
+            execute(source, lookup.second, symbols.getParams(), symbols.offsetStrideViews(), constants);
             codegen_cache.insert(std::move(source), block_list, symbols);
         }
     }

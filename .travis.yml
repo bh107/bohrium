@@ -30,13 +30,15 @@ jobs:
     # Test suite
       env: BH_STACK=openmp EXEC="python2.7 $TEST_RUN"
     - env: BH_STACK=opencl EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=true EXEC="python2.7 $TEST_RUN"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="python2.7 $TEST_RUN"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_RUN"
 #    - env: BH_STACK=proxy_opencl EXEC="bh_proxy_backend -a localhost -p 4200 & python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_!(nobh).py"
     - env: BH_STACK=openmp EXEC="python3.6 $TEST_RUN"
     - env: BH_STACK=opencl EXEC="python3.6 $TEST_RUN"
 
     # Benchmarks
     - env: BH_STACK=openmp EXEC="python2.7 $BENCHMARK_RUN"
+    - env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $BENCHMARK_RUN"
     - env: BH_STACK=opencl EXEC="python2.7 $BENCHMARK_RUN"
     - env: BH_STACK=openmp EXEC="python3.6 $BENCHMARK_RUN"
     - env: BH_STACK=opencl EXEC="python3.6 $BENCHMARK_RUN"

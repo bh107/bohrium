@@ -514,34 +514,37 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     return Block(std::move(ret));
 }
 
-pair<vector<const LoopB*>, uint64_t> util_find_threaded_blocks(const LoopB &block) {
-    pair<vector<const LoopB*>, uint64_t> ret;
-
-    // We should search in 'this' block and its sub-blocks
-    vector<const LoopB*> block_list = {&block};
-    block.getAllSubBlocks(block_list);
-
-    // Find threaded blocks
-    constexpr int MAX_NUM_OF_THREADED_BLOCKS = 3;
-    ret.second = 1;
-    for (const LoopB *b: block_list) {
-        if (b->_sweeps.size() > 0) {
-            break;
+pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth) {
+    assert(max_depth > 0);
+    pair<uint64_t, uint64_t> ret = make_pair(0,0);
+    const uint64_t thds = block.localThreading();
+    --max_depth;
+    if (thds > 0) {
+        if (max_depth > 0) {
+            const size_t nblocks = block.getLocalSubBlocks().size();
+            const size_t ninstr = block.getLocalInstr().size();
+            // Multiple blocks or mixing instructions and blocks makes the sub-blocks non-parallel
+            if (nblocks == 1 and ninstr == 0) {
+                auto sub = parallel_ranks(block._block_list[0].getLoop(), max_depth);
+                ret.first += sub.first;
+                ret.second += sub.second;
+            }
         }
-        const uint64_t thds = b->localThreading();
-        if (thds > 0) {
-            ret.first.push_back(b);
-            ret.second *= thds;
-        }
-        // Multiple blocks or mixing instructions and blocks makes all the following blocks non-threadable
-        if (not (b->getLocalSubBlocks().size() == 1 and b->getLocalInstr().size() == 0)) {
-            break;
-        }
-        // Too much threading can be a bad thing e.g. OpenCL only supports three dimensions
-        if (ret.first.size() == MAX_NUM_OF_THREADED_BLOCKS) {
-            break;
-        }
+        ret.second += thds;
+        ++ret.first;
     }
+    return ret;
+}
+
+void get_first_loop_blocks(const LoopB &block, vector<const LoopB*> &out) {
+    out.push_back(&block);
+    if (not block._block_list.empty() and not block._block_list[0].isInstr()) {
+        get_first_loop_blocks(block._block_list[0].getLoop(), out);
+    }
+}
+vector<const LoopB*> get_first_loop_blocks(const LoopB &block) {
+    vector<const LoopB*> ret;
+    get_first_loop_blocks(block, ret);
     return ret;
 }
 

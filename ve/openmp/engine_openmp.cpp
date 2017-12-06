@@ -103,7 +103,7 @@ EngineOpenMP::~EngineOpenMP() {
     // }
 }
 
-KernelFunction EngineOpenMP::getFunction(const string &source) {
+KernelFunction EngineOpenMP::getFunction(const string &source, const std::string &func_name) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
 
@@ -146,7 +146,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
     // The (clumsy) cast conforms with the ISO C standard and will
     // avoid any compiler warnings.
     dlerror(); // Reset errors
-    *(void **) (&_functions[hash]) = dlsym(lib_handle, "launcher");
+    *(void **) (&_functions[hash]) = dlsym(lib_handle, func_name.c_str());
     const char* dlsym_error = dlerror();
     if (dlsym_error != nullptr) {
         cerr << "Cannot load function launcher(): " << dlsym_error << endl;
@@ -156,9 +156,13 @@ KernelFunction EngineOpenMP::getFunction(const string &source) {
 }
 
 
-void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
+void EngineOpenMP::execute(const std::string &source,
+                           uint64_t codegen_hash,
+                           const std::vector<bh_base*> &non_temps,
                            const std::vector<const bh_view*> &offset_strides,
                            const std::vector<const bh_instruction*> &constants) {
+    // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
+    // corresponds to `source` even if `codegen_hash` is buggy.
     size_t hash = hasher(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
 
@@ -169,8 +173,9 @@ void EngineOpenMP::execute(const std::string &source, const std::vector<bh_base*
 
     // Compile the kernel
     auto tbuild = chrono::steady_clock::now();
-    KernelFunction func = getFunction(source);
-    assert(func != NULL);
+    string func_name; { stringstream t; t << "launcher_" << codegen_hash; func_name = t.str(); }
+    KernelFunction func = getFunction(source, func_name);
+    assert(func != nullptr);
     stat.time_compile += chrono::steady_clock::now() - tbuild;
 
     // Create a 'data_list' of data pointers
@@ -219,7 +224,7 @@ void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
                                   bool loop_is_peeled,
-                                  const vector<const jitk::LoopB*> &threaded_blocks,
+                                  const vector<uint64_t> &thread_stack,
                                   stringstream &out) {
     // Let's write the OpenMP loop header
     int64_t for_loop_size = block.size;
@@ -231,7 +236,6 @@ void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
     if (for_loop_size > 1) {
         writeHeader(symbols, scope, block, out);
     }
-
     // Write the for-loop header
     string itername;
     { stringstream t; t << "i" << block.rank; itername = t.str(); }
@@ -307,6 +311,7 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
 void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
                                const jitk::SymbolTable &symbols,
                                const std::vector<bh_base*> &kernel_temps,
+                               uint64_t codegen_hash,
                                std::stringstream &ss) {
 
     // Write the need includes
@@ -323,7 +328,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "void execute";
+    ss << "void execute_" << codegen_hash;
     writeKernelFunctionArguments(symbols, ss, nullptr);
 
     // Write the block that makes up the body of 'execute()'
@@ -351,7 +356,8 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     // Write the launcher function, which will convert the data_list of void pointers
     // to typed arrays and call the execute function
     {
-        ss << "void launcher(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
+        ss << "void launcher_" << codegen_hash
+           << "(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
         for(size_t i = 0; i < symbols.getParams().size(); ++i) {
             util::spaces(ss, 4);
             bh_base *b = symbols.getParams()[i];
@@ -360,7 +366,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
         }
 
         util::spaces(ss, 4);
-        ss << "execute(";
+        ss << "execute_" << codegen_hash << "(";
 
         // We create the comma separated list of args and saves it in `stmp`
         stringstream stmp;

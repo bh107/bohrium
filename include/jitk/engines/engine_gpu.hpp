@@ -42,13 +42,19 @@ public:
     const int platform_no;
     // Record profiling statistics
     const bool prof;
+    // Maximum number of thread to use
+    const uint64_t num_threads;
+    // Maximum number of thread to use
+    const bool num_threads_round_robin;
 
     EngineGPU(const ConfigParser &config, Statistics &stat) :
       Engine(config, stat),
       compile_flg(jitk::expand_compile_cmd(config.defaultGet<std::string>("compiler_flg", ""), "", "", config.file_dir.string())),
       default_device_type(config.defaultGet<std::string>("device_type", "auto")),
       platform_no(config.defaultGet<int>("platform_no", -1)),
-      prof(config.defaultGet<bool>("prof", false)) {
+      prof(config.defaultGet<bool>("prof", false)),
+      num_threads(config.defaultGet<uint64_t>("num_threads", 0)),
+      num_threads_round_robin(config.defaultGet<bool>("num_threads_round_robin", false)){
     }
 
     virtual ~EngineGPU() {}
@@ -59,11 +65,13 @@ public:
     virtual void delBuffer(bh_base* &base) = 0;
     virtual void writeKernel(const Block &block,
                              const SymbolTable &symbols,
-                             const std::vector<const LoopB*> &threaded_blocks,
+                             const std::vector<uint64_t> &thread_stack,
+                             uint64_t codegen_hash,
                              std::stringstream &ss) = 0;
     virtual void execute(const std::string &source,
+                         uint64_t codegen_hash,
                          const std::vector<bh_base*> &non_temps,
-                         const std::vector<const LoopB*> &threaded_blocks,
+                         const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_view*> &offset_strides,
                          const std::vector<const bh_instruction*> &constants) = 0;
 
@@ -78,7 +86,6 @@ public:
             { "const_as_var",   config.defaultGet<bool>("const_as_var",   true) },
             { "use_volatile",   config.defaultGet<bool>("use_volatile",  false) }
         };
-        const uint64_t parallel_threshold = config.defaultGet<uint64_t>("parallel_threshold", 1000);
 
         // Some statistics
         stat.record(*bhir);
@@ -126,15 +133,30 @@ public:
             const bool kernel_is_computing = not block.isSystemOnly();
 
             // Find the parallel blocks
-            const vector<const jitk::LoopB*> threaded_blocks = find_threaded_blocks(block, stat, parallel_threshold);
+            std::vector<uint64_t> thread_stack;
+            {
+                uint64_t nranks = parallel_ranks(block.getLoop()).first;
+                if (num_threads > 0 and nranks > 0) {
+                    uint64_t nthds = static_cast<uint64_t >(block.getLoop().size);
+                    if (nthds > num_threads) {
+                        nthds = num_threads;
+                    }
+                    thread_stack.push_back(nthds);
+                } else {
+                    auto first_block_list = get_first_loop_blocks(block.getLoop());
+                    for (uint64_t i=0; i < nranks; ++i) {
+                         thread_stack.push_back(first_block_list[i]->size);
+                     }
+                }
+            }
 
             // We might have to offload the execution to the CPU
-            if (threaded_blocks.size() == 0 and kernel_is_computing) {
+            if (thread_stack.empty() and kernel_is_computing) {
                 cpuOffload(comp, bhir, block, symbols);
             } else {
                 // Let's execute the kernel
                 if (kernel_is_computing) {
-                    executeKernel(block, symbols, threaded_blocks);
+                    executeKernel(block, symbols, thread_stack);
                 }
 
                 // Let's copy sync'ed arrays back to the host
@@ -200,7 +222,7 @@ private:
         }
 
         if (&(comp.child) == nullptr) {
-            throw runtime_error("handleExecution(): threaded_blocks cannot be empty when child == NULL!");
+            throw runtime_error("handleExecution(): thread_stack cannot be empty when child == NULL!");
         }
 
         auto toffload = chrono::steady_clock::now();
@@ -226,7 +248,7 @@ private:
 
     void executeKernel(const Block &block,
                        const SymbolTable &symbols,
-                       const std::vector<const LoopB*> &threaded_blocks)
+                       const std::vector<uint64_t> &thread_stack)
     {
         using namespace std;
         // We need a memory buffer on the device for each non-temporary array in the kernel
@@ -241,25 +263,25 @@ private:
         }
 
         const auto lookup = codegen_cache.get({ block }, symbols);
-        if(lookup.second) {
+        if(not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                writeKernel(block, symbols, threaded_blocks, ss);
+                writeKernel(block, symbols, thread_stack, lookup.second, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
                     assert(1 == 2);
                 }
             #endif
-            execute(lookup.first, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
+            execute(lookup.first, lookup.second, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block, symbols, threaded_blocks, ss);
+            writeKernel(block, symbols, thread_stack, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-            execute(source, symbols.getParams(), threaded_blocks, symbols.offsetStrideViews(), constants);
+            execute(source, lookup.second, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
             codegen_cache.insert(std::move(source), { block }, symbols);
         }
     }

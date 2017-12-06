@@ -54,8 +54,8 @@ private:
     const cl_ulong work_group_size_3dx;
     const cl_ulong work_group_size_3dy;
     const cl_ulong work_group_size_3dz;
-    // Returns the global and local work OpenCL ranges based on the 'threaded_blocks'
-    std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
+    // Returns the global and local work OpenCL ranges based on the 'thread_stack'
+    std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<uint64_t> &thread_stack) const;
     // A map of allocated buffers on the device
     std::map<bh_base*, std::unique_ptr<cl::Buffer>> buffers;
     // Return a kernel function based on the given 'source'
@@ -67,8 +67,9 @@ public:
 
     // Execute the 'source'
     void execute(const std::string &source,
+                 uint64_t codegen_hash,
                  const std::vector<bh_base*> &non_temps,
-                 const std::vector<const jitk::LoopB*> &threaded_blocks,
+                 const std::vector<uint64_t> &thread_stack,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants) override;
 
@@ -89,7 +90,8 @@ public:
 
     void writeKernel(const jitk::Block &block,
                      const jitk::SymbolTable &symbols,
-                     const std::vector<const jitk::LoopB*> &threaded_blocks,
+                     const std::vector<uint64_t> &thread_stack,
+                     uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
     // Writes the OpenCL specific for-loop header
@@ -97,7 +99,7 @@ public:
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
                         bool loop_is_peeled,
-                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
 
     // Return a YAML string describing this component

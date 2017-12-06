@@ -104,15 +104,15 @@ size_t block_list_hash(const std::vector<Block> &block_list, const SymbolTable &
 }
 } // Anonymous Namespace
 
-std::pair<std::string, bool> CodegenCache::get(const std::vector<Block> &block_list, const SymbolTable &symbols) {
+std::pair<std::string, uint64_t> CodegenCache::get(const std::vector<Block> &block_list, const SymbolTable &symbols) {
     ++stat.codegen_cache_lookups;
     const size_t lookup_hash = block_list_hash(block_list, symbols);
     auto lookup = _cache.find(lookup_hash);
     if (lookup != _cache.end()) { // Cache hit!
-        return make_pair(lookup->second, true);
+        return make_pair(lookup->second, lookup_hash);
     } else {
         ++stat.codegen_cache_misses;
-        return make_pair("", false);
+        return make_pair("", lookup_hash);
     }
 }
 

@@ -158,7 +158,7 @@ void push_reductions_inwards(vector<Block> &block_list) {
     block_list = ret;
 }
 
-void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint64_t cur_threading) {
+void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
     vector<Block> ret;
 
     for (const Block &block: block_list) {
@@ -178,7 +178,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading, uint
         }
         if (loop._block_list.size() > 1 // We need minimum two blocks (instructions) in order to split!
             and max_nelem > min_threading // Is it even possible to achieve our goal?
-            and util_find_threaded_blocks(loop).second < min_threading-cur_threading) { // Is the goal already achieved?
+            and parallel_ranks(loop).second < min_threading) { // Is the goal already achieved?
 
             for (auto it = loop._block_list.begin(); it != loop._block_list.end(); ++it) {
                 // First we will place all sub-blocks that cannot be threaded in a shared block

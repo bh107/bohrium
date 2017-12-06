@@ -118,23 +118,24 @@ EngineCUDA::~EngineCUDA() {
     }
 }
 
-pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t>> EngineCUDA::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
-    const auto &b = threaded_blocks;
+pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> >
+EngineCUDA::NDRanges(const vector<uint64_t> &thread_stack) const {
+    const auto &b = thread_stack;
     switch (b.size()) {
         case 1: {
-            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]->size);
+            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]);
             return make_pair(make_tuple(gsize_and_lsize.first, 1, 1), make_tuple(gsize_and_lsize.second, 1, 1));
         }
         case 2: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]->size);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]->size);
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]);
             return make_pair(make_tuple(gsize_and_lsize_x.first, gsize_and_lsize_y.first, 1),
                              make_tuple(gsize_and_lsize_x.second, gsize_and_lsize_y.second, 1));
         }
         case 3: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]->size);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]->size);
-            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]->size);
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]);
+            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]);
             return make_pair(make_tuple(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
                              make_tuple(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }
@@ -143,7 +144,7 @@ pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t>> E
     }
 }
 
-CUfunction EngineCUDA::getFunction(const string &source) {
+CUfunction EngineCUDA::getFunction(const string &source, const std::string &func_name) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
 
@@ -192,7 +193,7 @@ CUfunction EngineCUDA::getFunction(const string &source) {
     }
 
     CUfunction program;
-    err = cuModuleGetFunction(&program, module, "execute");
+    err = cuModuleGetFunction(&program, module, func_name.c_str());
     if (err != CUDA_SUCCESS) {
         const char *err_name, *err_desc;
         cuGetErrorName(err, &err_name);
@@ -207,7 +208,8 @@ CUfunction EngineCUDA::getFunction(const string &source) {
 
 void EngineCUDA::writeKernel(const jitk::Block &block,
                              const jitk::SymbolTable &symbols,
-                             const std::vector<const jitk::LoopB*> &threaded_blocks,
+                             const std::vector<uint64_t> &thread_stack,
+                             uint64_t codegen_hash,
                              std::stringstream &ss) {
     // Write the need includes
     ss << "#include <kernel_dependencies/complex_cuda.h>\n";
@@ -218,35 +220,37 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "extern \"C\" __global__ void execute";
+    ss << "extern \"C\" __global__ void execute_" << codegen_hash;
     writeKernelFunctionArguments(symbols, ss, nullptr);
     ss << " {\n";
 
     // Write the IDs of the threaded blocks
-    if (not threaded_blocks.empty()) {
+    if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
-            const jitk::LoopB *b = threaded_blocks[i];
+        for (unsigned int i=0; i < thread_stack.size(); ++i) {
             util::spaces(ss, 4);
-            ss << "const " << writeType(bh_type::INT64) << " i" << b->rank << " = " << writeThreadId(i) << "; "
-               << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
+            ss << "const " << writeType(bh_type::INT64) << " i" << i << " = " << writeThreadId(i) << "; "
+               << "if (i" << i << " >= " << thread_stack[i] << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
-    writeLoopBlock(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+    writeLoopBlock(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
     ss << "}\n\n";
 }
 
-void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
-                         const vector<const jitk::LoopB*> &threaded_blocks,
+void EngineCUDA::execute(const std::string &source,
+                         uint64_t codegen_hash,
+                         const std::vector<bh_base*> &non_temps,
+                         const vector<uint64_t> &thread_stack,
                          const vector<const bh_view*> &offset_strides,
                          const vector<const bh_instruction*> &constants) {
     size_t hash = hasher(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();
-    CUfunction program = getFunction(source);
+    string func_name; { stringstream t; t << "execute_" << codegen_hash; func_name = t.str(); }
+    CUfunction program = getFunction(source, func_name);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the CUDA kernel
@@ -266,16 +270,12 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
     auto exec_start = chrono::steady_clock::now();
 
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
-    tie(blocks, threads) = NDRanges(threaded_blocks);
+    tie(blocks, threads) = NDRanges(thread_stack);
 
-    check_cuda_errors(
-        cuLaunchKernel(
-            program,
-            get<0>(blocks),  get<1>(blocks),  get<2>(blocks),  // NxNxN blocks
-            get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
-            0, 0, &args[0], 0
-        )
-    );
+    check_cuda_errors(cuLaunchKernel(program,
+                                     get<0>(blocks), get<1>(blocks), get<2>(blocks),  // NxNxN blocks
+                                     get<0>(threads), get<1>(threads), get<2>(threads),  // NxNxN threads
+                                     0, 0, &args[0], 0));
     check_cuda_errors(cuCtxSynchronize());
 
     auto texec = chrono::steady_clock::now() - exec_start;
@@ -288,6 +288,7 @@ void EngineCUDA::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
 }
 
 std::string EngineCUDA::info() const {
+
     char device_name[1000];
     cuDeviceGetName(device_name, 1000, device);
     int major = 0, minor = 0;

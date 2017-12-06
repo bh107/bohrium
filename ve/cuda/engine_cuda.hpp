@@ -80,10 +80,10 @@ private:
 
     // Returns the block and thread sizes based on the 'threaded_blocks'
     std::pair<std::tuple<uint32_t, uint32_t, uint32_t>, std::tuple<uint32_t, uint32_t, uint32_t>>
-        NDRanges(const std::vector<const jitk::LoopB*> &threaded_blocks) const;
+        NDRanges(const std::vector<uint64_t> &thread_stack) const;
 
     // Return a kernel function based on the given 'source'
-    CUfunction getFunction(const std::string &source);
+    CUfunction getFunction(const std::string &source, const std::string &func_name);
 
 public:
     EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
@@ -91,14 +91,16 @@ public:
 
     // Execute the 'source'
     void execute(const std::string &source,
+                 uint64_t codegen_hash,
                  const std::vector<bh_base*> &non_temps,
-                 const std::vector<const jitk::LoopB*> &threaded_blocks,
+                 const std::vector<uint64_t> &thread_stack,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
     void writeKernel(const jitk::Block &block,
                      const jitk::SymbolTable &symbols,
-                     const std::vector<const jitk::LoopB*> &threaded_blocks,
+                     const std::vector<uint64_t> &thread_stack,
+                     uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
     // Delete a buffer
@@ -208,24 +210,21 @@ public:
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
                         bool loop_is_peeled,
-                        const std::vector<const jitk::LoopB*> &threaded_blocks,
+                        const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) {
         // Write the for-loop header
         std::string itername;
         { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
-        // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
-        if (std::find_if(threaded_blocks.begin(),
-                         threaded_blocks.end(),
-                         [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
+        if (thread_stack.size() > static_cast<uint64_t >(block.rank)) {
+            assert(block._sweeps.size() == 0);
+            out << "{ // Threaded block (ID " << itername << ")";
+        } else {
             out << "for(" << writeType(bh_type::INT64) << " " << itername;
             if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
                 out << " = 1; ";
             else
                 out << " = 0; ";
             out << itername << " < " << block.size << "; ++" << itername << ") {";
-        } else {
-            assert(block._sweeps.size() == 0);
-            out << "{ // Threaded block (ID " << itername << ")";
         }
         out << "\n";
     }

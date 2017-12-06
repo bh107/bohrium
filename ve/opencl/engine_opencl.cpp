@@ -88,12 +88,12 @@ static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     EngineGPU(config, stat),
-    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
+    work_group_size_1dx(config.defaultGet<cl_ulong>("work_group_size_1dx", 128)),
+    work_group_size_2dx(config.defaultGet<cl_ulong>("work_group_size_2dx", 32)),
+    work_group_size_2dy(config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
+    work_group_size_3dx(config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
+    work_group_size_3dy(config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
+    work_group_size_3dz(config.defaultGet<cl_ulong>("work_group_size_3dz", 2))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -110,7 +110,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
                 platform = pform;
                 device = getDevice(platform, default_device_type);
                 found = true;
-            } catch(cl::Error err) {
+            } catch(const cl::Error &err) {
                 // We try next platform
             }
         }
@@ -195,23 +195,23 @@ EngineOpenCL::~EngineOpenCL() {
     }
 }
 
-pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::LoopB*> &threaded_blocks) const {
-    const auto &b = threaded_blocks;
+pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<uint64_t> &thread_stack) const {
+    const auto &b = thread_stack;
     switch (b.size()) {
         case 1: {
-            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]->size);
+            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]);
             return make_pair(cl::NDRange(gsize_and_lsize.first), cl::NDRange(gsize_and_lsize.second));
         }
         case 2: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]->size);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]->size);
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]);
             return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first),
                              cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second));
         }
         case 3: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]->size);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]->size);
-            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]->size);
+            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]);
+            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]);
+            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]);
             return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
                              cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }
@@ -219,7 +219,6 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<const jitk::L
             throw runtime_error("NDRanges: maximum of three dimensions!");
     }
 }
-
 
 cl::Program EngineOpenCL::getFunction(const string &source) {
     size_t hash = hasher(source);
@@ -282,19 +281,23 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
 }
 
 void EngineOpenCL::execute(const std::string &source,
+                           uint64_t codegen_hash,
                            const std::vector<bh_base*> &non_temps,
-                           const vector<const jitk::LoopB*> &threaded_blocks,
+                           const vector<uint64_t> &thread_stack,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
+    // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
+    // corresponds to `source` even if `codegen_hash` is buggy.
     size_t hash = hasher(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
 
     auto tcompile = chrono::steady_clock::now();
+    string func_name; { stringstream t; t << "execute_" << codegen_hash; func_name = t.str(); }
     cl::Program program = getFunction(source);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the OpenCL kernel
-    cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
+    cl::Kernel opencl_kernel = cl::Kernel(program, func_name.c_str());
 
     cl_uint i = 0;
     for (bh_base *base: non_temps) { // NB: the iteration order matters!
@@ -360,7 +363,7 @@ void EngineOpenCL::execute(const std::string &source,
         }
     }
 
-    const auto ranges = NDRanges(threaded_blocks);
+    const auto ranges = NDRanges(thread_stack);
     auto start_exec = chrono::steady_clock::now();
     queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, ranges.first, ranges.second);
     queue.finish();
@@ -438,7 +441,8 @@ void EngineOpenCL::delBuffer(bh_base* &base) {
 
 void EngineOpenCL::writeKernel(const jitk::Block &block,
                                const jitk::SymbolTable &symbols,
-                               const vector<const jitk::LoopB*> &threaded_blocks,
+                               const vector<uint64_t> &thread_stack,
+                               uint64_t codegen_hash,
                                stringstream &ss) {
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -450,25 +454,24 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "__kernel void execute";
+    ss << "__kernel void execute_" << codegen_hash;
     writeKernelFunctionArguments(symbols, ss, "__global");
     ss << " {\n";
 
     // Write the IDs of the threaded blocks
-    if (not threaded_blocks.empty()) {
+    if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        for (unsigned int i=0; i < threaded_blocks.size(); ++i) {
-            const jitk::LoopB *b = threaded_blocks[i];
+        for (unsigned int i=0; i < thread_stack.size(); ++i) {
             util::spaces(ss, 4);
-            ss << "const " << writeType(bh_type::UINT32) << " i" << b->rank << " = get_global_id(" << i << "); "
-               << "if (i" << b->rank << " >= " << b->size << ") { return; } // Prevent overflow\n";
+            ss << "const " << writeType(bh_type::UINT32) << " g" << i << " = get_global_id(" << i << "); "
+               << "if (g" << i << " >= " << thread_stack[i] << ") { return; } // Prevent overflow\n";
         }
         ss << "\n";
     }
 
     // Write the block that makes up the body of 'execute()'
-    writeLoopBlock(symbols, nullptr, block.getLoop(), threaded_blocks, true, ss);
+    writeLoopBlock(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
 
     ss << "}\n\n";
 }
@@ -478,26 +481,37 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
                                   bool loop_is_peeled,
-                                  const std::vector<const jitk::LoopB*> &threaded_blocks,
+                                  const std::vector<uint64_t> &thread_stack,
                                   std::stringstream &out) {
     // Write the for-loop header
-    std::string itername;
-    { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
-    // Notice that we use find_if() with a lambda function since 'threaded_blocks' contains pointers not objects
-    if (std::find_if(threaded_blocks.begin(),
-                     threaded_blocks.end(),
-                     [&block](const jitk::LoopB* b){ return *b == block; }) == threaded_blocks.end()) {
-        out << "for(" << writeType(bh_type::UINT64) << " " << itername;
+    std::string itername; { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
+    if (thread_stack.size() > static_cast<size_t >(block.rank)) {
+        assert(block._sweeps.size() == 0);
+        if (num_threads > 0 and thread_stack[block.rank] > 0) {
+            if (num_threads_round_robin) {
+                out << "for (" << writeType(bh_type::UINT64) << " " << itername << " = g" << block.rank << "; "
+                    << itername << " < " << block.size << "; "
+                    << itername << " += " << thread_stack[block.rank] << ") {";
+            } else {
+                const uint64_t job_size = static_cast<uint64_t>(ceil(block.size / (double)thread_stack[block.rank]));
+                std::string job_start; {
+                    std::stringstream t; t << "(g" << block.rank << " * " << job_size << ")"; job_start = t.str();
+                }
+                out << "for (" << writeType(bh_type::UINT64) << " " << itername << " = " << job_start << "; "
+                    << itername << " < "  << job_start <<  " + " << job_size << " && " << itername << " < " << block.size
+                    << "; ++" << itername << ") {";
+            }
+        } else {
+            out << "{const " << writeType(bh_type::UINT64) << " " << itername << " = g" << block.rank << ";";
+        }
+    } else {
+        out << "for (" << writeType(bh_type::UINT64) << " " << itername;
         if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
             out << " = 1; ";
         else
             out << " = 0; ";
         out << itername << " < " << block.size << "; ++" << itername << ") {";
-    } else {
-        assert(block._sweeps.size() == 0);
-        out << "{ // Threaded block (ID " << itername << ")";
     }
-
     out << "\n";
 }
 
