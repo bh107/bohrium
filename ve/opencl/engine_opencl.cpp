@@ -281,19 +281,23 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
 }
 
 void EngineOpenCL::execute(const std::string &source,
+                           uint64_t codegen_hash,
                            const std::vector<bh_base*> &non_temps,
                            const vector<uint64_t> &thread_stack,
                            const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
+    // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
+    // corresponds to `source` even if `codegen_hash` is buggy.
     size_t hash = hasher(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
 
     auto tcompile = chrono::steady_clock::now();
+    string func_name; { stringstream t; t << "execute_" << codegen_hash; func_name = t.str(); }
     cl::Program program = getFunction(source);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the OpenCL kernel
-    cl::Kernel opencl_kernel = cl::Kernel(program, "execute");
+    cl::Kernel opencl_kernel = cl::Kernel(program, func_name.c_str());
 
     cl_uint i = 0;
     for (bh_base *base: non_temps) { // NB: the iteration order matters!
@@ -438,6 +442,7 @@ void EngineOpenCL::delBuffer(bh_base* &base) {
 void EngineOpenCL::writeKernel(const jitk::Block &block,
                                const jitk::SymbolTable &symbols,
                                const vector<uint64_t> &thread_stack,
+                               uint64_t codegen_hash,
                                stringstream &ss) {
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
@@ -449,7 +454,7 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "__kernel void execute";
+    ss << "__kernel void execute_" << codegen_hash;
     writeKernelFunctionArguments(symbols, ss, "__global");
     ss << " {\n";
 

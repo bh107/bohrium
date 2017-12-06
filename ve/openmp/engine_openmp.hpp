@@ -47,8 +47,8 @@ private:
     // The compiler to use when function doesn't exist
     const jitk::Compiler compiler;
 
-    // Return a kernel function based on the given 'source'
-    KernelFunction getFunction(const std::string &source);
+    // Return a kernel function based on the given 'source' and the name of the kernel function
+    KernelFunction getFunction(const std::string &source, const std::string &func_name);
 
 public:
     EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
@@ -56,6 +56,7 @@ public:
     ~EngineOpenMP();
 
     void execute(const std::string &source,
+                 uint64_t codegen_hash,
                  const std::vector<bh_base*> &non_temps,
                  const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants) override;
@@ -65,6 +66,7 @@ public:
     void writeKernel(const std::vector<jitk::Block> &block_list,
                      const jitk::SymbolTable &symbols,
                      const std::vector<bh_base*> &kernel_temps,
+                     uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
      // Writing the OpenMP header, which include "parallel for" and "simd"

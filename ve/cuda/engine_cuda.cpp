@@ -144,7 +144,7 @@ EngineCUDA::NDRanges(const vector<uint64_t> &thread_stack) const {
     }
 }
 
-CUfunction EngineCUDA::getFunction(const string &source) {
+CUfunction EngineCUDA::getFunction(const string &source, const std::string &func_name) {
     size_t hash = hasher(source);
     ++stat.kernel_cache_lookups;
 
@@ -193,7 +193,7 @@ CUfunction EngineCUDA::getFunction(const string &source) {
     }
 
     CUfunction program;
-    err = cuModuleGetFunction(&program, module, "execute");
+    err = cuModuleGetFunction(&program, module, func_name.c_str());
     if (err != CUDA_SUCCESS) {
         const char *err_name, *err_desc;
         cuGetErrorName(err, &err_name);
@@ -209,6 +209,7 @@ CUfunction EngineCUDA::getFunction(const string &source) {
 void EngineCUDA::writeKernel(const jitk::Block &block,
                              const jitk::SymbolTable &symbols,
                              const std::vector<uint64_t> &thread_stack,
+                             uint64_t codegen_hash,
                              std::stringstream &ss) {
     // Write the need includes
     ss << "#include <kernel_dependencies/complex_cuda.h>\n";
@@ -219,7 +220,7 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     ss << "\n";
 
     // Write the header of the execute function
-    ss << "extern \"C\" __global__ void execute";
+    ss << "extern \"C\" __global__ void execute_" << codegen_hash;
     writeKernelFunctionArguments(symbols, ss, nullptr);
     ss << " {\n";
 
@@ -238,7 +239,9 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     ss << "}\n\n";
 }
 
-void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> &non_temps,
+void EngineCUDA::execute(const std::string &source,
+                         uint64_t codegen_hash,
+                         const std::vector<bh_base*> &non_temps,
                          const vector<uint64_t> &thread_stack,
                          const vector<const bh_view*> &offset_strides,
                          const vector<const bh_instruction*> &constants) {
@@ -246,7 +249,8 @@ void EngineCUDA::execute(const std::string &source, const std::vector<bh_base*> 
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();
-    CUfunction program = getFunction(source);
+    string func_name; { stringstream t; t << "execute_" << codegen_hash; func_name = t.str(); }
+    CUfunction program = getFunction(source, func_name);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
     // Let's execute the CUDA kernel

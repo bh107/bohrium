@@ -66,8 +66,10 @@ public:
     virtual void writeKernel(const Block &block,
                              const SymbolTable &symbols,
                              const std::vector<uint64_t> &thread_stack,
+                             uint64_t codegen_hash,
                              std::stringstream &ss) = 0;
     virtual void execute(const std::string &source,
+                         uint64_t codegen_hash,
                          const std::vector<bh_base*> &non_temps,
                          const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_view*> &offset_strides,
@@ -261,25 +263,25 @@ private:
         }
 
         const auto lookup = codegen_cache.get({ block }, symbols);
-        if(lookup.second) {
+        if(not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                writeKernel(block, symbols, thread_stack, ss);
+                writeKernel(block, symbols, thread_stack, lookup.second, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
                     assert(1 == 2);
                 }
             #endif
-            execute(lookup.first, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
+            execute(lookup.first, lookup.second, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block, symbols, thread_stack, ss);
+            writeKernel(block, symbols, thread_stack, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-            execute(source, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
+            execute(source, lookup.second, symbols.getParams(), thread_stack, symbols.offsetStrideViews(), constants);
             codegen_cache.insert(std::move(source), { block }, symbols);
         }
     }

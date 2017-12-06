@@ -83,7 +83,7 @@ private:
         NDRanges(const std::vector<uint64_t> &thread_stack) const;
 
     // Return a kernel function based on the given 'source'
-    CUfunction getFunction(const std::string &source);
+    CUfunction getFunction(const std::string &source, const std::string &func_name);
 
 public:
     EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
@@ -91,6 +91,7 @@ public:
 
     // Execute the 'source'
     void execute(const std::string &source,
+                 uint64_t codegen_hash,
                  const std::vector<bh_base*> &non_temps,
                  const std::vector<uint64_t> &thread_stack,
                  const std::vector<const bh_view*> &offset_strides,
@@ -99,6 +100,7 @@ public:
     void writeKernel(const jitk::Block &block,
                      const jitk::SymbolTable &symbols,
                      const std::vector<uint64_t> &thread_stack,
+                     uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
     // Delete a buffer

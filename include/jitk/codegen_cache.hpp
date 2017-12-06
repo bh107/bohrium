@@ -40,7 +40,9 @@ public:
     CodegenCache(jitk::Statistics &stat) : stat(stat) {}
 
     // Check the cache for a source code that matches 'instr_list'
-    std::pair<std::string, bool> get(const std::vector<Block> &block_list, const SymbolTable &symbols);
+    // Returns the source code and the hash of the source.
+    // On cache misses, the returned source is an empty string.
+    std::pair<std::string, uint64_t> get(const std::vector<Block> &block_list, const SymbolTable &symbols);
 
     // Insert 'source' as a hit when requesting 'block_list'
     void insert(std::string source, const std::vector<Block> &block_list, const SymbolTable &symbols);
