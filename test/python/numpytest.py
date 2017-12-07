@@ -221,6 +221,13 @@ class BenchHelper:
         This function is used as a means to control til --dtype argument
         passed to the benchmark script and provide a uuid for benchmark output.
         """
+        # Lets make sure that benchpress is installed
+        try:
+            import benchpress
+        except ImportError:
+            print("ERROR: benchpress is not installed -- skipping test.")
+            raise StopIteration()
+
         self.uuid = str(uuid.uuid4())
 
         for dtype in self.dtypes:
@@ -228,7 +235,6 @@ class BenchHelper:
                 {0:bh.empty(self.size, bohrium=False, dtype=dtype)},
                 "%s: " % str(dtype)
             )
-
 
     def get_meta(self, arrays):
         """ Determine target and dtype based on meta-data from pseudo_init. """
@@ -240,7 +246,6 @@ class BenchHelper:
         dtype = str(arrays[0].dtype)
 
         return (target, dtype)
-
 
     def run(self, pseudo_input):
         """
@@ -257,8 +262,9 @@ class BenchHelper:
         )
 
         # Execute the benchmark
+        import benchpress
+        benchmark_path = benchpress.suite_util.benchmark_path(self.script, "python_numpy", ".py")
         sys_exec = [sys.executable] if target.lower() == "none" else [sys.executable, "-m", "bohrium"]
-        benchmark_path = os.sep.join(["/opt/python/cp27-cp27mu/lib/python2.7/site-packages/benchpress/benchmarks/", self.script, "python_numpy", self.script + ".py"])
 
         # Setup command
         cmd = sys_exec + [
