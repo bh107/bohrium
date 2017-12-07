@@ -591,14 +591,19 @@ def _handle__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
     """
 
     if method == '__call__' and ufunc.__name__ in UFUNCS:
-        return UFUNCS[ufunc.__name__](*inputs, **kwargs)
+        # if `out` is set, it must be a single Bohrium array
+        if 'out' not in kwargs or len(kwargs['out']) == 1 and bhary.check(kwargs['out'][0]):
+            return UFUNCS[ufunc.__name__](*inputs, **kwargs)
+        else:
+            warnings.warn("Bohrium does not support regular numpy arrays as output, it will be handled by "
+                          "the original NumPy.", UserWarning, 1)
     else:
         warnings.warn("Bohrium does not support ufunc `%s` it will be handled by "
                       "the original NumPy." % ufunc.__name__, UserWarning, 1)
-        np_inputs = []
-        for i in inputs:
-            if bhary.check(i):
-                np_inputs.append(i.copy2numpy())
-            else:
-                np_inputs.append(i)
-        return getattr(np, ufunc.__name__)(*np_inputs, **kwargs)
+    np_inputs = []
+    for i in inputs:
+        if bhary.check(i):
+            np_inputs.append(i.copy2numpy())
+        else:
+            np_inputs.append(i)
+    return getattr(np, ufunc.__name__)(*np_inputs, **kwargs)
