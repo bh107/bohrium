@@ -18,6 +18,7 @@ ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
 RUN bash /bh/build.sh 2.7
 RUN bash /bh/wheel.sh 2.7
 RUN pip install /bh/b2.7/dist/*
+RUN pip install benchpress
 
 # Build Bohrium with python3.6
 ENV PATH /opt/python/cp36-cp36m/bin/:$PATH
