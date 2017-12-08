@@ -49,17 +49,6 @@ class test_rosenbrock(BenchHelper, numpytest):
     def test_rosenbrock(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
-"""
-Cannot test:
-
-    convolve.py
-    convolve_2d.py
-    convolve_3d.py
-    convolve_separate_std.py
-
-Due to errors.
-"""
-
 class test_gameoflife(BenchHelper, numpytest):
 
     def __init__(self):
@@ -306,22 +295,6 @@ class test_sor(BenchHelper, numpytest):
         self.inputfn    = None
 
     def test_sor(self, pseudo_arrays):
-        return self.run(pseudo_arrays)
-
-class test_synth(BenchHelper, numpytest):
-
-    def __init__(self):
-        numpytest.__init__(self)
-        self.config['maxerror'] = 0.00001
-        self.size = 1000
-
-        # Benchmark parameters
-        self.script     = "synth"
-        self.dtypes     = [bh.float32, bh.float64]
-        self.sizetxt    = "1000*100"
-        self.inputfn    = None
-
-    def test_synth(self, pseudo_arrays):
         return self.run(pseudo_arrays)
 
 """

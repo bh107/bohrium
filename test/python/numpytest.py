@@ -223,15 +223,8 @@ class BenchHelper:
         """
         # Lets make sure that benchpress is installed
         try:
-            p = subprocess.Popen(
-                ['bp-info', '--benchmarks'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True
-            )
-            out, err = p.communicate()
-            rc = p.returncode
-        except OSError:
+            import benchpress
+        except ImportError:
             print("ERROR: benchpress is not installed -- skipping test.")
             raise StopIteration()
 
@@ -243,7 +236,6 @@ class BenchHelper:
                 "%s: " % str(dtype)
             )
 
-
     def get_meta(self, arrays):
         """ Determine target and dtype based on meta-data from pseudo_init. """
 
@@ -254,7 +246,6 @@ class BenchHelper:
         dtype = str(arrays[0].dtype)
 
         return (target, dtype)
-
 
     def run(self, pseudo_input):
         """
@@ -271,15 +262,9 @@ class BenchHelper:
         )
 
         # Execute the benchmark
-        benchmarks_dir, err = subprocess.Popen(
-            ['bp-info', '--benchmarks'],
-            stdout  = subprocess.PIPE,
-            stderr  = subprocess.PIPE,
-            universal_newlines=True
-        ).communicate()
-
+        import benchpress
+        benchmark_path = benchpress.suite_util.benchmark_path(self.script, "python_numpy", ".py")
         sys_exec = [sys.executable] if target.lower() == "none" else [sys.executable, "-m", "bohrium"]
-        benchmark_path = os.sep.join([benchmarks_dir.strip(), self.script, "python_numpy", self.script + ".py"])
 
         # Setup command
         cmd = sys_exec + [
