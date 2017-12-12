@@ -263,7 +263,7 @@ setup(
     keywords='Bohrium, bh107, Python, C, CUDA, OpenCL',
 
     package_dir={'bohrium': args_extra.npbackend_dir},
-    packages=['bohrium', 'bohrium.target', 'bohrium.nobh'],
+    packages=['bohrium', 'bohrium.nobh'],
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:

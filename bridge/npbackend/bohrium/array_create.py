@@ -8,7 +8,7 @@ from . import bhary
 from .bhary import fix_biclass_wrapper
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in, dtype_support
-from . import target
+from . import target_bhc
 
 
 def _warn_dtype(dtype, stacklevel):
@@ -651,7 +651,7 @@ def simply_range(size, dtype=numpy.uint64):
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
 
-    ret = target.arange(size, A.dtype)
+    ret = target_bhc.arange(size, A.dtype)
     A = bhary.new((size,), A.dtype, ret)
 
     if not dtype_equal(dtype, A.dtype):

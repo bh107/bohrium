@@ -16,14 +16,14 @@ from . import _info
 from ._util import dtype_equal
 from .bhary import get_bhc, get_base, fix_biclass_wrapper, get_cdata
 from . import bhary
-from . import target
+from . import target_bhc
 from .array_manipulation import broadcast_arrays, flatten
 
 @fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
     # We need this, or else we need every combination of types in the opcodes.json
     assert in1.dtype == in2.dtype
-    target.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
+    target_bhc.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
 
 def setitem(ary, loc, value):
     """
@@ -105,7 +105,7 @@ def assign(ary, out):
                 # Convert the NumPy array to bohrium
                 ary = array_create.array(ary)
             ary = get_bhc(ary)
-        target.ufunc(UFUNCS["identity"], out, ary)
+        target_bhc.ufunc(UFUNCS["identity"], out, ary)
     else:
         if bhary.check(ary):
             if "BH_SYNC_WARN" in os.environ:
@@ -219,9 +219,9 @@ class Ufunc(object):
         # Some simple optimizations
         if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
             # Replace power of 2 with a multiplication
-            target.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
+            target_bhc.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
         else:
-            target.ufunc(self, *bhcs)
+            target_bhc.ufunc(self, *bhcs)
 
         if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
@@ -368,7 +368,7 @@ class Ufunc(object):
             if ary.shape[axis] == 0:
                 tmp[...] = getattr(getattr(np, self.info['name']), "identity")
             else:
-                target.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
+                target_bhc.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
 
             if out is not None:
                 out[...] = tmp
@@ -488,7 +488,7 @@ class Ufunc(object):
         if out is None:
             out = array_create.empty(ary.shape, dtype=ary.dtype)
 
-        target.accumulate(self, get_bhc(out), get_bhc(ary), axis)
+        target_bhc.accumulate(self, get_bhc(out), get_bhc(ary), axis)
         return out
 
 

@@ -7,7 +7,7 @@ import numpy_force as numpy
 from . import bhary
 from ._util import is_scalar
 from .bhary import fix_biclass_wrapper, get_bhc
-from . import target
+from . import target_bhc
 from . import array_create
 from . import array_manipulation
 from . import ufuncs
@@ -47,7 +47,7 @@ def gather(ary, indexes):
     if ary.size == 0 or indexes.size == 0:
         return array_create.array([])
 
-    target.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes))
+    target_bhc.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes))
     return ret
 
 
@@ -239,7 +239,7 @@ def scatter(ary, indexes, values):
 
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
     flat = array_manipulation.flatten(ary, always_copy=True)
-    target.scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes))
+    target_bhc.scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes))
     ary[...] = flat.reshape(ary.shape)
 
 
@@ -419,7 +419,7 @@ def cond_scatter(ary, indexes, values, mask):
 
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
     flat = array_manipulation.flatten(ary, always_copy=True)
-    target.cond_scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes), get_bhc(mask))
+    target_bhc.cond_scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes), get_bhc(mask))
     ary[...] = flat.reshape(ary.shape)
 
 

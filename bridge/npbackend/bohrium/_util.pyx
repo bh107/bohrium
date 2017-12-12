@@ -26,9 +26,9 @@ def flush(ary=None):
     """Flush the delayed operations for Bohrium execution."""
 
     from .bhary import check
-    from . import target
+    from .target_bhc import runtime_flush
     if ary is None or check(ary):
-        target.runtime_flush()
+        runtime_flush()
 
 def dtype_of(obj):
     """Returns the dtype of 'obj'."""

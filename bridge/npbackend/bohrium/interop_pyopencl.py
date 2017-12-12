@@ -3,7 +3,7 @@ Interop PyOpenCL
 ~~~~~~~~~~~~~~~~
 """
 from .bhary import get_bhc, get_base
-from .target import get_data_pointer, getDeviceContext, set_data_pointer
+from .target_bhc import get_data_pointer, getDeviceContext, set_data_pointer
 from .backend_messaging import runtime_info
 
 _opencl_is_in_stack = None
