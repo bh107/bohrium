@@ -213,7 +213,7 @@ setup(
     platforms='Linux, OSX',
     cmdclass={'build': CustomBuild, 'build_ext': build_ext},
     package_dir={'bohrium': srcpath('bohrium')},
-    packages=['bohrium', 'bohrium.target', 'bohrium.nobh'],
+    packages=['bohrium', 'bohrium.nobh'],
     ext_package='bohrium',
     ext_modules=[
         Extension(

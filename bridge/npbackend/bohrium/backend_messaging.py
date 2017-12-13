@@ -3,7 +3,7 @@ Send and receive a message through the Bohrium component stack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
-from .target import message as _backend_msg
+from .target_bhc import message as _backend_msg
 
 
 def statistic_enable_and_reset():

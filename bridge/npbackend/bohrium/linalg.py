@@ -15,7 +15,6 @@ from numpy_force.linalg import *
 
 from . import bhary
 from . import ufuncs
-from . import target
 from . import array_create
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper

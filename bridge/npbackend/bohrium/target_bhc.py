@@ -9,8 +9,7 @@ import atexit
 import os
 import sys
 
-from .._util import dtype_name
-from . import interface
+from _util import dtype_name
 
 
 class BhcAPI:
@@ -22,9 +21,9 @@ class BhcAPI:
 
     def __init__(self):
         def get_bhc_api():
-            bhc_py_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "bhc.py")
+            bhc_py_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bhc.py")
             # We need to import '_bhc' manually into bhc_api since SWIG does know about the 'bohrium' package
-            from .. import _bhc
+            from . import _bhc
             sys.modules['_bhc'] = _bhc
             try:
                 bhc_api = {"__file__": bhc_py_path, "sys": sys}
@@ -53,11 +52,16 @@ class BhcAPI:
 bhc = BhcAPI()
 
 
-class Base(interface.Base):
+class Base(object):
     """ Base array handle """
 
     def __init__(self, size, dtype, bhc_obj=None):
-        super(Base, self).__init__(size, dtype)
+        # Total number of elements
+        self.size = size
+        # Data type
+        self.dtype = dtype
+        # Data type name
+        self.dtype_name = dtype_name(dtype)
         if size == 0:
             return
 
@@ -72,13 +76,26 @@ class Base(interface.Base):
         bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
 
 
-class View(interface.View):
+class View(object):
     """ Array view handle """
 
     def __init__(self, ndim, start, shape, strides, base):
-        super(View, self).__init__(ndim, start, shape, strides, base)
+        # Number of dimensions
+        self.ndim = ndim
+        # Tuple of dimension sizes
+        self.shape = shape
+        # The base array this view refers to
+        self.base = base
+        # Data type name
+        self.dtype_name = base.dtype_name
+        # Data type
+        self.dtype = base.dtype
+        # Offset from base (in bytes)
+        self.start = start * base.dtype.itemsize
+        # Tuple of strides (in bytes)
+        self.strides = [x * base.dtype.itemsize for x in strides]
+        # Total size
         self.size = functools.reduce(operator.mul, shape, 1)
-
         if self.size == 0:
             return
         self.bhc_obj = bhc.call_single_dtype("view", self.dtype_name, base.bhc_obj, ndim, start, shape, strides)

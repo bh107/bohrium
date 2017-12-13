@@ -5,7 +5,7 @@ Bohrium Loop
 
 import sys
 import numpy_force as numpy
-from .target import runtime_flush, runtime_flush_count, runtime_flush_and_repeat, runtime_sync
+from .target_bhc import runtime_flush, runtime_flush_count, runtime_flush_and_repeat, runtime_sync
 from . import bhary
 
 
