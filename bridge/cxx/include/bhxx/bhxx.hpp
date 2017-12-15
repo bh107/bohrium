@@ -23,6 +23,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <bhxx/BhArray.hpp>
+#include <bhxx/BhBase.hpp>
+#include <bhxx/BhInstruction.hpp>
+#include <bhxx/functor.hpp>
 #include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
 #include <bhxx/util.hpp>
+#include <bhxx/SVector.hpp>

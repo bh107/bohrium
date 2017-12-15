@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "BhArray.hpp"
-#include <bhxx/functor.hpp>
+#include "functor.hpp"
 
 namespace bhxx {
 

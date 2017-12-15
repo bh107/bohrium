@@ -152,6 +152,7 @@ add_subdirectory(extmethods/opencv)
 add_subdirectory(bridge/cxx)
 add_subdirectory(bridge/c)
 add_subdirectory(bridge/npbackend)
+add_subdirectory(bridge/ruby)
 
 add_subdirectory(test)
 

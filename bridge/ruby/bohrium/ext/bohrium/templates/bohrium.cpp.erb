@@ -1,0 +1,142 @@
+#include "bhxx/bhxx.hpp"
+#include "bhxx/BhBase.hpp"
+#include "bhxx/SVector.hpp"
+#include <ruby.h>
+
+/**
+    Encapsulating struct for our Bohrium array and Ruby type.
+*/
+struct bhDataObj {
+    ruby_value_type type;
+    void *ary;
+};
+
+#include "util.hpp"
+#include "class.hpp"
+#include "array.hpp"
+
+#define F(f) reinterpret_cast<VALUE (*)(...)>(f)
+#define DEBUG(msg) std::cout << "### " << msg << std::endl;
+
+using namespace std;
+
+/**
+    Returns the element at index `i` of `ary` with type T.
+
+    @param ary The array to index.
+    @param i The index.
+    @return An integer or float depending on the array.
+*/
+template <typename T>
+T _get(VALUE ary, unsigned long i) {
+    VALUE val = rb_ary_entry(ary, i);
+    switch (TYPE(val)) {
+        case T_FIXNUM:
+            return NUM2INT(val);
+        case T_FLOAT:
+            return NUM2DBL(val);
+        case T_TRUE:
+        case T_FALSE:
+            if (val == Qtrue) {
+                return true;
+            } else if (val == Qfalse) {
+                return false;
+            }
+        default:
+            rb_raise(rb_eRuntimeError, "Wrong type for array given.");
+    }
+}
+
+/**
+    Loops through a Ruby array and initializes a Bohrium array with the same data.
+
+    @param ary The array to use for initialization.
+    @param d The data object to put the initialized array into.
+*/
+template <typename T>
+void _initialize(VALUE ary, bhDataObj* d) {
+    unsigned long size = rb_array_len(ary);
+    vector<T> data_array;
+    for(unsigned long i = 0; i < size; ++i) {
+        data_array.push_back(_get<T>(ary, i));
+    }
+    shared_ptr<bhxx::BhBase> _base = make_shared<bhxx::BhBase>(data_array.begin(), data_array.end());
+    d->ary = ((void*) new bhxx::BhArray<T>(_base, {size}));
+}
+
+/**
+    The BhArray#new method.
+
+    This method creates a Bohrium array with the same data as the given Ruby array.
+
+    @param self The object being initialized.
+    @param ary The array given as argument.
+    @return The new object.
+*/
+VALUE bh_array_m_initialize(VALUE self, VALUE ary) {
+    if (rb_check_array_type(ary) == Qnil) {
+        rb_raise(rb_eRuntimeError, "Data given is not an array.");
+    }
+
+    bhDataObj *d;
+    Data_Get_Struct(self, bhDataObj, d);
+
+    // Look at the type of the first element.
+    // All elements are assumes to be of the same type.
+    switch (TYPE(rb_ary_entry(ary, 0))) {
+        case T_FIXNUM:
+            _initialize<int64_t>(ary, d);
+            d->type = T_FIXNUM;
+            break;
+        case T_FLOAT:
+            _initialize<float>(ary, d);
+            d->type = T_FLOAT;
+            break;
+        case T_TRUE:
+        case T_FALSE:
+            _initialize<bool>(ary, d);
+            d->type = T_TRUE;
+            break;
+        default: {
+            rb_raise(rb_eRuntimeError, "Data type not supported yet.");
+            break;
+        }
+    }
+
+    return self;
+}
+
+extern "C" void Init_bohrium() {
+    VALUE cBhArray;
+
+    // Define 'BhArray' class and #initialize method
+    cBhArray = rb_define_class("BhArray", rb_cObject);
+    rb_define_alloc_func(cBhArray, bh_array_alloc);
+    rb_define_method(cBhArray, "initialize", F(bh_array_m_initialize), 1);
+
+    // Class methods
+    rb_define_singleton_method(cBhArray, "ones",  F(bh_array_m_ones),  -1);
+    rb_define_singleton_method(cBhArray, "zeros", F(bh_array_m_zeros), -1);
+
+    // Bohrium specific methods
+    <%
+    {
+        "add"      => "+",
+        "subtract" => "-",
+        "multiply" => "*",
+        "divide"   => "/",
+        "power"    => "**"
+    }.each do |name, sym|
+    %>
+    rb_define_method(cBhArray, "<%= name %>",  F(bh_array_m_<%= name%>),      1);
+    rb_define_method(cBhArray, "<%= name %>!", F(bh_array_m_<%= name%>_bang), 1);
+    rb_define_method(cBhArray, "<%= sym %>",   F(bh_array_m_<%= name%>),      1);
+    <% end %>
+
+    // Utility methods
+    rb_define_method(cBhArray, "to_s",    F(bh_array_m_to_s),   0);
+    rb_define_method(cBhArray, "print",   F(bh_array_m_print),  0);
+    rb_define_method(cBhArray, "to_ary",  F(bh_array_m_to_ary), 0);
+    rb_define_method(cBhArray, "to_a",    F(bh_array_m_to_ary), 0);
+    rb_define_method(cBhArray, "inspect", F(bh_array_m_to_ary), 0);
+}
