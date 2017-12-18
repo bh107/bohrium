@@ -38,7 +38,7 @@ if(RUBY_FOUND)
         )
         # Install the gem
         EXECUTE_PROCESS(
-            COMMAND gem install bohrium-0.1.0.gem -- --with-bohrium-include=${CMAKE_INSTALL_PREFIX}/include/bohrium --with-bhxx-dir=${CMAKE_INSTALL_PREFIX}
+            COMMAND gem install bohrium-0.1.0.gem --user-install -- --with-bohrium-include=${CMAKE_INSTALL_PREFIX}/include/bohrium --with-bhxx-dir=${CMAKE_INSTALL_PREFIX}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
     ")
