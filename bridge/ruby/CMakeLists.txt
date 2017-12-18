@@ -15,7 +15,7 @@ if(RUBY_FOUND)
     # Make sure `bundle` is up-to-date
     add_custom_target(
         bundle ALL
-        COMMAND bundle install
+        COMMAND bundle install --path vendor/bundle
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bohrium
     )
 
