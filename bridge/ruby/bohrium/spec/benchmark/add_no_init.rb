@@ -1,7 +1,7 @@
 require "benchmark"
 
 n = 100_000_000
-puts "ADD"
+puts "ADD NO INIT"
 puts "n = #{n}"
 
 ARY1 = [2] * n

@@ -52,9 +52,17 @@ Benchmark.bm(20) do |measure|
 
   measure.report("matrix") do
     require "matrix"
+    class Matrix
+      def element_wise(operator, other)
+        Matrix.build(row_size, column_size) do |row, col|
+          self[row, col].send(operator, other[row, col])
+        end
+      end
+    end
+
     m1 = Matrix[[2] * n]
     m2 = Matrix[[3] * n]
-    m1 * m2
+    m1.element_wise(:*, m2)
   end
 
   measure.report("bohrium") do
