@@ -1,0 +1,96 @@
+#pragma once
+
+using namespace std;
+
+<%
+# TODO: Read from opcodes.json instead.
+{
+    "cos"     => { "float" => ["T_FLOAT"] },
+    "sin"     => { "float" => ["T_FLOAT"] },
+    "tan"     => { "float" => ["T_FLOAT"] },
+    "cosh"    => { "float" => ["T_FLOAT"] },
+    "sinh"    => { "float" => ["T_FLOAT"] },
+    "tanh"    => { "float" => ["T_FLOAT"] },
+    "arccos"  => { "float" => ["T_FLOAT"] },
+    "arcsin"  => { "float" => ["T_FLOAT"] },
+    "arctan"  => { "float" => ["T_FLOAT"] },
+    "arccosh" => { "float" => ["T_FLOAT"] },
+    "arcsinh" => { "float" => ["T_FLOAT"] },
+    "arctanh" => { "float" => ["T_FLOAT"] },
+    "exp"     => { "float" => ["T_FLOAT"] },
+    "exp2"    => { "float" => ["T_FLOAT"] }
+}.each do |m, types| %>
+/**
+    <%= m.capitalize %> on a Bohrium array.
+
+    @param result The resulting array.
+    @param selfObj The calling object.
+    @param otherObj The other object.
+*/
+template <typename T>
+inline void _<%= m %>(bhDataObj* result, bhDataObj* selfObj) {
+    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+
+    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(selfArray.shape);
+    result->ary = ((void*) bhary);
+
+    bhxx::<%= m %>(*bhary, selfArray);
+}
+
+template <typename T>
+inline void _<%= m %>_bang(bhDataObj* selfObj) {
+    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+
+    bhxx::<%= m %>(selfArray, selfArray);
+}
+
+/**
+    <%= m.capitalize %> on a Bohrium array.
+
+    @param self The calling object.
+    @param other The other object.
+    @returns The resulting array.
+*/
+VALUE bh_array_m_<%= m %>(VALUE self) {
+    bhDataObj *selfObj;
+    Data_Get_Struct(self, bhDataObj, selfObj);
+
+    VALUE res = bh_array_alloc(RBASIC_CLASS(self));
+    bhDataObj *result;
+    Data_Get_Struct(res, bhDataObj, result);
+    result->type = selfObj->type;
+
+    switch (selfObj->type) {
+        <% types.each do |type, ruby_types| %>
+        <% ruby_types.each do |ruby_type| %>
+        case <%= ruby_type %>:
+        <% end %>
+            _<%= m %><<%= type %>>(result, selfObj);
+            break;
+        <% end %>
+        default:
+            rb_raise(rb_eRuntimeError, "Wrong type.");
+    }
+
+    return res;
+}
+
+VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
+    bhDataObj *selfObj;
+    Data_Get_Struct(self, bhDataObj, selfObj);
+
+    switch (selfObj->type) {
+        <% types.each do |type, ruby_types| %>
+        <% ruby_types.each do |ruby_type| %>
+        case <%= ruby_type %>:
+        <% end %>
+            _<%= m %><<%= type %>>(selfObj, selfObj);
+            break;
+        <% end %>
+        default:
+            rb_raise(rb_eRuntimeError, "Wrong type.");
+    }
+
+    return self;
+}
+<% end %>

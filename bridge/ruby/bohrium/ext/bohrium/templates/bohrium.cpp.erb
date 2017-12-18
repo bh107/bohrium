@@ -13,7 +13,8 @@ struct bhDataObj {
 
 #include "util.hpp"
 #include "class.hpp"
-#include "array.hpp"
+#include "arithmetic.hpp"
+#include "trigonometry.hpp"
 
 #define F(f) reinterpret_cast<VALUE (*)(...)>(f)
 #define DEBUG(msg) std::cout << "### " << msg << std::endl;
@@ -141,6 +142,28 @@ extern "C" void Init_bohrium() {
     %>
     rb_define_method(cBhArray, "<%= name %>",  F(bh_array_m_<%= name%>),      1);
     rb_define_method(cBhArray, "<%= name %>!", F(bh_array_m_<%= name%>_bang), 1);
+    <% end %>
+
+    <%
+    [
+        "cos",
+        "sin",
+        "tan",
+        "cosh",
+        "sinh",
+        "tanh",
+        "arccos",
+        "arcsin",
+        "arctan",
+        "arccosh",
+        "arcsinh",
+        "arctanh",
+        "exp",
+        "exp2"
+    ].each do |name|
+    %>
+    rb_define_method(cBhArray, "<%= name %>",  F(bh_array_m_<%= name%>),      0);
+    rb_define_method(cBhArray, "<%= name %>!", F(bh_array_m_<%= name%>_bang), 0);
     <% end %>
 
     // Utility methods

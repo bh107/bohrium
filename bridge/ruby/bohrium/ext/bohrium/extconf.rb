@@ -11,7 +11,7 @@ abort "Couldn't find 'bhxx'"         unless have_library("bhxx")
 $CPPFLAGS << " -std=c++11"
 $LDFLAGS << " -lboost_system -lbhxx -Wl,-rpath,#{bhxxlib}"
 
-%w(bohrium.cpp array.hpp).each do |fname|
+%w(bohrium.cpp arithmetic.hpp trigonometry.hpp).each do |fname|
   filename = File.expand_path("#{__dir__}/templates/#{fname}.erb")
   erb = ERB.new(File.read(filename))
   erb.filename = filename
