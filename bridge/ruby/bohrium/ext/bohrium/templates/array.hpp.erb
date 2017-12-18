@@ -9,7 +9,9 @@ using namespace std;
     "subtract" => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
     "multiply" => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"], "bool" => ["T_TRUE", "T_FALSE"] },
     "divide"   => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
-    "power"    => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  }
+    "power"    => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
+    "maximum"  => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
+    "minimum"  => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  }
 }.each do |m, types| %>
 /**
     <%= m.capitalize %> two Bohrium arrays of type T.
