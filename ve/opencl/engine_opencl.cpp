@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <iostream>
-#include <boost/functional/hash.hpp>
 
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
@@ -83,8 +82,6 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
 }
 
 namespace bohrium {
-
-static boost::hash<string> hasher;
 
 EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
     EngineGPU(config, stat),
@@ -153,7 +150,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
        << platform.getInfo<CL_PLATFORM_NAME>()
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
-    compilation_hash = hasher(ss.str());
+    compilation_hash = util::hash(ss.str());
 }
 
 EngineOpenCL::~EngineOpenCL() {
@@ -221,7 +218,7 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<uint64_t> &th
 }
 
 cl::Program EngineOpenCL::getFunction(const string &source) {
-    size_t hash = hasher(source);
+    size_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
     // Do we have the program already?
@@ -288,7 +285,7 @@ void EngineOpenCL::execute(const std::string &source,
                            const vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
-    size_t hash = hasher(source);
+    size_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
 
     auto tcompile = chrono::steady_clock::now();

@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <string>
 #include <map>
-#include <boost/functional/hash.hpp>
 #include <iomanip>
 #include <dlfcn.h>
 #include <jitk/codegen_util.hpp>
@@ -42,13 +41,11 @@ namespace fs = boost::filesystem;
 
 namespace bohrium {
 
-static boost::hash<string> hasher;
-
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
     EngineCPU(config, stat),
     compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string())
 {
-    compilation_hash = hasher(compiler.cmd_template);
+    compilation_hash = util::hash(compiler.cmd_template);
 }
 
 EngineOpenMP::~EngineOpenMP() {
@@ -104,7 +101,7 @@ EngineOpenMP::~EngineOpenMP() {
 }
 
 KernelFunction EngineOpenMP::getFunction(const string &source, const std::string &func_name) {
-    size_t hash = hasher(source);
+    size_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
     // Do we have the function compiled and ready already?
@@ -163,7 +160,7 @@ void EngineOpenMP::execute(const std::string &source,
                            const std::vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
-    size_t hash = hasher(source);
+    size_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
 
     // Make sure all arrays are allocated

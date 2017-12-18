@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <iostream>
-#include <boost/functional/hash.hpp>
 
 #include <jitk/fuser_cache.hpp>
 
@@ -55,7 +54,6 @@ public:
 };
 
 
-boost::hash<string> hasher;
 constexpr size_t SEP_INSTR = SIZE_MAX;
 constexpr size_t SEP_OP = SIZE_MAX - 1;
 constexpr size_t SEP_SHAPE = SIZE_MAX - 2;
@@ -101,7 +99,7 @@ size_t hash_instr_list(const vector<bh_instruction *> &instr_list) {
     for (const bh_instruction *instr: instr_list) {
         hash_instr(*instr, views, ss);
     }
-    return hasher(ss.str());
+    return util::hash(ss.str());
 }
 
 void update_with_origin(bh_view &view, const bh_view &origin) {

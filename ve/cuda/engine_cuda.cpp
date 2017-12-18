@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <iostream>
-#include <boost/functional/hash.hpp>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <iomanip>
@@ -34,8 +33,6 @@ using namespace std;
 namespace fs = boost::filesystem;
 
 namespace bohrium {
-
-static boost::hash<string> hasher;
 
 EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     EngineGPU(config, stat),
@@ -73,7 +70,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     }
 
     // Write the compilation hash
-    compilation_hash = hasher(info());
+    compilation_hash = util::hash(info());
 
     // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
     string compiler_cmd = config.get<string>("compiler_cmd");
@@ -145,7 +142,7 @@ EngineCUDA::NDRanges(const vector<uint64_t> &thread_stack) const {
 }
 
 CUfunction EngineCUDA::getFunction(const string &source, const std::string &func_name) {
-    size_t hash = hasher(source);
+    size_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
     // Do we have the program already?
@@ -245,7 +242,7 @@ void EngineCUDA::execute(const std::string &source,
                          const vector<uint64_t> &thread_stack,
                          const vector<const bh_view*> &offset_strides,
                          const vector<const bh_instruction*> &constants) {
-    size_t hash = hasher(source);
+    size_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();

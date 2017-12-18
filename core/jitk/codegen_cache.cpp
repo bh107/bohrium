@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <iostream>
-#include <boost/functional/hash.hpp>
 
 #include <jitk/codegen_cache.hpp>
 
@@ -30,8 +29,6 @@ namespace bohrium {
 namespace jitk {
 
 namespace {
-
-boost::hash<string> hasher;
 
 /* The View hash consists of the following fields:
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
@@ -100,7 +97,7 @@ size_t block_list_hash(const std::vector<Block> &block_list, const SymbolTable &
         hash_stream(b, symbols, ss);
         ss << "<block>";
     }
-    return hasher(ss.str());
+    return util::hash(ss.str());
 }
 } // Anonymous Namespace
 

@@ -77,4 +77,9 @@ bool exist_linearly(container_type &container, element_type &element) {
 // Remove all files in `dir` but keep some of the newest files.
 void remove_old_files(const boost::filesystem::path &dir, int64_t num_of_newest_to_keep);
 
+// Return the hash of the string `s`.
+// This hash is persistent between different compilers and architectures (incl. 32 and 64-bit)
+uint64_t hash(const char* s, uint64_t seed = 0);
+uint64_t hash(const std::string &s, uint64_t seed = 0);
+
 } // util
