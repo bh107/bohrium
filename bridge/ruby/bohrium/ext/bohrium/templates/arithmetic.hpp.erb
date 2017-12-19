@@ -2,7 +2,39 @@
 
 using namespace std;
 
+inline bool is_constant(VALUE val) {
+    switch (TYPE(val)) {
+        case T_DATA:
+            return false;
+            break;
+        case T_FIXNUM:
+        case T_BIGNUM:
+        case T_FLOAT:
+        case T_TRUE:
+        case T_FALSE:
+            return true;
+            break;
+        default:
+            rb_raise(rb_eRuntimeError, "Invalid type.");
+    }
+}
+
 <%
+def type_converter(type)
+    case type
+    when "T_BIGNUM"
+    when "T_FIXNUM"
+        return "NUM2INT"
+    when "T_FLOAT"
+        return "NUM2DBL"
+    when "T_TRUE"
+    when "T_FALSE"
+        return ""
+    else
+        fail "Wrong type! Got #{type}."
+    end
+end
+
 # TODO: Read from opcodes.json instead.
 {
     "add"      => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"], "bool" => ["T_TRUE", "T_FALSE"] },
@@ -39,6 +71,23 @@ inline void _<%= m %>_bang(bhDataObj* selfObj, bhDataObj* otherObj) {
     bhxx::<%= m %>(selfArray, selfArray, otherArray);
 }
 
+template <typename T>
+inline void _<%= m %>_constant(bhDataObj* result, bhDataObj* selfObj, T value) {
+    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+
+    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(selfArray.shape);
+    result->ary = ((void*) bhary);
+
+    bhxx::<%= m %>(*bhary, selfArray, value);
+}
+
+template <typename T>
+inline void _<%= m %>_constant_bang(bhDataObj* selfObj, T value) {
+    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+
+    bhxx::<%= m %>(selfArray, selfArray, value);
+}
+
 /**
     <%= m.capitalize %> two Bohrium arrays.
 
@@ -49,9 +98,6 @@ inline void _<%= m %>_bang(bhDataObj* selfObj, bhDataObj* otherObj) {
 VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
     bhDataObj *selfObj, *otherObj;
     Data_Get_Struct(self, bhDataObj, selfObj);
-    Data_Get_Struct(other, bhDataObj, otherObj);
-
-    assert(selfObj->type == otherObj->type);
 
     VALUE res = bh_array_alloc(RBASIC_CLASS(self));
     bhDataObj *result;
@@ -61,10 +107,16 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
     switch (selfObj->type) {
         <% types.each do |type, ruby_types| %>
         <% ruby_types.each do |ruby_type| %>
-        case <%= ruby_type %>:
-        <% end %>
-            _<%= m %><<%= type %>>(result, selfObj, otherObj);
-            break;
+            case <%= ruby_type %>:
+                if (is_constant(other)) {
+                    _<%= m %>_constant<<%= type %>>(result, selfObj, <%= type_converter(ruby_type) %>(other));
+                } else {
+                    Data_Get_Struct(other, bhDataObj, otherObj);
+                    assert(selfObj->type == otherObj->type);
+                    _<%= m %><<%= type %>>(result, selfObj, otherObj);
+                }
+                break;
+            <% end %>
         <% end %>
         default:
             rb_raise(rb_eRuntimeError, "Wrong type.");
@@ -76,17 +128,20 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
 VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
     bhDataObj *selfObj, *otherObj;
     Data_Get_Struct(self, bhDataObj, selfObj);
-    Data_Get_Struct(other, bhDataObj, otherObj);
-
-    assert(selfObj->type == otherObj->type);
 
     switch (selfObj->type) {
         <% types.each do |type, ruby_types| %>
-        <% ruby_types.each do |ruby_type| %>
-        case <%= ruby_type %>:
-        <% end %>
-            _<%= m %><<%= type %>>(selfObj, selfObj, otherObj);
-            break;
+            <% ruby_types.each do |ruby_type| %>
+            case <%= ruby_type %>:
+                if (is_constant(other)) {
+                    _<%= m %>_constant_bang<<%= type %>>(selfObj, <%= type_converter(ruby_type) %>(other));
+                } else {
+                    Data_Get_Struct(other, bhDataObj, otherObj);
+                    assert(selfObj->type == otherObj->type);
+                    _<%= m %>_bang<<%= type %>>(selfObj, otherObj);
+                }
+                break;
+            <% end %>
         <% end %>
         default:
             rb_raise(rb_eRuntimeError, "Wrong type.");
