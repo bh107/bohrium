@@ -63,7 +63,7 @@ void _initialize(VALUE ary, bhDataObj* d) {
         data_array.push_back(_get<T>(ary, i));
     }
     shared_ptr<bhxx::BhBase> _base = make_shared<bhxx::BhBase>(data_array.begin(), data_array.end());
-    d->ary = ((void*) new bhxx::BhArray<T>(_base, {size}));
+    d->ary = ((void*) new bhxx::BhArray<T>(_base, {size, 1}));
 }
 
 /**

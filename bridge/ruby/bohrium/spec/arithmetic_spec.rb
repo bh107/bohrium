@@ -41,6 +41,17 @@ describe BhArray do
         expect((@a + 1).to_ary).to eq([2, 3, 4])
       end
     end
+
+    context "given two arrays created differently" do
+      before do
+        @a = BhArray.new([1, 2, 3])
+        @b = BhArray.ones(3, 1, 1)
+      end
+
+      it "finds the sum" do
+        expect((@a + @b).to_ary).to eq([2, 3, 4])
+      end
+    end
   end
 
   describe "#subtract" do
