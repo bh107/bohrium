@@ -134,3 +134,32 @@ VALUE bh_array_m_to_ary(VALUE self) {
 
     return rb_ary;
 }
+
+/**
+    Returns the number of elements in the array.
+
+    @param self The calling object.
+    @return Number of elements.
+*/
+VALUE bh_array_m_size(VALUE self) {
+    bhDataObj *dataObj;
+    Data_Get_Struct(self, bhDataObj, dataObj);
+    return unwrap<int64_t>(dataObj).base->nelem;
+}
+
+/**
+    Returns the shape of the array.
+
+    @param self The calling object.
+    @return Shape of the array as a Ruby array.
+*/
+VALUE bh_array_m_shape(VALUE self) {
+    bhDataObj *dataObj;
+    Data_Get_Struct(self, bhDataObj, dataObj);
+    VALUE rb_ary = rb_ary_new();
+    bhxx::Shape s = unwrap<int64_t>(dataObj).shape;
+    for(size_t i : s) {
+        rb_ary_push(rb_ary, INT2NUM(i));
+    }
+    return rb_ary;
+}

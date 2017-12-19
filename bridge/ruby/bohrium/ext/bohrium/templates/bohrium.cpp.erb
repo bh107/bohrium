@@ -151,6 +151,8 @@ extern "C" void Init_bohrium() {
     // Utility methods
     rb_define_method(cBhArray, "[]",      F(bh_array_m_add),    1);
     rb_define_method(cBhArray, "to_s",    F(bh_array_m_to_s),   0);
+    rb_define_method(cBhArray, "size",    F(bh_array_m_size),   0);
+    rb_define_method(cBhArray, "shape",   F(bh_array_m_shape),  0);
     rb_define_method(cBhArray, "print",   F(bh_array_m_print),  0);
     rb_define_method(cBhArray, "to_ary",  F(bh_array_m_to_ary), 0);
     rb_define_method(cBhArray, "to_a",    F(bh_array_m_to_ary), 0);
