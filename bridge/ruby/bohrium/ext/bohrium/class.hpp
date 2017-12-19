@@ -27,7 +27,7 @@ void _identity(bhDataObj *result, unsigned long width, unsigned long height, T v
     @param klass The class we are defining on.
     @return The created array.
 */
-VALUE bh_array_m_ones(int argc, VALUE *argv, VALUE klass) {
+VALUE bh_array_s_ones(int argc, VALUE *argv, VALUE klass) {
     unsigned long x = 1, y = 1;
 
     VALUE res = bh_array_alloc(klass);
@@ -44,7 +44,12 @@ VALUE bh_array_m_ones(int argc, VALUE *argv, VALUE klass) {
             case T_FLOAT:
                 _identity(result, x, y, (float) NUM2DBL(argv[2]), T_FLOAT);
                 break;
-            // TODO: Add T_TRUE and T_FALSE (Booleans)
+            case T_TRUE:
+                _identity(result, x, y, true, T_TRUE);
+                break;
+            case T_FALSE:
+                _identity(result, x, y, false, T_FALSE);
+                break;
             default:
                 rb_raise(rb_eRuntimeError, "Wrong type for array given.");
         }
@@ -63,9 +68,9 @@ VALUE bh_array_m_ones(int argc, VALUE *argv, VALUE klass) {
     @param klass The class we are defining on.
     @return The created array.
 */
-VALUE bh_array_m_zeros(int argc, VALUE *argv, VALUE klass) {
+VALUE bh_array_s_zeros(int argc, VALUE *argv, VALUE klass) {
                      argv[2] = INT2NUM(0);   // Force 'value' to 0
     if (argc <= 1) { argv[1] = INT2NUM(1); } // Force 'y' to 1, if not given
     if (argc <= 0) { argv[0] = INT2NUM(1); } // Force 'x' to 1, if not given
-    return bh_array_m_ones(3, argv, klass);
+    return bh_array_s_ones(3, argv, klass);
 }

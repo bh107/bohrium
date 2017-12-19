@@ -58,6 +58,7 @@ template <typename T>
 void _initialize(VALUE ary, bhDataObj* d) {
     unsigned long size = rb_array_len(ary);
     vector<T> data_array;
+    data_array.reserve(size);
     for(unsigned long i = 0; i < size; ++i) {
         data_array.push_back(_get<T>(ary, i));
     }
@@ -116,8 +117,8 @@ extern "C" void Init_bohrium() {
     rb_define_method(cBhArray, "initialize", F(bh_array_m_initialize), 1);
 
     // Class methods
-    rb_define_singleton_method(cBhArray, "ones",  F(bh_array_m_ones),  -1);
-    rb_define_singleton_method(cBhArray, "zeros", F(bh_array_m_zeros), -1);
+    rb_define_singleton_method(cBhArray, "ones",  F(bh_array_s_ones),  -1);
+    rb_define_singleton_method(cBhArray, "zeros", F(bh_array_s_zeros), -1);
 
     // Bohrium specific methods
     <%

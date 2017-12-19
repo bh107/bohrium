@@ -106,7 +106,7 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
 
     switch (selfObj->type) {
         <% types.each do |type, ruby_types| %>
-        <% ruby_types.each do |ruby_type| %>
+            <% ruby_types.each do |ruby_type| %>
             case <%= ruby_type %>:
                 if (is_constant(other)) {
                     _<%= m %>_constant<<%= type %>>(result, selfObj, <%= type_converter(ruby_type) %>(other));
@@ -119,7 +119,7 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
             <% end %>
         <% end %>
         default:
-            rb_raise(rb_eRuntimeError, "Wrong type.");
+            rb_raise(rb_eRuntimeError, "Wrong type for '<%= m %>'.");
     }
 
     return res;
@@ -144,7 +144,7 @@ VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
             <% end %>
         <% end %>
         default:
-            rb_raise(rb_eRuntimeError, "Wrong type.");
+            rb_raise(rb_eRuntimeError, "Wrong type for '<%= m %>!'.");
     }
 
     return self;

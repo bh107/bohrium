@@ -8,14 +8,20 @@ abort "Couldn't find C++ std"        unless have_library("stdc++")
 abort "Couldn't find 'boost_system'" unless have_library("boost_system")
 abort "Couldn't find 'bhxx'"         unless have_library("bhxx")
 
+# If we have OpenMP, use it.
+if have_library("omp")
+  $CPPFLAGS << " -fopenmp=libomp"
+  $LDFLAGS << " -lomp"
+end
+
 $CPPFLAGS << " -std=c++11"
 $LDFLAGS << " -lboost_system -lbhxx -Wl,-rpath,#{bhxxlib}"
 
-%w(bohrium.cpp arithmetic.hpp trigonometry.hpp).each do |fname|
-  filename = File.expand_path("#{__dir__}/templates/#{fname}.erb")
-  erb = ERB.new(File.read(filename))
-  erb.filename = filename
-  File.open(File.expand_path("#{__dir__}/#{fname}"), "w") do |f|
+Dir[File.expand_path("#{__dir__}/templates/*.erb")].each do |fname|
+  erb = ERB.new(File.read(fname))
+  erb.filename = fname
+  new_fname = File.basename(fname, File.extname(fname))
+  File.open(File.expand_path("#{__dir__}/#{new_fname}"), "w") do |f|
     f.write(erb.result)
   end
 end
