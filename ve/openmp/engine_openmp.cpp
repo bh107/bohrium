@@ -101,7 +101,7 @@ EngineOpenMP::~EngineOpenMP() {
 }
 
 KernelFunction EngineOpenMP::getFunction(const string &source, const std::string &func_name) {
-    size_t hash = util::hash(source);
+    uint64_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
     // Do we have the function compiled and ready already?
@@ -160,7 +160,7 @@ void EngineOpenMP::execute(const std::string &source,
                            const std::vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
-    size_t hash = util::hash(source);
+    uint64_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
 
     // Make sure all arrays are allocated

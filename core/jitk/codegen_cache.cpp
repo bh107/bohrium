@@ -34,7 +34,7 @@ namespace {
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
  */
 void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstream &ss) {
-    ss << "dtype: " << static_cast<size_t>(view.base->type);
+    ss << "dtype: " << static_cast<uint32_t>(view.base->type);
     ss << "baseid: " << symbols.baseID(view.base);
 
     if (symbols.strides_as_var) {
@@ -65,7 +65,7 @@ void hash_stream(const bh_instruction &instr, const SymbolTable &symbols, std::s
             } else {
                 ss << "const: " << instr.constant;
             }
-            ss << "const dtype: " << static_cast<size_t>(instr.constant.type);
+            ss << "const dtype: " << static_cast<uint32_t >(instr.constant.type);
         } else {
             hash_stream(op, symbols,  ss);
         }
@@ -91,7 +91,7 @@ void hash_stream(const Block &block, const SymbolTable &symbols, std::stringstre
 /* The Block list hash consists of the following fields:
  * <block_rank><SEP_BLOCK>
  */
-size_t block_list_hash(const std::vector<Block> &block_list, const SymbolTable &symbols) {
+uint64_t block_list_hash(const std::vector<Block> &block_list, const SymbolTable &symbols) {
     stringstream ss;
     for (const Block &b: block_list) {
         hash_stream(b, symbols, ss);
@@ -103,7 +103,7 @@ size_t block_list_hash(const std::vector<Block> &block_list, const SymbolTable &
 
 std::pair<std::string, uint64_t> CodegenCache::get(const std::vector<Block> &block_list, const SymbolTable &symbols) {
     ++stat.codegen_cache_lookups;
-    const size_t lookup_hash = block_list_hash(block_list, symbols);
+    const uint64_t lookup_hash = block_list_hash(block_list, symbols);
     auto lookup = _cache.find(lookup_hash);
     if (lookup != _cache.end()) { // Cache hit!
         return make_pair(lookup->second, lookup_hash);
@@ -114,7 +114,7 @@ std::pair<std::string, uint64_t> CodegenCache::get(const std::vector<Block> &blo
 }
 
 void CodegenCache::insert(std::string source, const std::vector<Block> &block_list, const SymbolTable &symbols) {
-    const size_t lookup_hash = block_list_hash(block_list, symbols);
+    const uint64_t lookup_hash = block_list_hash(block_list, symbols);
     assert(_cache.find(lookup_hash) == _cache.end()); // The source shouldn't exist in the cache already
     _cache[lookup_hash] = std::move(source);
 }

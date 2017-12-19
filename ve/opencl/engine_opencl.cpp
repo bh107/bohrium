@@ -218,7 +218,7 @@ pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<uint64_t> &th
 }
 
 cl::Program EngineOpenCL::getFunction(const string &source) {
-    size_t hash = util::hash(source);
+    uint64_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
     // Do we have the program already?
@@ -285,7 +285,7 @@ void EngineOpenCL::execute(const std::string &source,
                            const vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
-    size_t hash = util::hash(source);
+    uint64_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
 
     auto tcompile = chrono::steady_clock::now();

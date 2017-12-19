@@ -76,7 +76,7 @@ private:
     jitk::Compiler compiler;
 
     // The hash of the JIT compilation command
-    size_t compilation_hash;
+    uint64_t compilation_hash;
 
     // Returns the block and thread sizes based on the 'threaded_blocks'
     std::pair<std::tuple<uint32_t, uint32_t, uint32_t>, std::tuple<uint32_t, uint32_t, uint32_t>>

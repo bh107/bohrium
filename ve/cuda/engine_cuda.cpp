@@ -142,7 +142,7 @@ EngineCUDA::NDRanges(const vector<uint64_t> &thread_stack) const {
 }
 
 CUfunction EngineCUDA::getFunction(const string &source, const std::string &func_name) {
-    size_t hash = util::hash(source);
+    uint64_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
     // Do we have the program already?
@@ -242,7 +242,7 @@ void EngineCUDA::execute(const std::string &source,
                          const vector<uint64_t> &thread_stack,
                          const vector<const bh_view*> &offset_strides,
                          const vector<const bh_instruction*> &constants) {
-    size_t hash = util::hash(source);
+    uint64_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();

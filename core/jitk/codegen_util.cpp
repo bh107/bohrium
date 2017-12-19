@@ -30,7 +30,7 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-string hash_filename(size_t compilation_hash, size_t source_hash, string extension) {
+string hash_filename(uint64_t compilation_hash, size_t source_hash, string extension) {
     stringstream ss;
     ss << setfill ('0') << setw(sizeof(size_t)*2) << hex << compilation_hash << "_"<< source_hash << extension;
     return ss.str();
