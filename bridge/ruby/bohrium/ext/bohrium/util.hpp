@@ -79,7 +79,7 @@ VALUE bh_array_m_print(VALUE self) {
             rb_raise(rb_eRuntimeError, "Type not supported.");
     }
 
-    return self;
+    return Qnil ;
 }
 
 /**
