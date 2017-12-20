@@ -1,7 +1,7 @@
 lib/bohrium/*.bundle
 Gemfile.lock
-ext/bohrium/arithmetic.hpp
-ext/bohrium/trigonometry.hpp
+ext/bohrium/two_args.hpp
+ext/bohrium/one_arg.hpp
 ext/bohrium/bohrium.cpp
 tmp
 vendor

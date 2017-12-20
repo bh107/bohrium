@@ -1,25 +1,12 @@
 #pragma once
 
+#pragma push_macro("isfinite")
+#undef isfinite
+
 using namespace std;
 
-<%
-# TODO: Read from opcodes.json instead.
-{
-    "cos"     => { "float" => ["T_FLOAT"] },
-    "sin"     => { "float" => ["T_FLOAT"] },
-    "tan"     => { "float" => ["T_FLOAT"] },
-    "cosh"    => { "float" => ["T_FLOAT"] },
-    "sinh"    => { "float" => ["T_FLOAT"] },
-    "tanh"    => { "float" => ["T_FLOAT"] },
-    "arccos"  => { "float" => ["T_FLOAT"] },
-    "arcsin"  => { "float" => ["T_FLOAT"] },
-    "arctan"  => { "float" => ["T_FLOAT"] },
-    "arccosh" => { "float" => ["T_FLOAT"] },
-    "arcsinh" => { "float" => ["T_FLOAT"] },
-    "arctanh" => { "float" => ["T_FLOAT"] },
-    "exp"     => { "float" => ["T_FLOAT"] },
-    "exp2"    => { "float" => ["T_FLOAT"] }
-}.each do |m, types| %>
+<% @opcodes_one_arg.each do |m, hash| %>
+<% types = hash[:types] %>
 /**
     <%= m.capitalize %> on a Bohrium array.
 
@@ -94,3 +81,5 @@ VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
     return self;
 }
 <% end %>
+
+#pragma pop_macro("isfinite")

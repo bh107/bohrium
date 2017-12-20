@@ -36,15 +36,11 @@ def type_converter(type)
 end
 
 # TODO: Read from opcodes.json instead.
-{
-    "add"      => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"], "bool" => ["T_TRUE", "T_FALSE"] },
-    "subtract" => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
-    "multiply" => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"], "bool" => ["T_TRUE", "T_FALSE"] },
-    "divide"   => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
-    "power"    => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
-    "maximum"  => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  },
-    "minimum"  => { "int64_t" => ["T_BIGNUM", "T_FIXNUM"], "float" => ["T_FLOAT"]                                  }
-}.each do |m, types| %>
+@opcodes_two_args.each do |m, hash| %>
+<%
+    types = hash[:types]
+    has_constant = hash[:layouts].include?(["A", "A", "K"])
+%>
 /**
     <%= m.capitalize %> two Bohrium arrays of type T.
 
@@ -71,6 +67,7 @@ inline void _<%= m %>_bang(bhDataObj* selfObj, bhDataObj* otherObj) {
     bhxx::<%= m %>(selfArray, selfArray, otherArray);
 }
 
+<% if has_constant %>
 template <typename T>
 inline void _<%= m %>_constant(bhDataObj* result, bhDataObj* selfObj, T value) {
     bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
@@ -87,6 +84,7 @@ inline void _<%= m %>_constant_bang(bhDataObj* selfObj, T value) {
 
     bhxx::<%= m %>(selfArray, selfArray, value);
 }
+<% end %>
 
 /**
     <%= m.capitalize %> two Bohrium arrays.
@@ -108,9 +106,10 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
         <% types.each do |type, ruby_types| %>
             <% ruby_types.each do |ruby_type| %>
             case <%= ruby_type %>:
+                <% if has_constant %>
                 if (is_constant(other)) {
                     _<%= m %>_constant<<%= type %>>(result, selfObj, <%= type_converter(ruby_type) %>(other));
-                } else {
+                } else <% end %>{
                     Data_Get_Struct(other, bhDataObj, otherObj);
                     assert(selfObj->type == otherObj->type);
                     _<%= m %><<%= type %>>(result, selfObj, otherObj);
@@ -133,9 +132,10 @@ VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
         <% types.each do |type, ruby_types| %>
             <% ruby_types.each do |ruby_type| %>
             case <%= ruby_type %>:
+                <% if has_constant %>
                 if (is_constant(other)) {
                     _<%= m %>_constant_bang<<%= type %>>(selfObj, <%= type_converter(ruby_type) %>(other));
-                } else {
+                } else <% end %>{
                     Data_Get_Struct(other, bhDataObj, otherObj);
                     assert(selfObj->type == otherObj->type);
                     _<%= m %>_bang<<%= type %>>(selfObj, otherObj);
