@@ -93,7 +93,7 @@ inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block
 
 // Returns the filename of a the given hashes and file extension
 // compilation_hash is the hash of the compile command and source_hash is the hash of the source code
-std::string hash_filename(size_t compilation_hash, size_t source_hash, std::string file_extension);
+std::string hash_filename(uint64_t compilation_hash, size_t source_hash, std::string file_extension);
 
 // Write `src` to file in `dir` using `filename`
 boost::filesystem::path write_source2file(const std::string &src,

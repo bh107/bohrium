@@ -57,4 +57,17 @@ void remove_old_files(const fs::path &dir, int64_t num_of_newest_to_keep) {
     }
 }
 
+uint64_t hash(const char* s, uint64_t seed) {
+    // Simple hash function by George V. Reilly <https://stackoverflow.com/a/107657>
+    uint64_t hash = seed;
+    while (*s) {
+        hash = hash * 101 + *s++;
+    }
+    return hash;
+}
+
+uint64_t hash(const std::string &s, uint64_t seed) {
+    return hash(s.c_str(), seed);
+}
+
 } // util

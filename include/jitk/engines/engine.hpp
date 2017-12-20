@@ -54,7 +54,7 @@ protected:
     const boost::filesystem::path cache_bin_dir;
 
     // The hash of the JIT compilation command
-    size_t compilation_hash;
+    uint64_t compilation_hash;
 
 public:
     Engine(const ConfigParser &config, Statistics &stat) :
