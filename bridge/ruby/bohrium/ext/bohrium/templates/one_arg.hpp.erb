@@ -12,48 +12,42 @@ using namespace std;
 
     @param result The resulting array.
     @param selfObj The calling object.
-    @param otherObj The other object.
 */
 template <typename T>
-inline void _<%= m %>(bhDataObj* result, bhDataObj* selfObj) {
-    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+inline void _<%= m %>(bhDataObj<T> *result, bhDataObj<T>* selfObj) {
+    bhxx::BhArray<T> selfArray = selfObj->bhary;
+    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(selfArray.shape));
+    bhxx::<%= m %>(bhary, selfArray);
 
-    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(selfArray.shape);
-    result->ary = ((void*) bhary);
-
-    bhxx::<%= m %>(*bhary, selfArray);
-}
-
-template <typename T>
-inline void _<%= m %>_bang(bhDataObj* selfObj) {
-    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
-
-    bhxx::<%= m %>(selfArray, selfArray);
+    result->bhary = bhary;
+    result->type = selfObj->type;
 }
 
 /**
     <%= m.capitalize %> on a Bohrium array.
 
     @param self The calling object.
-    @param other The other object.
-    @returns The resulting array.
+    @returns The a new array.
 */
 VALUE bh_array_m_<%= m %>(VALUE self) {
-    bhDataObj *selfObj;
-    Data_Get_Struct(self, bhDataObj, selfObj);
+    bhDataObj<int64_t> *tmpObj;
+    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
 
     VALUE res = bh_array_alloc(RBASIC_CLASS(self));
-    bhDataObj *result;
-    Data_Get_Struct(res, bhDataObj, result);
-    result->type = selfObj->type;
 
-    switch (selfObj->type) {
+    switch (tmpObj->type) {
         <% types.each do |type, ruby_types| %>
         <% ruby_types.each do |ruby_type| %>
         case <%= ruby_type %>:
         <% end %>
+        {
+            bhDataObj<<%= type %>> *selfObj;
+            bhDataObj<<%= type %>> *result;
+            Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
+            Data_Get_Struct(res, bhDataObj<<%= type %>>, result);
             _<%= m %><<%= type %>>(result, selfObj);
             break;
+        }
         <% end %>
         default:
             rb_raise(rb_eRuntimeError, "Wrong type.");
@@ -62,17 +56,38 @@ VALUE bh_array_m_<%= m %>(VALUE self) {
     return res;
 }
 
-VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
-    bhDataObj *selfObj;
-    Data_Get_Struct(self, bhDataObj, selfObj);
+/**
+    <%= m.capitalize %> on a Bohrium array.
 
-    switch (selfObj->type) {
+    @param self The calling object.
+*/
+template <typename T>
+inline void _<%= m %>_bang(bhDataObj<T>* selfObj) {
+    bhxx::BhArray<T> selfArray = selfObj->bhary;
+    bhxx::<%= m %>(selfArray, selfArray);
+}
+
+/**
+    <%= m.capitalize %> on a Bohrium array.
+
+    @param self The calling object.
+    @returns Self.
+*/
+VALUE bh_array_m_<%= m %>_bang(VALUE self) {
+    bhDataObj<int64_t> *tmpObj;
+    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
+
+    switch (tmpObj->type) {
         <% types.each do |type, ruby_types| %>
         <% ruby_types.each do |ruby_type| %>
         case <%= ruby_type %>:
         <% end %>
-            _<%= m %><<%= type %>>(selfObj, selfObj);
+        {
+            bhDataObj<<%= type %>> *selfObj;
+            Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
+            _<%= m %>_bang<<%= type %>>(selfObj);
             break;
+        }
         <% end %>
         default:
             rb_raise(rb_eRuntimeError, "Wrong type.");

@@ -35,7 +35,6 @@ def type_converter(type)
     end
 end
 
-# TODO: Read from opcodes.json instead.
 @opcodes_two_args.each do |m, hash| %>
 <%
     types = hash[:types]
@@ -49,39 +48,59 @@ end
     @param otherObj The other object.
 */
 template <typename T>
-inline void _<%= m %>(bhDataObj* result, bhDataObj* selfObj, bhDataObj* otherObj) {
-    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
-    bhxx::BhArray<T> otherArray = unwrap<T>(otherObj);
+inline void _<%= m %>(bhDataObj<T>* result, bhDataObj<T>* selfObj, bhDataObj<T>* otherObj) {
+    bhxx::BhArray<T> selfArray = selfObj->bhary;
+    bhxx::BhArray<T> otherArray = otherObj->bhary;
+    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(selfArray.shape));
 
-    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(selfArray.shape);
-    result->ary = ((void*) bhary);
+    bhxx::<%= m %>(bhary, selfArray, otherArray);
 
-    bhxx::<%= m %>(*bhary, selfArray, otherArray);
+    result->bhary = bhary;
+    result->type = selfObj->type;
 }
 
+/**
+    <%= m.capitalize %> two Bohrium arrays of type T.
+
+    @param selfObj The calling object.
+    @param otherObj The other object.
+*/
 template <typename T>
-inline void _<%= m %>_bang(bhDataObj* selfObj, bhDataObj* otherObj) {
-    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
-    bhxx::BhArray<T> otherArray = unwrap<T>(otherObj);
+inline void _<%= m %>_bang(bhDataObj<T>* selfObj, bhDataObj<T>* otherObj) {
+    bhxx::BhArray<T> selfArray = selfObj->bhary;
+    bhxx::BhArray<T> otherArray = otherObj->bhary;
 
     bhxx::<%= m %>(selfArray, selfArray, otherArray);
 }
 
 <% if has_constant %>
+/**
+    <%= m.capitalize %> one Bohrium array and a constant of type T.
+
+    @param result The resulting array.
+    @param selfObj The calling object.
+    @param value The constant value.
+*/
 template <typename T>
-inline void _<%= m %>_constant(bhDataObj* result, bhDataObj* selfObj, T value) {
-    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+inline void _<%= m %>_constant(bhDataObj<T>* result, bhDataObj<T>* selfObj, T value) {
+    bhxx::BhArray<T> selfArray = selfObj->bhary;
+    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(selfArray.shape));
 
-    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(selfArray.shape);
-    result->ary = ((void*) bhary);
+    bhxx::<%= m %>(bhary, selfArray, value);
 
-    bhxx::<%= m %>(*bhary, selfArray, value);
+    result->bhary = bhary;
+    result->type = selfObj->type;
 }
 
-template <typename T>
-inline void _<%= m %>_constant_bang(bhDataObj* selfObj, T value) {
-    bhxx::BhArray<T> selfArray = unwrap<T>(selfObj);
+/**
+    <%= m.capitalize %> one Bohrium array and a constant of type T.
 
+    @param selfObj The calling object.
+    @param value The constant value.
+*/
+template <typename T>
+inline void _<%= m %>_constant_bang(bhDataObj<T>* selfObj, T value) {
+    bhxx::BhArray<T> selfArray = selfObj->bhary;
     bhxx::<%= m %>(selfArray, selfArray, value);
 }
 <% end %>
@@ -94,27 +113,30 @@ inline void _<%= m %>_constant_bang(bhDataObj* selfObj, T value) {
     @returns The resulting array.
 */
 VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
-    bhDataObj *selfObj, *otherObj;
-    Data_Get_Struct(self, bhDataObj, selfObj);
+    bhDataObj<int64_t> *tmpObj;
+    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
 
     VALUE res = bh_array_alloc(RBASIC_CLASS(self));
-    bhDataObj *result;
-    Data_Get_Struct(res, bhDataObj, result);
-    result->type = selfObj->type;
 
-    switch (selfObj->type) {
+    switch (tmpObj->type) {
         <% types.each do |type, ruby_types| %>
             <% ruby_types.each do |ruby_type| %>
-            case <%= ruby_type %>:
+            case <%= ruby_type %>: {
+                bhDataObj<<%= type %>> *selfObj, *result;
+                Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
+                Data_Get_Struct(res, bhDataObj<<%= type %>>, result);
+
                 <% if has_constant %>
                 if (is_constant(other)) {
                     _<%= m %>_constant<<%= type %>>(result, selfObj, <%= type_converter(ruby_type) %>(other));
                 } else <% end %>{
-                    Data_Get_Struct(other, bhDataObj, otherObj);
+                    bhDataObj<<%= type %>> *otherObj;
+                    Data_Get_Struct(other, bhDataObj<<%= type %>>, otherObj);
                     assert(selfObj->type == otherObj->type);
                     _<%= m %><<%= type %>>(result, selfObj, otherObj);
                 }
                 break;
+            }
             <% end %>
         <% end %>
         default:
@@ -124,23 +146,35 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
     return res;
 }
 
-VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
-    bhDataObj *selfObj, *otherObj;
-    Data_Get_Struct(self, bhDataObj, selfObj);
+/**
+    <%= m.capitalize %> two Bohrium arrays.
 
-    switch (selfObj->type) {
+    @param self The calling object.
+    @param other The other object.
+    @returns The resulting array.
+*/
+VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
+    bhDataObj<int64_t> *tmpObj;
+    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
+
+    switch (tmpObj->type) {
         <% types.each do |type, ruby_types| %>
             <% ruby_types.each do |ruby_type| %>
-            case <%= ruby_type %>:
+            case <%= ruby_type %>: {
+                bhDataObj<<%= type %>> *selfObj;
+                Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
+
                 <% if has_constant %>
                 if (is_constant(other)) {
                     _<%= m %>_constant_bang<<%= type %>>(selfObj, <%= type_converter(ruby_type) %>(other));
                 } else <% end %>{
-                    Data_Get_Struct(other, bhDataObj, otherObj);
+                    bhDataObj<<%= type %>> *otherObj;
+                    Data_Get_Struct(other, bhDataObj<<%= type %>>, otherObj);
                     assert(selfObj->type == otherObj->type);
                     _<%= m %>_bang<<%= type %>>(selfObj, otherObj);
                 }
                 break;
+            }
             <% end %>
         <% end %>
         default:

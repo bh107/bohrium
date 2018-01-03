@@ -12,11 +12,13 @@ using namespace std;
     @param type The Ruby type of this value.
 */
 template <typename T>
-void _identity(bhDataObj *result, unsigned long width, unsigned long height, T value, ruby_value_type type) {
-    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>({width, height});
-    bhxx::identity(*bhary, value);
+inline void _identity(VALUE res, unsigned long width, unsigned long height, T value, ruby_value_type type) {
+    bhDataObj<T> *result;
+    Data_Get_Struct(res, bhDataObj<T>, result);
+    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>({width, height}));
+    bhxx::identity(bhary, value);
     result->type = type;
-    result->ary = ((void*) bhary);
+    result->bhary = bhary;
 }
 
 /**
@@ -31,30 +33,28 @@ VALUE bh_array_s_ones(int argc, VALUE *argv, VALUE klass) {
     unsigned long x = 1, y = 1;
 
     VALUE res = bh_array_alloc(klass);
-    bhDataObj *result;
-    Data_Get_Struct(res, bhDataObj, result);
 
     if(argc >= 1) { x = NUM2INT(argv[0]); }
     if(argc >= 2) { y = NUM2INT(argv[1]); }
     if(argc >= 3) {
         switch (TYPE(argv[2])) {
             case T_FIXNUM:
-                _identity(result, x, y, (int64_t) NUM2INT(argv[2]), T_FIXNUM);
+                _identity(res, x, y, (int64_t) NUM2INT(argv[2]), T_FIXNUM);
                 break;
             case T_FLOAT:
-                _identity(result, x, y, (float) NUM2DBL(argv[2]), T_FLOAT);
+                _identity(res, x, y, (float) NUM2DBL(argv[2]), T_FLOAT);
                 break;
             case T_TRUE:
-                _identity(result, x, y, true, T_TRUE);
+                _identity(res, x, y, true, T_TRUE);
                 break;
             case T_FALSE:
-                _identity(result, x, y, false, T_FALSE);
+                _identity(res, x, y, false, T_FALSE);
                 break;
             default:
                 rb_raise(rb_eRuntimeError, "Wrong type for array given.");
         }
     } else {
-        _identity(result, x, y, (int64_t) 1, T_FIXNUM);
+        _identity(res, x, y, (int64_t) 1, T_FIXNUM);
     }
 
     return res;
@@ -73,4 +73,45 @@ VALUE bh_array_s_zeros(int argc, VALUE *argv, VALUE klass) {
     if (argc <= 1) { argv[1] = INT2NUM(1); } // Force 'y' to 1, if not given
     if (argc <= 0) { argv[0] = INT2NUM(1); } // Force 'x' to 1, if not given
     return bh_array_s_ones(3, argv, klass);
+}
+
+/**
+    Helper function to create a sequence array.
+
+    @param res The resulting array.
+    @param nelems The number of elements in the sequence.
+    @param type The type of the resulting array.
+*/
+inline void _range(VALUE res, unsigned long nelems, ruby_value_type type) {
+    bhDataObj<uint64_t> *result;
+    Data_Get_Struct(res, bhDataObj<uint64_t>, result);
+    bhxx::BhArray<uint64_t> bhary = *(new bhxx::BhArray<uint64_t>({nelems, 1}));
+    bhxx::range(bhary);
+    result->type = type;
+    result->bhary = bhary;
+}
+
+/**
+    Create an array and fill it with a sequence.
+
+    @param klass The class we are defining on.
+    @param limit The number of elements in the resulting array.
+    @return The created array.
+*/
+VALUE bh_array_s_arange(VALUE klass, VALUE limit) {
+    VALUE res = bh_array_alloc(klass);
+
+    if (NUM2INT(limit) <= 0) {
+        rb_raise(rb_eRuntimeError, "Argument for 'arange' cannot be negative or zero.");
+    }
+
+    switch (TYPE(limit)) {
+        case T_FIXNUM:
+            _range(res, NUM2INT(limit), T_FIXNUM);
+            break;
+        default:
+            rb_raise(rb_eRuntimeError, "Wrong type for array given.");
+    }
+
+    return res;
 }
