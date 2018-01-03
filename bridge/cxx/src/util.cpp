@@ -152,9 +152,10 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
 }
 
 // Instantiate all possible types of `BhArray`
-#define INSTANTIATE(T)                         \
-    template T          as_scalar(BhArray<T>); \
-    template BhArray<T> transpose(BhArray<T>); \
+#define INSTANTIATE(T)                              \
+    template T          as_scalar(BhArray<T>);      \
+    template BhArray<T> transpose(BhArray<T>);      \
+    template BhArray<T> reshape(BhArray<T>, Shape); \
     template BhArray<T> broadcast(BhArray<T>, int64_t, size_t)
 
 #define INSTANTIATE_NOBOOL(T) \
