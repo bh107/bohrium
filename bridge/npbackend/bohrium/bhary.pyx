@@ -148,7 +148,7 @@ def new_bhc_base(ary):
         raise ValueError("For now Bohrium only supports C-style arrays")
     shape = ary.shape if len(ary.shape) > 0 else (1,)
     totalsize = functools.reduce(operator.mul, shape, 1)
-    ary.bhc_ary = target_bhc.Base(totalsize, ary.dtype)
+    ary.bhc_ary = target_bhc.create_base(totalsize, ary.dtype)
 
 def get_base(ary):
     """Get the final base array of 'ary'."""
