@@ -16,6 +16,7 @@ def main(args):
                 'cpp'     : t['cpp'],
                 'bhc'     : t['bhc'],
                 'name'    : t['union'],
+                'id'      : t['id'],
                 'bhc_ary' : "bhc_ndarray_%s_p" % t['union']
             }
 
@@ -30,13 +31,22 @@ def main(args):
 
     head += "\n// Type enum:\n"
     head += "typedef enum {\n"
-    for key, _ in type_map.items():
-        head += "    %s, \n" % key
-    head += "} bhc_dtype;\n"
+    for key, val in type_map.items():
+        head += "    %s = %d, \n" % (key, val['id'])
+    head += "} bhc_dtype; // Fits 5-bits\n"
 
     impl += "// Array types:\n"
     for key, val in type_map.items():
         impl += "struct bhc_ndarray_%s {bhxx::BhArray<%s> me;};\n" % (val['name'], val['cpp'])
+
+    with open(join(prefix, '..', '..', 'core', 'codegen', 'opcodes.json')) as f:
+        opcodes = json.loads(f.read())
+
+    head += "\n// Opcodes enum:\n"
+    head += "typedef enum {\n"
+    for op in opcodes:
+        head += "    %s, \n" % op['opcode'].replace("BH_", "BHC_")
+    head += "} bhc_opcode;\n"
 
     # Let's add header and footer
     head = """/* Bohrium C Bridge: data types. Auto generated! */
