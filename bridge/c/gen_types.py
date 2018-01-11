@@ -28,6 +28,12 @@ def main(args):
     for key, val in type_map.items():
         head += "typedef struct bhc_ndarray_%s* %s;\n" % (val['name'], val['bhc_ary'])
 
+    head += "\n// Type enum:\n"
+    head += "typedef enum {\n"
+    for key, _ in type_map.items():
+        head += "    %s, \n" % key
+    head += "} bhc_dtype;\n"
+
     impl += "// Array types:\n"
     for key, val in type_map.items():
         impl += "struct bhc_ndarray_%s {bhxx::BhArray<%s> me;};\n" % (val['name'], val['cpp'])
@@ -82,6 +88,7 @@ extern "C" {
         f.write(head)
     with open(join(args.output, 'bhc_types.cpp'), 'w') as f:
         f.write(impl)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
