@@ -249,6 +249,23 @@ setup(
             ]
         ),
         Extension(
+            name='_bhc_base_array',
+            sources=[srcpath('src', '_bhc_base_array.c')],
+            depends=[
+                srcpath('src', 'bhc_special_api.c')
+            ],
+            include_dirs=[
+                buildpath("..", "c", "out"),
+                srcpath('..', '..', 'include'),
+                np.get_include()
+            ],
+            libraries=['dl', 'bhc', 'bh'],
+            library_dirs=[
+                buildpath('..', 'c'),
+                buildpath('..', '..', 'core')
+            ]
+        ),
+        Extension(
             name='random123',
             sources=[buildpath('random123.pyx')],
             include_dirs=[

@@ -1275,45 +1275,6 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
     }
 
-    // HACK: In order to force NumPy scalars on the left hand side of an operand to use Bohrium
-    // we add all scalar types to the Method Resolution Order tuple.
-    // This hack has undesirable consequences: <https://github.com/bh107/bohrium/issues/22>
-    // Until NumPy introduces the "__numpy_ufunc__" method, we will accept that NumPy scalars
-    // on the left hand side raises mem_access_callback()
-
-    /*
-    {
-        Py_ssize_t i;
-        PyObject *_info = PyImport_ImportModule("bohrium._info");
-        if(_info == NULL) {
-            return RETVAL;
-        }
-
-        PyObject *dtypes = PyObject_GetAttrString(_info, "numpy_types");
-        if(dtypes == NULL) {
-            return RETVAL;
-        }
-
-        Py_ssize_t ndtypes = PyList_GET_SIZE(dtypes);
-        Py_ssize_t old_size = PyTuple_GET_SIZE(BhArrayType.tp_mro);
-        Py_ssize_t new_size = old_size + ndtypes;
-        if(_PyTuple_Resize(&BhArrayType.tp_mro, new_size) != 0) {
-            return RETVAL;
-        }
-
-        for(i = 0; i < ndtypes; ++i) {
-            PyObject *t = PyObject_GetAttrString(PyList_GET_ITEM(dtypes, i), "type");
-            if(t == NULL) {
-                return RETVAL;
-            }
-
-            PyTuple_SET_ITEM(BhArrayType.tp_mro, i+old_size, t);
-        }
-
-        Py_DECREF(_info);
-    }
-    */
-
     PyModule_AddObject(m, "ndarray", (PyObject*) &BhArrayType);
 
     bohrium        = PyImport_ImportModule("bohrium");

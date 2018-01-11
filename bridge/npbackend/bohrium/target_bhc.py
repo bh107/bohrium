@@ -10,6 +10,7 @@ import os
 import sys
 
 from _util import dtype_name
+from . import _bhc_base_array
 
 
 class BhcAPI:
@@ -52,28 +53,14 @@ class BhcAPI:
 bhc = BhcAPI()
 
 
-class Base(object):
-    """ Base array handle """
-
-    def __init__(self, size, dtype, bhc_obj=None):
-        # Total number of elements
-        self.size = size
-        # Data type
-        self.dtype = dtype
-        # Data type name
-        self.dtype_name = dtype_name(dtype)
-        if size == 0:
-            return
-
-        if bhc_obj is None:
-            bhc_obj = bhc.call_single_dtype("new", self.dtype_name, size)
-
-        self.bhc_obj = bhc_obj
-
-    def __del__(self):
-        if self.size == 0:
-            return
-        bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
+def create_base(nelem, dtype):
+    """ Create a new base array handle"""
+    dtname = dtype_name(dtype)
+    if nelem > 0:
+        bhc_ary_swig_ptr = bhc.call_single_dtype("new", dtname, nelem)
+    else:
+        bhc_ary_swig_ptr = None
+    return _bhc_base_array.BhBase(nelem, dtype, dtname, bhc_ary_swig_ptr)
 
 
 class View(object):
@@ -314,7 +301,7 @@ def arange(size, dtype):
     """
 
     # Create new array
-    ret = View(1, 0, (size,), (1,), Base(size, dtype))
+    ret = View(1, 0, (size,), (1,), create_base(size, dtype))
 
     # And apply the range operation
     if size > 0:
@@ -332,7 +319,7 @@ def random123(size, start_index, key):
     dtype = numpy.dtype("uint64")
 
     # Create new array
-    ret = View(1, 0, (size,), (1,), Base(size, dtype))
+    ret = View(1, 0, (size,), (1,), create_base(size, dtype))
 
     # And apply the range operation
     if size > 0:
