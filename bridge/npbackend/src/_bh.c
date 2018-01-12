@@ -18,32 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_osx.h>
-#include <Python.h>
-#include <structmember.h>
 #include <dlfcn.h>
 #include <bh_mem_signal.h>
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/arrayobject.h>
-
-// The NumPy API changed in version 1.7
-#if(NPY_API_VERSION >= 0x00000007)
-    #define BH_PyArrayObject PyArrayObject_fields
-#else
-    #define BH_PyArrayObject PyArrayObject
-    #define NPY_ARRAY_OWNDATA NPY_OWNDATA
-#endif
-
-#if PY_MAJOR_VERSION >= 3
-    #define NPY_PY3K
-#endif
+#include "_bh.h"
 
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args);
-static PyTypeObject BhArrayType;
 
-#define BhArray_CheckExact(op) (((PyObject*) (op))->ob_type == &BhArrayType)
 PyObject *bhary          = NULL; // The bhary Python module
 PyObject *ufuncs         = NULL; // The ufuncs Python module
 PyObject *bohrium        = NULL; // The Bohrium Python module
@@ -53,17 +34,6 @@ PyObject *masking        = NULL; // The masking Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
-#define bhc_exist(x) (((BhArray*) x)->bhc_ary != Py_None)
-
-typedef struct {
-    BH_PyArrayObject base;
-    PyObject *bhc_ary;
-    PyObject *bhc_ary_version;
-    PyObject *bhc_view;
-    PyObject *bhc_view_version;
-    int mmap_allocated;
-    void *npy_data; // NumPy allocated array data
-} BhArray;
 
 // Help function that returns number of bytes in 'ary'
 // BUT minimum 'itemsize', which mimic the behavior of NumPy

@@ -220,6 +220,7 @@ setup(
             name='_bh',
             sources=[srcpath('src', '_bh.c')],
             depends=[
+                srcpath('src', '_bh.h'),
                 srcpath('src', 'operator_overload.c')
             ],
             include_dirs=[
