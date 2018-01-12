@@ -45,7 +45,7 @@ def main(args):
     head += "\n// Opcodes enum:\n"
     head += "typedef enum {\n"
     for op in opcodes:
-        head += "    %s, \n" % op['opcode'].replace("BH_", "BHC_")
+        head += "    %s = %s, \n" % (op['opcode'].replace("BH_", "BHC_"), op['id'])
     head += "} bhc_opcode;\n"
 
     # Let's add header and footer
