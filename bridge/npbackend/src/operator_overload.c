@@ -20,10 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 //NB: 'bohrium' is declared in _bhmodule.c
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static PyObject *
 array_add(PyObject *m1, PyObject *m2) {
     return PyObject_CallMethod(bohrium, "add", "OO", m1, m2);
@@ -534,7 +530,3 @@ array_richcompare(PyArrayObject *self, PyObject *other, int cmp_op) {
         return NULL;
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
