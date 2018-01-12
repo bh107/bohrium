@@ -32,7 +32,7 @@ def main(args):
             type_bits = bin(type_map[type_enum]['id'])  # Convert type enum to a bit string
             type_bits = ("0" * (4 - len(type_bits))) + type_bits  # Zero pad the bit string
             const_bits = "0" if symbol in ['A', '1D'] else "1"
-            bitstr += const_bits + type_bits
+            bitstr  = const_bits + type_bits + bitstr
         return int(bitstr, 2)  # Convert from binary to integer
 
     # Let's generate the header and implementation of all array operations
@@ -82,10 +82,12 @@ def main(args):
                         impl += ", "
                     impl += "op%d" % i
                 impl += ");\n"
+                impl += "                    break;\n"
                 impl += "                }\n"
-        impl += '                default: fprintf(stderr, "bhc_op(): unknown type signature\\n"); exit(-1);\n'
+        impl += ' ' * 16 + 'default: fprintf(stderr, "bhc_op(): unknown type signature\\n"); assert(1==2); exit(-1);\n'
         impl += "            }\n"
-    impl += """        default: fprintf(stderr, "bhc_op(): unknown opcode\\n"); exit(-1);
+        impl += "            break;\n"
+    impl += """        default: fprintf(stderr, "bhc_op(): unknown opcode\\n"); assert(1==2); exit(-1);
     }
 }\n"""
 
@@ -115,14 +117,14 @@ extern "C" {
 #include <bhxx/bhxx.hpp>
 #include "bhc.h"
 
-// Returns the hash of the type signature 
+// Returns the hash of the type signature
 uint64_t signature_hash(int nop, const bhc_dtype types[], const bhc_bool constants[]) {
     assert(nop < 10); // The signature must fit 64 bit
     uint64_t ret = 0;
     for(int i=0; i < nop; ++i) {
         uint8_t type_bits = types[i];
         uint8_t constant_bit = constants[i];
-        ret |= type_bits << (i*5); // Writes the 4 type bits 
+        ret |= type_bits << (i*5); // Writes the 4 type bits
         ret |= constant_bit << (i*5+4); // Writes the 1 constant bit
     }
     return ret;
