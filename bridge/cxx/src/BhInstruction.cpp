@@ -68,6 +68,7 @@ void BhInstruction::appendOperand(const BhArray<T>& ary) {
     }
 
     bh_view view;
+    assert(ary.base.use_count() > 0);
     view.base  = ary.base.get();
     view.start = static_cast<int64_t>(ary.offset);
     view.ndim  = static_cast<int64_t>(ary.shape.size());

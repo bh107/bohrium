@@ -138,6 +138,7 @@ with open(buildpath("_info.py"), 'w') as o:
                 name = op['opcode'].lower()[3:]  # Removing BH_ and we have the NumPy and bohrium name
                 ufunc[name] = {
                     'name':     name,
+                    'id':       int(op['id']),
                     'nop':      int(op['nop']),
                     'type_sig': type_sig
                 }
@@ -218,9 +219,10 @@ setup(
     ext_modules=[
         Extension(
             name='_bh',
-            sources=[srcpath('src', '_bh.c')],
+            sources=[srcpath('src', '_bh.c'), srcpath('src', 'ufunc.c')],
             depends=[
                 srcpath('src', '_bh.h'),
+                srcpath('src', 'ufunc.h'),
                 srcpath('src', 'operator_overload.c')
             ],
             include_dirs=[

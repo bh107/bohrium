@@ -58,7 +58,6 @@ def replace_numpy(function):
             # Run your function/program
             result = function(*args, **kwargs)
         return result
-
     return wrapper
 
 
@@ -105,7 +104,6 @@ __all__ = [x for x in dir() if not x.startswith("_")]
 if sys.version_info[0] < 3:
     def set_printoptions(*args, **kwargs):
         numpy.core.arrayprint.set_printoptions(*args, **kwargs)
-
 
     def get_printoptions(*args, **kwargs):
         return numpy.core.arrayprint.get_printoptions()

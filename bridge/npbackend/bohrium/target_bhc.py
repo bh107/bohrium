@@ -69,10 +69,12 @@ class Base(object):
             bhc_obj = bhc.call_single_dtype("new", self.dtype_name, size)
 
         self.bhc_obj = bhc_obj
+#        print("base new: %s " % int(self.bhc_obj))
 
     def __del__(self):
         if self.size == 0:
             return
+#        print("base destroy: %s, dtype: %s " % (int(self.bhc_obj), self.dtype_name))
         bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
 
 
@@ -99,10 +101,12 @@ class View(object):
         if self.size == 0:
             return
         self.bhc_obj = bhc.call_single_dtype("view", self.dtype_name, base.bhc_obj, ndim, start, shape, strides)
+#        print("view new: %s, base: %s, dtype: %s" % (int(self.bhc_obj), int(self.base.bhc_obj), self.dtype_name))
 
     def __del__(self):
         if self.size == 0:
             return
+#        print("view destroy: %s, base: %s " % (int(self.bhc_obj), int(self.base.bhc_obj)))
         bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
 
 
@@ -121,6 +125,7 @@ def _bhc_exec(func, *args):
 
 def runtime_flush():
     """ Flush the runtime system """
+#    print("flush")
     bhc.flush()
 
 
