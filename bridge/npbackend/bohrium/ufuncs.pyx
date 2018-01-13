@@ -130,6 +130,7 @@ class Ufunc(object):
 
     @fix_biclass_wrapper
     def __call__(self, *args, **kwargs):
+        from . import _bh
         args = list(args)
 
         # Check number of array arguments
@@ -205,6 +206,9 @@ class Ufunc(object):
         else:
             args.insert(0, out)
 
+        # Call the bhc API
+        _bh.ufunc(self.info['id'], args)
+        """
         # Convert 'args' to Bohrium-C arrays
         bhcs = []
         for arg in args:
@@ -222,7 +226,7 @@ class Ufunc(object):
             target_bhc.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
         else:
             target_bhc.ufunc(self, *bhcs)
-
+        """
         if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
         else:

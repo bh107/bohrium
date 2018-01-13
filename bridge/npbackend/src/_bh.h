@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <structmember.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define PY_ARRAY_UNIQUE_SYMBOL bh_ARRAY_API
 #include <numpy/arrayobject.h>
 
 // The NumPy API changed in version 1.7
@@ -39,6 +40,7 @@ If not, see <http://www.gnu.org/licenses/>.
     #define NPY_PY3K
 #endif
 
+// The declaration of the Bohrium ndarray
 typedef struct {
     BH_PyArrayObject base;
     PyObject *bhc_ary;
@@ -49,8 +51,17 @@ typedef struct {
     void *npy_data; // NumPy allocated array data
 } BhArray;
 
-// Forward declaration
-static PyTypeObject BhArrayType;
+// Exposing some global variables implemented in `_bh.c`
+extern PyTypeObject BhArrayType; // Implemented in `_bh.c`
+extern PyObject *bhary;          // The bhary Python module
+extern PyObject *ufuncs;         // The ufuncs Python module
+extern PyObject *bohrium;        // The Bohrium Python module
+extern PyObject *array_create;   // The array_create Python module
+extern PyObject *reorganization; // The reorganization Python module
+extern PyObject *masking;        // The masking Python module
+extern int bh_sync_warn;         // Boolean flag: should we warn when copying from Bohrium to NumPy
+extern int bh_mem_warn;          // Boolean flag: should we warn when about memory problems
 
+// Some nice shorthands
 #define BhArray_CheckExact(op) (((PyObject*) (op))->ob_type == &BhArrayType)
 #define bhc_exist(x) (((BhArray*) x)->bhc_ary != Py_None)

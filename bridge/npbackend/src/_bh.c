@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 #include <bh_mem_signal.h>
 #include "_bh.h"
+#include "ufunc.h"
 
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args);
@@ -1141,7 +1142,7 @@ static PyObject* BhArray_Str(PyObject *self) {
 // Importing the array_as_number struct
 #include "operator_overload.c"
 
-static PyTypeObject BhArrayType = {
+PyTypeObject BhArrayType = {
 #if defined(NPY_PY3K)
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
@@ -1204,17 +1205,20 @@ static PyTypeObject BhArrayType = {
     0,                              // tp_version_tag
 };
 
+// The methods (functions) of this module
+static PyMethodDef _bhMethods[] = {
+    {"ufunc", (PyCFunction) PyUfunc, METH_VARARGS | METH_KEYWORDS,
+              "Execute a ufunc operation."},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
 #if defined(NPY_PY3K)
 static struct PyModuleDef moduledef = {
-        PyModuleDef_HEAD_INIT,
-        "_bh",
-        NULL,
-        -1,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
+    PyModuleDef_HEAD_INIT,
+    "_bh",/* name of module */
+    NULL, /* module documentation, may be NULL */
+    -1,   /* size of per-interpreter state of the module or -1 if the module keeps state in global variables. */
+    _bhMethods /* the methods of this module */
 };
 #endif
 
@@ -1231,7 +1235,7 @@ PyMODINIT_FUNC init_bh(void)
 #if defined(NPY_PY3K)
     m = PyModule_Create(&moduledef);
 #else
-    m = Py_InitModule("_bh", NULL);
+    m = Py_InitModule("_bh", _bhMethods);
 #endif
     if (m == NULL) {
         return RETVAL;
@@ -1244,45 +1248,6 @@ PyMODINIT_FUNC init_bh(void)
     if (PyType_Ready(&BhArrayType) < 0) {
         return RETVAL;
     }
-
-    // HACK: In order to force NumPy scalars on the left hand side of an operand to use Bohrium
-    // we add all scalar types to the Method Resolution Order tuple.
-    // This hack has undesirable consequences: <https://github.com/bh107/bohrium/issues/22>
-    // Until NumPy introduces the "__numpy_ufunc__" method, we will accept that NumPy scalars
-    // on the left hand side raises mem_access_callback()
-
-    /*
-    {
-        Py_ssize_t i;
-        PyObject *_info = PyImport_ImportModule("bohrium._info");
-        if(_info == NULL) {
-            return RETVAL;
-        }
-
-        PyObject *dtypes = PyObject_GetAttrString(_info, "numpy_types");
-        if(dtypes == NULL) {
-            return RETVAL;
-        }
-
-        Py_ssize_t ndtypes = PyList_GET_SIZE(dtypes);
-        Py_ssize_t old_size = PyTuple_GET_SIZE(BhArrayType.tp_mro);
-        Py_ssize_t new_size = old_size + ndtypes;
-        if(_PyTuple_Resize(&BhArrayType.tp_mro, new_size) != 0) {
-            return RETVAL;
-        }
-
-        for(i = 0; i < ndtypes; ++i) {
-            PyObject *t = PyObject_GetAttrString(PyList_GET_ITEM(dtypes, i), "type");
-            if(t == NULL) {
-                return RETVAL;
-            }
-
-            PyTuple_SET_ITEM(BhArrayType.tp_mro, i+old_size, t);
-        }
-
-        Py_DECREF(_info);
-    }
-    */
 
     PyModule_AddObject(m, "ndarray", (PyObject*) &BhArrayType);
 
