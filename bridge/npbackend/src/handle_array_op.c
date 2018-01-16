@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bhc.h>
-#include "ufunc.h"
+#include "handle_array_op.h"
 
 PyObject *
 PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds) {
