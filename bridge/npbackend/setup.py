@@ -220,7 +220,9 @@ setup(
     ext_modules=[
         Extension(
             name='_bh',
-            sources=[srcpath('src', '_bh.c'), srcpath('src', 'ufunc.c')],
+            sources=[srcpath('src', '_bh.c'),
+                     srcpath('src', 'ufunc.c'),
+                     srcpath('src', 'util.c')],
             depends=[
                 srcpath('src', '_bh.h'),
                 srcpath('src', 'ufunc.h'),

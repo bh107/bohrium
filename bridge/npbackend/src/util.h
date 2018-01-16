@@ -20,12 +20,13 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "util.h"
+#include <bhc.h>
+#define NO_IMPORT_ARRAY
+#include "_bh.h"
 
-/** Handle ufunc operations.
- *
- * @param opcode        A enum opcode
- * @param operand_list  List of operands that can be NumPy-arrays, Bohrium-arrays, and Scalars
- *                      NB: the dtypes must match a bhc API function.
- */
-PyObject * PyUfunc(PyObject *self, PyObject *args, PyObject *kwds);
+/** This corresponds to `numpy.isscalar()`, which does not count 0-dim arrays as scalars
+    In Bohrium, we handle 0-dim arrays as regular arrays. */
+#define IsAnyScalar(o) (PyArray_IsScalar(o, Generic) || PyArray_IsPythonNumber(o))
+
+/** Converts the dtype enum from NumPy to Bohrium */
+bhc_dtype dtype_np2bhc(const int np_dtype_num);
