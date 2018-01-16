@@ -210,26 +210,12 @@ class Ufunc(object):
             args.insert(0, out)
 
         # Call the bhc API
-        _bh.ufunc(self.info['id'], args)
-        """
-        # Convert 'args' to Bohrium-C arrays
-        bhcs = []
-        for arg in args:
-            if np.isscalar(arg):
-                bhcs.append(arg)
-            elif bhary.check(arg):
-                bhcs.append(get_bhc(arg))
-            else:
-                arg = array_create.array(arg)
-                bhcs.append(get_bhc(arg))
-
-        # Some simple optimizations
-        if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
+        if self.info['name'] == "power" and np.isscalar(args[2]) and args[2] == 2:  # A simple "power" optimization
             # Replace power of 2 with a multiplication
-            target_bhc.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
+            target_bhc.ufunc(UFUNCS["multiply"].info['id'], (args[0], args[1], args[1]))
         else:
-            target_bhc.ufunc(self, *bhcs)
-        """
+            _bh.ufunc(self.info['id'], args)
+
         if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
         else:
