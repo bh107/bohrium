@@ -5,6 +5,7 @@ Reorganization of Array Elements Routines
 import warnings
 import numpy_force as numpy
 from . import bhary
+from . import _info
 from ._util import is_scalar
 from .bhary import fix_biclass_wrapper, get_bhc
 from . import target_bhc
@@ -35,6 +36,7 @@ def gather(ary, indexes):
     r : ndarray
         The gathered array freshly-allocated.
     """
+    from . import _bh
 
     ary = array_manipulation.flatten(array_create.array(ary))
 
@@ -47,7 +49,7 @@ def gather(ary, indexes):
     if ary.size == 0 or indexes.size == 0:
         return array_create.array([])
 
-    target_bhc.gather(get_bhc(ret), get_bhc(ary), get_bhc(indexes))
+    _bh.ufunc(_info.op['gather']['id'], (ret, ary, indexes))
     return ret
 
 
@@ -229,6 +231,7 @@ def scatter(ary, indexes, values):
     values : array_like
         Values to write into 'ary"
     """
+    from . import _bh
 
     indexes = array_manipulation.flatten(array_create.array(indexes, dtype=numpy.uint64), always_copy=False)
     values = array_manipulation.flatten(array_create.array(values, dtype=ary.dtype), always_copy=False)
@@ -239,7 +242,7 @@ def scatter(ary, indexes, values):
 
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
     flat = array_manipulation.flatten(ary, always_copy=True)
-    target_bhc.scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes))
+    _bh.ufunc(_info.op['scatter']['id'], (flat, values, indexes))
     ary[...] = flat.reshape(ary.shape)
 
 
@@ -408,6 +411,7 @@ def cond_scatter(ary, indexes, values, mask):
     mask : array_like, interpreted as booleans
         A mask that specifies which indexes and values to include and exclude
     """
+    from . import _bh
 
     indexes = array_manipulation.flatten(array_create.array(indexes, dtype=numpy.uint64), always_copy=False)
     values = array_manipulation.flatten(array_create.array(values, dtype=ary.dtype), always_copy=False)
@@ -419,7 +423,7 @@ def cond_scatter(ary, indexes, values, mask):
 
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
     flat = array_manipulation.flatten(ary, always_copy=True)
-    target_bhc.cond_scatter(get_bhc(flat), get_bhc(values), get_bhc(indexes), get_bhc(mask))
+    _bh.ufunc(_info.op['cond_scatter']['id'], (flat, values, indexes, mask))
     ary[...] = flat.reshape(ary.shape)
 
 
