@@ -129,7 +129,7 @@ with open(buildpath("_info.py"), 'w') as o:
     with open(srcpath('..', '..', 'core', 'codegen', 'opcodes.json'), 'r') as f:
         opcodes = json.loads(f.read())
         for op in opcodes:
-            if op['elementwise'] and not op['system_opcode']:
+            if not op['system_opcode']:
                 # Convert the type signature to bhc names
                 type_sig = []
                 for sig in op['types']:
@@ -140,6 +140,7 @@ with open(buildpath("_info.py"), 'w') as o:
                     'name':     name,
                     'id':       int(op['id']),
                     'nop':      int(op['nop']),
+                    'elementwise': bool(op['elementwise']),
                     'type_sig': type_sig
                 }
     o.write("op = ")

@@ -491,8 +491,9 @@ class Ufunc(object):
 # Expose via UFUNCS
 UFUNCS = {}
 for op in _info.op.values():
-    f = Ufunc(op)
-    UFUNCS[f.info['name']] = f
+    if op['elementwise']:
+        f = Ufunc(op)
+        UFUNCS[f.info['name']] = f
 
 # 'bh_divide' refers to how Bohrium divide, which is like division in C/C++
 # We needs this reference because Python v3 uses "true" division
