@@ -86,12 +86,10 @@ def assign(ary, out):
             return
 
     # Assigning empty arrays doesn't do anything
-    if hasattr(ary, "size"):
-        if ary.size == 0:
-            return
-    if hasattr(out, "size"):
-        if out.size == 0:
-            return
+    if hasattr(ary, "size") and ary.size == 0:
+        return
+    if hasattr(out, "size") and out.size == 0:
+        return
 
     # We use a tmp array if the in-/out-put has memory conflicts
     if overlap_conflict(out, ary):

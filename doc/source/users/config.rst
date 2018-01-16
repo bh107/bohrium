@@ -8,7 +8,7 @@ The default backend is OpenMP. You can change which backend to use by defining t
 
 * The CPU backend that make use of OpenMP: ``BH_STACK=openmp``
 * The GPU backend that make use of OpenCL: ``BH_STACK=opencl``
-* The GPU backend that make use of CUDA: ``BH_STACK=cude``
+* The GPU backend that make use of CUDA: ``BH_STACK=cuda``
 
 For debug information when running Bohrium, use the following environment variables::
 

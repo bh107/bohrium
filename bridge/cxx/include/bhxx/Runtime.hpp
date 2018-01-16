@@ -197,11 +197,11 @@ private:
     std::vector<bh_instruction> instr_list;
 
     // The base arrays to sync when flushing
-    std::set<bh_base *> syncs;
+    std::set<bh_base*> syncs;
 
     // Unique pointers to base objects, which are to be
     // purged after the next flush
-    std::vector<std::unique_ptr<BhBase> > bases_for_deletion;
+    std::vector<std::unique_ptr<BhBase>> bases_for_deletion;
 
     // Bohrium Configuration
     bohrium::ConfigParser config;
@@ -236,9 +236,8 @@ void Runtime::enqueue(bh_opcode opcode, T &op, Ts &... ops) {
     }
 }
 
-template<typename T>
-void Runtime::enqueueExtmethod(const std::string &name, BhArray<T> &out, BhArray<T> &in1,
-                               BhArray<T> &in2) {
+template <typename T>
+void Runtime::enqueueExtmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1, BhArray<T>& in2) {
     bh_opcode opcode;
 
     // Look for the extension opcode
@@ -261,9 +260,7 @@ void Runtime::freeMemory(BhArray<T> &ary) {
     // Calling BH_FREE on an array with external
     // storage management is undefined behaviour
     if (!ary.base->ownMemory()) {
-        throw std::runtime_error(
-                "Cannot call BH_FREE on a BhArray object, which uses external storage "
-                "in its BhBase.");
+        throw std::runtime_error("Cannot call BH_FREE on a BhArray object, which uses external storage in its BhBase.");
     }
 
     // BH_FREE is special because it is automatically invoked

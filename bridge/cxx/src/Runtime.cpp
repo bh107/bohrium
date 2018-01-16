@@ -71,11 +71,12 @@ void Runtime::enqueueDeletion(std::unique_ptr<BhBase> base_ptr) {
 
 namespace {
 // Help function to handle flushing
-void _flush(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr,
+void _flush(uint64_t nrepeats,
+            const std::shared_ptr<BhBase> &base_ptr,
             std::vector<bh_instruction> &instr_list,
-            std::set<bh_base *> &syncs,
+            std::set<bh_base*> &syncs,
             bohrium::component::ComponentFace &runtime,
-            std::vector<std::unique_ptr<BhBase> > &bases_for_deletion,
+            std::vector<std::unique_ptr<BhBase>> &bases_for_deletion,
             uint64_t &_flush_count) {
 
     if (not base_ptr) { // The pointer isn't initiated

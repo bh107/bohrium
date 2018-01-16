@@ -64,7 +64,7 @@ def main(args):
     impl += "%s"%decl
     impl += """
 {
-    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<bool>*)condition)->base;
+    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<bool>*) condition)->base;
     bhxx::Runtime::instance().flushAndRepeat(nrepeats, b);
 }
 """
@@ -103,7 +103,7 @@ def main(args):
     impl += "%s" % decl
     impl += """
 {
-    bhxx::Runtime::instance().setDeviceContext((void*)device_context);
+    bhxx::Runtime::instance().setDeviceContext((void*) device_context);
 }
 """
 
