@@ -3,22 +3,27 @@
 #include "bhxx/SVector.hpp"
 #include <ruby.h>
 
+#define F(f) reinterpret_cast<VALUE (*)(...)>(f)
+#define DEBUG(msg) std::cout << "### " << msg << std::endl;
+#define UNPACK(type, name) UNPACK_(type, name, self)
+#define UNPACK_(type, name, s) bhDataObj<type> *name; Data_Get_Struct(s, bhDataObj<type>, name)
+
+VALUE cBhArray;
+
 /**
     Encapsulating struct for our Bohrium array and Ruby type.
 */
 template <typename T>
 struct bhDataObj {
-    ruby_value_type type;
-    bhxx::BhArray<T> bhary;
+    ruby_value_type type   = T_FIXNUM;
+    bhxx::BhArray<T> bhary = nullptr;
+    bhxx::BhArray<T> view  = bhary;
 };
 
 #include "util.hpp"
 #include "class.hpp"
 #include "one_arg.hpp"
 #include "two_args.hpp"
-
-#define F(f) reinterpret_cast<VALUE (*)(...)>(f)
-#define DEBUG(msg) std::cout << "### " << msg << std::endl;
 
 using namespace std;
 
@@ -30,8 +35,7 @@ using namespace std;
 */
 template <typename T>
 void _initialize(VALUE self, VALUE ary, ruby_value_type type) {
-    bhDataObj<T> *dataObj;
-    Data_Get_Struct(self, bhDataObj<T>, dataObj);
+    UNPACK(T, dataObj);
 
     unsigned long size = rb_array_len(ary);
     vector<T> data_array;
@@ -42,7 +46,8 @@ void _initialize(VALUE self, VALUE ary, ruby_value_type type) {
 
     shared_ptr<bhxx::BhBase> _base = bhxx::make_base_ptr(data_array.begin(), data_array.end());
 
-    dataObj->bhary = *(new bhxx::BhArray<T>(_base, {size, 1}));
+    dataObj->bhary = *(new bhxx::BhArray<T>(_base, {1, size}));
+    dataObj->view = dataObj->bhary;
     dataObj->type = type;
 }
 
@@ -84,8 +89,6 @@ VALUE bh_array_m_initialize(VALUE self, VALUE ary) {
 }
 
 extern "C" void Init_bohrium() {
-    VALUE cBhArray;
-
     // Define 'BhArray' class and #initialize method
     cBhArray = rb_define_class("BhArray", rb_cObject);
     rb_define_alloc_func(cBhArray, bh_array_alloc);
@@ -127,11 +130,15 @@ extern "C" void Init_bohrium() {
     // Utility methods
     rb_define_method(cBhArray, "reshape", F(bh_array_m_reshape),   1);
 
-    rb_define_method(cBhArray, "to_s",    F(bh_array_m_to_s),      0);
-    rb_define_method(cBhArray, "size",    F(bh_array_m_size),      0);
-    rb_define_method(cBhArray, "shape",   F(bh_array_m_shape),     0);
-    rb_define_method(cBhArray, "print",   F(bh_array_m_print),     0);
-    rb_define_method(cBhArray, "to_ary",  F(bh_array_m_to_ary),    0);
-    rb_define_method(cBhArray, "to_a",    F(bh_array_m_to_ary),    0);
-    rb_define_method(cBhArray, "inspect", F(bh_array_m_to_ary),    0);
+    rb_define_method(cBhArray, "to_s",    F(bh_array_m_to_s),   0);
+    rb_define_method(cBhArray, "size",    F(bh_array_m_size),   0);
+    rb_define_method(cBhArray, "shape",   F(bh_array_m_shape),  0);
+    rb_define_method(cBhArray, "print",   F(bh_array_m_print),  0);
+    rb_define_method(cBhArray, "to_ary",  F(bh_array_m_to_ary), 0);
+    rb_define_method(cBhArray, "to_a",    F(bh_array_m_to_ary), 0);
+    rb_define_method(cBhArray, "inspect", F(bh_array_m_to_ary), 0);
+    rb_define_method(cBhArray, "type",    F(bh_array_m_type),   0);
+
+    rb_define_private_method(cBhArray, "view_from_ranges", F(bh_array_m_view_from_ranges), -1);
+    rb_define_private_method(cBhArray, "set_from_ranges",  F(bh_array_m_set_from_ranges),  -1);
 }

@@ -20,6 +20,7 @@ inline void _<%= m %>(bhDataObj<T> *result, bhDataObj<T>* selfObj) {
     bhxx::<%= m %>(bhary, selfArray);
 
     result->bhary = bhary;
+    result->view = result->bhary;
     result->type = selfObj->type;
 }
 
@@ -30,8 +31,7 @@ inline void _<%= m %>(bhDataObj<T> *result, bhDataObj<T>* selfObj) {
     @returns The a new array.
 */
 VALUE bh_array_m_<%= m %>(VALUE self) {
-    bhDataObj<int64_t> *tmpObj;
-    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
+    UNPACK(int64_t, tmpObj);
 
     VALUE res = bh_array_alloc(RBASIC_CLASS(self));
 
@@ -41,10 +41,8 @@ VALUE bh_array_m_<%= m %>(VALUE self) {
         case <%= ruby_type %>:
         <% end %>
         {
-            bhDataObj<<%= type %>> *selfObj;
-            bhDataObj<<%= type %>> *result;
-            Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
-            Data_Get_Struct(res, bhDataObj<<%= type %>>, result);
+            UNPACK(<%= type %>, selfObj);
+            UNPACK_(<%= type %>, result, res);
             _<%= m %><<%= type %>>(result, selfObj);
             break;
         }
@@ -74,8 +72,7 @@ inline void _<%= m %>_bang(bhDataObj<T>* selfObj) {
     @returns Self.
 */
 VALUE bh_array_m_<%= m %>_bang(VALUE self) {
-    bhDataObj<int64_t> *tmpObj;
-    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
+    UNPACK(int64_t, tmpObj);
 
     switch (tmpObj->type) {
         <% types.each do |type, ruby_types| %>
@@ -83,8 +80,7 @@ VALUE bh_array_m_<%= m %>_bang(VALUE self) {
         case <%= ruby_type %>:
         <% end %>
         {
-            bhDataObj<<%= type %>> *selfObj;
-            Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
+            UNPACK(<%= type %>, selfObj);
             _<%= m %>_bang<<%= type %>>(selfObj);
             break;
         }

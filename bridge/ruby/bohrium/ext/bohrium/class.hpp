@@ -15,10 +15,11 @@ template <typename T>
 inline void _identity(VALUE res, unsigned long width, unsigned long height, T value, ruby_value_type type) {
     bhDataObj<T> *result;
     Data_Get_Struct(res, bhDataObj<T>, result);
-    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>({width, height}));
+    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>({height, width}));
     bhxx::identity(bhary, value);
     result->type = type;
     result->bhary = bhary;
+    result->view = result->bhary;
 }
 
 /**
@@ -85,10 +86,11 @@ VALUE bh_array_s_zeros(int argc, VALUE *argv, VALUE klass) {
 inline void _range(VALUE res, unsigned long nelems, ruby_value_type type) {
     bhDataObj<uint64_t> *result;
     Data_Get_Struct(res, bhDataObj<uint64_t>, result);
-    bhxx::BhArray<uint64_t> bhary = *(new bhxx::BhArray<uint64_t>({nelems, 1}));
+    bhxx::BhArray<uint64_t> bhary = *(new bhxx::BhArray<uint64_t>({1, nelems}));
     bhxx::range(bhary);
     result->type = type;
     result->bhary = bhary;
+    result->view = result->bhary;
 }
 
 /**

@@ -56,6 +56,7 @@ inline void _<%= m %>(bhDataObj<T>* result, bhDataObj<T>* selfObj, bhDataObj<T>*
     bhxx::<%= m %>(bhary, selfArray, otherArray);
 
     result->bhary = bhary;
+    result->view = result->bhary;
     result->type = selfObj->type;
 }
 
@@ -89,6 +90,7 @@ inline void _<%= m %>_constant(bhDataObj<T>* result, bhDataObj<T>* selfObj, T va
     bhxx::<%= m %>(bhary, selfArray, value);
 
     result->bhary = bhary;
+    result->view = result->bhary;
     result->type = selfObj->type;
 }
 
@@ -113,8 +115,7 @@ inline void _<%= m %>_constant_bang(bhDataObj<T>* selfObj, T value) {
     @returns The resulting array.
 */
 VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
-    bhDataObj<int64_t> *tmpObj;
-    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
+    UNPACK(int64_t, tmpObj);
 
     VALUE res = bh_array_alloc(RBASIC_CLASS(self));
 
@@ -122,16 +123,14 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
         <% types.each do |type, ruby_types| %>
             <% ruby_types.each do |ruby_type| %>
             case <%= ruby_type %>: {
-                bhDataObj<<%= type %>> *selfObj, *result;
-                Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
-                Data_Get_Struct(res, bhDataObj<<%= type %>>, result);
+                UNPACK(<%= type %>, selfObj);
+                UNPACK_(<%= type %>, result, res);
 
                 <% if has_constant %>
                 if (is_constant(other)) {
                     _<%= m %>_constant<<%= type %>>(result, selfObj, <%= type_converter(ruby_type) %>(other));
                 } else <% end %>{
-                    bhDataObj<<%= type %>> *otherObj;
-                    Data_Get_Struct(other, bhDataObj<<%= type %>>, otherObj);
+                    UNPACK_(<%= type %>, otherObj, other);
                     assert(selfObj->type == otherObj->type);
                     _<%= m %><<%= type %>>(result, selfObj, otherObj);
                 }
@@ -154,22 +153,19 @@ VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
     @returns The resulting array.
 */
 VALUE bh_array_m_<%= m %>_bang(VALUE self, VALUE other) {
-    bhDataObj<int64_t> *tmpObj;
-    Data_Get_Struct(self, bhDataObj<int64_t>, tmpObj);
+    UNPACK(int64_t, tmpObj);
 
     switch (tmpObj->type) {
         <% types.each do |type, ruby_types| %>
             <% ruby_types.each do |ruby_type| %>
             case <%= ruby_type %>: {
-                bhDataObj<<%= type %>> *selfObj;
-                Data_Get_Struct(self, bhDataObj<<%= type %>>, selfObj);
+                UNPACK(<%= type %>, selfObj);
 
                 <% if has_constant %>
                 if (is_constant(other)) {
                     _<%= m %>_constant_bang<<%= type %>>(selfObj, <%= type_converter(ruby_type) %>(other));
                 } else <% end %>{
-                    bhDataObj<<%= type %>> *otherObj;
-                    Data_Get_Struct(other, bhDataObj<<%= type %>>, otherObj);
+                    UNPACK_(<%= type %>, otherObj, other);
                     assert(selfObj->type == otherObj->type);
                     _<%= m %>_bang<<%= type %>>(selfObj, otherObj);
                 }

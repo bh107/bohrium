@@ -56,6 +56,10 @@ class Float
   prepend BohriumFloatExtensions
 end
 
-class Boolean
+class TrueClass
+  prepend BohriumExtensions
+end
+
+class FalseClass
   prepend BohriumExtensions
 end

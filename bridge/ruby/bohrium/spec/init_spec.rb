@@ -20,7 +20,7 @@ describe BhArray do
       end
 
       it "contains an array of same size" do
-        expect(@a.to_ary.size).to eq(10)
+        expect(@a.size).to eq(10)
       end
 
       it "contains an array with only ones" do
@@ -34,11 +34,11 @@ describe BhArray do
       end
 
       it "contains the product of dimensions elements" do
-        expect(@a.to_ary.size).to eq(100)
+        expect(@a.size).to eq(100)
       end
 
       it "contains only ones" do
-        expect(@a.to_ary.uniq).to eq([1])
+        expect(@a.to_ary.map(&:uniq).uniq).to eq([[1]])
       end
     end
 
@@ -88,11 +88,11 @@ describe BhArray do
       end
 
       it "contains the product of dimensions elements" do
-        expect(@a.to_ary.size).to eq(100)
+        expect(@a.size).to eq(100)
       end
 
       it "contains only zeros" do
-        expect(@a.to_ary.uniq).to eq([0])
+        expect(@a.to_ary.map(&:uniq).uniq).to eq([[0]])
       end
     end
   end
