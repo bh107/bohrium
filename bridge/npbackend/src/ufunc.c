@@ -21,53 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bhc.h>
 #include "ufunc.h"
 
-// This corresponds to `numpy.isscalar()`, which does not count 0-dim arrays as scalars
-// In Bohrium, we handle 0-dim arrays as regular arrays.
-#define IsAnyScalar(o) (PyArray_IsScalar(o, Generic) || PyArray_IsPythonNumber(o))
-
-
-// Converts the dtype enum from NumPy to Bohrium
-static bhc_dtype dtype_np2bhc(const int np_dtype_num) {
-    switch(np_dtype_num) {
-        case NPY_BOOL:
-            return BH_BOOL;
-        case NPY_INT8:
-            return BH_INT8;
-        case NPY_INT16:
-            return BH_INT16;
-        case NPY_INT32:
-            return BH_INT32;
-        case NPY_INT64:
-            return BH_INT64;
-        case NPY_UINT8:
-            return BH_UINT8;
-        case NPY_UINT16:
-            return BH_UINT16;
-        case NPY_UINT32:
-            return BH_UINT32;
-        case NPY_UINT64:
-            return BH_UINT64;
-        case NPY_FLOAT32:
-            return BH_FLOAT32;
-        case NPY_FLOAT64:
-            return BH_FLOAT64;
-        case NPY_COMPLEX64:
-            return BH_COMPLEX64;
-        case NPY_COMPLEX128:
-            return BH_COMPLEX128;
-        default:
-            fprintf(stderr, "dtype_np2bhc() - unknown dtype!\n");
-            assert(1==2);
-            exit(-1);
-    }
-}
-
-/** Handle ufunc operations.
- *
- * @param opcode        A enum opcode
- * @param operand_list  List of operands that can be NumPy-arrays, Bohrium-arrays, and Scalars
- *                      NB: the dtypes must match a bhc API function.
- */
 PyObject *
 PyUfunc(PyObject *self, PyObject *args, PyObject *kwds) {
     int opcode;
