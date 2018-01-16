@@ -1207,7 +1207,7 @@ PyTypeObject BhArrayType = {
 
 // The methods (functions) of this module
 static PyMethodDef _bhMethods[] = {
-    {"ufunc", (PyCFunction) PyUfunc, METH_VARARGS | METH_KEYWORDS,
+    {"ufunc", (PyCFunction) PyArrayOp, METH_VARARGS | METH_KEYWORDS,
               "Execute a ufunc operation."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
