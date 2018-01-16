@@ -62,28 +62,12 @@ static bhc_dtype dtype_np2bhc(const int np_dtype_num) {
     }
 }
 
-// The dtype of the scalar argument (if any) is the same as the last input array
-PyArray_Descr* find_desired_scalar_type(PyObject *operand_fast_seq) {
-    const Py_ssize_t nop = PySequence_Fast_GET_SIZE(operand_fast_seq);
-    if (nop == 1) { // Only one operand thus we return its dtype
-        return PyArray_DESCR((PyArrayObject *) PySequence_Fast_GET_ITEM(operand_fast_seq, 0));
-    }
-    // Iterate over all input operands
-    for (int i=nop-1; i > 0; --i) {
-        PyObject *op = PySequence_Fast_GET_ITEM(operand_fast_seq, i); // Borrowed reference and will not fail
-        if (!IsAnyScalar(op)) {
-            assert(PyArray_Check(op));
-            PyArray_Descr *ret = PyArray_DESCR((PyArrayObject *) op);
-            return ret;
-        }
-    }
-    // At this point, all inputs appears to be scalars
-    // Since we have no input array operands, we will return the dtype of the first scalar
-    assert(nop > 1);
-    return PyArray_DESCR((PyArrayObject *) PySequence_Fast_GET_ITEM(operand_fast_seq, 1));
-}
-
-// Handle ufunc operations.
+/** Handle ufunc operations.
+ *
+ * @param opcode        A enum opcode
+ * @param operand_list  List of operands that can be NumPy-arrays, Bohrium-arrays, and Scalars
+ *                      NB: the dtypes must match a bhc API function.
+ */
 PyObject *
 PyUfunc(PyObject *self, PyObject *args, PyObject *kwds) {
     int opcode;
@@ -101,7 +85,6 @@ PyUfunc(PyObject *self, PyObject *args, PyObject *kwds) {
     }
 
     const Py_ssize_t nop = PySequence_Fast_GET_SIZE(operand_fast_seq);
-    PyArray_Descr* desired_scalar_dtype = find_desired_scalar_type(operand_fast_seq); // Borrowed reference
     bhc_dtype types[nop];
     bhc_bool constants[nop];
     void *operands[nop];
@@ -111,14 +94,12 @@ PyUfunc(PyObject *self, PyObject *args, PyObject *kwds) {
     int objs2free_count = 0;
     for (int i = 0; i < nop; ++i) {
         PyObject *op = PySequence_Fast_GET_ITEM(operand_fast_seq, i); // Borrowed reference and will not fail
-
         if (IsAnyScalar(op)) {
-            Py_XINCREF(desired_scalar_dtype); // `PyArray_FromAny()` steals a reference to `dtype` !
-            PyObject *zero_dim_ary = PyArray_FromAny(op, desired_scalar_dtype, 0, 1, 0, NULL);
+            // Convert any kind of scalar to a 0-dim array, which makes it easy to extract the scalar value
+            PyObject *zero_dim_ary = PyArray_FromAny(op, NULL, 0, 1, 0, NULL);
             if (zero_dim_ary == NULL) {
                 return NULL;
             }
-            assert(desired_scalar_dtype == NULL || PyArray_DESCR((PyArrayObject*) zero_dim_ary)->type_num == desired_scalar_dtype->type_num);
             types[i] = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) zero_dim_ary)->type_num);
             operands[i] = PyArray_DATA((PyArrayObject*) zero_dim_ary);
             objs2free[objs2free_count++] = zero_dim_ary;

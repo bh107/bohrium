@@ -193,12 +193,15 @@ class Ufunc(object):
         # Find the type signature
         (out_dtype, in_dtype) = _util.type_sig(self.info['name'], args)
 
-        # Convert dtype of all inputs
+        # Convert dtype of all inputs to match the function type signature
         for i in range(len(args)):
-            if not np.isscalar(args[i]) and not dtype_equal(args[i], in_dtype):
-                tmp = array_create.empty_like(args[i], dtype=in_dtype)
-                tmp[...] = args[i]
-                args[i] = tmp
+            if not dtype_equal(args[i], in_dtype):
+                if np.isscalar(args[i]):
+                    args[i] = in_dtype.type(args[i])
+                else:
+                    tmp = array_create.empty_like(args[i], dtype=in_dtype)
+                    tmp[...] = args[i]
+                    args[i] = tmp
 
         # Insert the output array
         if out is None or not dtype_equal(out_dtype, out.dtype):
