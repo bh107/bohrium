@@ -22,10 +22,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "util.h"
 
-/** Handle ufunc operations.
+/** Handle regular array operations, which is the operations implemented in `bhc_array_operations_enum_typed.cpp`
  *
  * @param opcode        A enum opcode
  * @param operand_list  List of operands that can be NumPy-arrays, Bohrium-arrays, and Scalars
  *                      NB: the dtypes must match a bhc API function.
  */
-PyObject * PyUfunc(PyObject *self, PyObject *args, PyObject *kwds);
+PyObject * PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds);

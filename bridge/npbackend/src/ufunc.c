@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "ufunc.h"
 
 PyObject *
-PyUfunc(PyObject *self, PyObject *args, PyObject *kwds) {
+PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds) {
     int opcode;
     PyObject *operand_fast_seq;
     {
