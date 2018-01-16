@@ -281,25 +281,6 @@ def extmethod(name, out, in1, in2):
                                   "the extension method '%s'" % name)
 
 
-def arange(size, dtype):
-    """
-    Create a new array containing the values [0:size[
-
-    :size int: Number of elements in the range [0:size[
-    :in1 numpy.dtype: The
-    :rtype: None
-    """
-
-    # Create new array
-    ret = View(1, 0, (size,), (1,), Base(size, dtype))
-
-    # And apply the range operation
-    if size > 0:
-        _ufunc("range", ret)
-
-    return ret
-
-
 def random123(size, start_index, key):
     """
     Create a new random array using the random123 algorithm.

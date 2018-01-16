@@ -5,6 +5,7 @@ Array Creation Routines
 import math
 import warnings
 from . import bhary
+from . import _info
 from .bhary import fix_biclass_wrapper
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in, dtype_support
@@ -627,6 +628,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
 
 @fix_biclass_wrapper
 def simply_range(size, dtype=numpy.uint64):
+    from . import _bh
     try:
         integers = (int, long)
     except:
@@ -651,8 +653,7 @@ def simply_range(size, dtype=numpy.uint64):
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
 
-    ret = target_bhc.arange(size, A.dtype)
-    A = bhary.new((size,), A.dtype, ret)
+    _bh.ufunc(_info.op["range"]['id'], (A,))
 
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)
