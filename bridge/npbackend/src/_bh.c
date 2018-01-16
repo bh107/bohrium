@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 #include <bh_mem_signal.h>
 #include "_bh.h"
-#include "ufunc.h"
+#include "handle_array_op.h"
 
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args);
