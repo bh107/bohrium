@@ -209,7 +209,7 @@ def set_bhc_data_from_ary(self, ary):
     ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
 
 
-def ufunc(op, *args, **kwd):
+def _ufunc(op, *args, **kwd):
     """
     Apply the 'op' on args, which is the output followed by one or two inputs
     Use the 'dtypes' option in 'kwd' to force the data types (None is default)
@@ -264,7 +264,7 @@ def reduce(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    ufunc("%s_reduce" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
+    _ufunc("%s_reduce" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
 
 
 def accumulate(op, out, ary, axis):
@@ -280,7 +280,7 @@ def accumulate(op, out, ary, axis):
     if ary.size == 0 or ary.base.size == 0:
         return
 
-    ufunc("%s_accumulate" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
+    _ufunc("%s_accumulate" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
 
 
 def extmethod(name, out, in1, in2):
@@ -323,7 +323,7 @@ def arange(size, dtype):
 
     # And apply the range operation
     if size > 0:
-        ufunc("range", ret)
+        _ufunc("range", ret)
 
     return ret
 
@@ -341,7 +341,7 @@ def random123(size, start_index, key):
 
     # And apply the range operation
     if size > 0:
-        ufunc("random123", ret, start_index, key, dtypes=[dtype] * 3)
+        _ufunc("random123", ret, start_index, key, dtypes=[dtype] * 3)
 
     return ret
 
@@ -356,7 +356,7 @@ def gather(out, ary, indexes):
     :param Mixed indexes: Array of indexes (uint64).
     """
 
-    ufunc("gather", out, ary, indexes)
+    _ufunc("gather", out, ary, indexes)
 
 
 def scatter(out, ary, indexes):
@@ -369,7 +369,7 @@ def scatter(out, ary, indexes):
     :param Mixed indexes: Array of absolute indexes (uint64).
     """
 
-    ufunc("scatter", out, ary, indexes)
+    _ufunc("scatter", out, ary, indexes)
 
 
 def cond_scatter(out, ary, indexes, mask):
@@ -383,7 +383,7 @@ def cond_scatter(out, ary, indexes, mask):
     :param Mixed ary: A boolean mask that specifies which indexes and values to include and exclude
     """
 
-    ufunc("cond_scatter", out, ary, indexes, mask)
+    _ufunc("cond_scatter", out, ary, indexes, mask)
 
 
 def message(msg):
