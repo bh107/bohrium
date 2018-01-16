@@ -293,6 +293,7 @@ class Ufunc(object):
         array([[ 1,  5],
                [ 9, 13]])
         """
+        from . import _bh
 
         if out is not None:
             if bhary.check(out):
@@ -357,7 +358,7 @@ class Ufunc(object):
             if ary.shape[axis] == 0:
                 tmp[...] = getattr(getattr(np, self.info['name']), "identity")
             else:
-                target_bhc.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
+                _bh.ufunc(_info.op["%s_reduce" % self.info['name']]['id'], (tmp, ary, np.int64(axis)))
 
             if out is not None:
                 out[...] = tmp
