@@ -448,6 +448,7 @@ class Ufunc(object):
         array([[ 1.,  1.],
                [ 0.,  1.]])
         """
+        from . import _bh
 
         if out is not None:
             if bhary.check(out):
@@ -478,7 +479,7 @@ class Ufunc(object):
         if out is None:
             out = array_create.empty(ary.shape, dtype=ary.dtype)
 
-        target_bhc.accumulate(self, get_bhc(out), get_bhc(ary), axis)
+        _bh.ufunc(_info.op["%s_accumulate" % self.info['name']]['id'], (out, ary, np.int64(axis)))
         return out
 
 

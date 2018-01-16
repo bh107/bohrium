@@ -255,22 +255,6 @@ def _ufunc(op, *args, **kwd):
     _bhc_exec(getattr(bhc, fname), *args)
 
 
-def accumulate(op, out, ary, axis):
-    """
-    Accumulate 'axis' dimension of 'ary' and write the result to out
-
-    :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
-    :out ?:
-    :in1 ?:
-    :in2 ?:
-    :rtype: None
-    """
-    if ary.size == 0 or ary.base.size == 0:
-        return
-
-    _ufunc("%s_accumulate" % op.info['name'], out, ary, axis, dtypes=[None, None, numpy.dtype("int64")])
-
-
 def extmethod(name, out, in1, in2):
     """
     Apply the extended method 'name'
