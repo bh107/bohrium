@@ -82,14 +82,40 @@ void BhArray<T>::pprint(std::ostream& os) const {
 
     // Pretty print the content
     os << scientific;
-    os << "[";
-    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->nelem); ++i) {
-        if (i > 0) {
-            os << ", ";
+
+    if (shape.size() == 2) {
+        // If the shape is size 2, lets print a new 2d array.
+        // The shape is (row, col)
+        os << "[";
+        for (size_t row = 0; row < shape[0]; ++row) {
+            // The first row doesn't get a space
+            if (row != 0) { os << " "; }
+
+            os << "[";
+
+            for (size_t col = 0; col < shape[1]; ++col) {
+                // The first column doesn't get a comma
+                if (col > 0) { os << ", "; }
+                os << data[row * shape[1] + col];
+            }
+
+            os << "]";
+
+            // The last row doesn't get a comma
+            if (row != shape[0]-1) { os << ",\n"; }
         }
-        os << data[i];
+
+        os << "]" << endl;
+    } else {
+        os << "[";
+        for (size_t i = 0; i < numberOfElements(); ++i) {
+            if (i > 0) {
+                os << ", ";
+            }
+            os << data[i];
+        }
+        os << "]" << endl;
     }
-    os << "]" << endl;
 }
 
 // Instantiate all possible types of `BhArray`
