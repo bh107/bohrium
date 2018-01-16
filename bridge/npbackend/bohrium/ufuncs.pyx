@@ -77,6 +77,8 @@ def overlap_conflict(out, *inputs):
 def assign(ary, out):
     """Copy data from array 'ary' to 'out'"""
 
+    from . import _bh
+
     if not np.isscalar(ary):
         (ary, out) = broadcast_arrays(ary, out)[0]
         # We ignore self assignments
@@ -99,13 +101,7 @@ def assign(ary, out):
         return assign(tmp, out)
 
     if bhary.check(out):
-        out = get_bhc(out)
-        if not np.isscalar(ary):
-            if not bhary.check(ary):
-                # Convert the NumPy array to bohrium
-                ary = array_create.array(ary)
-            ary = get_bhc(ary)
-        target_bhc.ufunc(UFUNCS["identity"], out, ary)
+        _bh.ufunc(UFUNCS["identity"].info['id'], (out, ary))
     else:
         if bhary.check(ary):
             if "BH_SYNC_WARN" in os.environ:
