@@ -299,46 +299,6 @@ def random123(size, start_index, key):
     return ret
 
 
-def gather(out, ary, indexes):
-    """
-    Gather elements from 'ary' selected by 'indexes'.
-    ary.shape == indexes.shape.
-
-    :param Mixed out: The array to write results to.
-    :param Mixed ary: Input array.
-    :param Mixed indexes: Array of indexes (uint64).
-    """
-
-    _ufunc("gather", out, ary, indexes)
-
-
-def scatter(out, ary, indexes):
-    """
-    Scatter elements from 'ary' into 'out' at locations specified by 'indexes'.
-    ary.shape == indexes.shape.
-
-    :param Mixed out: The array to write results to.
-    :param Mixed ary: Input array.
-    :param Mixed indexes: Array of absolute indexes (uint64).
-    """
-
-    _ufunc("scatter", out, ary, indexes)
-
-
-def cond_scatter(out, ary, indexes, mask):
-    """
-    Scatter elements from 'ary' into 'out' at locations specified by 'indexes' where 'mask' is true.
-    ary.shape == indexes.shape.
-
-    :param Mixed out: The array to write results to.
-    :param Mixed ary: Input array.
-    :param Mixed indexes: Array of absolute indexes (uint64).
-    :param Mixed ary: A boolean mask that specifies which indexes and values to include and exclude
-    """
-
-    _ufunc("cond_scatter", out, ary, indexes, mask)
-
-
 def message(msg):
     """ Send and receive a message through the component stack """
     return "%s" % (bhc.message(msg))
