@@ -255,32 +255,6 @@ def _ufunc(op, *args, **kwd):
     _bhc_exec(getattr(bhc, fname), *args)
 
 
-def extmethod(name, out, in1, in2):
-    """
-    Apply the extended method 'name'
-
-    :name str: Name of the extension method.
-    :out ?:
-    :in1 ?:
-    :in2 ?:
-    :rtype: None
-    """
-    if out.size == 0 or out.base.size == 0:
-        return
-
-    func = getattr(bhc, "extmethod_A%s_A%s_A%s" % (
-        dtype_name(out),
-        dtype_name(in1),
-        dtype_name(in2)
-    ))
-
-    ret = _bhc_exec(func, name, out, in1, in2)
-
-    if ret != 0:
-        raise NotImplementedError("The current runtime system does not support "
-                                  "the extension method '%s'" % name)
-
-
 def random123(size, start_index, key):
     """
     Create a new random array using the random123 algorithm.

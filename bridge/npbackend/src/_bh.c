@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_mem_signal.h>
 #include "_bh.h"
 #include "handle_array_op.h"
+#include "handle_special_op.h"
 
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args);
@@ -1208,7 +1209,10 @@ PyTypeObject BhArrayType = {
 // The methods (functions) of this module
 static PyMethodDef _bhMethods[] = {
     {"ufunc", (PyCFunction) PyArrayOp, METH_VARARGS | METH_KEYWORDS,
-              "Execute a ufunc operation."},
+              "Handle regular array operations, which is the operations " \
+              "implemented in `bhc_array_operations_enum_typed.cpp`."},
+    {"extmethod", (PyCFunction) PyExtMethod, METH_VARARGS | METH_KEYWORDS,
+              "Handle extension methods."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
