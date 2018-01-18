@@ -5,7 +5,6 @@ Interop PyCUDA
 from .bhary import get_bhc, get_base
 from .target_bhc import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
-from ._util import flush
 from . import contexts
 
 _cuda_is_in_stack = None
@@ -52,7 +51,8 @@ def init():
     _initiated = True
     if not available():
         return
-    flush()
+    from . import _bh
+    _bh.flush()
     import pycuda
     import pycuda.autoinit
     pycuda.driver.mem_alloc(1)  # Force PyCUDA to activate the context as "current context"

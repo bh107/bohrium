@@ -88,3 +88,8 @@ PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds) {
         Py_RETURN_NONE;
     }
 }
+
+PyObject* PyFlush(PyObject *self, PyObject *args) {
+    bhc_flush();
+    Py_RETURN_NONE;
+}

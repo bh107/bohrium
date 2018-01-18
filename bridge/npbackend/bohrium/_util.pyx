@@ -22,14 +22,6 @@ import collections
 import numpy_force as np
 from . import _info
 
-def flush(ary=None):
-    """Flush the delayed operations for Bohrium execution."""
-
-    from .bhary import check
-    from .target_bhc import runtime_flush
-    if ary is None or check(ary):
-        runtime_flush()
-
 def dtype_of(obj):
     """Returns the dtype of 'obj'."""
 
