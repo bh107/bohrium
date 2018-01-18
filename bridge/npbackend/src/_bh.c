@@ -1216,6 +1216,8 @@ static PyMethodDef _bhMethods[] = {
               "Handle extension methods."},
     {"flush", PyFlush,  METH_NOARGS,
               "Evaluate all delayed array operations"},
+    {"sync", (PyCFunction) PySync, METH_VARARGS | METH_KEYWORDS,
+            "Sync `ary` to host memory."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

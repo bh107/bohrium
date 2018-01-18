@@ -5,7 +5,8 @@ Bohrium Loop
 
 import sys
 import numpy_force as numpy
-from .target_bhc import runtime_flush_count, runtime_flush_and_repeat, runtime_sync
+from .target_bhc import runtime_flush_count, runtime_flush_and_repeat
+from . import _bh
 from . import bhary
 
 
@@ -46,7 +47,6 @@ def do_while(func, niters, *args, **kwargs):
     >>> a
     array([3, 3, 3, 3])
     """
-    from . import _bh
 
     _bh.flush()
     flush_count = runtime_flush_count()
@@ -70,6 +70,5 @@ def do_while(func, niters, *args, **kwargs):
         if not bhary.is_base(cond):
             raise TypeError("Invalid `func`: `func` returns an array view. It must return a base array.")
 
-        cond = bhary.get_bhc(cond)
-        runtime_sync(cond)
-        runtime_flush_and_repeat(niters, cond)
+        _bh.sync(cond)
+        runtime_flush_and_repeat(niters, bhary.get_bhc(cond))

@@ -136,18 +136,6 @@ def runtime_flush_and_repeat(nrepeats, ary):
         return bhc.flush_and_repeat_condition(nrepeats, ary.bhc_obj)
 
 
-def runtime_sync(ary):
-    """Sync `ary` to host memory"""
-
-    dtype = dtype_name(ary)
-    ary = ary.bhc_obj
-    bhc.call_single_dtype("sync", dtype, ary)
-
-
-def tally():
-    pass
-
-
 def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     """ Retrieves the data pointer from Bohrium Runtime. """
     if ary.size == 0 or ary.base.size == 0:
