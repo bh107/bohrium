@@ -7,8 +7,7 @@ import numpy_force as numpy
 from . import bhary
 from . import _info
 from ._util import is_scalar
-from .bhary import fix_biclass_wrapper, get_bhc
-from . import target_bhc
+from .bhary import fix_biclass_wrapper
 from . import array_create
 from . import array_manipulation
 from . import ufuncs
