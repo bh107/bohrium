@@ -8,7 +8,7 @@ describe BhArray do
       end
 
       it "return the values of the view after changing it" do
-        expect(@a.shape).to eq([1, 6])
+        expect(@a.shape).to eq([6])
         @a[true] = 666
         expect(@a.to_ary).to eq([666, 666, 666, 666, 666, 666])
       end

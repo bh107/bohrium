@@ -46,8 +46,8 @@ void _initialize(VALUE self, VALUE ary, ruby_value_type type) {
 
     shared_ptr<bhxx::BhBase> _base = bhxx::make_base_ptr(data_array.begin(), data_array.end());
 
-    dataObj->bhary = *(new bhxx::BhArray<T>(_base, {1, size}));
-    dataObj->view = dataObj->bhary;
+    // TODO: For now we only allow one-dimensional input
+    dataObj->bhary = *(new bhxx::BhArray<T>(_base, {size}));
     dataObj->type = type;
 }
 

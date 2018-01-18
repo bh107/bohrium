@@ -56,7 +56,6 @@ inline void _<%= m %>(bhDataObj<T>* result, bhDataObj<T>* selfObj, bhDataObj<T>*
     bhxx::<%= m %>(bhary, selfArray, otherArray);
 
     result->bhary = bhary;
-    result->view = result->bhary;
     result->type = selfObj->type;
 }
 
@@ -90,7 +89,6 @@ inline void _<%= m %>_constant(bhDataObj<T>* result, bhDataObj<T>* selfObj, T va
     bhxx::<%= m %>(bhary, selfArray, value);
 
     result->bhary = bhary;
-    result->view = result->bhary;
     result->type = selfObj->type;
 }
 

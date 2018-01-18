@@ -6,9 +6,7 @@ require "bohrium/refinements"
 class BhArray
   def [](*args)
     # Ensure that all the dimensions are accounted for.
-    unless self.shape.last == 1
-      args << true until args.size == self.shape.size
-    end
+    args.unshift(true) until args.size == self.shape.size
 
     ranges = convert_ranges(*args)
     view_from_ranges(*ranges)
@@ -16,9 +14,7 @@ class BhArray
 
   def []=(*args, value)
     # Ensure that all the dimensions are accounted for.
-    unless self.shape.last == 1
-      args.unshift(true) until args.size == self.shape.size
-    end
+    args.unshift(true) until args.size == self.shape.size
 
     ranges = convert_ranges(*args)
     # If the value is an array, convert it to a BhArray.

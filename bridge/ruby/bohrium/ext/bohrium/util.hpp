@@ -53,18 +53,18 @@ inline void _print_to(VALUE self, ostream &ss) {
     switch (tmpObj->type) {
         case T_FIXNUM: {
             UNPACK(int64_t, dataObj);
-            dataObj->view.pprint(ss);
+            dataObj->bhary.pprint(ss);
             break;
         }
         case T_FLOAT: {
             UNPACK(float, dataObj);
-            dataObj->view.pprint(ss);
+            dataObj->bhary.pprint(ss);
             break;
         }
         case T_TRUE:
         case T_FALSE: {
             UNPACK(bool, dataObj);
-            dataObj->view.pprint(ss);
+            dataObj->bhary.pprint(ss);
             break;
         }
         default:
@@ -126,30 +126,30 @@ template <typename T>
 inline void _to_ary(VALUE self, VALUE rb_ary) {
     UNPACK(T, dataObj);
 
-    bhxx::BhArray<T> bh_view = bhxx::as_contiguous(dataObj->view);
+    bhxx::BhArray<T> bh_view = bhxx::as_contiguous(dataObj->bhary);
     bhxx::Runtime::instance().sync(bh_view.base);
     bhxx::Runtime::instance().flush();
 
     if (bh_view.shape.size() > 2) {
-        // If dimensions are above 2, we return one dimensional data.
-        for(size_t i = 0; i < static_cast<size_t>(bh_view.numberOfElements()); ++i) {
+        // FIXME: If dimensions are above 2, we return one dimensional data.
+        for(size_t i = 0; i < bh_view.numberOfElements(); ++i) {
             rb_ary_push(rb_ary, _typed_data<T>(bh_view, i));
         }
     } else {
         // For 1 or 2 dimensions, we return a possibly nested array.
-        if (bh_view.shape.size() == 2 && bh_view.shape[0] == 1) {
+        if (bh_view.shape.size() == 1) {
             // One-dimensional array
-            for(size_t i = 0; i < bh_view.shape[1]; ++i) {
+            for(size_t i = 0; i < bh_view.shape[0]; ++i) {
                 rb_ary_push(rb_ary, _typed_data<T>(bh_view, i));
             }
         } else {
             // Two-dimensional array
             VALUE inner_ary;
 
-            for (size_t i = 0; i < bh_view.shape[0]; ++i) {
+            for (size_t row = 0; row < bh_view.shape[0]; ++row) {
                 inner_ary = rb_ary_new();
-                for (size_t j = 0; j < bh_view.shape[1]; ++j) {
-                    rb_ary_push(inner_ary, _typed_data<T>(bh_view, i * bh_view.shape[1] + j));
+                for (size_t col = 0; col < bh_view.shape[1]; ++col) {
+                    rb_ary_push(inner_ary, _typed_data<T>(bh_view, row * bh_view.shape[1] + col));
                 }
                 rb_ary_push(rb_ary, inner_ary);
             }
@@ -267,7 +267,6 @@ VALUE bh_array_m_reshape(VALUE self, VALUE new_shape) {
         UNPACK_(int64_t, newObj, returnObj);
 
         newObj->bhary = bhxx::reshape(dataObj->bhary, shape);
-        newObj->view = newObj->bhary;
         newObj->type = dataObj->type;
     } catch(const std::runtime_error& e) {
         // Convert potential C++ error to Ruby exception.
@@ -303,10 +302,6 @@ inline bhxx::Shape* _shape_from_range(int num_ranges, VALUE *end, size_t stride_
         shape_vector.push_back(b-a+1);
     }
 
-    if (shape_vector.size() == 1 && stride_size == 2) {
-        shape_vector.push_back(1);
-    }
-
     return new bhxx::Shape(shape_vector);
 }
 
@@ -324,9 +319,10 @@ inline bhxx::BhArray<T> _view_from_ranges(bhDataObj<T>* dataObj, int num_ranges,
     // Only allow same stride for now.
     bhxx::Stride _stride(dataObj->bhary.stride);
 
-    size_t start = _get<int64_t>(end[1], 0);
+    size_t start = _get<int64_t>(end[0], 0);
     if (num_ranges == 2) {
-        start += dataObj->view.shape[0] * _get<int64_t>(end[0], 0);
+        start *= dataObj->bhary.shape[1];
+        start += _get<int64_t>(end[1], 0);
     }
 
     // Create new array, that share the same base.
@@ -359,7 +355,6 @@ VALUE bh_array_m_view_from_ranges(int argc, VALUE *argv, VALUE self) {
             UNPACK(int64_t, dataObj);
             UNPACK_(int64_t, newObj, returnObj);
             newObj->bhary = _view_from_ranges<int64_t>(dataObj, argc, argv);
-            newObj->view = newObj->bhary;
             newObj->type = dataObj->type;
             break;
         }
@@ -367,7 +362,6 @@ VALUE bh_array_m_view_from_ranges(int argc, VALUE *argv, VALUE self) {
             UNPACK(float, dataObj);
             UNPACK_(float, newObj, returnObj);
             newObj->bhary = _view_from_ranges<float>(dataObj, argc, argv);
-            newObj->view = newObj->bhary;
             newObj->type = dataObj->type;
             break;
         }
@@ -376,7 +370,6 @@ VALUE bh_array_m_view_from_ranges(int argc, VALUE *argv, VALUE self) {
             UNPACK(bool, dataObj);
             UNPACK_(bool, newObj, returnObj);
             newObj->bhary = _view_from_ranges<bool>(dataObj, argc, argv);
-            newObj->view = newObj->bhary;
             newObj->type = dataObj->type;
             break;
         }
@@ -418,7 +411,7 @@ inline void _set_from_ranges(bhDataObj<T>* dataObj, int num_ranges, VALUE *end, 
             if (RBASIC_CLASS(val) == cBhArray) {
                 // If the value type is another array, we set the current view equal to that view.
                 UNPACK_(int64_t, dataObj, val);
-                bhxx::identity(view, dataObj->view);
+                bhxx::identity(view, dataObj->bhary);
             } else {
                 rb_raise(rb_eRuntimeError, "Got invalid type while setting values in array.");
             }

@@ -8,7 +8,7 @@ describe BhArray do
       end
 
       it "return the values of the view" do
-        expect(@a.shape).to eq([1, 6])
+        expect(@a.shape).to eq([6])
         expect(@a.to_ary).to eq([0, 1, 2, 3, 4, 5])
       end
     end
@@ -55,7 +55,7 @@ describe BhArray do
 
       it "return the values of the view from 0..0, 1..3" do
         expect(@a[0..0, 1..3].shape).to eq([1, 3])
-        expect(@a[0..0, 1..3].to_ary).to eq([1, 2, 3])
+        expect(@a[0..0, 1..3].to_ary).to eq([[1, 2, 3]])
       end
 
       it "return the values of the view from 1..3, 0..0" do
