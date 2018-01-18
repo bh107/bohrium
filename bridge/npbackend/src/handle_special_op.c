@@ -94,6 +94,43 @@ PyObject* PyFlush(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+PyObject* PyFlushCount(PyObject *self, PyObject *args) {
+    return PyLong_FromLong(bhc_flush_count());
+}
+
+PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args, PyObject *kwds) {
+    unsigned long nrepeats;
+    PyObject *condition = NULL;
+    static char *kwlist[] = {"nrepeats", "condition:bharray", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "k|O", kwlist, &nrepeats, &condition)) {
+        return NULL;
+    }
+    if (condition == NULL || condition == Py_None) {
+        bhc_flush_and_repeat(nrepeats);
+    } else if(!BhArray_CheckExact(condition)) {
+        PyErr_Format(PyExc_TypeError, "The condition must a bharray array or None");
+        return NULL;
+    } else {
+        bhc_dtype type;
+        bhc_bool constant;
+        void *operand;
+        normalize_cleanup_handle cleanup;
+        cleanup.objs2free_count = 0;
+        int err = normalize_operand(condition, &type, &constant, &operand, &cleanup);
+        if (err == -1) {
+            normalize_operand_cleanup(&cleanup);
+            if (PyErr_Occurred() != NULL) {
+                return NULL;
+            } else {
+                Py_RETURN_NONE;
+            }
+        }
+        bhc_flush_and_repeat_condition(nrepeats, operand);
+        normalize_operand_cleanup(&cleanup);
+    }
+    Py_RETURN_NONE;
+}
+
 PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *ary;
     static char *kwlist[] = {"ary", NULL};

@@ -1216,6 +1216,11 @@ static PyMethodDef _bhMethods[] = {
               "Handle extension methods."},
     {"flush", PyFlush,  METH_NOARGS,
               "Evaluate all delayed array operations"},
+    {"flush_count", PyFlushCount,  METH_NOARGS,
+            "Get the number of times flush has been called"},
+    {"flush_and_repeat", (PyCFunction) PyFlushCountAndRepeat, METH_VARARGS | METH_KEYWORDS,
+            "Flush and repeat the lazy evaluated operations while `condition` " \
+            "is true and `nrepeats` hasn't been reach"},
     {"sync", (PyCFunction) PySync, METH_VARARGS | METH_KEYWORDS,
             "Sync `ary` to host memory."},
     {NULL, NULL, 0, NULL}        /* Sentinel */

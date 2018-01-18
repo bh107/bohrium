@@ -28,6 +28,9 @@ If not, see <http://www.gnu.org/licenses/>.
     In Bohrium, we handle 0-dim arrays as regular arrays. */
 #define IsAnyScalar(o) (PyArray_IsScalar(o, Generic) || PyArray_IsPythonNumber(o))
 
+/** Check if Python object is a BhArray */
+#define BhArray_CheckExact(op) (((PyObject*) (op))->ob_type == &BhArrayType)
+
 /** Converts the dtype enum from NumPy to Bohrium */
 bhc_dtype dtype_np2bhc(const int np_dtype_num);
 
