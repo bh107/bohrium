@@ -122,20 +122,6 @@ def _bhc_exec(func, *args):
     return func(*args)
 
 
-def runtime_flush_count():
-    """Get the number of times flush has been called"""
-    return bhc.flush_count()
-
-
-def runtime_flush_and_repeat(nrepeats, ary):
-    """Flush and repeat the lazy evaluated operations while `ary` is true and `nrepeats` hasn't been reach"""
-
-    if ary is None:
-        return bhc.flush_and_repeat(nrepeats)
-    else:
-        return bhc.flush_and_repeat_condition(nrepeats, ary.bhc_obj)
-
-
 def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     """ Retrieves the data pointer from Bohrium Runtime. """
     if ary.size == 0 or ary.base.size == 0:

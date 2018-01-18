@@ -34,5 +34,15 @@ PyObject *PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds);
 /** Execute the delayed instruction */
 PyObject* PyFlush(PyObject *self, PyObject *args);
 
+/** Get the number of times flush has been called */
+PyObject* PyFlushCount(PyObject *self, PyObject *args);
+
+/** Flush and repeat the lazy evaluated operations while `condition` is true and `nrepeats` hasn't been reach
+ *
+ * @param nrepeats   Maximum number of times to repeat the lazy evaluated operations
+ * @param condition  The finish condition
+ * */
+PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args);
+
 /** Sync `ary` to host memory */
 PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);

@@ -63,5 +63,4 @@ extern int bh_sync_warn;         // Boolean flag: should we warn when copying fr
 extern int bh_mem_warn;          // Boolean flag: should we warn when about memory problems
 
 // Some nice shorthands
-#define BhArray_CheckExact(op) (((PyObject*) (op))->ob_type == &BhArrayType)
 #define bhc_exist(x) (((BhArray*) x)->bhc_ary != Py_None)
