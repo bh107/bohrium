@@ -2,6 +2,8 @@ require "mkmf"
 require "erb"
 require "json"
 
+require_relative "bohrium_helper.rb"
+
 # Need 'bhxx' and 'bohrium' paths
 _, bhxxlib = dir_config("bhxx")
 dir_config("bohrium")
@@ -21,29 +23,6 @@ end
 $CPPFLAGS << " -std=c++11"
 $LDFLAGS << " -lboost_system -lbhxx -Wl,-rpath,#{bhxxlib}"
 
-def convert_opcodes(opcodes)
-  opcodes.each_with_object(Hash.new) do |opcode, hash|
-    types = opcode["types"].select do |types|
-      # For now, only look at methods that has the same input and output types
-      # ... and no complex numbers
-      types.uniq.size == 1 && !(types.include?("BH_COMPLEX64") || types.include?("BH_COMPLEX128"))
-    end.map do |types|
-      # Remove bits, convert uint to int and remove BH_
-      types.map { |t| t.gsub(/\d+$/, "").gsub(/U?INT/, "int64_t").gsub("BH_", "").downcase }.first
-    end.each_with_object(Hash.new) do |type, thash|
-      thash[type] = case type
-                    when "int64_t" then ["T_FIXNUM", "T_BIGNUM"]
-                    when "float"   then ["T_FLOAT"]
-                    when "bool"    then ["T_TRUE", "T_FALSE"]
-                    end
-    end
-    next if types.empty?
-
-    name = opcode["opcode"].sub(/^BH_/, "").downcase
-    hash[name] = { types: types, layouts: opcode["layout"] }
-  end
-end
-
 # All opcodes
 @opcodes = JSON.parse(File.read(File.expand_path("#{__dir__}/../../../../../core/codegen/opcodes.json")))
 
@@ -60,6 +39,18 @@ end)
 end.reject do |opcode|
   # Remove SCATTER and GATHER as they are special
   ["BH_SCATTER", "BH_GATHER"].include?(opcode["opcode"])
+end)
+
+require 'pp'
+
+# Opcodes with ["A", "A", "K"] layout
+@opcodes_two_args_constant = convert_opcodes(@opcodes.select do |opcode|
+  # Only look at layouts with array `op` array (two argument arrays)
+  opcode["layout"].include?(["A", "A", "K"])
+end.reject do |opcode|
+  # Reject the ones already part of the above
+  name = opcode["opcode"].sub(/^BH_/, "").downcase
+  @opcodes_two_args.keys.include?(name)
 end)
 
 # Create 'hpp' and 'cpp' from templates

@@ -19,23 +19,7 @@ inline bool is_constant(VALUE val) {
     }
 }
 
-<%
-def type_converter(type)
-    case type
-    when "T_BIGNUM"
-    when "T_FIXNUM"
-        return "NUM2INT"
-    when "T_FLOAT"
-        return "NUM2DBL"
-    when "T_TRUE"
-    when "T_FALSE"
-        return ""
-    else
-        fail "Wrong type! Got #{type}."
-    end
-end
-
-@opcodes_two_args.each do |m, hash| %>
+<% @opcodes_two_args.each do |m, hash| %>
 <%
     types = hash[:types]
     has_constant = hash[:layouts].include?(["A", "A", "K"])
