@@ -93,3 +93,29 @@ PyObject* PyFlush(PyObject *self, PyObject *args) {
     bhc_flush();
     Py_RETURN_NONE;
 }
+
+PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary;
+    static char *kwlist[] = {"ary", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ary)) {
+        return NULL;
+    }
+
+    bhc_dtype type;
+    bhc_bool constant;
+    void *operand;
+    normalize_cleanup_handle cleanup;
+    cleanup.objs2free_count = 0;
+    int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
+    if (err != -1) {
+        normalize_operand_cleanup(&cleanup);
+        if (PyErr_Occurred() != NULL) {
+            return NULL;
+        } else {
+            Py_RETURN_NONE;
+        }
+    }
+    bhc_sync(type, operand);
+    normalize_operand_cleanup(&cleanup);
+    Py_RETURN_NONE;
+}

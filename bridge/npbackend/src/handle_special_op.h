@@ -33,3 +33,6 @@ PyObject *PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds);
 
 /** Execute the delayed instruction */
 PyObject* PyFlush(PyObject *self, PyObject *args);
+
+/** Sync `ary` to host memory */
+PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);
