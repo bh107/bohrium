@@ -5,7 +5,6 @@ import ctypes
 import numpy
 import functools
 import operator
-import atexit
 import os
 import sys
 
@@ -123,12 +122,6 @@ def _bhc_exec(func, *args):
     return func(*args)
 
 
-def runtime_flush():
-    """ Flush the runtime system """
-#    print("flush")
-    bhc.flush()
-
-
 def runtime_flush_count():
     """Get the number of times flush has been called"""
     return bhc.flush_count()
@@ -165,7 +158,9 @@ def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
 
     if copy2host:
         bhc.call_single_dtype("sync", dtype, ary)
-    runtime_flush()
+
+    from . import _bh
+    _bh.flush()
 
     data = bhc.call_single_dtype("data_get", dtype, ary, copy2host, allocate, nullify)
     if data is None:
@@ -185,7 +180,8 @@ def set_data_pointer(ary, mem_ptr_as_int, host_ptr=True):
     ary = ary.bhc_obj
 
     bhc.call_single_dtype("sync", dtype, ary)
-    runtime_flush()
+    from . import _bh
+    _bh.flush()
 
     bhc.call_single_dtype("data_set", dtype, ary, host_ptr, mem_ptr_as_int)
 
@@ -277,9 +273,3 @@ def message(msg):
     """ Send and receive a message through the component stack """
     return "%s" % (bhc.message(msg))
 
-
-@atexit.register
-def shutdown():
-    """Actions to invoke when shutting down."""
-
-    runtime_flush()

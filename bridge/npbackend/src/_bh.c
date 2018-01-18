@@ -271,6 +271,7 @@ static int _protected_malloc(BhArray *ary) {
 
 // Called when module exits
 static void module_exit(void) {
+    PyFlush(NULL, NULL);
     bh_mem_signal_shutdown();
 }
 
@@ -1213,6 +1214,8 @@ static PyMethodDef _bhMethods[] = {
               "implemented in `bhc_array_operations_enum_typed.cpp`."},
     {"extmethod", (PyCFunction) PyExtMethod, METH_VARARGS | METH_KEYWORDS,
               "Handle extension methods."},
+    {"flush", PyFlush,  METH_NOARGS,
+              "Evaluate all delayed array operations"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

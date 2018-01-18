@@ -29,3 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
  *                      NB: all dtype must be identical.
  */
 PyObject *PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds);
+
+
+/** Execute the delayed instruction */
+PyObject* PyFlush(PyObject *self, PyObject *args);

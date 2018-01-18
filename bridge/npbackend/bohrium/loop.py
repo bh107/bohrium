@@ -5,7 +5,7 @@ Bohrium Loop
 
 import sys
 import numpy_force as numpy
-from .target_bhc import runtime_flush, runtime_flush_count, runtime_flush_and_repeat, runtime_sync
+from .target_bhc import runtime_flush_count, runtime_flush_and_repeat, runtime_sync
 from . import bhary
 
 
@@ -46,8 +46,9 @@ def do_while(func, niters, *args, **kwargs):
     >>> a
     array([3, 3, 3, 3])
     """
+    from . import _bh
 
-    runtime_flush()
+    _bh.flush()
     flush_count = runtime_flush_count()
     cond = func(*args, **kwargs)
     if flush_count != runtime_flush_count():
