@@ -13,7 +13,7 @@ import functools
 import datetime
 import os
 import sys
-from bohrium import target_bhc
+from bohrium import _bh
 import math
 
 from libc.stdint cimport uint64_t, uint32_t
@@ -210,8 +210,7 @@ cdef class RandomState:
                 ctr.ul += 1
         else:
             length = size if numpy.isscalar(size) else functools.reduce(operator.mul, size)
-            bhc_obj = target_bhc.random123(length, self.index, self.key)
-            ret = np.bhary.new((length,), np.uint64, bhc_obj).reshape(size)
+            ret = _bh.random123(length, self.index, self.key).reshape(size)
         self.index += length
         return ret
 

@@ -1223,6 +1223,9 @@ static PyMethodDef _bhMethods[] = {
             "is true and `nrepeats` hasn't been reach"},
     {"sync", (PyCFunction) PySync, METH_VARARGS | METH_KEYWORDS,
             "Sync `ary` to host memory."},
+    {"random123", (PyCFunction) PyRandom123, METH_VARARGS | METH_KEYWORDS,
+            "Create a new random array using the random123 algorithm.\n" \
+            "The dtype is uint64 always."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

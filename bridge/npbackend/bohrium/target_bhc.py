@@ -225,24 +225,6 @@ def _ufunc(op, *args, **kwd):
     _bhc_exec(getattr(bhc, fname), *args)
 
 
-def random123(size, start_index, key):
-    """
-    Create a new random array using the random123 algorithm.
-    The dtype is uint64 always.
-    """
-
-    dtype = numpy.dtype("uint64")
-
-    # Create new array
-    ret = View(1, 0, (size,), (1,), Base(size, dtype))
-
-    # And apply the range operation
-    if size > 0:
-        _ufunc("random123", ret, start_index, key, dtypes=[dtype] * 3)
-
-    return ret
-
-
 def message(msg):
     """ Send and receive a message through the component stack """
     return "%s" % (bhc.message(msg))

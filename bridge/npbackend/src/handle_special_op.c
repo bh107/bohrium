@@ -156,3 +156,46 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
     normalize_operand_cleanup(&cleanup);
     Py_RETURN_NONE;
 }
+
+PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
+    unsigned long long size;
+    unsigned long long seed;
+    unsigned long long key;
+    static char *kwlist[] = {"size:int", "seed:int", "key:int", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "KKK", kwlist, &size, &seed, &key)) {
+        return NULL;
+    }
+
+    PyObject *array_create = PyImport_ImportModule("bohrium.array_create");
+    if (array_create == NULL) {
+        return NULL;
+    }
+    PyObject *py_size = PyLong_FromUnsignedLongLong(size);
+    if (py_size == NULL) {
+        return NULL;
+    }
+    PyObject *ret = PyObject_CallMethod(array_create, "empty", "OO", py_size, PyArray_DescrFromType(NPY_UINT64));
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    if (size > 0) {
+        bhc_dtype type;
+        bhc_bool constant;
+        void *operand;
+        normalize_cleanup_handle cleanup;
+        cleanup.objs2free_count = 0;
+        int err = normalize_operand(ret, &type, &constant, &operand, &cleanup);
+        if (err == -1) {
+            normalize_operand_cleanup(&cleanup);
+            if (PyErr_Occurred() != NULL) {
+                return NULL;
+            } else {
+                return ret;
+            }
+        }
+        bhc_random123_Auint64_Kuint64_Kuint64(operand, seed, key);
+        normalize_operand_cleanup(&cleanup);
+    }
+    return ret;
+}
