@@ -48,50 +48,6 @@ static int64_t ary_nbytes(const BhArray *ary) {
     }
 }
 
-// Help function to retrieve the Bohrium-C data pointer
-// Return -1 on error
-static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocation, int nullify, void **out_data) {
-    if(((BhArray*) ary)->mmap_allocated == 0) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "The array data wasn't allocated through mmap(). Typically, this is because the base array was created from a template, which is not supported by Bohrium."
-        );
-        return -1;
-    }
-
-    PyObject *data = PyObject_CallMethod(bhary, "get_bhc_data_pointer", "Oiii", ary, copy2host, force_allocation, nullify);
-    if(data == NULL) {
-        return -1;
-    }
-
-#if defined(NPY_PY3K)
-    if(!PyLong_Check(data)) {
-#else
-    if(!PyInt_Check(data)) {
-#endif
-        PyErr_SetString(
-            PyExc_TypeError,
-            "get_bhc_data_pointer(ary) should return a Python integer that represents a memory address."
-        );
-        Py_DECREF(data);
-        return -1;
-    }
-
-    void *d = PyLong_AsVoidPtr(data);
-    Py_DECREF(data);
-    if(force_allocation && d == NULL) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "get_bhc_data_pointer(ary, allocate=True) shouldn't return a NULL pointer"
-        );
-        return -1;
-    }
-
-    *out_data = d;
-    return 0;
-}
-
-
 // Help function for unprotect memory
 // Return -1 on error
 static int _munprotect(void *data, npy_intp size) {
@@ -443,10 +399,7 @@ static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args) {
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base));
 
     if(bhc_exist(base)) {
-        // Calling get_bhc_data_pointer(base, allocate=False, nullify=True)
-        void *d = NULL;
-        get_bhc_data_pointer(base, 1, 0, 1, &d);
-
+        void *d = BhGetDataPointer((BhArray*) base, 1, 0, 1);
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base), ary_nbytes((BhArray*) base));
         } else {
@@ -502,10 +455,7 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
     }
 
     // Copy the data from the NumPy part to the bhc part
-    void *data;
-    if (get_bhc_data_pointer(base, 1, 1, 0, &data) != 0) {
-        return NULL;
-    }
+    void *data = BhGetDataPointer((BhArray*) base, 1, 1, 0);
     memmove(data, PyArray_DATA((PyArrayObject*) base), PyArray_NBYTES((PyArrayObject*) base));
 
     // Finally, we memory protect the NumPy part of 'base' again
@@ -518,6 +468,7 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
 }
 
 static PyObject* BhArray_data_fill(PyObject *self, PyObject *args) {
+    assert(BhArray_CheckExact(self));
     PyObject *np_ary;
     if(!PyArg_ParseTuple(args, "O:ndarray", &np_ary)) {
         return NULL;
@@ -534,10 +485,7 @@ static PyObject* BhArray_data_fill(PyObject *self, PyObject *args) {
     }
 
     // Copy the data from the NumPy array 'np_ary' to the bhc part of `self`
-    void *data;
-    if (get_bhc_data_pointer(self, 1, 1, 0, &data) != 0) {
-        return NULL;
-    }
+    void *data = BhGetDataPointer((BhArray*) self, 1, 1, 0);
     memmove(data, PyArray_DATA((PyArrayObject*) np_ary), PyArray_NBYTES((PyArrayObject*) np_ary));
     Py_RETURN_NONE;
 }
@@ -568,10 +516,7 @@ static PyObject* BhArray_numpy_wrapper(PyObject *self, PyObject *args) {
         PyErr_Format(PyExc_RuntimeError, "Array must be C-style contiguous.");
         return NULL;
     }
-    void *data;
-    if (get_bhc_data_pointer(self, 1, 1, 0, &data) != 0) {
-        return NULL;
-    }
+    void *data = BhGetDataPointer((BhArray*) self, 1, 1, 0);
     return PyArray_SimpleNewFromData(PyArray_NDIM(s), PyArray_DIMS(s), PyArray_TYPE(s), data);
 }
 

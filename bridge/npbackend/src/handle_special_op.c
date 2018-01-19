@@ -192,3 +192,41 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
     return ret;
 }
 
+void *BhGetDataPointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify) {
+
+    if (PyArray_SIZE((PyArrayObject*) ary) <= 0) {
+        return NULL;
+    }
+
+    PyObject *bhc_view = PyObject_CallMethod(bhary, "get_bhc", "O", (PyObject*)ary);
+    if(bhc_view == NULL) {
+        fprintf(stderr, "Fatal error: get_bhc()\n");
+        assert(1 == 2);
+        exit(-1);
+    }
+    PyObject *bhc_ary_swig_ptr = PyObject_GetAttrString(bhc_view, "bhc_obj");
+    if(bhc_ary_swig_ptr == NULL) {
+        fprintf(stderr, "Fatal error: bhc_obj()\n");
+        assert(1 == 2);
+        exit(-1);
+    }
+    PyObject *bhc_ary_ptr = PyObject_CallMethod(bhc_ary_swig_ptr, "__int__", NULL);
+    if(bhc_ary_ptr == NULL) {
+        fprintf(stderr, "Fatal error: __int__()\n");
+        assert(1 == 2);
+        exit(-1);
+    }
+    void *ary_ptr = PyLong_AsVoidPtr((PyObject*) bhc_ary_ptr);
+    bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
+
+    if (copy2host) {
+        bhc_sync(dtype, ary_ptr);
+    }
+    bhc_flush();
+
+    void *ret = bhc_data_get(dtype, ary_ptr, copy2host, force_alloc, nullify);
+    Py_DECREF(bhc_ary_ptr);
+    Py_DECREF(bhc_ary_swig_ptr);
+    Py_DECREF(bhc_view);
+    return ret;
+}

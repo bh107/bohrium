@@ -54,3 +54,5 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);
     @param key   The index in the random sequence
 */
 PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds);
+
+void *BhGetDataPointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify);
