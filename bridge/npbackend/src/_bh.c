@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "handle_special_op.h"
 
 // Forward declaration
-static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args);
+static PyObject* BhArray_data_bhc2np(PyObject *self);
 
 PyObject *bhary          = NULL; // The bhary Python module
 PyObject *ufuncs         = NULL; // The ufuncs Python module
@@ -133,7 +133,7 @@ void mem_access_callback(void *id, void *addr) {
         printf("MEM_WARN: mem_access_callback() - base %p has no bhc object!\n", ary);
     }
 
-    if(BhArray_data_bhc2np(ary, NULL) == NULL) {
+    if(BhArray_data_bhc2np(ary) == NULL) {
         PyErr_Print();
     }
 
@@ -379,8 +379,7 @@ static void BhArray_free(PyObject * v) {
 
 // Making the Bohrium memory available for NumPy.
 // NB: this function should not fail before unprotecting the NumPy data
-static PyObject* BhArray_data_bhc2np(PyObject *self, PyObject *args) {
-    assert(args == NULL);
+static PyObject* BhArray_data_bhc2np(PyObject *self) {
     assert(BhArray_CheckExact(self));
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
@@ -492,19 +491,26 @@ static PyObject* BhArray_data_fill(PyObject *self, PyObject *args) {
 
 static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     assert(args == NULL);
-
     PyObject *ret = PyArray_NewLikeArray((PyArrayObject*) self, NPY_ANYORDER, NULL, 0);
     if(ret == NULL) {
         return NULL;
     }
-
-    PyObject *err = PyObject_CallMethod(ufuncs, "assign", "OO", self, ret);
-    if(err == NULL) {
+    PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
+    if(base == NULL) {
         Py_DECREF(ret);
         return NULL;
     }
-
-    Py_DECREF(err);
+    if(BhArray_data_bhc2np(base) == NULL) {
+        Py_DECREF(ret);
+        Py_DECREF(base);
+        return NULL;
+    }
+    if(PyArray_CopyInto((PyArrayObject*) ret, (PyArrayObject*) self) == -1) {
+        Py_DECREF(ret);
+        Py_DECREF(base);
+        return NULL;
+    }
+    Py_DECREF(base);
     return ret;
 }
 
@@ -642,7 +648,6 @@ static PyObject* BhArray_mean(PyObject *self, PyObject *args, PyObject *kwds) {
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
     {"__array_ufunc__",    (PyCFunction) BhArray_array_ufunc,   METH_VARARGS | METH_KEYWORDS, "Handle ufunc"},
-    {"_data_bhc2np",       BhArray_data_bhc2np,                 METH_NOARGS,                  "Copy the Bohrium-C data to NumPy data"},
     {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
     {"copy2numpy",         BhArray_copy2numpy,                  METH_NOARGS,                  "Copy the array in C-style memory layout to a regular NumPy array"},
@@ -850,7 +855,7 @@ static int BhArray_SetItem(PyObject *o, PyObject *k, PyObject *v) {
         }
 
         // Finally, let's do the SetItem in NumPy
-        if(BhArray_data_bhc2np(o, NULL) == NULL) {
+        if(BhArray_data_bhc2np(o) == NULL) {
             return -1;
         }
 
@@ -962,7 +967,7 @@ static PyObject* BhArray_GetItem(PyObject *o, PyObject *k) {
             }
         }
 
-        if (BhArray_data_bhc2np(o, NULL) == NULL) {
+        if (BhArray_data_bhc2np(o) == NULL) {
             return NULL;
         }
     }
