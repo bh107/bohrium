@@ -30,7 +30,6 @@ If not, see <http://www.gnu.org/licenses/>.
  */
 PyObject *PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds);
 
-
 /** Execute the delayed instruction */
 PyObject* PyFlush(PyObject *self, PyObject *args);
 
@@ -46,3 +45,12 @@ PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args);
 
 /** Sync `ary` to host memory */
 PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);
+
+/** Create a new flat random array using the random123 algorithm.
+    The dtype is uint64 always.
+
+    @param size  The number of elements in the new flat array
+    @param seed  The seed of a random sequence
+    @param key   The index in the random sequence
+*/
+PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds);
