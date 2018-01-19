@@ -278,7 +278,7 @@ static void module_exit(void) {
 // Help function that creates a simple new array.
 // We parse to PyArray_NewFromDescr(), a new protected memory allocation
 // Return the new Python object, or NULL on error
-static PyObject* _simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nbytes, PyArray_Dims shape) {
+PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nbytes, int ndim, npy_intp shape[]) {
     // Let's create a new NumPy array using our memory allocation
     void *addr = _mmap_mem(nbytes);
 
@@ -286,7 +286,7 @@ static PyObject* _simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uin
         return NULL;
     }
 
-    PyObject *ret = PyArray_NewFromDescr(type, descr, shape.len, shape.ptr, NULL, addr, 0, NULL);
+    PyObject *ret = PyArray_NewFromDescr(type, descr, ndim, shape, NULL, addr, 0, NULL);
     if(ret == NULL) {
         return NULL;
     }
@@ -322,7 +322,7 @@ static PyObject* BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
                     descr = PyArray_DescrFromType(NPY_DEFAULT_TYPE);
                 }
 
-                ret = _simply_new_array(type, descr, nelem * descr->elsize, shape);
+                ret = simply_new_array(type, descr, nelem * descr->elsize, shape.len, shape.ptr);
                 if (ret == NULL) {
                     return NULL;
                 }

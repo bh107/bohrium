@@ -109,19 +109,6 @@ class View(object):
         bhc.call_single_dtype("destroy", self.dtype_name, self.bhc_obj)
 
 
-def _bhc_exec(func, *args):
-    """ Execute the 'func' with the bhc objects in 'args' """
-
-    args = list(args)
-    for i in range(len(args)):
-        if isinstance(args[i], View):
-            if not hasattr(args[i], 'bhc_obj'):
-                # Ignore zero-sized views
-                return
-            args[i] = args[i].bhc_obj
-    return func(*args)
-
-
 def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     """ Retrieves the data pointer from Bohrium Runtime. """
     if ary.size == 0 or ary.base.size == 0:
@@ -177,52 +164,6 @@ def set_bhc_data_from_ary(self, ary):
     assert dtype == dtype_name(ary)
     ptr = get_data_pointer(self, allocate=True, nullify=False)
     ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
-
-
-def _ufunc(op, *args, **kwd):
-    """
-    Apply the 'op' on args, which is the output followed by one or two inputs
-    Use the 'dtypes' option in 'kwd' to force the data types (None is default)
-
-    :op npbackend.ufunc.Ufunc: Instance of a Ufunc.
-    :args *?: Probably any one of ndarray, Base, Scalar, View, and npscalar.
-    :rtype: None
-    """
-
-    dtypes = kwd.get("dtypes", [None] * len(args))
-
-    # Make sure that 'op' is the operation name
-    if hasattr(op, "info"):
-        op = op.info['name']
-
-    # The dtype of the scalar argument (if any) is the same as the array input
-    scalar_type = None
-    for arg in args[1:]:
-        if not numpy.isscalar(arg):
-            scalar_type = dtype_name(arg)
-            break
-
-    # All inputs are scalars
-    if scalar_type is None:
-        if len(args) == 1:
-            scalar_type = dtype_name(args[0])
-        else:
-            scalar_type = dtype_name(args[1])
-
-    fname = "%s" % op
-    for arg, dtype in zip(args, dtypes):
-        if numpy.isscalar(arg):
-            if dtype is None:
-                fname += "_K%s" % scalar_type
-            else:
-                fname += "_K%s" % dtype_name(dtype)
-        else:
-            if dtype is None:
-                fname += "_A%s" % dtype_name(arg)
-            else:
-                fname += "_A%s" % dtype_name(dtype)
-
-    _bhc_exec(getattr(bhc, fname), *args)
 
 
 def message(msg):

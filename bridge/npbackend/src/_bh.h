@@ -64,3 +64,8 @@ extern int bh_mem_warn;          // Boolean flag: should we warn when about memo
 
 // Some nice shorthands
 #define bhc_exist(x) (((BhArray*) x)->bhc_ary != Py_None)
+
+// Help function that creates a simple new array.
+// We parse to PyArray_NewFromDescr(), a new protected memory allocation
+// Return the new Python object, or NULL on error
+PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nbytes, int ndim, npy_intp shape[]);
