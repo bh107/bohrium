@@ -227,6 +227,7 @@ static int _mprotect_np_part(BhArray *ary) {
 // Help function for allocate protected memory through mmep
 // Returns a pointer to the new memory or NULL on error
 static void* _mmap_mem(uint64_t nbytes) {
+    assert(nbytes > 0);
     // Allocate page-size aligned memory.
     // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
@@ -280,6 +281,9 @@ static void module_exit(void) {
 // Return the new Python object, or NULL on error
 PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nbytes, int ndim, npy_intp shape[]) {
     // Let's create a new NumPy array using our memory allocation
+    if (nbytes == 0) {
+        nbytes = descr->elsize;
+    }
     void *addr = _mmap_mem(nbytes);
 
     if(addr == NULL) {
