@@ -105,7 +105,7 @@ def assign(ary, out):
             if "BH_SYNC_WARN" in os.environ:
                 import warnings
                 warnings.warn("BH_SYNC_WARN: Copying the array to NumPy", RuntimeWarning, stacklevel=2)
-            get_base(ary)._data_bhc2np()
+            ary = ary.copy2numpy()
         out[...] = ary
 
 
