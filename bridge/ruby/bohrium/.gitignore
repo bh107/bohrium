@@ -1,5 +1,6 @@
 lib/bohrium/*.bundle
 Gemfile.lock
+ext/bohrium/two_args_constant.hpp
 ext/bohrium/two_args.hpp
 ext/bohrium/one_arg.hpp
 ext/bohrium/bohrium.cpp

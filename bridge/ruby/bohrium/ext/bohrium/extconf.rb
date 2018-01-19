@@ -41,17 +41,17 @@ end.reject do |opcode|
   ["BH_SCATTER", "BH_GATHER"].include?(opcode["opcode"])
 end)
 
-require 'pp'
-
 # Opcodes with ["A", "A", "K"] layout
 @opcodes_two_args_constant = convert_opcodes(@opcodes.select do |opcode|
   # Only look at layouts with array `op` array (two argument arrays)
   opcode["layout"].include?(["A", "A", "K"])
 end.reject do |opcode|
+  ["BH_ARG_MAXIMUM_REDUCE", "BH_ARG_MINIMUM_REDUCE"].include?(opcode["opcode"])
+end.reject do |opcode|
   # Reject the ones already part of the above
   name = opcode["opcode"].sub(/^BH_/, "").downcase
   @opcodes_two_args.keys.include?(name)
-end)
+end, false)
 
 # Create 'hpp' and 'cpp' from templates
 Dir[File.expand_path("#{__dir__}/templates/*.erb")].each do |fname|
