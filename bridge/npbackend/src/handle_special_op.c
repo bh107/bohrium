@@ -166,19 +166,11 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
         return NULL;
     }
 
-    PyObject *array_create = PyImport_ImportModule("bohrium.array_create");
-    if (array_create == NULL) {
-        return NULL;
-    }
-    PyObject *py_size = PyLong_FromUnsignedLongLong(size);
-    if (py_size == NULL) {
-        return NULL;
-    }
-    PyObject *ret = PyObject_CallMethod(array_create, "empty", "OO", py_size, PyArray_DescrFromType(NPY_UINT64));
+    npy_intp shape[1] = {size};
+    PyObject *ret = simply_new_array(&BhArrayType, PyArray_DescrFromType(NPY_UINT64), size*8, 1, shape);
     if (ret == NULL) {
         return NULL;
     }
-
     if (size > 0) {
         bhc_dtype type;
         bhc_bool constant;
@@ -199,3 +191,4 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
     }
     return ret;
 }
+
