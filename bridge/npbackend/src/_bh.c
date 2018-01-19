@@ -91,25 +91,6 @@ static int get_bhc_data_pointer(PyObject *ary, int copy2host, int force_allocati
     return 0;
 }
 
-// Help function to set the Bohrium-C data from a numpy array
-// Return -1 on error
-static int set_bhc_data_from_ary(PyObject *self, PyObject *ary) {
-    if(((BhArray*) self)->mmap_allocated == 0) {
-        PyErr_SetString(
-            PyExc_TypeError,
-            "The array data wasn't allocated through mmap(). Typically, this is because the base array was created from a template, which is not supported by Bohrium."
-        );
-        return -1;
-    }
-
-    PyObject *ret = PyObject_CallMethod(bhary, "set_bhc_data_from_ary", "OO", self, ary);
-    Py_XDECREF(ret);
-    if(ret == NULL) {
-        return -1;
-    }
-
-    return 0;
-}
 
 // Help function for unprotect memory
 // Return -1 on error
@@ -520,10 +501,12 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // And sets the bhc data from the NumPy part of 'base'
-    if(set_bhc_data_from_ary(base, base) == -1) {
+    // Copy the data from the NumPy part to the bhc part
+    void *data;
+    if (get_bhc_data_pointer(base, 1, 1, 0, &data) != 0) {
         return NULL;
     }
+    memmove(data, PyArray_DATA((PyArrayObject*) base), PyArray_NBYTES((PyArrayObject*) base));
 
     // Finally, we memory protect the NumPy part of 'base' again
     if(_mprotect_np_part((BhArray*) base) != 0) {
@@ -550,11 +533,12 @@ static PyObject* BhArray_data_fill(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    // Sets the bhc data from the NumPy array 'np_ary'
-    if(set_bhc_data_from_ary(self, np_ary) == -1) {
+    // Copy the data from the NumPy array 'np_ary' to the bhc part of `self`
+    void *data;
+    if (get_bhc_data_pointer(self, 1, 1, 0, &data) != 0) {
         return NULL;
     }
-
+    memmove(data, PyArray_DATA((PyArrayObject*) np_ary), PyArray_NBYTES((PyArrayObject*) np_ary));
     Py_RETURN_NONE;
 }
 

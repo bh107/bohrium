@@ -157,15 +157,6 @@ def setDeviceContext(device_context):
     bhc.setDeviceContext(device_context)
 
 
-def set_bhc_data_from_ary(self, ary):
-    """ Assigns the data using memmove """
-
-    dtype = dtype_name(self)
-    assert dtype == dtype_name(ary)
-    ptr = get_data_pointer(self, allocate=True, nullify=False)
-    ctypes.memmove(ptr, ary.ctypes.data, ary.dtype.itemsize * ary.size)
-
-
 def message(msg):
     """ Send and receive a message through the component stack """
     return "%s" % (bhc.message(msg))
