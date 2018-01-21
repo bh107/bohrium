@@ -120,3 +120,12 @@ void normalize_operand_cleanup(normalize_cleanup_handle *cleanup) {
     }
     cleanup->objs2free_count = 0;
 }
+
+int64_t ary_nbytes(const BhArray *ary) {
+    int64_t size = PyArray_NBYTES((PyArrayObject*) ary);
+    if(size == 0) {
+        return PyArray_ITEMSIZE((PyArrayObject*) ary);
+    } else {
+        return size;
+    }
+}
