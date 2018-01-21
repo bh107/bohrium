@@ -24,44 +24,37 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "handle_special_op.h"
 
 // Help function for unprotect memory
-// Return -1 on error
-static int _munprotect(void *data, npy_intp size) {
+static void _munprotect(void *data, npy_intp size) {
     if(mprotect(data, size, PROT_WRITE) != 0) {
         int errsv = errno; // mprotect() sets the errno.
-        PyErr_Format(
-                PyExc_RuntimeError,
-                "Error - could not (un-)mprotect a data region. Returned error code by mprotect(): %s.\n",
-                strerror(errsv)
-        );
-        return -1;
+        fprintf(stderr,
+                "Fatal error: _munprotect() could not (un-)mprotect a data region. "
+                "Returned error code by mremap(): %s.\n",
+                strerror(errsv));
+        assert(1 == 2);
+        exit(-1);
     }
-    return 0;
 }
 
 // Help function for memory re-map
-// Return -1 on error
-static int _mremap_data(void *dst, void *src, npy_intp size) {
+static void _mremap_data(void *dst, void *src, npy_intp size) {
 #if MREMAP_FIXED
     if(mremap(src, size, size, MREMAP_FIXED|MREMAP_MAYMOVE, dst) == MAP_FAILED) {
         int errsv = errno; // mremap() sets the errno.
-        PyErr_Format(
-            PyExc_RuntimeError,
-            "Error - could not mremap a data region (src: %p, dst: %p, size: %ld). Returned error code by mremap(): %s.\n",
-            src, dst, size,
-            strerror(errsv)
-        );
-        return -1;
+        fprintf(stderr,
+                "Fatal error: _mremap_data() could not mremap a data region (src: %p, dst: %p, size: %ld). "
+                "Returned error code by mremap(): %s.\n",
+                src, dst, size,
+                strerror(errsv));
+        assert(1 == 2);
+        exit(-1);
     }
-    return 0;
 #else
     // Systems that doesn't support mremap will use memcpy, which introduces a
     // race-condition if another thread access the 'dst' memory before memcpy finishes.
-    if(_munprotect(dst, size) != 0) {
-        return -1;
-    }
+    _munprotect(dst, size);
     memcpy(dst, src, size);
     mem_unmap(src, size);
-    return 0;
 #endif
 }
 
@@ -95,24 +88,21 @@ void mem_access_callback(void *id, void *addr) {
 }
 
 // Help function for protecting the memory of the NumPy part of 'ary'
-// Return -1 on error
-static int _mprotect_np_part(BhArray *ary) {
+static void _mprotect_np_part(BhArray *ary) {
     assert(((BhArray*) ary)->mmap_allocated);
     assert(PyArray_CHKFLAGS((PyArrayObject*) ary, NPY_ARRAY_OWNDATA));
 
     // Finally, we memory protect the NumPy data
     if(mprotect(ary->base.data, ary_nbytes(ary), PROT_NONE) == -1) {
         int errsv = errno; // mprotect() sets the errno.
-        PyErr_Format(
-                PyExc_RuntimeError,
-                "Error - could not protect a data region. Returned error code by mprotect: %s.\n",
-                strerror(errsv)
-        );
-        return -1;
+        fprintf(stderr,
+                "Fatal error: _mprotect_np_part() could not protect a data region. "
+                "Returned error code by mprotect: %s.\n",
+                strerror(errsv));
+        assert(1 == 2);
+        exit(-1);
     }
-
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
-    return 0;
 }
 
 
