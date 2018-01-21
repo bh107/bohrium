@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "_bh.h"
 #include "handle_array_op.h"
 #include "handle_special_op.h"
+#include "memory.h"
 
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self);
@@ -36,165 +37,6 @@ PyObject *masking        = NULL; // The masking Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
-
-// Help function for unprotect memory
-// Return -1 on error
-static int _munprotect(void *data, npy_intp size) {
-    if(mprotect(data, size, PROT_WRITE) != 0) {
-        int errsv = errno; // mprotect() sets the errno.
-        PyErr_Format(
-            PyExc_RuntimeError,
-            "Error - could not (un-)mprotect a data region. Returned error code by mprotect(): %s.\n",
-            strerror(errsv)
-        );
-        return -1;
-    }
-    return 0;
-}
-
-// Help function for memory un-map
-// Return -1 on error
-static int _munmap(void *addr, npy_intp size) {
-    if(munmap(addr, size) == -1) {
-        int errsv = errno; // munmmap() sets the errno.
-        PyErr_Format(
-            PyExc_RuntimeError,
-            "The Array Data Protection could not mummap the data region: %p (size: %ld). Returned error code by mmap: %s.\n",
-            addr,
-            size,
-            strerror(errsv)
-        );
-        return -1;
-    }
-
-    return 0;
-}
-
-// Help function for memory re-map
-// Return -1 on error
-static int _mremap_data(void *dst, void *src, npy_intp size) {
-#if MREMAP_FIXED
-    if(mremap(src, size, size, MREMAP_FIXED|MREMAP_MAYMOVE, dst) == MAP_FAILED) {
-        int errsv = errno; // mremap() sets the errno.
-        PyErr_Format(
-            PyExc_RuntimeError,
-            "Error - could not mremap a data region (src: %p, dst: %p, size: %ld). Returned error code by mremap(): %s.\n",
-            src, dst, size,
-            strerror(errsv)
-        );
-        return -1;
-    }
-
-    return 0;
-#else
-    // Systems that doesn't support mremap will use memcpy, which introduces a
-    // race-condition if another thread access the 'dst' memory before memcpy finishes.
-    if(_munprotect(dst, size) != 0) {
-        return -1;
-    }
-
-    memcpy(dst, src, size);
-    return _munmap(src, size);
-#endif
-}
-
-void mem_access_callback(void *id, void *addr) {
-    PyObject *ary = (PyObject *) id;
-
-    PyGILState_STATE GIL = PyGILState_Ensure();
-    int err = PyErr_WarnEx(
-        NULL,
-        "Encountering an operation not supported by Bohrium. It will be handled by the original NumPy.",
-        1
-    );
-
-    if(err == -1) {
-        PyErr_WarnEx(
-            NULL,
-            "Encountering an operation not supported by Bohrium. [Sorry, you cannot upgrade this warning to an exception]",
-            1
-        );
-        PyErr_Print();
-    }
-    PyErr_Clear();
-
-    if(bh_mem_warn && !bhc_exist(ary)) {
-        printf("MEM_WARN: mem_access_callback() - base %p has no bhc object!\n", ary);
-    }
-
-    if(BhArray_data_bhc2np(ary) == NULL) {
-        PyErr_Print();
-    }
-
-    PyGILState_Release(GIL);
-}
-
-// Help function for protecting the memory of the NumPy part of 'ary'
-// Return -1 on error
-static int _mprotect_np_part(BhArray *ary) {
-    assert(((BhArray*) ary)->mmap_allocated);
-    assert(PyArray_CHKFLAGS((PyArrayObject*) ary, NPY_ARRAY_OWNDATA));
-
-    // Finally, we memory protect the NumPy data
-    if(mprotect(ary->base.data, ary_nbytes(ary), PROT_NONE) == -1) {
-        int errsv = errno; // mprotect() sets the errno.
-        PyErr_Format(
-            PyExc_RuntimeError,
-            "Error - could not protect a data region. Returned error code by mprotect: %s.\n",
-            strerror(errsv)
-        );
-        return -1;
-    }
-
-    bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
-    return 0;
-}
-
-// Help function for allocate protected memory through mmep
-// Returns a pointer to the new memory or NULL on error
-static void* _mmap_mem(uint64_t nbytes) {
-    assert(nbytes > 0);
-    // Allocate page-size aligned memory.
-    // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-    // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    void *addr = mmap(0, nbytes, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-
-    if(addr == MAP_FAILED) {
-        int errsv = errno; // mmap() sets the errno.
-        PyErr_Format(
-            PyExc_RuntimeError,
-            "The Array Data Protection could not mmap a data region. Returned error code by mmap: %s.",
-            strerror(errsv)
-        );
-        return NULL;
-    }
-
-    return addr;
-}
-
-// Help function for allocate protected memory for the NumPy part of 'ary'
-// This function only allocates if the 'ary' is a new base array and avoids multiple
-// allocations by checking and setting the ary->mmap_allocated
-// Return -1 on error
-static int _protected_malloc(BhArray *ary) {
-    if(ary->mmap_allocated || !PyArray_CHKFLAGS((PyArrayObject*) ary, NPY_ARRAY_OWNDATA)) {
-        return 0;
-    }
-
-    ary->mmap_allocated = 1;
-
-    void *addr = _mmap_mem(ary_nbytes(ary));
-    if(addr == NULL) {
-        return -1;
-    }
-
-    // Let's save the pointer to the NumPy allocated memory and use the mprotect'ed memory instead
-    ary->npy_data = ary->base.data;
-    ary->base.data = addr;
-
-    bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
-    return 0;
-}
 
 // Called when module exits
 static void module_exit(void) {
@@ -210,11 +52,7 @@ PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nb
     if (nbytes == 0) {
         nbytes = descr->elsize;
     }
-    void *addr = _mmap_mem(nbytes);
-
-    if(addr == NULL) {
-        return NULL;
-    }
+    void *addr = mem_map(nbytes);
 
     PyObject *ret = PyArray_NewFromDescr(type, descr, ndim, shape, NULL, addr, 0, NULL);
     if(ret == NULL) {
@@ -226,8 +64,7 @@ PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nb
     ((BhArray*) ret)->mmap_allocated = 1;
 
     PyArray_UpdateFlags((PyArrayObject*) ret, NPY_ARRAY_UPDATE_ALL);
-    bh_mem_signal_attach(ret, ((BhArray*) ret)->base.data, nbytes, mem_access_callback);
-
+    mem_signal_attach(ret, ((BhArray*) ret)->base.data, nbytes);
     return ret;
 }
 
@@ -275,10 +112,7 @@ static PyObject* BhArray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     }
 
     // And then protect the memory afterwards
-    if(_protected_malloc((BhArray *) ret) != 0) {
-        return NULL;
-    }
-
+    protected_malloc((BhArray *) ret);
     return ret;
 }
 
@@ -301,9 +135,7 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
     ((BhArray*) self)->bhc_view_version = Py_None;
     Py_INCREF(Py_None);
 
-    if(_protected_malloc((BhArray *) self) != 0) {
-        return NULL;
-    }
+    protected_malloc((BhArray *) self);
 
     if(PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT)) {
         PyErr_Format(PyExc_RuntimeError, "Array of objects not supported by Bohrium.");
@@ -345,10 +177,7 @@ static void BhArray_dealloc(BhArray* self) {
     assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT));
 
     if (self->mmap_allocated) {
-        if(_munmap(PyArray_DATA((PyArrayObject*) self), ary_nbytes(self)) == -1) {
-            PyErr_Print();
-        }
-
+        mem_unmap(PyArray_DATA((PyArrayObject*) self), ary_nbytes(self));
         bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) self));
         self->base.data = NULL;
     }
@@ -383,24 +212,9 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
         PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
     }
 
-    // Let's detach the signal
-    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base));
-
-    if(bhc_exist(base)) {
-        void *d = BhGetDataPointer((BhArray*) base, 1, 0, 1);
-        if(d == NULL) {
-            _munprotect(PyArray_DATA((PyArrayObject*) base), ary_nbytes((BhArray*) base));
-        } else {
-            _mremap_data(PyArray_DATA((PyArrayObject*) base), d, ary_nbytes((BhArray*) base));
-        }
-        Py_DECREF(base);
-
-        // Let's delete the current bhc_ary
-        PyObject_CallMethod(bhary, "del_bhc", "O", self);
-    } else {
-        // Let's make sure that the NumPy data isn't protected
-        _munprotect(PyArray_DATA((PyArrayObject*) base), ary_nbytes((BhArray*) base));
-    }
+    // Let's move data from the bhc domain to the NumPy domain
+    mem_bhc2np((BhArray*) base);
+    Py_XDECREF(base);
 
     // Finally, we can return NULL on error (but not before!)
     if (PyErr_Occurred() != NULL) {
@@ -436,20 +250,7 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
         Py_DECREF(err);
     }
 
-    // Then we unprotect the NumPy memory part
-    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base));
-    if(_munprotect(PyArray_DATA((PyArrayObject*) base), ary_nbytes((BhArray*) base)) != 0) {
-        return NULL;
-    }
-
-    // Copy the data from the NumPy part to the bhc part
-    void *data = BhGetDataPointer((BhArray*) base, 1, 1, 0);
-    memmove(data, PyArray_DATA((PyArrayObject*) base), PyArray_NBYTES((PyArrayObject*) base));
-
-    // Finally, we memory protect the NumPy part of 'base' again
-    if(_mprotect_np_part((BhArray*) base) != 0) {
-        return NULL;
-    }
+    mem_np2bhc((BhArray*) base);
 
     Py_DECREF(base);
     Py_RETURN_NONE;
