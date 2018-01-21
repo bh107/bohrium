@@ -37,17 +37,6 @@ int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bo
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
 
-// Help function that returns number of bytes in 'ary'
-// BUT minimum 'itemsize', which mimic the behavior of NumPy
-static int64_t ary_nbytes(const BhArray *ary) {
-    int64_t size = PyArray_NBYTES((PyArrayObject*) ary);
-    if(size == 0) {
-        return PyArray_ITEMSIZE((PyArrayObject*) ary);
-    } else {
-        return size;
-    }
-}
-
 // Help function for unprotect memory
 // Return -1 on error
 static int _munprotect(void *data, npy_intp size) {

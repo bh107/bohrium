@@ -60,3 +60,10 @@ int normalize_operand(PyObject *op, bhc_dtype *dtype, bhc_bool *constant, void *
  * @param cleanup  The clean up handle
  */
 void normalize_operand_cleanup(normalize_cleanup_handle *cleanup);
+
+/** Returns number of bytes in 'ary' BUT minimum 'itemsize', which mimic the behavior of NumPy
+ *
+ * @param ary  The array in question
+ * @return     Number of bytes in `ary`
+ */
+int64_t ary_nbytes(const BhArray *ary);
