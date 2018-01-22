@@ -201,11 +201,7 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
     assert(BhArray_CheckExact(self));
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
-    PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
-    if(base == NULL) {
-        base = self; // We have to keep going!
-        Py_INCREF(base); // We call Py_DECREF(base) later
-    }
+    PyObject *base = get_base(self);
     assert(BhArray_CheckExact(base));
 
     if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
@@ -214,13 +210,11 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
 
     // Let's move data from the bhc domain to the NumPy domain
     mem_bhc2np((BhArray*) base);
-    Py_XDECREF(base);
 
     // Finally, we can return NULL on error (but not before!)
     if (PyErr_Occurred() != NULL) {
         return NULL;
     }
-
     Py_RETURN_NONE;
 }
 
@@ -229,11 +223,7 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
     assert(BhArray_CheckExact(self));
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
-    PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
-    if(base == NULL) {
-        return NULL;
-    }
-
+    PyObject *base = get_base(self);
     assert(BhArray_CheckExact(base));
 
     if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
@@ -251,8 +241,6 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
     }
 
     mem_np2bhc((BhArray*) base);
-
-    Py_DECREF(base);
     Py_RETURN_NONE;
 }
 
@@ -285,22 +273,15 @@ static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     if(ret == NULL) {
         return NULL;
     }
-    PyObject *base = PyObject_CallMethod(bhary, "get_base", "O", self);
-    if(base == NULL) {
-        Py_DECREF(ret);
-        return NULL;
-    }
+    PyObject *base = get_base(self);
     if(BhArray_data_bhc2np(base) == NULL) {
         Py_DECREF(ret);
-        Py_DECREF(base);
         return NULL;
     }
     if(PyArray_CopyInto((PyArrayObject*) ret, (PyArrayObject*) self) == -1) {
         Py_DECREF(ret);
-        Py_DECREF(base);
         return NULL;
     }
-    Py_DECREF(base);
     return ret;
 }
 
