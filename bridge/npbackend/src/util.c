@@ -129,3 +129,23 @@ int64_t ary_nbytes(const BhArray *ary) {
         return size;
     }
 }
+
+PyObject *get_base(PyObject *ary) {
+    PyObject *base;
+    if(PyArray_Check(ary)) {
+        base = PyArray_BASE((PyArrayObject*) ary);
+    } else {
+        base = PyObject_GetAttrString(ary, "base");
+        if(base == NULL) {
+            fprintf(stderr, "Fatal error: get_base() - the object has no base!\n");
+            assert(1 == 2);
+            exit(-1);
+        }
+        Py_DECREF(base); // Notice, we are returning a borrowed reference
+    }
+    if (base == NULL || base == Py_None) {
+        return ary;
+    } else {
+        return get_base(base);
+    }
+}
