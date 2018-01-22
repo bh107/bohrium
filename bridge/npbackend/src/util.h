@@ -74,4 +74,4 @@ int64_t ary_nbytes(const BhArray *ary);
  * @param ary  The array in question
  * @return     A borrowed reference to the base of `ary`
  */
-PyObject *get_base(PyObject *ary);
+BhArray *get_base(PyObject *ary);
