@@ -130,7 +130,7 @@ int64_t ary_nbytes(const BhArray *ary) {
     }
 }
 
-PyObject *get_base(PyObject *ary) {
+BhArray *get_base(PyObject *ary) {
     PyObject *base;
     if(PyArray_Check(ary)) {
         base = PyArray_BASE((PyArrayObject*) ary);
@@ -144,7 +144,12 @@ PyObject *get_base(PyObject *ary) {
         Py_DECREF(base); // Notice, we are returning a borrowed reference
     }
     if (base == NULL || base == Py_None) {
-        return ary;
+        if(!BhArray_CheckExact(ary)) {
+            fprintf(stderr, "Fatal error: get_base() - the base object isn't a bohrium array!\n");
+            assert(1 == 2);
+            exit(-1);
+        }
+        return (BhArray *) ary;
     } else {
         return get_base(base);
     }

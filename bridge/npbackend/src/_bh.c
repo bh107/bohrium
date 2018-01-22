@@ -201,15 +201,14 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
     assert(BhArray_CheckExact(self));
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
-    PyObject *base = get_base(self);
-    assert(BhArray_CheckExact(base));
+    BhArray *base = get_base(self);
 
     if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
         PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
     }
 
     // Let's move data from the bhc domain to the NumPy domain
-    mem_bhc2np((BhArray*) base);
+    mem_bhc2np(base);
 
     // Finally, we can return NULL on error (but not before!)
     if (PyErr_Occurred() != NULL) {
@@ -223,8 +222,7 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
     assert(BhArray_CheckExact(self));
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
-    PyObject *base = get_base(self);
-    assert(BhArray_CheckExact(base));
+    BhArray *base = get_base(self);
 
     if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
         PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
@@ -233,14 +231,14 @@ static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
 
     // Make sure that bhc_ary exist
     if(!bhc_exist(base)) {
-        PyObject *err = PyObject_CallMethod(bhary, "new_bhc_base", "O", base);
+        PyObject *err = PyObject_CallMethod(bhary, "new_bhc_base", "O", (PyObject*) base);
         if(err == NULL) {
             return NULL;
         }
         Py_DECREF(err);
     }
 
-    mem_np2bhc((BhArray*) base);
+    mem_np2bhc(base);
     Py_RETURN_NONE;
 }
 
@@ -273,8 +271,7 @@ static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     if(ret == NULL) {
         return NULL;
     }
-    PyObject *base = get_base(self);
-    if(BhArray_data_bhc2np(base) == NULL) {
+    if(BhArray_data_bhc2np((PyObject*) get_base(self)) == NULL) {
         Py_DECREF(ret);
         return NULL;
     }
