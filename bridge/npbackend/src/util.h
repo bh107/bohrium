@@ -20,9 +20,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <bhc.h>
 #define NO_IMPORT_ARRAY
 #include "_bh.h"
+#include <bhc.h>
 
 /** This corresponds to `numpy.isscalar()`, which does not count 0-dim arrays as scalars
     In Bohrium, we handle 0-dim arrays as regular arrays. */

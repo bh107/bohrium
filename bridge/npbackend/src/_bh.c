@@ -18,9 +18,10 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "_bh.h"
 #include <dlfcn.h>
 #include <bh_mem_signal.h>
-#include "_bh.h"
+#include <bhc.h>
 #include "handle_array_op.h"
 #include "handle_special_op.h"
 #include "memory.h"
@@ -124,6 +125,9 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
         Py_RETURN_NONE;
     }
 
+    ((BhArray*) self)->bhc_array = NULL;
+    ((BhArray*) self)->view.initiated = 0;
+
     ((BhArray*) self)->bhc_ary = Py_None;
     Py_INCREF(Py_None);
 
@@ -158,6 +162,9 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
     ((BhArray*) obj)->npy_data         = NULL;
     ((BhArray*) obj)->mmap_allocated   = 0;
 
+    ((BhArray*) obj)->bhc_array = NULL;
+    ((BhArray*) obj)->view.initiated = 0;
+
     return obj;
 }
 
@@ -168,6 +175,12 @@ static void BhArray_dealloc(BhArray* self) {
     Py_XDECREF(self->bhc_view_version);
     Py_XDECREF(self->bhc_ary_version);
     Py_XDECREF(self->bhc_ary);
+
+
+    if(self->bhc_array != NULL) {
+        assert(self->view.initiated);
+        bhc_destroy(dtype_np2bhc(self->view.type_enum), self->bhc_array);
+    }
 
     if (!PyArray_CHKFLAGS((PyArrayObject*) self, NPY_ARRAY_OWNDATA)) {
         BhArrayType.tp_base->tp_dealloc((PyObject*) self);
@@ -220,6 +233,8 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
 static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
     assert(args == NULL);
     assert(BhArray_CheckExact(self));
+
+    assert(1 == 2);
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
     BhArray *base = get_base(self);

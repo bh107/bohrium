@@ -20,8 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <bh_osx.h>
 #include <Python.h>
+#include <bh_osx.h>
 #include <structmember.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -40,6 +40,15 @@ If not, see <http://www.gnu.org/licenses/>.
     #define NPY_PY3K
 #endif
 
+typedef struct {
+    int initiated;
+    int type_enum;
+    int ndim;
+    int64_t start;
+    int64_t shape[NPY_MAXDIMS];
+    int64_t stride[NPY_MAXDIMS];
+} BhView;
+
 // The declaration of the Bohrium ndarray
 typedef struct {
     BH_PyArrayObject base;
@@ -47,8 +56,12 @@ typedef struct {
     PyObject *bhc_ary_version;
     PyObject *bhc_view;
     PyObject *bhc_view_version;
+
     int mmap_allocated;
     void *npy_data; // NumPy allocated array data
+
+    BhView view;
+    void *bhc_array;
 } BhArray;
 
 // Exposing some global variables implemented in `_bh.c`
