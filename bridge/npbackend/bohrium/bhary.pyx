@@ -47,7 +47,8 @@ def check(ary):
         base = get_base(ary)
     except AttributeError:
         base = ary
-    return hasattr(base, "bhc_ary")
+    from . import _bh  #We import locally in order to avoid import cycle
+    return isinstance(base, _bh.ndarray)
 
 def check_biclass_np_over_bh(ary):
     """Returns True if 'ary' is a NumPy view with a Bohrium base array"""
@@ -117,6 +118,7 @@ def new(shape, dtype, bhc_ary=None):
     Creates a new bohrium.ndarray with 'bhc_ary' as the Bohrium-C part.
     Use a new Bohrium-C array when 'bhc_ary' is None.
     """
+    assert 1 == 2
 
     from . import _bh  #We import locally in order to avoid import cycle
     ret = _bh.ndarray(shape, dtype=dtype)
@@ -128,6 +130,7 @@ def new(shape, dtype, bhc_ary=None):
 
 def new_bhc_base(ary):
     """Creates a new Bohrium-C base array."""
+    assert 1 == 2
 
     if not check(ary):
         raise TypeError("must be a Bohrium array")
@@ -205,7 +208,7 @@ def identical_views(view1, view2):
 
 def in_bhmem(ary):
     """Returns True when 'ary' is in the memory address space of Bohrium"""
-
+    assert 1 == 2
     return get_base(ary).bhc_ary is not None
 
 def get_bhc(ary):
@@ -213,6 +216,7 @@ def get_bhc(ary):
     Returns the Bohrium-C part of the array (supports both Bohrium or NumPy arrays)
     NB: the returned object is always a view
     """
+    assert 1 == 2
 
     base = get_base(ary)
     # Lets see if we can use an already existing array-view
@@ -284,7 +288,7 @@ def get_bhc(ary):
 
 def del_bhc(ary):
     """Delete the Bohrium-C part of the bohrium.ndarray and its base."""
-
+    assert 1 == 2
     if ary.bhc_ary is not None:
         ary.bhc_ary = None
     if ary.bhc_view is not None:
@@ -301,7 +305,7 @@ def get_bhc_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
     When allocate is True, it allocates memory instead of returning None
     When nullify is True, the Bohrium-C data pointer is set to NULL
     """
-
+    assert 1 == 2
     if not check(ary):
         raise TypeError("must be a Bohrium array")
     ary = get_base(ary)

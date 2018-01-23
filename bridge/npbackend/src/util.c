@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "util.h"
+#include "bharray.h"
 
 bhc_dtype dtype_np2bhc(const int np_dtype_num) {
     switch(np_dtype_num) {
@@ -82,9 +83,16 @@ int normalize_operand(PyObject *op, bhc_dtype *dtype, bhc_bool *constant, void *
         }
         assert(BhArray_CheckExact(bh_ary));
 
+        // A zero sized view, we can ignore the whole operation
+        if (PyArray_SIZE((PyArrayObject*) bh_ary) <= 0) {
+            return -1;
+        }
+
         *dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) bh_ary)->type_num);
         *constant = 0;
+        *operand = bharray_bhc((BhArray*) bh_ary);
 
+        /*
         // Get the bhc array pointer and save it in `operands[i]`
         PyObject *bhc_view = PyObject_CallMethod(bhary, "get_bhc", "O", bh_ary);
         if(bhc_view == NULL) {
@@ -109,6 +117,7 @@ int normalize_operand(PyObject *op, bhc_dtype *dtype, bhc_bool *constant, void *
         *operand = PyLong_AsVoidPtr(bhc_ary_ptr);
         Py_DECREF(bhc_ary_swig_ptr);
         Py_DECREF(bhc_ary_ptr);
+        */
     }
     return 0;
 }

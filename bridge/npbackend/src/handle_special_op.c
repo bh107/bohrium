@@ -18,8 +18,9 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bhc.h>
 #include "util.h"
+#include <bhc.h>
+#include "bharray.h"
 
 PyObject *
 PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds) {
@@ -197,7 +198,7 @@ void *BhGetDataPointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, b
     if (PyArray_SIZE((PyArrayObject*) ary) <= 0) {
         return NULL;
     }
-
+/*
     PyObject *bhc_view = PyObject_CallMethod(bhary, "get_bhc", "O", (PyObject*)ary);
     if(bhc_view == NULL) {
         fprintf(stderr, "Fatal error: get_bhc()\n");
@@ -217,6 +218,8 @@ void *BhGetDataPointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, b
         exit(-1);
     }
     void *ary_ptr = PyLong_AsVoidPtr((PyObject*) bhc_ary_ptr);
+*/
+    void *ary_ptr = bharray_bhc(ary);
     bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
 
     if (copy2host) {
@@ -225,8 +228,10 @@ void *BhGetDataPointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, b
     bhc_flush();
 
     void *ret = bhc_data_get(dtype, ary_ptr, copy2host, force_alloc, nullify);
+/*
     Py_DECREF(bhc_ary_ptr);
     Py_DECREF(bhc_ary_swig_ptr);
     Py_DECREF(bhc_view);
+*/
     return ret;
 }

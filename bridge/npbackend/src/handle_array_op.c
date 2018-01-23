@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bhc.h>
 #include "handle_array_op.h"
+#include <bhc.h>
 
 PyObject *
 PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds) {

@@ -221,12 +221,14 @@ setup(
         Extension(
             name='_bh',
             sources=[srcpath('src', '_bh.c'),
+                     srcpath('src', 'bharray.c'),
                      srcpath('src', 'handle_array_op.c'),
                      srcpath('src', 'handle_special_op.c'),
                      srcpath('src', 'memory.c'),
                      srcpath('src', 'util.c')],
             depends=[
                 srcpath('src', '_bh.h'),
+                srcpath('src', 'bharray.h'),
                 srcpath('src', 'util.h'),
                 srcpath('src', 'handle_array_op.h'),
                 srcpath('src', 'handle_special_op.h'),

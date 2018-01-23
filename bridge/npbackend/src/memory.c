@@ -18,10 +18,10 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_mem_signal.h>
 #include "memory.h"
 #include "util.h"
 #include "handle_special_op.h"
+#include <bh_mem_signal.h>
 
 // Help function for unprotect memory
 static void _munprotect(void *data, npy_intp size) {
@@ -161,20 +161,19 @@ void mem_bhc2np(BhArray *base_array) {
     // Let's detach the signal
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
 
-    if(bhc_exist(base_array)) {
+    if(base_array->bhc_array != NULL) {
         void *d = BhGetDataPointer((BhArray*) base_array, 1, 0, 1);
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
         } else {
             _mremap_data(PyArray_DATA((PyArrayObject*) base_array), d, ary_nbytes((BhArray*) base_array));
         }
-        // Let's delete the current bhc_ary
-        PyObject *err = PyObject_CallMethod(bhary, "del_bhc", "O", base_array);
-        if (err == NULL) {
-            fprintf(stderr, "Fatal error: del_bhc()\n");
-            assert(1 == 2);
-            exit(-1);
-        }
+
+        // Let's delete the current bhc_array
+        assert(base_array->view.initiated);
+        bhc_destroy(dtype_np2bhc(base_array->view.type_enum), base_array->bhc_array);
+        base_array->view.initiated = 0;
+        base_array->bhc_array = NULL;
     } else {
         // Let's make sure that the NumPy data isn't protected
         _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
