@@ -21,6 +21,33 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "handle_array_op.h"
 #include <bhc.h>
 
+PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
+    // Read and normalize all operands
+    bhc_dtype types[nop];
+    bhc_bool constants[nop];
+    void *operands[nop];
+    normalize_cleanup_handle cleanup;
+    cleanup.objs2free_count = 0;
+    for (int i = 0; i < nop; ++i) {
+        PyObject *op = operand_list[i];
+        int err = normalize_operand(op, &types[i], &constants[i], &operands[i], &cleanup);
+        if (err == -1) {
+            normalize_operand_cleanup(&cleanup);
+            if (PyErr_Occurred() != NULL) {
+                return NULL;
+            } else {
+                Py_RETURN_NONE;
+            }
+        }
+    }
+
+    bhc_op(opcode, types, constants, operands);
+
+    // Clean up
+    normalize_operand_cleanup(&cleanup);
+    Py_RETURN_NONE;
+}
+
 PyObject *
 PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds) {
     int opcode;
@@ -37,31 +64,8 @@ PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    // Read and normalize all operands
-    const Py_ssize_t nop = PySequence_Fast_GET_SIZE(operand_fast_seq);
-    bhc_dtype types[nop];
-    bhc_bool constants[nop];
-    void *operands[nop];
-    normalize_cleanup_handle cleanup;
-    cleanup.objs2free_count = 0;
-    for (int i = 0; i < nop; ++i) {
-        PyObject *op = PySequence_Fast_GET_ITEM(operand_fast_seq, i); // Borrowed reference and will not fail
-        int err = normalize_operand(op, &types[i], &constants[i], &operands[i], &cleanup);
-        if (err == -1) {
-            normalize_operand_cleanup(&cleanup);
-            Py_DECREF(operand_fast_seq);
-            if (PyErr_Occurred() != NULL) {
-                return NULL;
-            } else {
-                Py_RETURN_NONE;
-            }
-        }
-    }
-
-    bhc_op(opcode, types, constants, operands);
-
-    // Clean up
-    normalize_operand_cleanup(&cleanup);
+    PyObject *ret = array_op(opcode, PySequence_Fast_GET_SIZE(operand_fast_seq),
+                             PySequence_Fast_ITEMS(operand_fast_seq));
     Py_DECREF(operand_fast_seq);
-    Py_RETURN_NONE;
+    return ret;
 }
