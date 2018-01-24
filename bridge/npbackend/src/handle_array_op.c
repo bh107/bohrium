@@ -30,6 +30,69 @@ PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
     cleanup.objs2free_count = 0;
     for (int i = 0; i < nop; ++i) {
         PyObject *op = operand_list[i];
+
+        // We have to handle float view of complex bases, which is something NumPy supports
+        if(!IsAnyScalar(op) && PyArray_Check(op)) {
+            BhArray *base = get_base(op);
+            if(PyArray_ISFLOAT((PyArrayObject *) op) && PyArray_ISCOMPLEX((PyArrayObject *) base)) {
+                if (i == 0) {
+                    PyErr_Format(PyExc_ValueError, "Sorry - Bohrium does't handle writing to "
+                            "the imag or real part of a complex array. Will be fixed ASAP!\n");
+                    normalize_operand_cleanup(&cleanup);
+                    return NULL;
+                }
+
+                // All this is simply a hack to reinterpret 'op' as a complex view of the 'base'
+                size_t v = (size_t) PyArray_DATA((PyArrayObject *) op);
+                size_t b = (size_t) PyArray_DATA((PyArrayObject *) base);
+                size_t offset = (v - b) / PyArray_ITEMSIZE((PyArrayObject *) base);
+                void *tmp_data = PyArray_BYTES((PyArrayObject *) base) +
+                                 offset * PyArray_ITEMSIZE((PyArrayObject *) base);
+                PyObject *tmp_ary = PyArray_New(&BhArrayType,
+                                                PyArray_NDIM((PyArrayObject *) op),
+                                                PyArray_DIMS((PyArrayObject *) op),
+                                                PyArray_TYPE((PyArrayObject *) base),
+                                                PyArray_STRIDES((PyArrayObject *) op),
+                                                tmp_data,
+                                                PyArray_ITEMSIZE((PyArrayObject *) base),
+                                                0, NULL);
+                if(tmp_ary == NULL) {
+                    normalize_operand_cleanup(&cleanup);
+                    return NULL;
+                }
+                Py_INCREF(base);
+                PyArray_SetBaseObject((PyArrayObject *) tmp_ary, (PyObject*) base);
+                cleanup.objs2free[cleanup.objs2free_count++] = tmp_ary;
+                // At this point `tmp_ary` is a regular view of the complex base
+
+                // Then we copy `tmp_ary` into a new float array using either `BHC_REAL` or `BHC_IMAG`
+                op = PyArray_New(&BhArrayType,
+                                 PyArray_NDIM((PyArrayObject *) tmp_ary),
+                                 PyArray_DIMS((PyArrayObject *) tmp_ary),
+                                 PyArray_TYPE((PyArrayObject *) op),
+                                 NULL, NULL,
+                                 PyArray_ITEMSIZE((PyArrayObject *) op),
+                                 0, NULL);
+                if(op == NULL) {
+                    normalize_operand_cleanup(&cleanup);
+                    return NULL;
+                }
+                cleanup.objs2free[cleanup.objs2free_count++] = op;
+                PyObject *tmp_operands[2] = {op, tmp_ary};
+                int tmp_opcode;
+                if ((v - b) % PyArray_ITEMSIZE((PyArrayObject *) base) == 0) {
+                    tmp_opcode = BHC_REAL;
+                } else {
+                    tmp_opcode = BHC_IMAG;
+                }
+                if (array_op(tmp_opcode, 2, tmp_operands) == NULL) {
+                    cleanup.objs2free[cleanup.objs2free_count++] = op;
+                    return NULL;
+                }
+            }
+        }
+
+
         int err = normalize_operand(op, &types[i], &constants[i], &operands[i], &cleanup);
         if (err == -1) {
             normalize_operand_cleanup(&cleanup);
