@@ -212,7 +212,8 @@ def empty(shape, dtype=float, bohrium=True):
     if not bohrium:
         return numpy.ndarray(shape, dtype=dtype)
 
-    return bhary.new(shape, dtype)
+    from . import _bh
+    return _bh.ndarray(shape, dtype=dtype)
 
 
 @fix_biclass_wrapper
