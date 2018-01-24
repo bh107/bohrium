@@ -29,10 +29,10 @@ static BhView bhview_new(const PyArrayObject *npy_view, const PyArrayObject *npy
     ret.type_enum = PyArray_TYPE(npy_view);
     ret.ndim = PyArray_NDIM(npy_view);
     {
-        size_t v = (size_t)PyArray_DATA((PyArrayObject *) npy_view);
-        size_t b = (size_t)PyArray_DATA((PyArrayObject *) npy_base);
-        ret.start = (v - b) / PyArray_ITEMSIZE(npy_base);
-        if ((v - b) % PyArray_ITEMSIZE(npy_base) != 0) {
+        size_t v = (size_t) PyArray_DATA((PyArrayObject *) npy_view);
+        size_t b = (size_t) PyArray_DATA((PyArrayObject *) npy_base);
+        ret.start = (v - b) / PyArray_ITEMSIZE(npy_view);
+        if ((v - b) % PyArray_ITEMSIZE(npy_view) != 0) {
             fprintf(stderr, "Fatal error: bhview_new() - the view offset must be element aligned\n");
             assert(1 == 2);
             exit(-1);
@@ -93,6 +93,12 @@ void *bharray_bhc(BhArray *ary) {
     BhArray *base = get_base((PyObject*) ary);
     if (base != ary) {
         bharray_bhc(base);
+    }
+
+    if(PyArray_TYPE((PyArrayObject *) ary) != PyArray_TYPE((PyArrayObject *) base)) {
+        fprintf(stderr, "Fatal error: bharray_bhc() - view and base must have the same dtype\n");
+        assert(1 == 2);
+        exit(-1);
     }
 
     // Find the expected view based on the values of `ary`, which might have changed since last time accessed
