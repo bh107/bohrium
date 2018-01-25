@@ -212,7 +212,7 @@ PyObject* PyGetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
     npy_bool copy2host = 1;
     npy_bool allocate = 0;
     npy_bool nullify = 0;
-    static char *kwlist[] = {"ary:bharray", "copy2host:bool", "allocate:bool", "nullify:bool", NULL};
+    static char *kwlist[] = {"ary:bharray", "copy2host", "allocate", "nullify", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&O&O&", kwlist, &ary,
                                      PyArray_BoolConverter, &copy2host,
                                      PyArray_BoolConverter, &allocate,
@@ -236,7 +236,7 @@ PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *ary;
     PyObject *py_mem_ptr;
     npy_bool host_ptr = 1;
-    static char *kwlist[] = {"ary:bharray", "mem_ptr:int", "host_ptr:bool", NULL};
+    static char *kwlist[] = {"ary:bharray", "mem_ptr", "host_ptr", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&O&O&", kwlist, &ary, &py_mem_ptr,
                                      PyArray_BoolConverter, &host_ptr)) {
         return NULL;

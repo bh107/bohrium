@@ -773,7 +773,6 @@ static PyObject* BhArray_GetSeqItem(PyObject *o, Py_ssize_t i) {
 
     PyObject *ret = BhArray_GetItem(o, index);
     Py_DECREF(index);
-
     return ret;
 }
 
