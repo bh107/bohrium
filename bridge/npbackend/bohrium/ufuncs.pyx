@@ -16,7 +16,7 @@ from . import _info
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper, get_cdata
 from . import bhary
-from .array_manipulation import broadcast_arrays, flatten
+from .array_manipulation import broadcast_arrays
 
 @fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
