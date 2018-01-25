@@ -14,7 +14,7 @@ from . import array_create
 import numpy_force as np
 from . import _info
 from ._util import dtype_equal
-from .bhary import get_base, fix_biclass_wrapper, get_cdata
+from .bhary import fix_biclass_wrapper, get_cdata
 from . import bhary
 from .array_manipulation import broadcast_arrays, flatten
 
