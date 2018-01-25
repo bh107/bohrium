@@ -64,3 +64,17 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds);
  * @return             The data pointer of the bhc array
  */
 void *get_data_pointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify);
+
+/** Return a pointer to the bhc data of `ary`
+ *  This is the same as `get_data_pointer()` but returns the pointer as a Python integer
+ */
+PyObject* PyGetDataPointer(PyObject *self, PyObject *args, PyObject *kwds);
+
+/** Set the data pointer of `ary`
+ *  NB: The data will be deallocate when the bhc array is freed
+ *
+ * @param ary       The bharray in question
+ * @param mem_ptr   The new data pointer given as a Python integer, which is casted to (void *)
+ * @param host_ptr  When true, the pointer points to the host memory (main memory) as opposed to device memory
+ */
+PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds);

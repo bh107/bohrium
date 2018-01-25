@@ -194,19 +194,69 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
 }
 
 void *get_data_pointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify) {
-
     if (PyArray_SIZE((PyArrayObject*) ary) <= 0) {
         return NULL;
     }
-
     void *ary_ptr = bharray_bhc(ary);
     bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
-
     if (copy2host) {
         bhc_sync(dtype, ary_ptr);
     }
-
     bhc_flush();
     void *ret = bhc_data_get(dtype, ary_ptr, copy2host, force_alloc, nullify);
     return ret;
+}
+
+PyObject* PyGetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary;
+    npy_bool copy2host = 1;
+    npy_bool allocate = 0;
+    npy_bool nullify = 0;
+    static char *kwlist[] = {"ary:bharray", "copy2host:bool", "allocate:bool", "nullify:bool", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&O&O&", kwlist, &ary,
+                                     PyArray_BoolConverter, &copy2host,
+                                     PyArray_BoolConverter, &allocate,
+                                     PyArray_BoolConverter, &nullify)) {
+        return NULL;
+    }
+    if (!BhArray_CheckExact(ary)) {
+        PyErr_Format(PyExc_TypeError, "The `ary` must be a bharray.");
+        return NULL;
+    }
+    if (PyArray_NBYTES((PyArrayObject*) ary) > 0) {
+        void *data = get_data_pointer((BhArray *) ary, copy2host, allocate, nullify);
+        if (data != NULL) {
+            return PyLong_FromVoidPtr(data);
+        }
+    }
+    return PyLong_FromLong(0);
+}
+
+PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary;
+    PyObject *py_mem_ptr;
+    npy_bool host_ptr = 1;
+    static char *kwlist[] = {"ary:bharray", "mem_ptr:int", "host_ptr:bool", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&O&O&", kwlist, &ary, &py_mem_ptr,
+                                     PyArray_BoolConverter, &host_ptr)) {
+        return NULL;
+    }
+    if (!BhArray_CheckExact(ary)) {
+        PyErr_Format(PyExc_TypeError, "The `ary` must be a bharray.");
+        return NULL;
+    }
+    if (PyArray_NBYTES((PyArrayObject*) ary) == 0) {
+        Py_RETURN_NONE;
+    }
+    void *mem_ptr = PyLong_AsVoidPtr(py_mem_ptr);
+    if (PyErr_Occurred() != NULL) {
+        return NULL;
+    }
+
+    void *ary_ptr = bharray_bhc((BhArray *) ary);
+    bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
+    bhc_sync(dtype, ary_ptr);
+    bhc_flush();
+    bhc_data_set(dtype, ary_ptr, host_ptr, mem_ptr);
+    Py_RETURN_NONE;
 }

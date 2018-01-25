@@ -949,6 +949,10 @@ static PyMethodDef _bhMethods[] = {
     {"random123", (PyCFunction) PyRandom123, METH_VARARGS | METH_KEYWORDS,
             "Create a new random array using the random123 algorithm.\n" \
             "The dtype is uint64 always."},
+    {"get_data_pointer", (PyCFunction) PyGetDataPointer, METH_VARARGS | METH_KEYWORDS,
+            "Return a pointer to the bhc data of `ary`\n"},
+    {"set_data_pointer", (PyCFunction) PySetDataPointer, METH_VARARGS | METH_KEYWORDS,
+            "Set the data pointer of `ary`\n"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
