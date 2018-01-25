@@ -3,7 +3,7 @@ Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
 from .bhary import get_bhc, get_base
-from .target_bhc import get_data_pointer
+from ._bh import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
 from . import contexts
 
@@ -84,7 +84,7 @@ def get_gpuarray(bh_ary):
     with contexts.DisableBohrium():
         _import_pycuda_module()
         from pycuda import gpuarray
-        dev_ptr = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
+        dev_ptr = get_data_pointer(get_base(bh_ary), copy2host=False, allocate=True)
         return gpuarray.GPUArray(bh_ary.shape, bh_ary.dtype, gpudata=dev_ptr)
 
 
