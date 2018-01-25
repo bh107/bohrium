@@ -24,7 +24,7 @@ from .reorganization import *
 from .contexts import *
 from .ufuncs import UFUNCS
 from .masking import *
-from .bhary import check, fix_biclass, in_bhmem
+from .bhary import check, fix_biclass
 from ._info import numpy_types
 from ._util import is_scalar
 from . import linalg
