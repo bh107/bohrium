@@ -2,9 +2,8 @@
 Interop PyOpenCL
 ~~~~~~~~~~~~~~~~
 """
-from .bhary import get_bhc, get_base
-from ._bh import get_data_pointer, set_data_pointer
-from .target_bhc import getDeviceContext
+from .bhary import get_base
+from ._bh import get_data_pointer, set_data_pointer, get_device_context
 from .backend_messaging import runtime_info
 
 _opencl_is_in_stack = None
@@ -44,7 +43,7 @@ def available():
 def get_context():
     """Return a PyOpenCL context"""
     pyopencl = _import_pyopencl_module()
-    cxt = getDeviceContext()
+    cxt = get_device_context()
     if cxt is None:
         raise RuntimeError("No OpenCL device in the Bohrium stack! "
                            "Try defining the environment variable `BH_STACK=opencl`.")
