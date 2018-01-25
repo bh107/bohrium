@@ -184,6 +184,16 @@ class Ufunc(object):
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
 
+        # Convert 0-dim ndarray into scalars
+        for i in range(len(args)):
+            if not np.isscalar(args[i]):
+                base = bhary.get_base(args[i])
+                if not bhary.check(base):
+                    if np.isscalar(base):
+                        args[i] = base
+                    elif base.ndim == 0:
+                        args[i] = base.item()
+
         # Find the type signature
         (out_dtype, in_dtype) = _util.type_sig(self.info['name'], args)
 

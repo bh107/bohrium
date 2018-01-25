@@ -23,4 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #define NO_IMPORT_ARRAY
 #include "_bh.h"
 
+/** Returns the bhc handle of `ary`.
+ *
+ * @param ary The array in question
+ * @return    The bhc array handle
+ */
 void *bharray_bhc(BhArray *ary);

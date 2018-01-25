@@ -55,6 +55,7 @@ class Base(object):
     """ Base array handle """
 
     def __init__(self, size, dtype, bhc_obj=None):
+        assert 1==2
         # Total number of elements
         self.size = size
         # Data type
@@ -81,6 +82,7 @@ class View(object):
     """ Array view handle """
 
     def __init__(self, ndim, start, shape, strides, base):
+        assert 1 == 2
         # Number of dimensions
         self.ndim = ndim
         # Tuple of dimension sizes
@@ -110,6 +112,7 @@ class View(object):
 
 
 def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
+    assert 1 == 2
     """ Retrieves the data pointer from Bohrium Runtime. """
     if ary.size == 0 or ary.base.size == 0:
         return 0
@@ -133,6 +136,7 @@ def get_data_pointer(ary, copy2host=True, allocate=False, nullify=False):
 
 
 def set_data_pointer(ary, mem_ptr_as_int, host_ptr=True):
+    assert 1 == 2
     """ Set the data pointer `mem_ptr_as_int` in the Bohrium Runtime. """
     if ary.size == 0 or ary.base.size == 0:
         return 0
