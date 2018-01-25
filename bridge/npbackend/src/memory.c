@@ -173,7 +173,7 @@ void mem_bhc2np(BhArray *base_array) {
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
 
     if(base_array->bhc_array != NULL) {
-        void *d = BhGetDataPointer((BhArray*) base_array, 1, 0, 1);
+        void *d = get_data_pointer((BhArray*) base_array, 1, 0, 1);
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
         } else {
@@ -201,7 +201,7 @@ void mem_np2bhc(BhArray *base_array) {
     _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
 
     // Copy the data from the NumPy part to the bhc part
-    void *data = BhGetDataPointer((BhArray*) base_array, 1, 1, 0);
+    void *data = get_data_pointer((BhArray*) base_array, 1, 1, 0);
     memmove(data, PyArray_DATA((PyArrayObject*) base_array), PyArray_NBYTES((PyArrayObject*) base_array));
 
     // Finally, we memory protect the NumPy part of 'base' again
