@@ -237,7 +237,7 @@ PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *py_mem_ptr;
     npy_bool host_ptr = 1;
     static char *kwlist[] = {"ary:bharray", "mem_ptr", "host_ptr", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&O&O&", kwlist, &ary, &py_mem_ptr,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&O&", kwlist, &ary, &py_mem_ptr,
                                      PyArray_BoolConverter, &host_ptr)) {
         return NULL;
     }
