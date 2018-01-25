@@ -55,4 +55,12 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);
 */
 PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds);
 
-void *BhGetDataPointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify);
+/** Return a pointer to the bhc data of `ary`
+ *
+ * @param ary          The bharray in question
+ * @param copy2host    When true, always copy the data to main memory before returning
+ * @param force_alloc  When true, force memory allocation before returning the data pointer
+ * @param nullify      When true, set the bhc array's data NULL after returning the data pointer
+ * @return             The data pointer of the bhc array
+ */
+void *get_data_pointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify);

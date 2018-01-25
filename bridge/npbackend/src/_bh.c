@@ -277,7 +277,7 @@ static PyObject* BhArray_data_fill(PyObject *self, PyObject *args) {
     }
 
     // Copy the data from the NumPy array 'np_ary' to the bhc part of `self`
-    void *data = BhGetDataPointer((BhArray*) self, 1, 1, 0);
+    void *data = get_data_pointer((BhArray*) self, 1, 1, 0);
     memmove(data, PyArray_DATA((PyArrayObject*) np_ary), PyArray_NBYTES((PyArrayObject*) np_ary));
     Py_RETURN_NONE;
 }
@@ -307,7 +307,7 @@ static PyObject* BhArray_numpy_wrapper(PyObject *self, PyObject *args) {
         PyErr_Format(PyExc_RuntimeError, "Array must be C-style contiguous.");
         return NULL;
     }
-    void *data = BhGetDataPointer((BhArray*) self, 1, 1, 0);
+    void *data = get_data_pointer((BhArray*) self, 1, 1, 0);
     return PyArray_SimpleNewFromData(PyArray_NDIM(s), PyArray_DIMS(s), PyArray_TYPE(s), data);
 }
 
