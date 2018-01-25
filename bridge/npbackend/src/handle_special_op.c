@@ -260,3 +260,21 @@ PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
     bhc_data_set(dtype, ary_ptr, host_ptr, mem_ptr);
     Py_RETURN_NONE;
 }
+
+PyObject* PyGetDeviceContext(PyObject *self, PyObject *args) {
+    assert(args == NULL);
+    return PyLong_FromVoidPtr(bhc_getDeviceContext());
+}
+
+PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds) {
+    char *msg;
+    static char *kwlist[] = {"msg:str", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &msg)) {
+        return NULL;
+    }
+#if defined(NPY_PY3K)
+    return PyUnicode_FromString(bhc_message(msg));
+#else
+    return PyString_FromString(bhc_message(msg));
+#endif
+}

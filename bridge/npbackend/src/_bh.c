@@ -953,6 +953,10 @@ static PyMethodDef _bhMethods[] = {
             "Return a pointer to the bhc data of `ary`\n"},
     {"set_data_pointer", (PyCFunction) PySetDataPointer, METH_VARARGS | METH_KEYWORDS,
             "Set the data pointer of `ary`\n"},
+    {"get_device_context", PyGetDeviceContext,  METH_NOARGS,
+            "Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack"},
+    {"message", (PyCFunction) PyMessage, METH_VARARGS | METH_KEYWORDS,
+            "Send and receive a message through the Bohrium stack\n"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

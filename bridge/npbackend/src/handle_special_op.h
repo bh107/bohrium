@@ -78,3 +78,13 @@ PyObject* PyGetDataPointer(PyObject *self, PyObject *args, PyObject *kwds);
  * @param host_ptr  When true, the pointer points to the host memory (main memory) as opposed to device memory
  */
 PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds);
+
+/** Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack */
+PyObject* PyGetDeviceContext(PyObject *self, PyObject *args);
+
+/** Send and receive a message through the Bohrium stack
+ *
+ * @param msg  The message to send down to the bhc runtime
+ * @return     The message answer from the bhc runtime
+ */
+PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds);

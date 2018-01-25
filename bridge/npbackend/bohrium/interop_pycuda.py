@@ -2,7 +2,7 @@
 Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
-from .bhary import get_bhc, get_base
+from .bhary import get_base
 from ._bh import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
 from . import contexts

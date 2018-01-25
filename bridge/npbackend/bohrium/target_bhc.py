@@ -50,18 +50,3 @@ class BhcAPI:
 
 bhc = BhcAPI()
 
-
-def getDeviceContext():
-    """Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack."""
-    return int(bhc.getDeviceContext())
-
-
-def setDeviceContext(device_context):
-    """Set the device context, such as CUDA's cl_context, of the first VE in the runtime stack."""
-    bhc.setDeviceContext(device_context)
-
-
-def message(msg):
-    """ Send and receive a message through the component stack """
-    return "%s" % (bhc.message(msg))
-
