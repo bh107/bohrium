@@ -64,8 +64,7 @@ PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
                 PyArray_SetBaseObject((PyArrayObject *) tmp_ary, (PyObject*) base);
                 cleanup.objs2free[cleanup.objs2free_count++] = tmp_ary;
                 // At this point `tmp_ary` is a regular view of the complex base
-
-                // Then we copy `tmp_ary` into a new float array using either `BHC_REAL` or `BHC_IMAG`
+                // We can now copy `tmp_ary` into a new float array using either `BHC_REAL` or `BHC_IMAG`
                 op = PyArray_New(&BhArrayType,
                                  PyArray_NDIM((PyArrayObject *) tmp_ary),
                                  PyArray_DIMS((PyArrayObject *) tmp_ary),
@@ -91,7 +90,6 @@ PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
                 }
             }
         }
-
 
         int err = normalize_operand(op, &types[i], &constants[i], &operands[i], &cleanup);
         if (err == -1) {
@@ -126,7 +124,6 @@ PyArrayOp(PyObject *self, PyObject *args, PyObject *kwds) {
             return NULL;
         }
     }
-
     PyObject *ret = array_op(opcode, PySequence_Fast_GET_SIZE(operand_fast_seq),
                              PySequence_Fast_ITEMS(operand_fast_seq));
     Py_DECREF(operand_fast_seq);

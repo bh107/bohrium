@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "bharray.h"
+#include "memory.h"
 #include "util.h"
 #include <bhc.h>
 
@@ -93,6 +94,8 @@ void *bharray_bhc(BhArray *ary) {
     BhArray *base = get_base((PyObject*) ary);
     if (base != ary) {
         bharray_bhc(base);
+    } else if (!base->data_in_bhc) {
+        mem_np2bhc(base);
     }
 
     if(PyArray_TYPE((PyArrayObject *) ary) != PyArray_TYPE((PyArrayObject *) base)) {

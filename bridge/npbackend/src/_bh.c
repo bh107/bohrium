@@ -63,6 +63,7 @@ PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nb
     ((BhArray*) ret)->base.flags |= NPY_ARRAY_OWNDATA;
     ((BhArray*) ret)->base.flags |= NPY_ARRAY_CARRAY;
     ((BhArray*) ret)->mmap_allocated = 1;
+    ((BhArray*) ret)->data_in_bhc = 1;
 
     PyArray_UpdateFlags((PyArrayObject*) ret, NPY_ARRAY_UPDATE_ALL);
     mem_signal_attach(ret, ((BhArray*) ret)->base.data, nbytes);
@@ -127,6 +128,7 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
 
     ((BhArray*) self)->bhc_array = NULL;
     ((BhArray*) self)->view.initiated = 0;
+    ((BhArray*) self)->data_in_bhc = 1;
 
     ((BhArray*) self)->bhc_ary = Py_None;
     Py_INCREF(Py_None);

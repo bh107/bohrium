@@ -89,7 +89,8 @@ void mem_access_callback(void *id, void *addr) {
 
 // Help function for protecting the memory of the NumPy part of 'ary'
 static void _mprotect_np_part(BhArray *ary) {
-    assert(((BhArray*) ary)->mmap_allocated);
+    assert(get_base((PyObject*) ary) == ary); // `ary` must be a base
+    assert(ary->mmap_allocated);
     assert(PyArray_CHKFLAGS((PyArrayObject*) ary, NPY_ARRAY_OWNDATA));
 
     // Finally, we memory protect the NumPy data
@@ -105,15 +106,12 @@ static void _mprotect_np_part(BhArray *ary) {
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
 }
 
-
-
 void* mem_map(uint64_t nbytes) {
     assert(nbytes > 0);
     // Allocate page-size aligned memory.
     // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
     // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
     void *addr = mmap(0, nbytes, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-
     if(addr == MAP_FAILED) {
         int errsv = errno; // mmap() sets the errno.
         fprintf(stderr,
@@ -142,8 +140,14 @@ void mem_unmap(void *addr, npy_intp size) {
 }
 
 void protected_malloc(BhArray *ary) {
-    if(((BhArray *) ary)->mmap_allocated || !PyArray_CHKFLAGS((PyArrayObject*) ary, NPY_ARRAY_OWNDATA)) {
+    if(ary->mmap_allocated || !PyArray_CHKFLAGS((PyArrayObject*) ary, NPY_ARRAY_OWNDATA)) {
         return;
+    }
+    if (get_base((PyObject*) ary) != ary) {
+        fprintf(stderr, "Fatal error: protected_malloc() was given a array that "
+                        "owns its memory but isn't a base array!.\n");
+        assert(1 == 2);
+        exit(-1);
     }
     ary->mmap_allocated = 1;
     void *addr = mem_map(ary_nbytes(ary));
@@ -151,6 +155,7 @@ void protected_malloc(BhArray *ary) {
     ary->npy_data = ary->base.data;
     ary->base.data = addr;
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
+    ary->data_in_bhc = 1;
 }
 
 void mem_signal_attach(const void *idx, const void *addr, uint64_t nbytes) {
@@ -158,6 +163,12 @@ void mem_signal_attach(const void *idx, const void *addr, uint64_t nbytes) {
 }
 
 void mem_bhc2np(BhArray *base_array) {
+    assert(get_base((PyObject*) base_array) == base_array);
+
+    if (!base_array->data_in_bhc) {
+        return;
+    }
+
     // Let's detach the signal
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
 
@@ -168,19 +179,21 @@ void mem_bhc2np(BhArray *base_array) {
         } else {
             _mremap_data(PyArray_DATA((PyArrayObject*) base_array), d, ary_nbytes((BhArray*) base_array));
         }
-
-        // Let's delete the current bhc_array
-        assert(base_array->view.initiated);
-        bhc_destroy(dtype_np2bhc(base_array->view.type_enum), base_array->bhc_array);
-        base_array->view.initiated = 0;
-        base_array->bhc_array = NULL;
     } else {
         // Let's make sure that the NumPy data isn't protected
         _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
     }
+    base_array->data_in_bhc = 0;
 }
 
 void mem_np2bhc(BhArray *base_array) {
+    assert(get_base((PyObject*) base_array) == base_array);
+
+    if (base_array->data_in_bhc) {
+        return;
+    }
+    base_array->data_in_bhc = 1;
+
     // Let's detach the signal
     bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
 

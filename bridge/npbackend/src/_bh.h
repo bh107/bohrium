@@ -62,6 +62,7 @@ typedef struct {
 
     BhView view;
     void *bhc_array;
+    int data_in_bhc;
 } BhArray;
 
 // Exposing some global variables implemented in `_bh.c`
