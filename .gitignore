@@ -86,3 +86,9 @@ bridge/NumCIL/NumCIL/UFunc/TypedAggregate.cs
 bridge/NumCIL/NumCIL/UFunc/TypedReduce.cs
 BohriumDataAccessorTyped.cs
 build/
+
+# GNU tag
+GTAGS
+GRTAGS
+GPATH
+GSYMS
