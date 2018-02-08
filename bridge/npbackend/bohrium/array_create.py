@@ -5,10 +5,10 @@ Array Creation Routines
 import math
 import warnings
 from . import bhary
+from . import _info
 from .bhary import fix_biclass_wrapper
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in, dtype_support
-from . import target_bhc
 
 
 def _warn_dtype(dtype, stacklevel):
@@ -211,7 +211,8 @@ def empty(shape, dtype=float, bohrium=True):
     if not bohrium:
         return numpy.ndarray(shape, dtype=dtype)
 
-    return bhary.new(shape, dtype)
+    from . import _bh
+    return _bh.ndarray(shape, dtype=dtype)
 
 
 @fix_biclass_wrapper
@@ -627,6 +628,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
 
 @fix_biclass_wrapper
 def simply_range(size, dtype=numpy.uint64):
+    from . import _bh
     try:
         integers = (int, long)
     except:
@@ -651,8 +653,7 @@ def simply_range(size, dtype=numpy.uint64):
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
 
-    ret = target_bhc.arange(size, A.dtype)
-    A = bhary.new((size,), A.dtype, ret)
+    _bh.ufunc(_info.op["range"]['id'], (A,))
 
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)

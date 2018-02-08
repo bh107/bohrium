@@ -4,6 +4,7 @@ import os
 from os.path import join, exists
 import argparse
 
+
 def main(args):
     prefix = os.path.abspath(os.path.dirname(__file__))
 

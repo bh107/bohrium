@@ -5,7 +5,7 @@ Bohrium Loop
 
 import sys
 import numpy_force as numpy
-from .target_bhc import runtime_flush, runtime_flush_count, runtime_flush_and_repeat, runtime_sync
+from . import _bh
 from . import bhary
 from . import array_create
 
@@ -48,16 +48,16 @@ def do_while(func, niters, *args, **kwargs):
     array([3, 3, 3, 3])
     """
 
-    runtime_flush()
-    flush_count = runtime_flush_count()
+    _bh.flush()
+    flush_count = _bh.flush_count()
     cond = func(*args, **kwargs)
-    if flush_count != runtime_flush_count():
+    if flush_count != _bh.flush_count():
         raise TypeError("Invalid `func`: the looped function contains operations not support "
-                           "by Bohrium, contain branches, or is simply too big!")
+                        "by Bohrium, contain branches, or is simply too big!")
     if niters is None:
         niters = sys.maxsize-1
     if cond is None:
-        runtime_flush_and_repeat(niters, None)
+        _bh.flush_and_repeat(niters, None)
     else:
         if not bhary.check(cond):
             raise TypeError("Invalid `func`: `func` may only return Bohrium arrays or nothing at all")
@@ -70,10 +70,8 @@ def do_while(func, niters, *args, **kwargs):
         if not bhary.is_base(cond):
             raise TypeError("Invalid `func`: `func` returns an array view. It must return a base array.")
 
-        cond = bhary.get_bhc(cond)
-        runtime_sync(cond)
-        runtime_flush_and_repeat(niters, cond)
-
+        _bh.sync(cond)
+        _bh.flush_and_repeat(niters, cond)
 
 def for_loop(loop_body, niters, offset, stride, *args, **kwargs):
     if niters < 1: return

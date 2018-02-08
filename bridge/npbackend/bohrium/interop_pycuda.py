@@ -2,10 +2,9 @@
 Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
-from .bhary import get_bhc, get_base
-from .target_bhc import get_data_pointer
+from .bhary import get_base
+from ._bh import get_data_pointer
 from .backend_messaging import runtime_info, cuda_use_current_context
-from ._util import flush
 from . import contexts
 
 _cuda_is_in_stack = None
@@ -52,7 +51,8 @@ def init():
     _initiated = True
     if not available():
         return
-    flush()
+    from . import _bh
+    _bh.flush()
     import pycuda
     import pycuda.autoinit
     pycuda.driver.mem_alloc(1)  # Force PyCUDA to activate the context as "current context"
@@ -84,7 +84,7 @@ def get_gpuarray(bh_ary):
     with contexts.DisableBohrium():
         _import_pycuda_module()
         from pycuda import gpuarray
-        dev_ptr = get_data_pointer(get_bhc(bh_ary), copy2host=False, allocate=True)
+        dev_ptr = get_data_pointer(get_base(bh_ary), copy2host=False, allocate=True)
         return gpuarray.GPUArray(bh_ary.shape, bh_ary.dtype, gpudata=dev_ptr)
 
 

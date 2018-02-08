@@ -27,7 +27,7 @@ def gauss(a):
     """
     for c in range(1, a.shape[0]):
         a[c:, c - 1:] = a[c:, c - 1:] - (a[c:, c - 1] / a[c - 1, c - 1:c])[:, None] * a[c - 1, c - 1:]
-        np.flush(a)
+        np.flush()
     a /= np.diagonal(a)[:, None]
     return a
 
@@ -43,7 +43,7 @@ def lu(a):
     for c in range(1, u.shape[0]):
         l[c:, c - 1] = (u[c:, c - 1] / u[c - 1, c - 1:c])
         u[c:, c - 1:] = u[c:, c - 1:] - l[c:, c - 1][:, None] * u[c - 1, c - 1:]
-        np.flush(u)
+        np.flush()
     return (l, u)
 
 
@@ -86,7 +86,7 @@ def solve(a, b):
     x = w[:, lc].copy()
     for c in range(lc - 1, 0, -1):
         x[:c] -= w[:c, c] * x[c:c + 1]
-        np.flush(x)
+        np.flush()
     return x
 
 

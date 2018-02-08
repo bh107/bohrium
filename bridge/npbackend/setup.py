@@ -129,7 +129,7 @@ with open(buildpath("_info.py"), 'w') as o:
     with open(srcpath('..', '..', 'core', 'codegen', 'opcodes.json'), 'r') as f:
         opcodes = json.loads(f.read())
         for op in opcodes:
-            if op['elementwise'] and not op['system_opcode']:
+            if not op['system_opcode']:
                 # Convert the type signature to bhc names
                 type_sig = []
                 for sig in op['types']:
@@ -138,7 +138,9 @@ with open(buildpath("_info.py"), 'w') as o:
                 name = op['opcode'].lower()[3:]  # Removing BH_ and we have the NumPy and bohrium name
                 ufunc[name] = {
                     'name':     name,
+                    'id':       int(op['id']),
                     'nop':      int(op['nop']),
+                    'elementwise': bool(op['elementwise']),
                     'type_sig': type_sig
                 }
     o.write("op = ")
@@ -218,10 +220,19 @@ setup(
     ext_modules=[
         Extension(
             name='_bh',
-            sources=[srcpath('src', '_bh.c')],
+            sources=[srcpath('src', '_bh.c'),
+                     srcpath('src', 'bharray.c'),
+                     srcpath('src', 'handle_array_op.c'),
+                     srcpath('src', 'handle_special_op.c'),
+                     srcpath('src', 'memory.c'),
+                     srcpath('src', 'util.c')],
             depends=[
-                srcpath('src', 'types.c'),
-                srcpath('src', 'types.h'),
+                srcpath('src', '_bh.h'),
+                srcpath('src', 'bharray.h'),
+                srcpath('src', 'util.h'),
+                srcpath('src', 'handle_array_op.h'),
+                srcpath('src', 'handle_special_op.h'),
+                srcpath('src', 'memory.h'),
                 srcpath('src', 'operator_overload.c')
             ],
             include_dirs=[

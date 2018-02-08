@@ -1,7 +1,8 @@
 from .. import array_create
-from .._util import flush, dtype_equal
+from .._util import dtype_equal
 from ..interop_numpy import get_array
 from ..bhary import get_base
+from .._bh import flush
 
 import cython
 from cython.parallel import prange, parallel
