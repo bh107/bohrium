@@ -86,6 +86,11 @@ bridge/NumCIL/NumCIL/UFunc/TypedAggregate.cs
 bridge/NumCIL/NumCIL/UFunc/TypedReduce.cs
 BohriumDataAccessorTyped.cs
 build/
+b/
+
+# Emacs
+.#*
+*~$
 
 # GNU tag
 GTAGS
