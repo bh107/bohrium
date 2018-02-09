@@ -67,7 +67,6 @@ typedef struct {
 
 // Exposing some global variables implemented in `_bh.c`
 extern PyTypeObject BhArrayType; // Implemented in `_bh.c`
-extern PyObject *bhary;          // The bhary Python module
 extern PyObject *ufuncs;         // The ufuncs Python module
 extern PyObject *bohrium;        // The Bohrium Python module
 extern PyObject *array_create;   // The array_create Python module

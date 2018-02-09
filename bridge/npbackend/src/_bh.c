@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self);
 
-PyObject *bhary          = NULL; // The bhary Python module
 PyObject *ufuncs         = NULL; // The ufuncs Python module
 PyObject *bohrium        = NULL; // The Bohrium Python module
 PyObject *array_create   = NULL; // The array_create Python module
@@ -232,33 +231,6 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
     Py_RETURN_NONE;
 }
 
-static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
-    assert(args == NULL);
-    assert(BhArray_CheckExact(self));
-
-    assert(1 == 2);
-
-    // We move the whole array (i.e. the base array) from Bohrium to NumPy
-    BhArray *base = get_base(self);
-
-    if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
-        PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
-        return NULL;
-    }
-
-    // Make sure that bhc_ary exist
-    if(!bhc_exist(base)) {
-        PyObject *err = PyObject_CallMethod(bhary, "new_bhc_base", "O", (PyObject*) base);
-        if(err == NULL) {
-            return NULL;
-        }
-        Py_DECREF(err);
-    }
-
-    mem_np2bhc(base);
-    Py_RETURN_NONE;
-}
-
 static PyObject* BhArray_data_fill(PyObject *self, PyObject *args) {
     assert(BhArray_CheckExact(self));
     PyObject *np_ary;
@@ -433,7 +405,6 @@ static PyObject* BhArray_mean(PyObject *self, PyObject *args, PyObject *kwds) {
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
     {"__array_ufunc__",    (PyCFunction) BhArray_array_ufunc,   METH_VARARGS | METH_KEYWORDS, "Handle ufunc"},
-    {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
     {"copy2numpy",         BhArray_copy2numpy,                  METH_NOARGS,                  "Copy the array in C-style memory layout to a regular NumPy array"},
     {"_numpy_wrapper",     BhArray_numpy_wrapper,               METH_NOARGS,                  "Returns a NumPy array that wraps the data of this array. NB: no flush or data management!"},
@@ -1001,14 +972,12 @@ PyMODINIT_FUNC init_bh(void)
     PyModule_AddObject(m, "ndarray", (PyObject*) &BhArrayType);
 
     bohrium        = PyImport_ImportModule("bohrium");
-    bhary          = PyImport_ImportModule("bohrium.bhary");
     ufuncs         = PyImport_ImportModule("bohrium.ufuncs");
     array_create   = PyImport_ImportModule("bohrium.array_create");
     reorganization = PyImport_ImportModule("bohrium.reorganization");
     masking        = PyImport_ImportModule("bohrium.masking");
 
-    if(bhary          == NULL ||
-       ufuncs         == NULL ||
+    if(ufuncs         == NULL ||
        bohrium        == NULL ||
        array_create   == NULL ||
        reorganization == NULL ||
