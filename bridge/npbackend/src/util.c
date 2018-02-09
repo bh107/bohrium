@@ -91,33 +91,6 @@ int normalize_operand(PyObject *op, bhc_dtype *dtype, bhc_bool *constant, void *
         *dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) bh_ary)->type_num);
         *constant = 0;
         *operand = bharray_bhc((BhArray*) bh_ary);
-
-        /*
-        // Get the bhc array pointer and save it in `operands[i]`
-        PyObject *bhc_view = PyObject_CallMethod(bhary, "get_bhc", "O", bh_ary);
-        if(bhc_view == NULL) {
-            return -1;
-        }
-        cleanup->objs2free[cleanup->objs2free_count++] = bhc_view;
-
-        // A zero sized view has no `bhc_obj` and we can simply ignore the operation
-        if(!PyObject_HasAttrString(bhc_view, "bhc_obj")) {
-            return -1;
-        }
-
-        PyObject *bhc_ary_swig_ptr = PyObject_GetAttrString(bhc_view, "bhc_obj");
-        if(bhc_ary_swig_ptr == NULL) {
-            return -1;
-        }
-        PyObject *bhc_ary_ptr = PyObject_CallMethod(bhc_ary_swig_ptr, "__int__", NULL);
-        if(bhc_ary_ptr == NULL) {
-            Py_DECREF(bhc_ary_swig_ptr);
-            return -1;
-        }
-        *operand = PyLong_AsVoidPtr(bhc_ary_ptr);
-        Py_DECREF(bhc_ary_swig_ptr);
-        Py_DECREF(bhc_ary_ptr);
-        */
     }
     return 0;
 }
