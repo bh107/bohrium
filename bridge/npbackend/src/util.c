@@ -141,15 +141,16 @@ int same_view(PyArrayObject *v1, PyArrayObject *v2) {
     if (PyArray_TYPE(v1) != PyArray_TYPE(v2)) {
         return 0;
     }
-    int v1_ndim = (PyArray_NDIM(v1) > 0)?PyArray_NDIM(v1):1;
-    int v2_ndim = (PyArray_NDIM(v2) > 0)?PyArray_NDIM(v2):1;
-    if (v1_ndim != v2_ndim) {
-        return 0;
-    }
     if (PyArray_DATA(v1) != PyArray_DATA(v2)) {
         return 0;
     }
-    for(int i=0; i < v1_ndim; ++i) {
+    if ((PyArray_NDIM(v1) == 0 || PyArray_SIZE(v1) == 1) && (PyArray_NDIM(v2) == 0 || PyArray_SIZE(v2) == 1)) {
+        return 1; // single element views are identical
+    }
+    if (PyArray_NDIM(v1) != PyArray_NDIM(v2)) {
+        return 0;
+    }
+    for(int i=0; i < PyArray_NDIM(v1); ++i) {
         if (PyArray_DIM(v1, i) != PyArray_DIM(v2, i)) {
             return 0;
         }
