@@ -129,17 +129,6 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
     ((BhArray*) self)->view.initiated = 0;
     ((BhArray*) self)->data_in_bhc = 1;
 
-    ((BhArray*) self)->bhc_ary = Py_None;
-    Py_INCREF(Py_None);
-
-    ((BhArray*) self)->bhc_ary_version = PyLong_FromLong(0);
-
-    ((BhArray*) self)->bhc_view = Py_None;
-    Py_INCREF(Py_None);
-
-    ((BhArray*) self)->bhc_view_version = Py_None;
-    Py_INCREF(Py_None);
-
     protected_malloc((BhArray *) self);
 
     if(PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT)) {
@@ -156,10 +145,6 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
     PyObject_Init(obj, type);
 
     // Flag the array as uninitialized
-    ((BhArray*) obj)->bhc_ary          = NULL;
-    ((BhArray*) obj)->bhc_ary_version  = NULL;
-    ((BhArray*) obj)->bhc_view         = NULL;
-    ((BhArray*) obj)->bhc_view_version = NULL;
     ((BhArray*) obj)->npy_data         = NULL;
     ((BhArray*) obj)->mmap_allocated   = 0;
 
@@ -171,12 +156,6 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
 
 static void BhArray_dealloc(BhArray* self) {
     assert(BhArray_CheckExact(self));
-
-    Py_XDECREF(self->bhc_view);
-    Py_XDECREF(self->bhc_view_version);
-    Py_XDECREF(self->bhc_ary_version);
-    Py_XDECREF(self->bhc_ary);
-
 
     if(self->bhc_array != NULL) {
         assert(self->view.initiated);
@@ -436,10 +415,6 @@ static PyMethodDef BhArrayMethods[] = {
 };
 
 static PyMemberDef BhArrayMembers[] = {
-    {"bhc_ary",          T_OBJECT_EX, offsetof(BhArray, bhc_ary),          0, "The Bohrium backend base-array"},
-    {"bhc_ary_version",  T_OBJECT_EX, offsetof(BhArray, bhc_ary_version),  0, "The version of the Bohrium backend base-array"},
-    {"bhc_view",         T_OBJECT_EX, offsetof(BhArray, bhc_view),         0, "The Bohrium backend view-array"},
-    {"bhc_view_version", T_OBJECT_EX, offsetof(BhArray, bhc_view_version), 0, "The version of the Bohrium backend view-array"},
     {"bhc_mmap_allocated", T_BOOL, offsetof(BhArray, mmap_allocated), 0, "Is the base data allocated with mmap?"},
     {NULL}  /* Sentinel */
 };

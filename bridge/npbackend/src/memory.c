@@ -78,10 +78,6 @@ void mem_access_callback(void *id, void *addr) {
     }
     PyErr_Clear();
 
-    if(bh_mem_warn && !bhc_exist(ary)) {
-        printf("MEM_WARN: mem_access_callback() - base %p has no bhc object!\n", ary);
-    }
-
     mem_bhc2np((BhArray*)ary);
 
     PyGILState_Release(GIL);

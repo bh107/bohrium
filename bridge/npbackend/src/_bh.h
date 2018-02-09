@@ -52,17 +52,11 @@ typedef struct {
 // The declaration of the Bohrium ndarray
 typedef struct {
     BH_PyArrayObject base;
-    PyObject *bhc_ary;
-    PyObject *bhc_ary_version;
-    PyObject *bhc_view;
-    PyObject *bhc_view_version;
-
-    int mmap_allocated;
+    int mmap_allocated; // Is the memory allocated by us?
     void *npy_data; // NumPy allocated array data
-
-    BhView view;
-    void *bhc_array;
-    int data_in_bhc;
+    BhView view; // View information, which might be obsolete
+    void *bhc_array; // bhc handle to the array
+    int data_in_bhc; // Is the data in bhc?
 } BhArray;
 
 // Exposing some global variables implemented in `_bh.c`
@@ -74,9 +68,6 @@ extern PyObject *reorganization; // The reorganization Python module
 extern PyObject *masking;        // The masking Python module
 extern int bh_sync_warn;         // Boolean flag: should we warn when copying from Bohrium to NumPy
 extern int bh_mem_warn;          // Boolean flag: should we warn when about memory problems
-
-// Some nice shorthands
-#define bhc_exist(x) (((BhArray*) x)->bhc_ary != Py_None)
 
 // Help function that creates a simple new array.
 // We parse to PyArray_NewFromDescr(), a new protected memory allocation
