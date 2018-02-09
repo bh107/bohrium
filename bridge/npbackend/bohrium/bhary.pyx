@@ -29,11 +29,6 @@ import sys
 import numpy_force as numpy
 cimport numpy as numpy
 
-cpdef get_cdata(numpy.ndarray ary):
-    """Returns the array data pointer as an integer. 
-    This function is MUCH faster than the ndarray.ctypes attribute"""
-    return <unsigned long long> ary.data
-
 def check(ary):
     """Returns True if 'ary' is a Bohrium array"""
 

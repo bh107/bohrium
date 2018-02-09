@@ -956,6 +956,8 @@ static PyMethodDef _bhMethods[] = {
             "Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack"},
     {"message", (PyCFunction) PyMessage, METH_VARARGS | METH_KEYWORDS,
             "Send and receive a message through the Bohrium stack\n"},
+    {"same_view", (PyCFunction) PySameView, METH_VARARGS | METH_KEYWORDS,
+            "Return true when `v1` and `v2` is exactly the same (incl. pointing to the same base)\n"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

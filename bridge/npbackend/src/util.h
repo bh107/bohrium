@@ -75,3 +75,12 @@ int64_t ary_nbytes(const BhArray *ary);
  * @return     A borrowed reference to the base of `ary`
  */
 BhArray *get_base(PyObject *ary);
+
+/** Return true when `v1` and `v2` is exactly the same (incl. pointing to the same base)
+ *
+ * @param v1  First array in question
+ * @param v2  Second array in question
+ * @return    The boolean answer
+ */
+int same_view(PyArrayObject *v1, PyArrayObject *v2);
+PyObject *PySameView(PyObject *self, PyObject *args, PyObject *kwds);

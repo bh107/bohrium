@@ -136,3 +136,43 @@ BhArray *get_base(PyObject *ary) {
         return get_base(base);
     }
 }
+
+int same_view(PyArrayObject *v1, PyArrayObject *v2) {
+    if (PyArray_TYPE(v1) != PyArray_TYPE(v2)) {
+        return 0;
+    }
+    int v1_ndim = (PyArray_NDIM(v1) > 0)?PyArray_NDIM(v1):1;
+    int v2_ndim = (PyArray_NDIM(v2) > 0)?PyArray_NDIM(v2):1;
+    if (v1_ndim != v2_ndim) {
+        return 0;
+    }
+    if (PyArray_DATA(v1) != PyArray_DATA(v2)) {
+        return 0;
+    }
+    for(int i=0; i < v1_ndim; ++i) {
+        if (PyArray_DIM(v1, i) != PyArray_DIM(v2, i)) {
+            return 0;
+        }
+        if (PyArray_STRIDE(v1, i) != PyArray_STRIDE(v2, i)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+PyObject *PySameView(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *v1, *v2;
+    static char *kwlist[] = {"v1:ndarray", "v2:ndarray", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &v1, &v2)) {
+        return NULL;
+    }
+    if (!PyArray_Check(v1) || !PyArray_Check(v2)) {
+        PyErr_Format(PyExc_TypeError, "The views must be a ndarray or a subtype thereof.");
+        return NULL;
+    }
+    if (same_view((PyArrayObject*) v1, (PyArrayObject*) v2)) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
+}
