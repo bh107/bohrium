@@ -45,3 +45,5 @@ def modules(targets=["numpy", "numpy_force"], regex_to_exclude=IGNORE_MODULES):
                 if hasattr(val, "__doc__") and val.__doc__ is not None:
                     if pattern_return_ndarray.search(val.__doc__) is not None:
                         setattr(m_obj, name, bhary.fix_biclass_wrapper(val))
+                        # The function should have its original name and not `inner`
+                        getattr(m_obj, name).__name__ = name
