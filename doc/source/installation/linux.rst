@@ -8,7 +8,7 @@ If you use Bohrium through Python, we strongly recommend to install Bohrium thro
 
     pip install --user bohrium
 
-.. note:: Bohrium requires `gcc` in `$PATH`.
+.. note:: Bohrium requires ``gcc`` in ``$PATH``. E.g. on Ubuntu install the build-essential package: ``sudo apt install build-essential``.
 
 Ubuntu
 ------
@@ -26,12 +26,14 @@ On Ubuntu you can use apt-get::
 Anaconda
 --------
 
-On other 64-bit Linux systems use `Anaconda <https://www.continuum.io/downloads>`_ (currently, no GPU support)::
+To use Anaconda, simply install the Bohrium PIP package in an enviroment::
 
-    # Create a new environment 'bh' with the 'bohrium' package from the 'bohrium' channel:
-    conda create -n bh -c bohrium bohrium
-    # And source the new environment:
-    source activate bh
+    # Activate the environment where you want to install Bohrium:
+    source activate my_env
+    # Install Bohrium using pip
+    pip install bohrium
+    
+.. note:: Bohrium requires ``gcc`` in ``$PATH``. E.g. on Ubuntu install the build-essential package: ``sudo apt install build-essential``.
 
 Install From Source Package
 ---------------------------
