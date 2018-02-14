@@ -138,7 +138,7 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             # When `ary` is not a regular NumPy array, we make sure that `ary` contains no Bohrium arrays
             if isinstance(ary, collections.Sequence) and \
                     not (isinstance(ary, numpy.ndarray) and ary.dtype.isbuiltin == 1):
-
+                ary = list(ary)  # Let's make sure that `ary` is mutable
                 for i in range(len(ary)):  # Converting 1-element Bohrium arrays to NumPy scalars
                     if bhary.check(ary[i]):
                         ary[i] = ary[i].copy2numpy()

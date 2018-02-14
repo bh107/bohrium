@@ -13,6 +13,10 @@ class test_array:
         cmd = "res = M.array(42, dtype=%s)" % dtype
         return cmd
 
+    def test_tuple_nest(self, dtype):
+        cmd = "res = M.array((42, np.array([43]), M.array([44])), dtype=%s)" % dtype
+        return cmd
+
 class test_array_create:
     def init(self):
         for t in util.TYPES.ALL:
