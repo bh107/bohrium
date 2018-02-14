@@ -11,8 +11,8 @@ from . import bhary
 from . import ufuncs
 from . import linalg
 from . import summations
-from . import _util
 from . import numpy_backport
+from . import _bh
 
 
 # 1d
@@ -234,7 +234,7 @@ def _correlate_kernel(Array, Filter, mode):
         Correlated += V[IndiVec[i]:n + IndiVec[i]] * A[i]
         # TODO: we need this flush because of very slow fusion
         if bhary.check(V):
-            _util.flush()
+            _bh.flush()
 
     Full = Correlated.reshape(PaddedSize, order='F')
     if mode == 'full':

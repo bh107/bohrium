@@ -3,6 +3,8 @@
 #include<bhc.h>
 %}
 
+%ignore bhc_op;
+
 %typemap(in) bhc_bool const {
     if(PyObject_IsTrue($input))
         $1 = 1;

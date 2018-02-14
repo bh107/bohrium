@@ -14,16 +14,14 @@ from . import array_create
 import numpy_force as np
 from . import _info
 from ._util import dtype_equal
-from .bhary import get_bhc, get_base, fix_biclass_wrapper, get_cdata
+from .bhary import fix_biclass_wrapper
 from . import bhary
-from . import target_bhc
-from .array_manipulation import broadcast_arrays, flatten
+from .array_manipulation import broadcast_arrays
 
 @fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
-    # We need this, or else we need every combination of types in the opcodes.json
-    assert in1.dtype == in2.dtype
-    target_bhc.extmethod(name, get_bhc(out), get_bhc(in1), get_bhc(in2))
+    from . import _bh
+    _bh.extmethod(name, (out, in1, in2))
 
 def setitem(ary, loc, value):
     """
@@ -64,12 +62,11 @@ def overlap_conflict(out, *inputs):
     :returns: True in case of conflict.
     :rtype: bool
     """
+    from . import _bh
 
     for i in inputs:
         if not np.isscalar(i):
-            if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
-                                                                out.strides == i.strides and out.shape == i.shape and \
-                                                                get_cdata(out) == get_cdata(i)):
+            if np.may_share_memory(out, i) and not _bh.same_view(out, i):
                 return True
     return False
 
@@ -77,11 +74,12 @@ def overlap_conflict(out, *inputs):
 def assign(ary, out):
     """Copy data from array 'ary' to 'out'"""
 
+    from . import _bh
+
     if not np.isscalar(ary):
         (ary, out) = broadcast_arrays(ary, out)[0]
         # We ignore self assignments
-        if bhary.get_base(ary) is bhary.get_base(out) and \
-                bhary.identical_views(ary, out):
+        if _bh.same_view(ary, out):
             return
 
     # Assigning empty arrays doesn't do anything
@@ -99,19 +97,13 @@ def assign(ary, out):
         return assign(tmp, out)
 
     if bhary.check(out):
-        out = get_bhc(out)
-        if not np.isscalar(ary):
-            if not bhary.check(ary):
-                # Convert the NumPy array to bohrium
-                ary = array_create.array(ary)
-            ary = get_bhc(ary)
-        target_bhc.ufunc(UFUNCS["identity"], out, ary)
+        _bh.ufunc(UFUNCS["identity"].info['id'], (out, ary))
     else:
         if bhary.check(ary):
             if "BH_SYNC_WARN" in os.environ:
                 import warnings
                 warnings.warn("BH_SYNC_WARN: Copying the array to NumPy", RuntimeWarning, stacklevel=2)
-            get_base(ary)._data_bhc2np()
+            ary = ary.copy2numpy()
         out[...] = ary
 
 
@@ -130,6 +122,7 @@ class Ufunc(object):
 
     @fix_biclass_wrapper
     def __call__(self, *args, **kwargs):
+        from . import _bh
         args = list(args)
 
         # Check number of array arguments
@@ -189,15 +182,28 @@ class Ufunc(object):
         if len(args) > 2:
             raise ValueError("Bohrium do not support ufunc with more than two inputs")
 
+        # Convert 0-dim ndarray into scalars
+        for i in range(len(args)):
+            if not np.isscalar(args[i]):
+                base = bhary.get_base(args[i])
+                if not bhary.check(base):
+                    if np.isscalar(base):
+                        args[i] = base
+                    elif base.ndim == 0:
+                        args[i] = base.item()
+
         # Find the type signature
         (out_dtype, in_dtype) = _util.type_sig(self.info['name'], args)
 
-        # Convert dtype of all inputs
+        # Convert dtype of all inputs to match the function type signature
         for i in range(len(args)):
-            if not np.isscalar(args[i]) and not dtype_equal(args[i], in_dtype):
-                tmp = array_create.empty_like(args[i], dtype=in_dtype)
-                tmp[...] = args[i]
-                args[i] = tmp
+            if not dtype_equal(args[i], in_dtype):
+                if np.isscalar(args[i]):
+                    args[i] = in_dtype.type(args[i])
+                else:
+                    tmp = array_create.empty_like(args[i], dtype=in_dtype)
+                    tmp[...] = args[i]
+                    args[i] = tmp
 
         # Insert the output array
         if out is None or not dtype_equal(out_dtype, out.dtype):
@@ -205,23 +211,12 @@ class Ufunc(object):
         else:
             args.insert(0, out)
 
-        # Convert 'args' to Bohrium-C arrays
-        bhcs = []
-        for arg in args:
-            if np.isscalar(arg):
-                bhcs.append(arg)
-            elif bhary.check(arg):
-                bhcs.append(get_bhc(arg))
-            else:
-                arg = array_create.array(arg)
-                bhcs.append(get_bhc(arg))
-
-        # Some simple optimizations
-        if self.info['name'] == "power" and np.isscalar(bhcs[2]) and bhcs[2] == 2:
+        # Call the bhc API
+        if self.info['name'] == "power" and np.isscalar(args[2]) and args[2] == 2:  # A simple "power" optimization
             # Replace power of 2 with a multiplication
-            target_bhc.ufunc(UFUNCS["multiply"], bhcs[0], bhcs[1], bhcs[1])
+            _bh.ufunc(UFUNCS["multiply"].info['id'], (args[0], args[1], args[1]))
         else:
-            target_bhc.ufunc(self, *bhcs)
+            _bh.ufunc(self.info['id'], args)
 
         if out is None or dtype_equal(out_dtype, out.dtype):
             return args[0]
@@ -304,6 +299,7 @@ class Ufunc(object):
         array([[ 1,  5],
                [ 9, 13]])
         """
+        from . import _bh
 
         if out is not None:
             if bhary.check(out):
@@ -368,7 +364,7 @@ class Ufunc(object):
             if ary.shape[axis] == 0:
                 tmp[...] = getattr(getattr(np, self.info['name']), "identity")
             else:
-                target_bhc.reduce(self, get_bhc(tmp), get_bhc(ary), axis)
+                _bh.ufunc(_info.op["%s_reduce" % self.info['name']]['id'], (tmp, ary, np.int64(axis)))
 
             if out is not None:
                 out[...] = tmp
@@ -458,6 +454,7 @@ class Ufunc(object):
         array([[ 1.,  1.],
                [ 0.,  1.]])
         """
+        from . import _bh
 
         if out is not None:
             if bhary.check(out):
@@ -488,7 +485,7 @@ class Ufunc(object):
         if out is None:
             out = array_create.empty(ary.shape, dtype=ary.dtype)
 
-        target_bhc.accumulate(self, get_bhc(out), get_bhc(ary), axis)
+        _bh.ufunc(_info.op["%s_accumulate" % self.info['name']]['id'], (out, ary, np.int64(axis)))
         return out
 
 
@@ -502,8 +499,9 @@ class Ufunc(object):
 # Expose via UFUNCS
 UFUNCS = {}
 for op in _info.op.values():
-    f = Ufunc(op)
-    UFUNCS[f.info['name']] = f
+    if op['elementwise']:
+        f = Ufunc(op)
+        UFUNCS[f.info['name']] = f
 
 # 'bh_divide' refers to how Bohrium divide, which is like division in C/C++
 # We needs this reference because Python v3 uses "true" division

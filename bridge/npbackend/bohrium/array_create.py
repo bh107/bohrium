@@ -4,11 +4,12 @@ Array Creation Routines
 """
 import math
 import warnings
+import collections
 from . import bhary
+from . import _info
 from .bhary import fix_biclass_wrapper
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in, dtype_support
-from . import target_bhc
 
 
 def _warn_dtype(dtype, stacklevel):
@@ -134,18 +135,14 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             return ary
         else:
             # Let's convert the array using regular NumPy.
-            # NB: "setting an array element with a sequence" is usually illegal unless the sequence consist
-            #     of 1-element Bohrium arrays, in which case we should convert them to NumPy scalars and try again
-            try:
-                ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
-            except ValueError as msg:
-                if str(msg).find("setting an array element with a sequence.") != -1:
-                    for i in range(len(ary)):  # Converting 1-element Bohrium arrays to NumPy scalars
-                        if bhary.check(ary[i]) and ary[i].size == 1:
-                            ary[i] = ary[i].copy2numpy()
+            # When `ary` is not a regular NumPy array, we make sure that `ary` contains no Bohrium arrays
+            if isinstance(ary, collections.Sequence) and \
+                    not (isinstance(ary, numpy.ndarray) and ary.dtype.isbuiltin == 1):
 
-                    ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin,
-                                      fix_biclass=False)
+                for i in range(len(ary)):  # Converting 1-element Bohrium arrays to NumPy scalars
+                    if bhary.check(ary[i]):
+                        ary[i] = ary[i].copy2numpy()
+            ary = numpy.array(ary, dtype=dtype, copy=copy, order=order, subok=subok, ndmin=ndmin, fix_biclass=False)
 
             # In any case, the array must meet some requirements
             ary = numpy.require(ary, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
@@ -157,7 +154,6 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
             ret = empty(ary.shape, dtype=ary.dtype)
             if ret.size > 0:
                 ret._data_fill(ary)
-
             return ret
     else:
         if bhary.check(ary):
@@ -211,7 +207,8 @@ def empty(shape, dtype=float, bohrium=True):
     if not bohrium:
         return numpy.ndarray(shape, dtype=dtype)
 
-    return bhary.new(shape, dtype)
+    from . import _bh
+    return _bh.ndarray(shape, dtype=dtype)
 
 
 @fix_biclass_wrapper
@@ -627,6 +624,7 @@ def arange(start, stop=None, step=1, dtype=None, bohrium=True):
 
 @fix_biclass_wrapper
 def simply_range(size, dtype=numpy.uint64):
+    from . import _bh
     try:
         integers = (int, long)
     except:
@@ -651,8 +649,7 @@ def simply_range(size, dtype=numpy.uint64):
     else:
         A = empty((size,), dtype=numpy.uint64, bohrium=True)
 
-    ret = target_bhc.arange(size, A.dtype)
-    A = bhary.new((size,), A.dtype, ret)
+    _bh.ufunc(_info.op["range"]['id'], (A,))
 
     if not dtype_equal(dtype, A.dtype):
         B = empty_like(A, dtype=dtype)
