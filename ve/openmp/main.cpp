@@ -148,29 +148,34 @@ void Impl::execute(BhIR *bhir) {
             break;
         }
 
+
         if (not bhir->getOffsets().empty()) {
+            cout << "all offs:" << endl;
+            for (auto &off_b : bhir->getOffsets()) {
+                cout << "off" << endl;
+            }
+
+            cout << "instrs: " << bhir->instr_list.size() << endl;
             std::vector<bh_instruction> new_instr_list;
             std::vector<bh_view> new_views;
             bh_view new_view;
 
-            for (auto &off_b : bhir->getOffsets()) {
-                for (auto &instr : bhir->instr_list) {
-                    for (const bh_view* &view : instr.get_views()) {
+            for (auto &instr : bhir->instr_list) {
+                for (const bh_view* &view : instr.get_views()) {
+                    new_view = *view;
+                    for (auto &off_b : bhir->getOffsets()) {
                         if (view->base == off_b) {
-                            cout << "HIHI" << endl;
-                            new_view = *view;
                             new_view.start++;
-                        } else {
-                            new_view = *view;
                         }
-                        new_views.push_back(new_view);
-                            //                        view->start++;
                     }
-                    instr.operand = new_views;
-                    new_instr_list.push_back(instr);
+                    new_views.push_back(new_view);
                 }
+                instr.operand = new_views;
+                new_views.clear();
+                new_instr_list.push_back(instr);
             }
             bhir->instr_list = new_instr_list;
+            new_instr_list.clear();
         }
     }
 }
