@@ -74,20 +74,22 @@ namespace {
 void _flush(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr,
             std::vector<bh_instruction> &instr_list,
             std::set<bh_base *> &syncs,
+            std::vector<bh_base *> &offsets,
             bohrium::component::ComponentFace &runtime,
             std::vector<std::unique_ptr<BhBase> > &bases_for_deletion,
             uint64_t &_flush_count) {
 
     if (not base_ptr) { // The pointer isn't initiated
-        BhIR bhir(std::move(instr_list), std::move(syncs), nrepeats);
+        BhIR bhir(std::move(instr_list), std::move(syncs), std::move(offsets), nrepeats);
         runtime.execute(&bhir);
     } else {
-        BhIR bhir(std::move(instr_list), std::move(syncs), nrepeats, &(*base_ptr));
+        BhIR bhir(std::move(instr_list), std::move(syncs), std::move(offsets), nrepeats, &(*base_ptr));
         runtime.execute(&bhir);
     }
 
     instr_list.clear(); // Notice, it is legal to clear a moved collection.
     syncs.clear();
+    offsets.clear();
 
     // Purge the bases we have scheduled for deletion:
     bases_for_deletion.clear();
@@ -97,15 +99,19 @@ void _flush(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr,
 
 void Runtime::flush() {
     std::shared_ptr<BhBase> dummy;
-    _flush(1, dummy, instr_list, syncs, runtime, bases_for_deletion, _flush_count);
+    _flush(1, dummy, instr_list, syncs, offsets, runtime, bases_for_deletion, _flush_count);
 }
 
 void Runtime::flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr) {
-    _flush(nrepeats, base_ptr, instr_list, syncs, runtime, bases_for_deletion, _flush_count);
+    _flush(nrepeats, base_ptr, instr_list, syncs, offsets, runtime, bases_for_deletion, _flush_count);
 }
 
 void Runtime::sync(std::shared_ptr<BhBase> &base_ptr) {
     syncs.insert(&(*base_ptr));
+}
+
+void Runtime::inc_off(std::shared_ptr<BhBase> &base_ptr) {
+    offsets.push_back(&(*base_ptr));
 }
 
 std::string Runtime::message(const std::string &msg) {

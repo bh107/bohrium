@@ -86,6 +86,9 @@ class Runtime {
     // Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);
 
+    // Increases the offset of all views with the given base by one
+    void inc_off(std::shared_ptr<BhBase> &base_ptr);
+
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
 
@@ -151,6 +154,9 @@ class Runtime {
 
     // The base arrays to sync when flushing
     std::set<bh_base *> syncs;
+
+    // The base arrays that should be offset
+    std::vector<bh_base *> offsets;
 
     // Unique pointers to base objects, which are to be
     // purged after the next flush

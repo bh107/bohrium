@@ -76,11 +76,9 @@ def do_while(func, niters, *args, **kwargs):
 def for_loop(loop_body, niters, offset, stride, *args, **kwargs):
     if niters < 1: return
 
-    offset_arr = array_create.array([offset])
-    args = args + (offset_arr,)
-    runtime_flush()
-
+    _bh.flush()
     loop_body(*args, **kwargs)
-    offset_arr[0] += stride
+    _bh.flush_and_repeat(niters, None)
 
-    runtime_flush_and_repeat(niters, None)
+def inc(a):
+    _bh.inc_off(a)

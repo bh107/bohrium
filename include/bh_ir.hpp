@@ -34,6 +34,8 @@ public:
     std::vector<bh_instruction> instr_list;
     // Set of sync'ed arrays
     std::set<bh_base *> _syncs;
+    // Vector of offsets
+    std::vector<bh_base *> _offsets;
     // Number of times to repeat this BhIR
     uint64_t _nrepeats;
     // Repeat while this base evaluate to True or is a nullptr.
@@ -44,10 +46,12 @@ public:
     /** The regular constructor that takes the instructions, the sync'ed arrays, and number of times to run the BhIR */
     BhIR(std::vector<bh_instruction> instr_list,
          std::set<bh_base *> syncs,
+         std::vector<bh_base *> offsets,
          uint64_t nrepeats = 1,
          bh_base *repeat_condition = nullptr) :
         instr_list(std::move(instr_list)),
         _syncs(std::move(syncs)),
+        _offsets(std::move(offsets)),
         _nrepeats(nrepeats),
         _repeat_condition(repeat_condition) {}
 
@@ -91,6 +95,11 @@ public:
     /** Returns the set of sync'ed arrays */
     const std::set<bh_base *> getSyncs() const {
         return _syncs;
+    }
+
+    /** Returns the set of sync'ed arrays */
+    const std::vector<bh_base *> getOffsets() const {
+        return _offsets;
     }
 
     /** Get number of times this BhIR should run */

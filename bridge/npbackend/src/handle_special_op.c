@@ -158,6 +158,25 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
+PyObject* PyIncOff(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary;
+
+    static char *kwlist[] = {"ary", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ary)) {
+        return NULL;
+    }
+
+    bhc_dtype type;
+    bhc_bool constant;
+    void *operand;
+    normalize_cleanup_handle cleanup;
+    cleanup.objs2free_count = 0;
+    int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
+    bhc_inc_off(type, operand);
+    normalize_operand_cleanup(&cleanup);
+    Py_RETURN_NONE;
+}
+
 PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
     unsigned long long size;
     unsigned long long seed;

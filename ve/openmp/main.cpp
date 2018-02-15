@@ -134,6 +134,8 @@ Impl::~Impl() {
 
 void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
+    std::vector<bh_base *> offz;
+
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
         engine.handleExtmethod(*this, bhir);
@@ -144,6 +146,31 @@ void Impl::execute(BhIR *bhir) {
         // Check condition
         if (cond != nullptr and cond->data != nullptr and not ((bool*) cond->data)[0]) {
             break;
+        }
+
+        if (not bhir->getOffsets().empty()) {
+            std::vector<bh_instruction> new_instr_list;
+            std::vector<bh_view> new_views;
+            bh_view new_view;
+
+            for (auto &off_b : bhir->getOffsets()) {
+                for (auto &instr : bhir->instr_list) {
+                    for (const bh_view* &view : instr.get_views()) {
+                        if (view->base == off_b) {
+                            cout << "HIHI" << endl;
+                            new_view = *view;
+                            new_view.start++;
+                        } else {
+                            new_view = *view;
+                        }
+                        new_views.push_back(new_view);
+                            //                        view->start++;
+                    }
+                    instr.operand = new_views;
+                    new_instr_list.push_back(instr);
+                }
+            }
+            bhir->instr_list = new_instr_list;
         }
     }
 }

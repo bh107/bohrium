@@ -46,6 +46,9 @@ PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args);
 /** Sync `ary` to host memory */
 PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);
 
+/** Increases `ary`s offset by one */
+PyObject* PyIncOff(PyObject *self, PyObject *args, PyObject *kwds);
+
 /** Create a new flat random array using the random123 algorithm.
     The dtype is uint64 always.
 

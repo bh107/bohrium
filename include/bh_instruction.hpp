@@ -69,6 +69,7 @@ struct bh_instruction
 
     // Return a vector of views in this instruction.
     // The first element is the output and the rest are inputs (the constant is ignored)
+    //    std::vector<const bh_view*> get_views() const;
     std::vector<const bh_view*> get_views() const;
 
     // Returns true when one of the operands of 'instr' is a constant

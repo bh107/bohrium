@@ -204,6 +204,20 @@ def main(args):
 
 """ % t
 
+    doc = "\n// Increases the offset of the array by one.\n"
+    impl += doc; head += doc
+    for key, t in type_map.items():
+        decl = "void bhc_inc_off_A%(name)s(const %(bhc_ary)s ary)" % t
+        head += "DLLEXPORT %s;\n" % decl
+        impl += "%s" % decl
+        impl += """\
+{
+   std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+   bhxx::Runtime::instance().inc_off(b);
+}
+
+""" % t
+
     doc = "\n// Extension Method, returns 0 when the extension exist\n"
     impl += doc; head += doc
     for key, t in type_map.items():
