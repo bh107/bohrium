@@ -58,6 +58,8 @@ class BhArray {
     Stride stride;
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
+    // The dynamic dimensions of this array
+    std::vector<size_t> dyn_offsets;
 
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)

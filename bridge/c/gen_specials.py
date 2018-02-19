@@ -207,13 +207,13 @@ def main(args):
     doc = "\n// Increases the offset of the array by one.\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "void bhc_inc_off_A%(name)s(const %(bhc_ary)s ary)" % t
+        decl = "void bhc_inc_off_A%(name)s(const %(bhc_ary)s ary, size_t dim)" % t
         head += "DLLEXPORT %s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
-   std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
-   bhxx::Runtime::instance().inc_off(b);
+   bhxx::BhArray<%(cpp)s>* b = (bhxx::BhArray<%(cpp)s>*)ary;
+   bhxx::Runtime::instance().inc_off(b, dim);
 }
 
 """ % t

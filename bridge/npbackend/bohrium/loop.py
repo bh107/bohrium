@@ -80,5 +80,5 @@ def for_loop(loop_body, niters, offset, stride, *args, **kwargs):
     loop_body(*args, **kwargs)
     _bh.flush_and_repeat(niters, None)
 
-def inc(a):
-    _bh.inc_off(a)
+def inc(a, d):
+    _bh.inc_off(a, d)

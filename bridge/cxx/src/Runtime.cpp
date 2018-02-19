@@ -110,10 +110,6 @@ void Runtime::sync(std::shared_ptr<BhBase> &base_ptr) {
     syncs.insert(&(*base_ptr));
 }
 
-void Runtime::inc_off(std::shared_ptr<BhBase> &base_ptr) {
-    offsets.push_back(&(*base_ptr));
-}
-
 std::string Runtime::message(const std::string &msg) {
     return runtime.message(msg);
 }

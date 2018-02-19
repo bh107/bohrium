@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 
 #include "BhInstruction.hpp"
+#include "BhArray.hpp"
 #include <bh_component.hpp>
 
 namespace bhxx {
@@ -87,7 +88,11 @@ class Runtime {
     void sync(std::shared_ptr<BhBase> &base_ptr);
 
     // Increases the offset of all views with the given base by one
-    void inc_off(std::shared_ptr<BhBase> &base_ptr);
+    template <typename T>
+    void inc_off(BhArray<T>* arr_ptr, size_t dim) {
+        arr_ptr->dyn_offsets.push_back(dim);
+        std::cout << arr_ptr->dyn_offsets.at(0) << std::endl;
+    }
 
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
