@@ -54,8 +54,13 @@ struct bh_view {
         start = view.start;
         ndim = view.ndim;
         assert(ndim < BH_MAXDIM);
+        // Assert that none of the elements in the vector goes beyond the dim
+        //        assert(view.dyn_offsets.size() <= (size_t) ndim);
         std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
         std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
+
+        dyn_dimensions = view.dyn_dimensions;
+        dyn_offsets = view.dyn_offsets;
     }
 
     /// Pointer to the base array.
@@ -72,6 +77,14 @@ struct bh_view {
 
     /// The stride for each dimensions
     int64_t stride[BH_MAXDIM];
+
+    /// Dimensions to dynamically increase
+    int64_t ndyn = 0;
+
+    //    std::vector<size_t> dyn_offsets;
+    std::vector<size_t> dyn_dimensions;
+    std::vector<size_t> dyn_offsets;
+
 
     // Returns a vector of tuples that describe the view using (almost)
     // Python Notation.
