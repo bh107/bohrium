@@ -70,7 +70,15 @@ for _name, _f in UFUNCS.items():
 _aliases = [
     ('abs', 'absolute'),
     ('round', 'round_'),
-    ('conjugate', 'conj')
+    ('conjugate', 'conj'),
+    # We handle all of NumPy's max and min the same!
+    # Since reductions in OpenMP ignores NaN values we do the same always
+    ('fmin', 'minimum'),
+    ('fmax', 'maximum'),
+    ('nanmin', 'minimum.reduce'),
+    ('nanmax', 'maximum.reduce'),
+    ('amin', 'minimum.reduce'),
+    ('amax', 'maximum.reduce'),
 ]
 for _f, _t in _aliases:
     exec ("%s = %s" % (_f, _t))

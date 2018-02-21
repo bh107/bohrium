@@ -144,6 +144,11 @@ class Ufunc(object):
             if val is not None:
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
 
+        # Makes sure that `args` are either bohrium arrays or scalars
+        for i in range(len(args)):
+            if not np.isscalar(args[i]) and not bhary.check(args[i]):
+                args[i] = array_create.array(args[i])
+
         # Broadcast the args
         (bargs, out_shape) = broadcast_arrays(*args)
 
