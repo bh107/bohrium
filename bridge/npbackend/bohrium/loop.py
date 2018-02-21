@@ -73,12 +73,60 @@ def do_while(func, niters, *args, **kwargs):
         _bh.sync(cond)
         _bh.flush_and_repeat(niters, cond)
 
-def for_loop(loop_body, niters, offset, stride, *args, **kwargs):
+def for_loop(loop_body, niters, *args, **kwargs):
+    """Calls the `loop_body` with the `*args` and `**kwargs` as argument.
+
+    The `loop_body` is called `niters` times.
+
+    Parameters
+    ----------
+    loop_body : function
+        The function to run in each iterations. `func` can take any arguments.
+    niters: int
+        Number of iterations in the loop (number of times `loop_body` is called).
+    *args, **kwargs : list and dict
+        The arguments to `func`
+
+    Notes
+    -----
+    `func` can only use operations supported natively in Bohrium.
+
+    Examples
+    --------
+    """
+
+    # The number of iterations must be positive
     if niters < 1: return
 
+    # Clear the cache
     _bh.flush()
+
+    flush_count = _bh.flush_count()
     loop_body(*args, **kwargs)
+    if flush_count != _bh.flush_count():
+        raise TypeError("Invalid `func`: the looped function contains operations not support "
+                        "by Bohrium, contain branches, or is simply too big!")
+
     _bh.flush_and_repeat(niters, None)
 
-def inc(a, d):
-    _bh.inc_off(a, d)
+def dyn_view(a, dim_stride_tuples):
+    """Creates a dynamic view within a loop, that updates the given dimensions by the given strides.
+
+    Parameters
+    ----------
+    a : array view
+        A view into an array
+    dim_stride_tuples: (int, int)[]
+        A list of (dimension, stride) pairs. For each of these pairs, the dimension is updated by the stride in each iteration of a loop.
+
+    Examples
+    --------
+    """
+
+    # Allocate a new view
+    b = a
+
+    # Set the relevant update conditions for the new view
+    for (dim, stride) in dim_stride_tuples:
+        _bh.inc_off(b, dim, stride)
+    return b

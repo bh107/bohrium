@@ -204,16 +204,18 @@ def main(args):
 
 """ % t
 
-    doc = "\n// Increases the offset of the array by one.\n"
+    doc = "\n// Increases the offsets of an array in the given dimensions, by the given strides.\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "void bhc_inc_off_A%(name)s(const %(bhc_ary)s ary, size_t dim)" % t
+        decl = "void bhc_inc_off_A%(name)s(const %(bhc_ary)s ary, size_t dim, size_t stride)" % t
         head += "DLLEXPORT %s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
-   bhxx::BhArray<%(cpp)s>* b = (bhxx::BhArray<%(cpp)s>*)ary;
-   bhxx::Runtime::instance().inc_off(b, dim);
+   bhxx::Runtime::instance().inc_off(
+        (bhxx::BhArray<%(cpp)s>*) ary,
+        dim,
+        stride);
 }
 
 """ % t

@@ -38,7 +38,7 @@ from . import interop_pyopencl
 from . import interop_pycuda
 from . import interop_numpy
 from . import backend_messaging
-from .loop import do_while, for_loop, inc
+from .loop import do_while, for_loop, dyn_view
 from .nobh import bincount
 from .contexts import EnableBohrium as Enable, DisableBohrium as Disable
 from ._bh import flush

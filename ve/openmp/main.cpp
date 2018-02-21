@@ -148,27 +148,28 @@ void Impl::execute(BhIR *bhir) {
             break;
         }
 
-        // Dynamic offsets
+        // Update dynamic offsets
         std::vector<bh_instruction> new_instr_list;
         std::vector<bh_view> new_views;
-        bh_view new_view;
         for (auto &instr : bhir->instr_list) {
             for (const bh_view* &view : instr.get_views()) {
-                new_view = *view;
-                if (not view->dyn_offsets.empty()) {
-                    for (auto &off_dim : view->dyn_offsets) {
-                        new_view.start += view->stride[off_dim];
+                bh_view new_view = *view;
+                if (not view->dyn_strides.empty()) {
+                    // The relevant dimension in the view is updated by the given stride
+                    for (size_t i = 0; i < view->dyn_strides.size(); i++) {
+                        size_t off_dim    = view->dyn_dimensions.at(i);
+                        size_t off_stride = view->dyn_strides.at(i);
+                        new_view.start += view->stride[off_dim] * off_stride;
                     }
                 }
-
                 new_views.push_back(new_view);
             }
             instr.operand = new_views;
             new_views.clear();
             new_instr_list.push_back(instr);
         }
+        // Update the instruction list
         bhir->instr_list = new_instr_list;
         new_instr_list.clear();
-
     }
 }

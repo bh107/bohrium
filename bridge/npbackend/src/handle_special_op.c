@@ -161,9 +161,10 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
 PyObject* PyIncOff(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *ary;
     unsigned int dim;
+    unsigned int stride;
 
-    static char *kwlist[] = {"ary", "dim:int", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OK", kwlist, &ary, &dim)) {
+    static char *kwlist[] = {"ary", "dim:int", "stride:int", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OKK", kwlist, &ary, &dim, &stride)) {
         return NULL;
     }
 
@@ -173,7 +174,7 @@ PyObject* PyIncOff(PyObject *self, PyObject *args, PyObject *kwds) {
     normalize_cleanup_handle cleanup;
     cleanup.objs2free_count = 0;
     int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
-    bhc_inc_off(type, operand, dim);
+    bhc_inc_off(type, operand, dim, stride);
     normalize_operand_cleanup(&cleanup);
     Py_RETURN_NONE;
 }

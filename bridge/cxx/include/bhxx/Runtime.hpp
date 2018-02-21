@@ -89,9 +89,9 @@ class Runtime {
 
     // Increases the offset of all views with the given base by one
     template <typename T>
-    void inc_off(BhArray<T>* arr_ptr, size_t dim) {
-        arr_ptr->dyn_offsets.push_back(dim);
-        std::cout << arr_ptr->dyn_offsets.at(0) << std::endl;
+    void inc_off(BhArray<T>* arr_ptr, size_t dim, size_t stride) {
+        arr_ptr->dyn_dimensions.push_back(dim);
+        arr_ptr->dyn_strides.push_back(stride);
     }
 
     // Send and receive a message through the component stack

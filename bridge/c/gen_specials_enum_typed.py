@@ -111,15 +111,15 @@ def main(args):
     }
     }\n"""
 
-    doc = "\n// Increases the offset of the array by one.\n"
+    doc = "\n// Increases the offsets of an array in the given dimensions, by the given strides.\n"
     impl += doc; head += doc
-    decl = "void bhc_inc_off(bhc_dtype dtype, const void *ary, size_t dim)"
+    decl = "void bhc_inc_off(bhc_dtype dtype, const void *ary, size_t dim, size_t stride)"
     head += "DLLEXPORT %s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
     for key, t in type_map.items():
-        impl += "        case %s: bhc_inc_off_A%s((%s)ary, dim); break;\n" % (key, t['name'], t['bhc_ary'])
+        impl += "        case %s: bhc_inc_off_A%s((%s)ary, dim, stride); break;\n" % (key, t['name'], t['bhc_ary'])
     impl += """        default: fprintf(stderr, "bhc_inc_off(): unknown dtype\\n"); exit(-1);
     }
 }\n"""
