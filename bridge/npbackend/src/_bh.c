@@ -207,10 +207,6 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
     if (PyErr_Occurred() != NULL) {
         return NULL;
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> ee8070bb0bc93456ac2b934f0b281c53384c5b53
     Py_RETURN_NONE;
 }
 
@@ -895,11 +891,8 @@ static PyMethodDef _bhMethods[] = {
             "is true and `nrepeats` hasn't been reach"},
     {"sync", (PyCFunction) PySync, METH_VARARGS | METH_KEYWORDS,
             "Sync `ary` to host memory."},
-<<<<<<< HEAD
     {"inc_off", (PyCFunction) PyIncOff, METH_VARARGS | METH_KEYWORDS,
             "Increase `ary`s offset by one."},
-=======
->>>>>>> ee8070bb0bc93456ac2b934f0b281c53384c5b53
     {"random123", (PyCFunction) PyRandom123, METH_VARARGS | METH_KEYWORDS,
             "Create a new random array using the random123 algorithm.\n" \
             "The dtype is uint64 always."},
