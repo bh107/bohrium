@@ -124,8 +124,8 @@ class Statistics {
 
             out << BLU << "[" << backend_name << "] Profiling: \n" << RST;
             out << "Fuse cache hits:                 " << GRN << fuseCacheHits()                     << "\n" << RST;
-            out << "Codegen cache hits               " << GRN << codegenCacheHits()                  << "\n" << RST;
-            out << "Kernel cache hits                " << GRN << kernelCacheHits()                   << "\n" << RST;
+            out << "Codegen cache hits:              " << GRN << codegenCacheHits()                  << "\n" << RST;
+            out << "Compilation cache hits:          " << GRN << kernelCacheHits()                   << "\n" << RST;
             out << "Array contractions:              " << GRN << arrayContractions()                 << "\n" << RST;
             out << "Outer-fusion ratio:              " << GRN << outerFusionRatio()                  << "\n" << RST;
             out << "\n";
@@ -140,13 +140,13 @@ class Statistics {
             out << "  Pre-fusion:                    " << YEL << time_pre_fusion.count() << "s"      << "\n" << RST;
             out << "  Fusion:                        " << YEL << time_fusion.count() << "s"          << "\n" << RST;
             out << "  Codegen:                       " << YEL << time_codegen.count() << "s"         << "\n" << RST;
-            out << "  Compile:                       " << YEL << time_compile.count() << "s"         << "\n" << RST;
+            out << "  Compilation:                   " << YEL << time_compile.count() << "s"         << "\n" << RST;
             out << "  Exec:                          " << YEL << time_exec.count() << "s"            << "\n" << RST;
             out << "  Copy2dev:                      " << YEL << time_copy2dev.count() << "s"        << "\n" << RST;
             out << "  Copy2host:                     " << YEL << time_copy2host.count() << "s"       << "\n" << RST;
-            out << "  Ext-method:                    " << YEL << time_ext_method.count() << "s"      << "\n" << RST;
             out << "  Offload:                       " << YEL << time_offload.count() << "s"         << "\n" << RST;
             out << "  Other:                         " << YEL << timeOther() << "s"                  << "\n" << RST;
+            out << "Ext-method:                      " << YEL << time_ext_method.count() << "s"      << "\n" << RST;
             out << "\n";
             out << BOLD << RED << "Unaccounted for (wall - total):  " << unaccounted() << "s\n" << RST;
 
@@ -290,7 +290,6 @@ class Statistics {
     }
 
     double timeOther() {
-        std::chrono::duration<double> time_other{0};
         return (time_total_execution - time_pre_fusion - time_fusion - time_codegen - time_compile - time_exec
                 - time_copy2dev - time_copy2host - time_offload).count();
     }
