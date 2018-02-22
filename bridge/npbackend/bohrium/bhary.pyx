@@ -29,11 +29,6 @@ import sys
 import numpy_force as numpy
 cimport numpy as numpy
 
-cpdef get_cdata(numpy.ndarray ary):
-    """Returns the array data pointer as an integer. 
-    This function is MUCH faster than the ndarray.ctypes attribute"""
-    return <unsigned long long> ary.data
-
 def check(ary):
     """Returns True if 'ary' is a Bohrium array"""
 
@@ -124,39 +119,3 @@ def is_base(ary):
 
     base = get_base(ary)
     return base is ary
-
-def identical_views(view1, view2):
-    """
-    Returns True when 'view1' equals 'view2'.
-
-    Equality is defined as having identical:
-
-     * dtype
-     * ndim
-     * offset
-     * shape
-     * strides
-
-    NOTE: The 'base' of the view is allowed to be different.
-    """
-
-    if view1.dtype != view2.dtype:
-        return False
-
-    view1_ndim = view1.ndim if view1.ndim > 0 else 1
-    view2_ndim = view2.ndim if view2.ndim > 0 else 1
-
-    if view1_ndim != view2_ndim:
-        return False
-    if list(view1.shape) != list(view2.shape):
-        return False
-    if list(view1.strides) != list(view2.strides):
-        return False
-
-    b1 = get_base(view1)
-    b2 = get_base(view1)
-    v1_offset = view1.start if hasattr(view1, 'start') else get_cdata(view1) - get_cdata(b1)
-    v2_offset = view2.start if hasattr(view2, 'start') else get_cdata(view2) - get_cdata(b2)
-    if v1_offset != v2_offset:
-        return False
-    return True

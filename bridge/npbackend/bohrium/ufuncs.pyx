@@ -14,7 +14,7 @@ from . import array_create
 import numpy_force as np
 from . import _info
 from ._util import dtype_equal
-from .bhary import fix_biclass_wrapper, get_cdata
+from .bhary import fix_biclass_wrapper
 from . import bhary
 from .array_manipulation import broadcast_arrays
 
@@ -62,12 +62,11 @@ def overlap_conflict(out, *inputs):
     :returns: True in case of conflict.
     :rtype: bool
     """
+    from . import _bh
 
     for i in inputs:
         if not np.isscalar(i):
-            if np.may_share_memory(out, i) and not (out.ndim == i.ndim and \
-                                                                out.strides == i.strides and out.shape == i.shape and \
-                                                                get_cdata(out) == get_cdata(i)):
+            if np.may_share_memory(out, i) and not _bh.same_view(out, i):
                 return True
     return False
 
@@ -80,8 +79,7 @@ def assign(ary, out):
     if not np.isscalar(ary):
         (ary, out) = broadcast_arrays(ary, out)[0]
         # We ignore self assignments
-        if bhary.get_base(ary) is bhary.get_base(out) and \
-                bhary.identical_views(ary, out):
+        if _bh.same_view(ary, out):
             return
 
     # Assigning empty arrays doesn't do anything
@@ -145,6 +143,11 @@ class Ufunc(object):
         for k, val in kwargs.items():
             if val is not None:
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
+
+        # Makes sure that `args` are either bohrium arrays or scalars
+        for i in range(len(args)):
+            if not np.isscalar(args[i]) and not bhary.check(args[i]):
+                args[i] = array_create.array(args[i])
 
         # Broadcast the args
         (bargs, out_shape) = broadcast_arrays(*args)

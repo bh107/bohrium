@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self);
 
-PyObject *bhary          = NULL; // The bhary Python module
 PyObject *ufuncs         = NULL; // The ufuncs Python module
 PyObject *bohrium        = NULL; // The Bohrium Python module
 PyObject *array_create   = NULL; // The array_create Python module
@@ -130,17 +129,6 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
     ((BhArray*) self)->view.initiated = 0;
     ((BhArray*) self)->data_in_bhc = 1;
 
-    ((BhArray*) self)->bhc_ary = Py_None;
-    Py_INCREF(Py_None);
-
-    ((BhArray*) self)->bhc_ary_version = PyLong_FromLong(0);
-
-    ((BhArray*) self)->bhc_view = Py_None;
-    Py_INCREF(Py_None);
-
-    ((BhArray*) self)->bhc_view_version = Py_None;
-    Py_INCREF(Py_None);
-
     protected_malloc((BhArray *) self);
 
     if(PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT)) {
@@ -157,10 +145,6 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
     PyObject_Init(obj, type);
 
     // Flag the array as uninitialized
-    ((BhArray*) obj)->bhc_ary          = NULL;
-    ((BhArray*) obj)->bhc_ary_version  = NULL;
-    ((BhArray*) obj)->bhc_view         = NULL;
-    ((BhArray*) obj)->bhc_view_version = NULL;
     ((BhArray*) obj)->npy_data         = NULL;
     ((BhArray*) obj)->mmap_allocated   = 0;
 
@@ -173,10 +157,10 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
 static void BhArray_dealloc(BhArray* self) {
     assert(BhArray_CheckExact(self));
 
-    Py_XDECREF(self->bhc_view);
-    Py_XDECREF(self->bhc_view_version);
-    Py_XDECREF(self->bhc_ary_version);
-    Py_XDECREF(self->bhc_ary);
+    if(self->bhc_array != NULL) {
+        assert(self->view.initiated);
+        bhc_destroy(dtype_np2bhc(self->view.type_enum), self->bhc_array);
+    }
 
 
     if(self->bhc_array != NULL) {
@@ -229,33 +213,7 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
     if (PyErr_Occurred() != NULL) {
         return NULL;
     }
-    Py_RETURN_NONE;
-}
 
-static PyObject* BhArray_data_np2bhc(PyObject *self, PyObject *args) {
-    assert(args == NULL);
-    assert(BhArray_CheckExact(self));
-
-    assert(1 == 2);
-
-    // We move the whole array (i.e. the base array) from Bohrium to NumPy
-    BhArray *base = get_base(self);
-
-    if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
-        PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
-        return NULL;
-    }
-
-    // Make sure that bhc_ary exist
-    if(!bhc_exist(base)) {
-        PyObject *err = PyObject_CallMethod(bhary, "new_bhc_base", "O", (PyObject*) base);
-        if(err == NULL) {
-            return NULL;
-        }
-        Py_DECREF(err);
-    }
-
-    mem_np2bhc(base);
     Py_RETURN_NONE;
 }
 
@@ -433,7 +391,6 @@ static PyObject* BhArray_mean(PyObject *self, PyObject *args, PyObject *kwds) {
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
     {"__array_ufunc__",    (PyCFunction) BhArray_array_ufunc,   METH_VARARGS | METH_KEYWORDS, "Handle ufunc"},
-    {"_data_np2bhc",       BhArray_data_np2bhc,                 METH_NOARGS,                  "Copy the NumPy data to Bohrium-C data"},
     {"_data_fill",         BhArray_data_fill,                   METH_VARARGS,                 "Fill the Bohrium-C data from a numpy NumPy"},
     {"copy2numpy",         BhArray_copy2numpy,                  METH_NOARGS,                  "Copy the array in C-style memory layout to a regular NumPy array"},
     {"_numpy_wrapper",     BhArray_numpy_wrapper,               METH_NOARGS,                  "Returns a NumPy array that wraps the data of this array. NB: no flush or data management!"},
@@ -465,10 +422,6 @@ static PyMethodDef BhArrayMethods[] = {
 };
 
 static PyMemberDef BhArrayMembers[] = {
-    {"bhc_ary",          T_OBJECT_EX, offsetof(BhArray, bhc_ary),          0, "The Bohrium backend base-array"},
-    {"bhc_ary_version",  T_OBJECT_EX, offsetof(BhArray, bhc_ary_version),  0, "The version of the Bohrium backend base-array"},
-    {"bhc_view",         T_OBJECT_EX, offsetof(BhArray, bhc_view),         0, "The Bohrium backend view-array"},
-    {"bhc_view_version", T_OBJECT_EX, offsetof(BhArray, bhc_view_version), 0, "The version of the Bohrium backend view-array"},
     {"bhc_mmap_allocated", T_BOOL, offsetof(BhArray, mmap_allocated), 0, "Is the base data allocated with mmap?"},
     {NULL}  /* Sentinel */
 };
@@ -958,6 +911,8 @@ static PyMethodDef _bhMethods[] = {
             "Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack"},
     {"message", (PyCFunction) PyMessage, METH_VARARGS | METH_KEYWORDS,
             "Send and receive a message through the Bohrium stack\n"},
+    {"same_view", (PyCFunction) PySameView, METH_VARARGS | METH_KEYWORDS,
+            "Return true when `v1` and `v2` is exactly the same (incl. pointing to the same base)\n"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
@@ -1001,14 +956,12 @@ PyMODINIT_FUNC init_bh(void)
     PyModule_AddObject(m, "ndarray", (PyObject*) &BhArrayType);
 
     bohrium        = PyImport_ImportModule("bohrium");
-    bhary          = PyImport_ImportModule("bohrium.bhary");
     ufuncs         = PyImport_ImportModule("bohrium.ufuncs");
     array_create   = PyImport_ImportModule("bohrium.array_create");
     reorganization = PyImport_ImportModule("bohrium.reorganization");
     masking        = PyImport_ImportModule("bohrium.masking");
 
-    if(bhary          == NULL ||
-       ufuncs         == NULL ||
+    if(ufuncs         == NULL ||
        bohrium        == NULL ||
        array_create   == NULL ||
        reorganization == NULL ||

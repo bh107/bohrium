@@ -19,13 +19,9 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
-
 #include <bh_type.hpp>
-#include <climits>
-#include <cfloat>
-#include <cassert>
-#include <sstream>
 #include <limits>
+#include <cassert>
 
 int bh_type_size(bh_type type)
 {
@@ -147,14 +143,14 @@ uint64_t bh_type_limit_max_integer(bh_type type)
     switch(type)
     {
         case bh_type::BOOL:   return 1;
-        case bh_type::INT8:   return INT8_MAX;
-        case bh_type::INT16:  return INT16_MAX;
-        case bh_type::INT32:  return INT32_MAX;
-        case bh_type::INT64:  return INT64_MAX;
-        case bh_type::UINT8:  return UINT8_MAX;
-        case bh_type::UINT16: return UINT16_MAX;
-        case bh_type::UINT32: return UINT32_MAX;
-        case bh_type::UINT64: return UINT64_MAX;
+        case bh_type::INT8:   return std::numeric_limits<int8_t >::max();
+        case bh_type::INT16:  return std::numeric_limits<int16_t >::max();
+        case bh_type::INT32:  return std::numeric_limits<int32_t >::max();
+        case bh_type::INT64:  return std::numeric_limits<int64_t >::max();
+        case bh_type::UINT8:  return std::numeric_limits<uint8_t>::max();
+        case bh_type::UINT16: return std::numeric_limits<uint16_t>::max();
+        case bh_type::UINT32: return std::numeric_limits<uint32_t>::max();
+        case bh_type::UINT64: return std::numeric_limits<uint64_t>::max();
         default:
             assert(1 == 2);
             return 0;
@@ -166,10 +162,10 @@ int64_t bh_type_limit_min_integer(bh_type type)
     switch(type)
     {
         case bh_type::BOOL:   return 1;
-        case bh_type::INT8:   return INT8_MIN;
-        case bh_type::INT16:  return INT16_MIN;
-        case bh_type::INT32:  return INT32_MIN;
-        case bh_type::INT64:  return INT64_MIN;
+        case bh_type::INT8:   return std::numeric_limits<int8_t >::min();
+        case bh_type::INT16:  return std::numeric_limits<int16_t >::min();
+        case bh_type::INT32:  return std::numeric_limits<int32_t >::min();
+        case bh_type::INT64:  return std::numeric_limits<int64_t >::min();
         case bh_type::UINT8:  return 0;
         case bh_type::UINT16: return 0;
         case bh_type::UINT32: return 0;
@@ -184,8 +180,8 @@ double bh_type_limit_max_float(bh_type type)
 {
     switch(type)
     {
-        case bh_type::FLOAT32: return FLT_MAX_EXP;
-        case bh_type::FLOAT64: return DBL_MAX_EXP;
+        case bh_type::FLOAT32: return std::numeric_limits<float>::max();
+        case bh_type::FLOAT64: return std::numeric_limits<double>::max();
         default:
             assert(1 == 2);
             return 0;
@@ -196,8 +192,8 @@ double bh_type_limit_min_float(bh_type type)
 {
     switch(type)
     {
-        case bh_type::FLOAT32: return FLT_MIN_EXP;
-        case bh_type::FLOAT64: return DBL_MIN_EXP;
+        case bh_type::FLOAT32: return std::numeric_limits<float>::min();
+        case bh_type::FLOAT64: return std::numeric_limits<double>::min();
         default:
             assert(1 == 2);
             return 0;

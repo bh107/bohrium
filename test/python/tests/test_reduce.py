@@ -37,3 +37,10 @@ class test_reduce_primitives:
         cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.reduce(a)" % op
         return cmd
+
+    def test_vector_large(self, arg):
+        (op, dtype) = arg
+        mul_factor = "" if dtype == "np.bool" else "*10**6"  # bool shouldn't have any multiplication factor
+        cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH)%s; " % (dtype, mul_factor)
+        cmd += "res = M.%s.reduce(a)" % op
+        return cmd

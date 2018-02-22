@@ -109,7 +109,7 @@ def main(args):
         impl += "        case %s: bhc_sync_A%s((%s)ary); break;\n" % (key, t['name'], t['bhc_ary'])
     impl += """        default: fprintf(stderr, "bhc_sync(): unknown dtype\\n"); exit(-1);
     }
-    }\n"""
+}\n"""
 
     doc = "\n// Increases the offsets of an array in the given dimensions, by the given strides.\n"
     impl += doc; head += doc

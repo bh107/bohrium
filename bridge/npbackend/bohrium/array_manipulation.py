@@ -489,8 +489,6 @@ def broadcast_arrays(*args):
         for a, b in zip(args, bargs):
             if numpy.isscalar(a) or not isinstance(a, numpy.ndarray):
                 ret.append(b)
-            elif bhary.identical_views(a, b):
-                ret.append(a)
             else:
                 ret.append(b)
     except ValueError as msg:

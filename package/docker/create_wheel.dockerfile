@@ -25,6 +25,7 @@ ENV PATH /opt/python/cp36-cp36m/bin/:$PATH
 RUN bash /bh/build.sh 3.6
 RUN bash /bh/wheel.sh 3.6
 RUN pip install /bh/b3.6/dist/*
+RUN pip install benchpress
 
 # Deploy script
 WORKDIR /bh
