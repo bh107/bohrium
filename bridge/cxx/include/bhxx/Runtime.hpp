@@ -23,7 +23,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 
 #include "BhInstruction.hpp"
-#include "BhArray.hpp"
 #include <bh_component.hpp>
 
 namespace bhxx {
@@ -159,9 +158,6 @@ class Runtime {
 
     // The base arrays to sync when flushing
     std::set<bh_base *> syncs;
-
-    // The base arrays that should be offset
-    std::vector<bh_base *> offsets;
 
     // Unique pointers to base objects, which are to be
     // purged after the next flush

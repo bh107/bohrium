@@ -151,7 +151,7 @@ void Impl::execute(BhIR *bhir) {
         // Update dynamic offsets
         std::vector<bh_instruction> new_instr_list;
         std::vector<bh_view> new_views;
-        for (auto &instr : bhir->instr_list) {
+        for (bh_instruction &instr : bhir->instr_list) {
             for (const bh_view* &view : instr.get_views()) {
                 bh_view new_view = *view;
                 if (not view->dyn_strides.empty()) {

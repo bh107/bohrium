@@ -100,13 +100,12 @@ public:
     template <typename T>
     void handleExtmethod(T &comp, BhIR *bhir) {
         std::vector<bh_instruction> instr_list;
-        std::vector<bh_base*> offsets;
 
         for (bh_instruction &instr: bhir->instr_list) {
             auto ext = comp.extmethods.find(instr.opcode);
 
             if (ext != comp.extmethods.end()) { // Execute the instructions up until now
-                BhIR b(std::move(instr_list), bhir->getSyncs(), offsets);
+                BhIR b(std::move(instr_list), bhir->getSyncs());
                 comp.execute(&b);
                 instr_list.clear(); // Notice, it is legal to clear a moved vector.
                 const auto texecution = std::chrono::steady_clock::now();
