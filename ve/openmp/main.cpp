@@ -134,7 +134,6 @@ Impl::~Impl() {
 
 void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
-    std::vector<bh_base *> offz;
 
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
@@ -151,18 +150,19 @@ void Impl::execute(BhIR *bhir) {
         // Update dynamic offsets
         std::vector<bh_instruction> new_instr_list;
         std::vector<bh_view> new_views;
-        for (bh_instruction &instr : bhir->instr_list) {
-            for (const bh_view* &view : instr.get_views()) {
-                bh_view new_view = *view;
-                if (not view->dyn_strides.empty()) {
+
+        for (bh_instruction instr : bhir->instr_list) {
+            bh_instruction new_instr = instr;
+            for (bh_view view : instr.operand) {
+                if (not view.dyn_strides.empty()) {
                     // The relevant dimension in the view is updated by the given stride
-                    for (size_t i = 0; i < view->dyn_strides.size(); i++) {
-                        size_t off_dim    = view->dyn_dimensions.at(i);
-                        size_t off_stride = view->dyn_strides.at(i);
-                        new_view.start += view->stride[off_dim] * off_stride;
+                    for (size_t i = 0; i < view.dyn_strides.size(); i++) {
+                        size_t off_dim    = view.dyn_dimensions.at(i);
+                        size_t off_stride = view.dyn_strides.at(i);
+                        view.start += view.stride[off_dim] * off_stride;
                     }
                 }
-                new_views.push_back(new_view);
+                new_views.push_back(view);
             }
             instr.operand = new_views;
             new_views.clear();
@@ -170,6 +170,5 @@ void Impl::execute(BhIR *bhir) {
         }
         // Update the instruction list
         bhir->instr_list = new_instr_list;
-        new_instr_list.clear();
     }
 }
