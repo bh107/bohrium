@@ -95,7 +95,7 @@ Print the current Bohrium runtime stack::
 Accelerate Loops
 ~~~~~~~~~~~~~~~~
 
-As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. it the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function ``do_while()``, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
+As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. in the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function ``do_while()``, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
 
 The function signature::
 
@@ -141,6 +141,50 @@ An example where the function returns a ``bharray`` with one element and of type
 
 
 .. _interop:
+
+
+
+Sliding views between iterations
+~~~~~~~~~~~~~~~~
+
+It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using ``slide_view()``, which takes a view into an array and a list of tuples. The first argument of a tuple indicates a dimension, while the second dictates the stride the start of a dimension is increased/decreased by for each iteration. At the moment, ``slide_view()`` does not support boundary checks (if the array is underflowed/overflowed, the behaviour is undefined). ``slide_view()`` only supports changes at the end of each iteration and all ``slide_view()`` calls must be placed at the top of the loop body.
+
+The function signature::
+
+  def slide_view(a, dim_stride_tuples):
+    """Creates a dynamic view within a loop, that updates the given dimensions by the given strides at the end of each iteration.
+
+    Parameters
+    ----------
+    a : array view
+        A view into an array
+    dim_stride_tuples: (int, int)[]
+        A list of (dimension, stride) pairs. For each of these pairs, the dimension is updated by the stride in each iteration of a loop.
+
+    Notes
+    -----
+    No boundary checks are performed. If the view overflows the array, the behaviour is undefined.
+    All slide_view() calls must be at the top of the loop body.
+    All views are changed at the end of an iteration and cannot be performed in the middle of a loop body.
+
+An example of using dynamic views could be writing a loop-based faculty function (from 1 to 10). The loop in numpy looks the following::
+
+        >>> a = np.arange(10) + 1
+        >>> for i in range(0,9):
+        ...     a[i+1:i+2] += a[i:i+1]
+        >>> a
+        array([1 3 6 10 15 21 28 36 45 55])
+
+The same can be written in Bohrium as::
+
+        >>> def loop_body(a):
+        ...    b = bh.slide_view(a[1:2], [(0,1)])
+        ...    c = bh.slide_view(a[0:1], [(0,1)])
+        ...    b += c
+        >>> a = bh.arange(10)+1
+        >>> bh.for_loop(loop_body, 9, a)
+        >>> a
+        array([1 3 6 10 15 21 28 36 45 55])
 
 Interoperability
 ~~~~~~~~~~~~~~~~
