@@ -65,7 +65,7 @@ def for_loop(loop_body, niters, *args, **kwargs):
 
 
 class test_for_loop_view:
-    """ LOLLL"""
+    """ Test a of sliding two views with a for loop"""
     def init(self):
         cmd1 = np_for_loop_src + """
 def kernel(a,b,i):
