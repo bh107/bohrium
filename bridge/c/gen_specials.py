@@ -204,15 +204,15 @@ def main(args):
 
 """ % t
 
-    doc = "\n// Increases the offsets of an array in the given dimensions, by the given strides.\n"
+    doc = "\n// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.\n"
     impl += doc; head += doc
     for key, t in type_map.items():
-        decl = "void bhc_inc_off_A%(name)s(const %(bhc_ary)s ary, size_t dim, size_t stride)" % t
+        decl = "void bhc_slide_view_A%(name)s(const %(bhc_ary)s ary, size_t dim, size_t stride)" % t
         head += "DLLEXPORT %s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
-   bhxx::Runtime::instance().inc_off(
+   bhxx::Runtime::instance().slide_view(
         (bhxx::BhArray<%(cpp)s>*) ary,
         dim,
         stride);

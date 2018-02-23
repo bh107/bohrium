@@ -80,8 +80,8 @@ res = M.zeros((5, 1))
 """
         cmd2 = np_for_loop_src + """
 def kernel(a, b):
-    c = bh.dyn_view(a[0:1], [(0,1)])
-    c += bh.dyn_view(b[0:1,0:1], [(0,1), (1,1)])
+    c = bh.slide_view(a[0:1], [(0,1)])
+    c += bh.slide_view(b[0:1,0:1], [(0,1), (1,1)])
 
 b = M.ones((20, 5))
 b[::2, ::2] += 1

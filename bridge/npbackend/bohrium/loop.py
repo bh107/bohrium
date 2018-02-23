@@ -109,8 +109,8 @@ def for_loop(loop_body, niters, *args, **kwargs):
 
     _bh.flush_and_repeat(niters, None)
 
-def dyn_view(a, dim_stride_tuples):
-    """Creates a dynamic view within a loop, that updates the given dimensions by the given strides.
+def slide_view(a, dim_stride_tuples):
+    """Creates a dynamic view within a loop, that updates the given dimensions by the given strides at the end of each iteration.
 
     Parameters
     ----------
@@ -118,6 +118,12 @@ def dyn_view(a, dim_stride_tuples):
         A view into an array
     dim_stride_tuples: (int, int)[]
         A list of (dimension, stride) pairs. For each of these pairs, the dimension is updated by the stride in each iteration of a loop.
+
+    Notes
+    -----
+    No boundary checks are performed. If the view overflows the array, the behaviour is undefined.
+    All dyn_views must be at the top of the loop body.
+    All views are changed at the end of an iteration and cannot be performed in the middle of a loop body.
 
     Examples
     --------
@@ -128,5 +134,5 @@ def dyn_view(a, dim_stride_tuples):
 
     # Set the relevant update conditions for the new view
     for (dim, stride) in dim_stride_tuples:
-        _bh.inc_off(b, dim, stride)
+        _bh.slide_view(b, dim, stride)
     return b

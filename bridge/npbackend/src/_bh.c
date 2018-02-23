@@ -891,7 +891,7 @@ static PyMethodDef _bhMethods[] = {
             "is true and `nrepeats` hasn't been reach"},
     {"sync", (PyCFunction) PySync, METH_VARARGS | METH_KEYWORDS,
             "Sync `ary` to host memory."},
-    {"inc_off", (PyCFunction) PyIncOff, METH_VARARGS | METH_KEYWORDS,
+    {"slide_view", (PyCFunction) PySlideView, METH_VARARGS | METH_KEYWORDS,
             "Increase `ary`s offset by one."},
     {"random123", (PyCFunction) PyRandom123, METH_VARARGS | METH_KEYWORDS,
             "Create a new random array using the random123 algorithm.\n" \

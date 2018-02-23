@@ -88,7 +88,7 @@ class Runtime {
 
     // Increases the offset of all views with the given base by one
     template <typename T>
-    void inc_off(BhArray<T>* arr_ptr, size_t dim, size_t stride) {
+    void slide_view(BhArray<T>* arr_ptr, size_t dim, size_t stride) {
         arr_ptr->dyn_dimensions.push_back(dim);
         arr_ptr->dyn_strides.push_back(stride);
     }

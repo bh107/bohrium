@@ -111,16 +111,16 @@ def main(args):
     }
 }\n"""
 
-    doc = "\n// Increases the offsets of an array in the given dimensions, by the given strides.\n"
+    doc = "\n// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.\n"
     impl += doc; head += doc
-    decl = "void bhc_inc_off(bhc_dtype dtype, const void *ary, size_t dim, size_t stride)"
+    decl = "void bhc_slide_view(bhc_dtype dtype, const void *ary, size_t dim, size_t stride)"
     head += "DLLEXPORT %s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
     for key, t in type_map.items():
-        impl += "        case %s: bhc_inc_off_A%s((%s)ary, dim, stride); break;\n" % (key, t['name'], t['bhc_ary'])
-    impl += """        default: fprintf(stderr, "bhc_inc_off(): unknown dtype\\n"); exit(-1);
+        impl += "        case %s: bhc_slide_view_A%s((%s)ary, dim, stride); break;\n" % (key, t['name'], t['bhc_ary'])
+    impl += """        default: fprintf(stderr, "bhc_slide_view(): unknown dtype\\n"); exit(-1);
     }
 }\n"""
 
