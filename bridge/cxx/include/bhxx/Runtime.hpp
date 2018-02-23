@@ -89,8 +89,8 @@ class Runtime {
     // Increases the offset of all views with the given base by one
     template <typename T>
     void slide_view(BhArray<T>* arr_ptr, size_t dim, size_t stride) {
-        arr_ptr->dyn_dimensions.push_back(dim);
-        arr_ptr->dyn_strides.push_back(stride);
+        arr_ptr->slide_dimensions.push_back(dim);
+        arr_ptr->slide_strides.push_back(stride);
     }
 
     // Send and receive a message through the component stack

@@ -59,11 +59,11 @@ class BhArray {
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
 
-    // The dimensions of this array that is dynamically changed during loop iterations
-    std::vector<size_t> dyn_dimensions;
+    // The dimensions of this array that is slided during loop iterations
+    std::vector<size_t> slide_dimensions;
 
-    // The strides that these dimensions is dynamically changed by during loop iterations
-    std::vector<size_t> dyn_strides;
+    // The strides that these dimensions is slided during loop iterations
+    std::vector<size_t> slide_strides;
 
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)

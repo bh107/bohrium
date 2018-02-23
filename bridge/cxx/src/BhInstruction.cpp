@@ -72,8 +72,8 @@ void BhInstruction::appendOperand(const BhArray<T>& ary) {
     view.base  = ary.base.get();
     view.start = static_cast<int64_t>(ary.offset);
     view.ndim  = static_cast<int64_t>(ary.shape.size());
-    view.dyn_dimensions = ary.dyn_dimensions;
-    view.dyn_strides = ary.dyn_strides;
+    view.slide_dimensions = ary.slide_dimensions;
+    view.slide_strides = ary.slide_strides;
 
     std::copy(ary.shape.begin(), ary.shape.end(), &view.shape[0]);
     std::copy(ary.stride.begin(), ary.stride.end(), &view.stride[0]);
