@@ -53,7 +53,7 @@ res = M.ones_like(a)
 
         return (cmd + "do_while(kernel, %s, a, res)" % (niter), cmd + "M.do_while(kernel, %s, a, res)" % (niter))
 
-'''
+
 np_for_loop_src = """
 def for_loop(loop_body, niters, *args, **kwargs):
     args += (0,)
@@ -96,4 +96,3 @@ res = M.zeros((5, 1))
         (cmd1, cmd2, niter) = args
 
         return (cmd1 + "for_loop(kernel, %s, res, b)" % (niter), cmd2 + "M.for_loop(kernel, %s, res, b)" % (niter))
-'''
