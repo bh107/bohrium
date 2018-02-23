@@ -558,8 +558,6 @@ void dtype_min(bh_type dtype, stringstream &out) {
     }
 }
 
-} // Anon namespace
-
 void get_name_and_subscription(const Scope &scope, const bh_view &view, stringstream &out) {
     scope.getName(view, out);
     if (scope.isArray(view)) {
@@ -582,22 +580,9 @@ void write_range_instr(const Scope &scope, const bh_instruction &instr, stringst
     // Let's find the flatten index of the output view
     stringstream ss;
     ss << "(";
-    if (scope.symbols.strides_as_var) {
-        ss << "vo" << scope.symbols.offsetStridesID(instr.operand[0]);
-    } else {
-        ss << instr.operand[0].start;
-    }
-    for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-        ss << "+ i" << i << " * ";
-        if (scope.symbols.strides_as_var) {
-            ss << " vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
-        } else {
-            ss << " " << instr.operand[0].stride[i];
-        }
-    }
+    write_array_index(scope, instr.operand[0], ss);
     ss << ")";
     ops.push_back(ss.str());
-
     write_operation(instr, ops, out, opencl);
 }
 
@@ -616,24 +601,9 @@ void write_random_instr(const Scope &scope, const bh_instruction &instr, strings
     } else {
         ss << "random123(" << instr.constant.value.r123.start << ", " << instr.constant.value.r123.key << ", ";
     }
-
-    // Let's find the flatten index of the output view
-    if (scope.symbols.strides_as_var) {
-        ss << "vo" << scope.symbols.offsetStridesID(instr.operand[0]);
-    } else {
-        ss << instr.operand[0].start;
-    }
-    for(int64_t i=0; i < instr.operand[0].ndim; ++i) {
-        ss << " + i" << i << " * ";
-        if (scope.symbols.strides_as_var) {
-            ss << " vs" << scope.symbols.offsetStridesID(instr.operand[0]) << "_" << i;
-        } else {
-            ss << " " << instr.operand[0].stride[i];
-        }
-    }
+    write_array_index(scope, instr.operand[0], ss);
     ss << ")";
     ops.push_back(ss.str());
-
     write_operation(instr, ops, out, opencl);
 }
 
@@ -642,7 +612,6 @@ void write_gather_instr(const Scope &scope, const bh_instruction &instr, strings
 
     // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
     vector<string> ops;
-
     ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
 
     stringstream ss;
@@ -695,14 +664,11 @@ void write_accumulate_instr(const Scope &scope, const bh_instruction &instr, str
 
 void write_other_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
     vector<string> ops;
-
     for (size_t o = 0; o < instr.operand.size(); ++o) {
         const bh_view &view = instr.operand[o];
         stringstream ss;
-
         if (bh_is_constant(&view)) {
             const int64_t constID = scope.symbols.constID(instr);
-
             if (constID >= 0) {
                 ss << "c" << scope.symbols.constID(instr);
             } else {
@@ -710,7 +676,6 @@ void write_other_instr(const Scope &scope, const bh_instruction &instr, stringst
             }
         } else {
             scope.getName(view, ss);
-
             if (scope.isArray(view)) {
                 if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
                     // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
@@ -721,18 +686,17 @@ void write_other_instr(const Scope &scope, const bh_instruction &instr, stringst
                 }
             }
         }
-
         ops.push_back(ss.str());
     }
-
     write_operation(instr, ops, out, opencl);
 }
+
+} // Anon namespace
 
 void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
     if (bh_opcode_is_system(instr.opcode)) {
         return;
     }
-
     switch(instr.opcode) {
         case BH_RANGE:
             write_range_instr(scope, instr, out, opencl);

@@ -177,8 +177,18 @@ protected:
             }
         }
 
-        // Find indexes we will declare later
-        vector<const bh_view*> indexes = getIndexes(block, scope, symbols);
+        // Find indexes we will declare later. Notice, `indexes` might include the identical views
+        // hence please check `isIdxDeclared()` to avoid duplicates
+        std::vector<const bh_view*> indexes;
+        {
+            for (const InstrPtr &instr: block.getLocalInstr()) {
+                for (const bh_view* view: instr->get_views()) {
+                    if (symbols.existIdxID(*view) and scope.isArray(*view)) {
+                        indexes.push_back(view);
+                    }
+                }
+            }
+        }
 
         // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
         bool peel = needToPeel(ordered_block_sweeps, scope);
@@ -363,22 +373,6 @@ private:
         return false;
     }
 
-    std::vector<const bh_view*> getIndexes(const LoopB &block, const Scope &scope, const SymbolTable &symbols) {
-        std::vector<const bh_view*> indexes;
-        std::set<bh_view, idx_less> candidates;
-        for (const InstrPtr &instr: block.getLocalInstr()) {
-            for (const bh_view* view: instr->get_views()) {
-                if (symbols.existIdxID(*view) and scope.isArray(*view)) {
-                    if (util::exist(candidates, *view)) { // 'view' is used multiple times
-                        indexes.push_back(view);
-                    } else {
-                        candidates.insert(*view);
-                    }
-                }
-            }
-        }
-        return indexes;
-    }
 };
 
 }} // namespace
