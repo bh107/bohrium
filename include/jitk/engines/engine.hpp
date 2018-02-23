@@ -181,7 +181,6 @@ protected:
         // hence please check `isIdxDeclared()` to avoid duplicates
         std::vector<const bh_view*> indexes;
         {
-            std::vector<const bh_view*> indexes;
             for (const InstrPtr &instr: block.getLocalInstr()) {
                 for (const bh_view* view: instr->get_views()) {
                     if (symbols.existIdxID(*view) and scope.isArray(*view)) {

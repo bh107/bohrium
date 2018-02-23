@@ -30,58 +30,58 @@ namespace jitk {
 
 void write_array_index(const Scope &scope, const bh_view &view, stringstream &out,
                        int hidden_axis, const pair<int, int> axis_offset) {
-    bool empty_subscription = true;
-    if (view.start > 0) {
-        out << view.start;
-        empty_subscription = false;
-    }
-    if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
-        for (int i = 0; i < view.ndim; ++i) {
-            int t = i;
-            if (i >= hidden_axis)
-                ++t;
-            if (view.stride[i] != 0) {
+
+    if (scope.symbols.strides_as_var and scope.symbols.existOffsetStridesID(view)) {
+        // Write view.start using the offset-and-strides variable
+        out << "vo" << scope.symbols.offsetStridesID(view);
+
+        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
+            for (int i = 0; i < view.ndim; ++i) {
+                int t = i;
+                if (i >= hidden_axis) {
+                    ++t;
+                }
                 if (axis_offset.first == t) {
                     out << " +(i" << t << "+(" << axis_offset.second << ")) ";
                 } else {
                     out << " +i" << t;
                 }
-                if (view.stride[i] != 1) {
-                    out << "*" << view.stride[i];
-                }
-                empty_subscription = false;
+                out << "*vs" << scope.symbols.offsetStridesID(view) << "_" << i;
             }
         }
-    }
-    if (empty_subscription)
-        out << "0";
-}
-
-void write_array_index_variables(const Scope &scope, const bh_view &view, stringstream &out,
-                                 int hidden_axis, const pair<int, int> axis_offset) {
-
-    // Write view.start using the offset-and-strides variable
-    out << "vo" << scope.symbols.offsetStridesID(view);
-
-    if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
-        for (int i = 0; i < view.ndim; ++i) {
-            int t = i;
-            if (i >= hidden_axis) {
-                ++t;
+    } else {
+        bool empty_subscription = true;
+        if (view.start > 0) {
+            out << view.start;
+            empty_subscription = false;
+        }
+        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
+            for (int i = 0; i < view.ndim; ++i) {
+                int t = i;
+                if (i >= hidden_axis)
+                    ++t;
+                if (view.stride[i] != 0) {
+                    if (axis_offset.first == t) {
+                        out << " +(i" << t << "+(" << axis_offset.second << ")) ";
+                    } else {
+                        out << " +i" << t;
+                    }
+                    if (view.stride[i] != 1) {
+                        out << "*" << view.stride[i];
+                    }
+                    empty_subscription = false;
+                }
             }
-            if (axis_offset.first == t) {
-                out << " +(i" << t << "+(" << axis_offset.second << ")) ";
-            } else {
-                out << " +i" << t;
-            }
-            out << "*vs" << scope.symbols.offsetStridesID(view) << "_" << i;
+        }
+        if (empty_subscription) {
+            out << "0";
         }
     }
 }
 
 void write_array_subscription(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
                               int hidden_axis, const pair<int, int> axis_offset) {
-    assert(view.base != NULL); // Not a constant
+    assert(view.base != nullptr); // Not a constant
 
     // Let's check if the index is already declared as a variable
     if (not ignore_declared_indexes) {
@@ -93,11 +93,7 @@ void write_array_subscription(const Scope &scope, const bh_view &view, stringstr
         }
     }
     out << "[";
-    if (scope.symbols.strides_as_var and scope.symbols.existOffsetStridesID(view)) {
-        write_array_index_variables(scope, view, out, hidden_axis, axis_offset);
-    } else {
-        write_array_index(scope, view, out, hidden_axis, axis_offset);
-    }
+    write_array_index(scope, view, out, hidden_axis, axis_offset);
     out << "]";
 }
 
