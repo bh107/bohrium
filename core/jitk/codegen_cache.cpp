@@ -49,6 +49,9 @@ void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstr
     }
     if (symbols.index_as_var) {
         ss << "indexid: " << symbols.idxID(view);
+        if (bh_is_scalar(&view)) { // We optimize indexes into 1-sized arrays, which we need the hash to reflect
+            ss << "is-1-elem: " << endl;
+        }
     }
 }
 

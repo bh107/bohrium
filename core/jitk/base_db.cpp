@@ -32,7 +32,7 @@ void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, str
     _declared_idx.insert(view);
     out << "const " << type_str << " ";
     getIdxName(view, out);
-    out << "= (";
+    out << " = (";
     if (symbols.strides_as_var and symbols.existOffsetStridesID(view)) {
         write_array_index_variables(*this, view, out);
     } else {
