@@ -28,8 +28,16 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-void write_array_index(const Scope &scope, const bh_view &view, stringstream &out,
+void write_array_index(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
                        int hidden_axis, const pair<int, int> axis_offset) {
+
+    // Let's check if the index is already declared as a variable
+    if (not ignore_declared_indexes) {
+        if (scope.isIdxDeclared(view)) {
+            scope.getIdxName(view, out);
+            return;
+        }
+    }
 
     if (scope.symbols.strides_as_var and scope.symbols.existOffsetStridesID(view)) {
         // Write view.start using the offset-and-strides variable
@@ -82,18 +90,8 @@ void write_array_index(const Scope &scope, const bh_view &view, stringstream &ou
 void write_array_subscription(const Scope &scope, const bh_view &view, stringstream &out, bool ignore_declared_indexes,
                               int hidden_axis, const pair<int, int> axis_offset) {
     assert(view.base != nullptr); // Not a constant
-
-    // Let's check if the index is already declared as a variable
-    if (not ignore_declared_indexes) {
-        if (scope.isIdxDeclared(view)) {
-            out << "[";
-            scope.getIdxName(view, out);
-            out << "]";
-            return;
-        }
-    }
     out << "[";
-    write_array_index(scope, view, out, hidden_axis, axis_offset);
+    write_array_index(scope, view, out, ignore_declared_indexes, hidden_axis, axis_offset);
     out << "]";
 }
 

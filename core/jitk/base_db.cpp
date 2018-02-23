@@ -29,12 +29,12 @@ namespace jitk {
 
 void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, stringstream &out) {
     assert(not isIdxDeclared(view));
-    _declared_idx.insert(view);
     out << "const " << type_str << " ";
     getIdxName(view, out);
     out << " = (";
     write_array_index(*this, view, out);
     out << ");";
+    _declared_idx.insert(view);
 }
 
 } // jitk
