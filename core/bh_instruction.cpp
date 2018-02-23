@@ -124,7 +124,6 @@ int64_t bh_instruction::ndim() const {
 
 int bh_instruction::sweep_axis() const {
     if (bh_opcode_is_sweep(opcode)) {
-        cout << operand.size() << endl;
         assert(operand.size() == 3);
         assert(bh_is_constant(&operand[2]));
         return static_cast<int>(constant.get_int64());
