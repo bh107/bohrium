@@ -151,6 +151,7 @@ void Impl::execute(BhIR *bhir) {
         std::vector<bh_instruction> new_instr_list;
         std::vector<bh_view> new_views;
 
+        // Iterate through all instructions and edit the dynamically updated
         for (bh_instruction instr : bhir->instr_list) {
             bh_instruction new_instr = instr;
             for (bh_view view : instr.operand) {
