@@ -32,10 +32,10 @@ namespace {
 // Apply the pre-fuser (i.e. fuse an instruction list to a block list specified by the name 'transformer_name'
 vector<Block> apply_pre_fusion(const ConfigParser &config, const vector<bh_instruction*> &instr_list,
                                const string &transformer_name) {
-
-    if (transformer_name == "singleton") {
+    // The include the 'singleton' and 'pre_fuser_lossy' names for legacy support
+    if (transformer_name == "none" or transformer_name == "singleton") {
         return fuser_singleton(instr_list);
-    } else if (transformer_name == "pre_fuser_lossy"){
+    } else if (transformer_name == "lossy" or transformer_name == "pre_fuser_lossy"){
         return pre_fuser_lossy(instr_list);
     } else {
         cout << "Unknown pre-fuser: \"" <<  transformer_name << "\"" << endl;
