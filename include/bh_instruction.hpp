@@ -127,7 +127,7 @@ struct bh_instruction
             return false;
         }
         for (size_t i = 0; i < operand.size(); ++i) {
-            if (bh_is_constant(&operand[i]) xor bh_is_constant(&other.operand[i])) {
+            if (bh_is_constant(&operand[i]) != bh_is_constant(&other.operand[i])) {
                 return false;
             } else if (bh_is_constant(&operand[i])) { // Both are constant
                 if (constant != other.constant)
