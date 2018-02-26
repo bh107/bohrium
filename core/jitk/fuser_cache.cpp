@@ -109,7 +109,6 @@ void update_with_origin(bh_view &view, const bh_view &origin) {
 void update_with_origin(bh_instruction &instr, const bh_instruction *origin) {
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
-
     for (size_t i = 0; i < instr.operand.size(); ++i) {
         if (bh_is_constant(&instr.operand[i]) and not bh_opcode_is_sweep(instr.opcode)) {
             // NB: sweeped axis values shouldn't be updated

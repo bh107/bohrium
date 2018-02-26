@@ -58,7 +58,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
         instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
-    vector<int64_t> shape = instr->shape();
+    const vector<int64_t> shape = instr->shape();
 
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
@@ -304,29 +304,6 @@ bool LoopB::validation() const {
     return true;
 }
 
-void LoopB::insertSystemAfter(InstrPtr instr, const bh_base *base) {
-    assert(validation());
-
-    LoopB *block;
-    int64_t index;
-    tie(block, index) = findLastAccessBy(base);
-    // If no instruction accesses 'base' we insert it after the last instruction
-    if (block == NULL) {
-        tie(block, index) = findLastAccessBy(NULL); //NB: findLastAccessBy(NULL) will always find an instruction
-        assert(block != NULL);
-    }
-    bh_instruction instr_reshaped(*instr);
-    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->shape());
-    Block instr_block(instr_reshaped, block->rank+1);
-    block->_block_list.insert(block->_block_list.begin()+index+1, instr_block);
-
-    // Let's update the '_free' set
-    if (instr->opcode == BH_FREE) {
-        block->_frees.insert(instr->operand[0].base);
-    }
-    assert(validation());
-}
-
 uint64_t LoopB::localThreading() const {
     if (_sweeps.size() == 0 and not isSystemOnly()) {
         assert (size >= 0);
@@ -419,7 +396,7 @@ void Block::getAllInstr(vector<InstrPtr> &out) const {
     if (isInstr()) {
         out.push_back(getInstr());
     } else {
-        for (const Block &b : getLoop()._block_list) {
+        for (const Block &b: getLoop()._block_list) {
             b.getAllInstr(out);
         }
     }
@@ -432,10 +409,9 @@ vector<InstrPtr> Block::getAllInstr() const {
 }
 
 string Block::pprint(const char *newline) const {
-
     if (isInstr()) {
         stringstream ss;
-        if (getInstr() != NULL) {
+        if (getInstr() != nullptr) {
             util::spaces(ss, rank() * 4);
             ss << *getInstr() << newline;
         }
@@ -507,7 +483,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     LoopB ret;
     ret.rank = rank;
     ret.size = size_of_rank_dim;
-    for (InstrPtr instr: instr_list) {
+    for (const InstrPtr &instr: instr_list) {
         add_instr_to_block(ret, instr, rank, size_of_rank_dim);
     }
     assert(ret.validation());

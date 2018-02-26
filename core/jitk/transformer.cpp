@@ -62,7 +62,7 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
 // Help function that find a loop block within 'parent' that it make sense to swappable
 const LoopB *find_swappable_sub_block(const LoopB &parent) {
     // For each sweep, we look for a sub-block that contains that sweep instructions.
-    for (const InstrPtr sweep: parent._sweeps) {
+    for (const InstrPtr &sweep: parent._sweeps) {
         for (const Block &b: parent._block_list) {
             if (not b.isInstr()) {
                 for (const Block &instr_block: b.getLoop()._block_list) {
@@ -169,7 +169,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
         }
         const LoopB &loop = block.getLoop();
         uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
-        for (const InstrPtr instr: loop.getAllInstr()) {
+        for (const InstrPtr &instr: loop.getAllInstr()) {
             if (instr->operand.size() > 0) {
                 const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
                 if (nelem > max_nelem)
