@@ -163,7 +163,7 @@ public:
                 copyToHost(bhir->getSyncs());
 
                 // Let's free device buffers
-                for(bh_base *base: symbols.getFrees()) {
+                for(bh_base *base: block.getLoop().getAllFrees()) {
                     delBuffer(base);
                     bh_data_free(base);
                 }
@@ -232,7 +232,7 @@ private:
         copyToHost(set<bh_base*>(v.begin(), v.end()));
 
         // Let's free device buffers
-        for (bh_base *base: symbols.getFrees()) {
+        for (bh_base *base: block.getLoop().getAllFrees()) {
             delBuffer(base);
         }
 

@@ -71,7 +71,6 @@ private:
     std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID (Order by `origin_id`)
     std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
     std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
-    std::set<bh_base*> _frees; // Set of freed arrays
     bool _useRandom; // Flag: is any instructions using random?
 
 public:
@@ -120,8 +119,6 @@ public:
                 _array_always.insert(instr->operand[0].base);
             } else if (instr->opcode == BH_RANDOM) {
                 _useRandom = true;
-            } else if (instr->opcode == BH_FREE) {
-                _frees.insert(instr->operand[0].base);
             }
             // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
             // already in `_params`. NB: the order of `_params` matches the order of the array IDs
@@ -194,10 +191,6 @@ public:
     // Return non-temporary arrays, which are the in-/out-puts of the JIT kernel, in the order of their IDs
     const std::vector<bh_base*> &getParams() const {
         return _params;
-    }
-    // Return the freed arrays
-    const std::set<bh_base*> &getFrees() const {
-        return _frees;
     }
     // Is any instructions use the random library?
     bool useRandom() const {
