@@ -167,7 +167,7 @@ The function signature::
     All slide_view() calls must be at the top of the loop body.
     All views are changed at the end of an iteration and cannot be performed in the middle of a loop body.
 
-An example of using dynamic views could be writing a loop-based faculty function (from 1 to 10). The loop in numpy looks the following::
+An example of using dynamic views could be writing a loop-based function for calculating the triangular numbers (from 1 to 10). The loop in numpy looks the following::
 
         >>> a = np.arange(10) + 1
         >>> for i in range(0,9):
