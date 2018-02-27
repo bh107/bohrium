@@ -36,6 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/statistics.hpp>
 #include <jitk/dtype.hpp>
 #include <jitk/apply_fusion.hpp>
+#include <jitk/engines/dyn_view.hpp>
 
 #include "engine_openmp.hpp"
 
@@ -147,18 +148,7 @@ void Impl::execute(BhIR *bhir) {
             break;
         }
 
-        // Iterate through all instructions and slide the relevant views
-        for (bh_instruction &instr : bhir->instr_list) {
-            for (bh_view &view : instr.operand) {
-                if (not view.slide_strides.empty()) {
-                    // The relevant dimension in the view is updated by the given stride
-                    for (size_t i = 0; i < view.slide_strides.size(); i++) {
-                        size_t off_dim    = view.slide_dimensions.at(i);
-                        size_t off_stride = view.slide_strides.at(i);
-                        view.start += view.stride[off_dim] * off_stride;
-                    }
-                }
-            }
-        }
+        // Change views that slide between iterations
+        slide_views(bhir);
     }
 }
