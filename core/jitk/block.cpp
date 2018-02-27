@@ -387,8 +387,10 @@ bool Block::validation() const {
     if (isInstr()) {
         if (getInstr()->ndim() != rank()) {
             assert(1 == 2);
+            return false;
+        } else {
+            return true;
         }
-        return true;
     } else {
         return getLoop().validation();
     }
