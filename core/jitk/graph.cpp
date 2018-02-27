@@ -98,10 +98,23 @@ DAG from_block_list(const vector<Block> &block_list) {
             connecting_vertices.insert(vs.begin(), vs.end());
             vs.insert(vertex);
         }
-
-        // Finally, let's add edges to 'vertex'
+        // Let's add edges to 'vertex'
         BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices) {
             if (vertex != v and block.dependOn(graph[v])) {
+                boost::add_edge(v, vertex, graph);
+            }
+        }
+        // Then we do the same for dependency because of freed arrays
+        set<Vertex> connecting_vertices_freed;
+        if (not block.isInstr()) {
+            for (const bh_base *base: block.getLoop().getAllFrees()) {
+                set<Vertex> &vs = base2vertices[base];
+                connecting_vertices_freed.insert(vs.begin(), vs.end());
+                vs.insert(vertex);
+            }
+        }
+        BOOST_REVERSE_FOREACH (Vertex v, connecting_vertices_freed) {
+            if (vertex != v) {
                 boost::add_edge(v, vertex, graph);
             }
         }

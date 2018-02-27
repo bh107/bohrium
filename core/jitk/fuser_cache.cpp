@@ -133,6 +133,11 @@ void update_with_origin(Block &block, const std::map<bh_base*, bh_base*> &base_c
         for (Block &b: loop._block_list) {
             update_with_origin(b, base_cached2new, origin_id_to_instr);
         }
+        set<bh_base*> frees;
+        for (bh_base *b: loop._frees) {
+            frees.insert(base_cached2new.at(b));
+        }
+        loop._frees = std::move(frees);
         loop.metadataUpdate();
     }
 }

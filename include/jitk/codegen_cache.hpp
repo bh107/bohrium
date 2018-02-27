@@ -48,6 +48,8 @@ public:
     void insert(std::string source, const std::vector<Block> &block_list, const SymbolTable &symbols);
 };
 
+std::string block_list_string(const std::vector<Block> &block_list, const SymbolTable &symbols);
+
 
 } // jit
 } // bohrium

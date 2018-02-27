@@ -271,8 +271,9 @@ public:
 LoopB merge(const LoopB &a, const LoopB &b);
 
 // Create a nested block based on 'instr_list' fully (from 'rank' to the innermost block)
+// The arrays in `frees` will be added to frees of the returned innermost block
 // NB: ALL instructions (excl. sysop) must be fusible and have the same dominating shape.
-Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0);
+Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0, std::set<bh_base*> frees = {});
 
 // Create a nested block based on 'instr_list' partially (only 'rank' dimension).
 // The dimensions from zero to 'rank-1' are ignored.
