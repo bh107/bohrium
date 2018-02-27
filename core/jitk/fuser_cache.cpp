@@ -102,66 +102,96 @@ size_t hash_instr_list(const vector<bh_instruction *> &instr_list) {
     return util::hash(ss.str());
 }
 
-void update_with_origin(bh_view &view, const bh_view &origin) {
-    view.base = origin.base;
-}
-
-void update_with_origin(bh_instruction &instr, const bh_instruction *origin) {
+// Replace the cached values of constants and bases arrays in `instr` with their original values
+void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
+                        const std::map<bh_base*, bh_base*> &base_cached2new) {
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
     for (size_t i = 0; i < instr.operand.size(); ++i) {
-        if (bh_is_constant(&instr.operand[i]) and not bh_opcode_is_sweep(instr.opcode)) {
+        if (bh_is_constant(&instr.operand[i])) {
             // NB: sweeped axis values shouldn't be updated
-            instr.constant = origin->constant;
+            if (not bh_opcode_is_sweep(instr.opcode)) {
+                instr.constant = origin->constant;
+            }
         } else {
-            update_with_origin(instr.operand[i], origin->operand[i]);
+            instr.operand[i].base = base_cached2new.at(instr.operand[i].base);
+            assert(instr.operand[i].base == origin->operand[i].base);
         }
     }
 }
 
-void update_with_origin(Block &block, const map<int64_t, const bh_instruction *> &origin_id_to_instr) {
+// Replace the cached values of constants and bases arrays in `block` with their original values
+void update_with_origin(Block &block, const std::map<bh_base*, bh_base*> &base_cached2new,
+                        const map<int64_t, const bh_instruction *> &origin_id_to_instr) {
     if (block.isInstr()) {
         assert(block.getInstr()->origin_id >= 0);
         bh_instruction instr(*block.getInstr());
-        update_with_origin(instr, origin_id_to_instr.at(instr.origin_id));
+        update_with_origin(instr, origin_id_to_instr.at(instr.origin_id), base_cached2new);
         block.setInstr(instr);
     } else {
         LoopB &loop = block.getLoop();
         for (Block &b: loop._block_list) {
-            update_with_origin(b, origin_id_to_instr);
+            update_with_origin(b, base_cached2new, origin_id_to_instr);
         }
         loop.metadataUpdate();
     }
 }
 
+// We assign the base IDs in the order they appear in the 'instr_list'
+// Notice, the base IDs corresponds to their position in the returned vector
+std::vector<bh_base*> calc_base_ids(const vector<bh_instruction *> &instr_list) {
+    std::vector<bh_base*> ret;
+    std::set<bh_base*> unique_bases;
+    for (const auto &instr: instr_list) {
+        for (const bh_view *view: instr->get_views()) {
+            if (not util::exist(unique_bases, view->base)) {
+                unique_bases.insert(view->base);
+                ret.push_back(view->base);
+            }
+        }
+    }
+    return ret;
+}
 } // Anon namespace
 
 pair<vector<Block>, bool> FuseCache::get(const vector<bh_instruction *> &instr_list) {
     const size_t lookup_hash = hash_instr_list(instr_list);
     ++stat.fuser_cache_lookups;
+
     if (_cache.find(lookup_hash) != _cache.end()) { // Cache hit!
-        vector<Block> ret = _cache.at(lookup_hash);
-        // Create a map: 'origin_id' => instruction
+        // Create a map: 'origin_id' => instruction for updating the constants
         map<int64_t, const bh_instruction *> origin_id_to_instr;
         for(const bh_instruction *instr: instr_list) {
             assert(instr->origin_id >= 0);
-            assert(origin_id_to_instr.find(instr->origin_id) == origin_id_to_instr.end());
+            assert(not util::exist(origin_id_to_instr, instr->origin_id));
             origin_id_to_instr.insert(make_pair(instr->origin_id, instr));
         }
-        // Let's update the cached blocks in 'ret' with the base data from origin
-        for(Block &block: ret) {
-            update_with_origin(block, origin_id_to_instr);
+        // Create a map: 'cached bases' => 'new bases' for updating the base arrays
+        const CachePayload &cached = _cache.at(lookup_hash);
+        std::map<bh_base*, bh_base*> base_cached2new;
+        {
+            size_t id = 0;
+            for(auto &base: calc_base_ids(instr_list)) {
+                assert(id < cached.base_ids.size());
+                base_cached2new[cached.base_ids[id++]] = base;
+            }
         }
-        return make_pair(ret, true);
+        // Let's make a copy of the cached block list and update the bases
+        vector<Block> ret = cached.block_list;
+        for(Block &block: ret) {
+            update_with_origin(block, base_cached2new, origin_id_to_instr);
+        }
+        return make_pair(std::move(ret), true);
     } else { // Cache miss!
         ++stat.fuser_cache_misses;
         return make_pair(vector<Block>(), false);
     }
 }
 
-void FuseCache::insert(const vector<bh_instruction *> &instr_list, const vector<Block> &block_list) {
+void FuseCache::insert(const vector<bh_instruction *> &instr_list, vector<Block> block_list) {
     const size_t lookup_hash = hash_instr_list(instr_list);
-    _cache.insert(make_pair(lookup_hash, block_list));
+    CachePayload payload = {std::move(block_list), calc_base_ids(instr_list)};
+    _cache.insert(make_pair(lookup_hash, std::move(payload)));
 }
 
 } // jitk
