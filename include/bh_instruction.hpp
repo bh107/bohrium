@@ -53,7 +53,7 @@ struct bh_instruction
 
     // Constructors
     bh_instruction(){}
-    bh_instruction(bh_opcode opcode, const std::vector<bh_view> &operands) : opcode(opcode), operand(operands) {}
+    bh_instruction(bh_opcode opcode, std::vector<bh_view> operands) : opcode(opcode), operand(std::move(operands)) {}
     bh_instruction(const bh_instruction& instr)
     {
         opcode      = instr.opcode;
