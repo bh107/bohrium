@@ -147,14 +147,9 @@ void Impl::execute(BhIR *bhir) {
             break;
         }
 
-        // Slide offsets
-        std::vector<bh_instruction> new_instr_list;
-        std::vector<bh_view> new_views;
-
         // Iterate through all instructions and slide the relevant views
-        for (bh_instruction instr : bhir->instr_list) {
-            bh_instruction new_instr = instr;
-            for (bh_view view : instr.operand) {
+        for (bh_instruction &instr : bhir->instr_list) {
+            for (bh_view &view : instr.operand) {
                 if (not view.slide_strides.empty()) {
                     // The relevant dimension in the view is updated by the given stride
                     for (size_t i = 0; i < view.slide_strides.size(); i++) {
@@ -163,13 +158,7 @@ void Impl::execute(BhIR *bhir) {
                         view.start += view.stride[off_dim] * off_stride;
                     }
                 }
-                new_views.push_back(view);
             }
-            instr.operand = new_views;
-            new_views.clear();
-            new_instr_list.push_back(instr);
         }
-        // Update the instruction list
-        bhir->instr_list = new_instr_list;
     }
 }
