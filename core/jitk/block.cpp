@@ -35,11 +35,13 @@ namespace {
 
 // Returns true if a block consisting of 'instr_list' is reshapable
 bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
-    assert(instr_list.size() > 0);
+    if(instr_list.empty()) {
+        return true;
+    }
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
     int64_t rank = instr_list[0]->ndim();
-    for (InstrPtr instr: instr_list) {
+    for (const InstrPtr &instr: instr_list) {
         if (not instr->reshapable())
             return false;
         if (instr->ndim() != rank)
