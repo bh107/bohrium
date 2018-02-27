@@ -202,6 +202,9 @@ vector<InstrPtr> simplify_instr_list(const vector<bh_instruction *> &instr_list)
     // Simplify and move BH_FREE's up the list
     vector<InstrPtr> ret;
     for (const bh_instruction *instr: instr_list) {
+        if (instr->operand.empty()) {
+            continue; // We guaranty that the returned list contains no noop operations
+        }
         if (util::exist(instr_frees, instr)) {
             continue; // Skipping frees that were moved
         }
@@ -251,15 +254,13 @@ vector<Block> pre_fuser_lossy(const vector<bh_instruction *> &instr_list) {
 }
 
 vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
-
     const vector<InstrPtr> instr_list_simply = simplify_instr_list(instr_list);
 
-    // Creates the _block_list based on the instr_list
+    // Creates the _block_list based on the `instr_list_simply`
     vector<Block> block_list;
     for (auto it=instr_list_simply.begin(); it != instr_list_simply.end(); ++it) {
         const InstrPtr &instr = *it;
-        if (instr->operand.empty())
-            continue; // Ignore noop instructions such as BH_NONE or BH_TALLY
+        assert(not instr->operand.empty()); // The noop instructions is removed by `simplify_instr_list()`
 
         // Let's create the block
         const vector<int64_t> dominating_shape = instr->shape();
@@ -368,7 +369,7 @@ void fuser_reshapable_first(vector<Block> &block_list, bool avoid_rank0_sweep) {
     // Let's fuse at the next rank level
     for (Block &b: ret) {
         if (not b.isInstr()) {
-            fuser_reshapable_first(b.getLoop()._block_list, 0);
+            fuser_reshapable_first(b.getLoop()._block_list, false);
         }
     }
     block_list = ret;
