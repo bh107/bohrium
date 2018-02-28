@@ -129,9 +129,10 @@ bool collapse_loop_with_child(LoopB &loop) {
         Block &child = loop._block_list[0];
         if ((not child.isInstr()) and child.getLoop()._sweeps.empty() and child.getLoop()._reshapable) {
             // Let's collapse with our single child
-            loop.size *= loop._block_list[0].getLoop().size;
+            loop.size *= child.getLoop().size;
+            loop._frees.insert(child.getLoop()._frees.begin(), child.getLoop()._frees.end());
             // NB: we need the temporary step in order to avoid copying deleted data
-            auto tmp = std::move(loop._block_list[0].getLoop()._block_list);
+            auto tmp = std::move(child.getLoop()._block_list);
             loop._block_list = std::move(tmp);
             return collapse_instr_axes(loop, loop.rank);
         }
