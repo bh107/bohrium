@@ -72,9 +72,13 @@ void BhInstruction::appendOperand(const BhArray<T>& ary) {
     view.base  = ary.base.get();
     view.start = static_cast<int64_t>(ary.offset);
     view.ndim  = static_cast<int64_t>(ary.shape.size());
+    view.slide_dimensions = ary.slide_dimensions;
+    view.slide_strides = ary.slide_strides;
+
     std::copy(ary.shape.begin(), ary.shape.end(), &view.shape[0]);
     std::copy(ary.stride.begin(), ary.stride.end(), &view.stride[0]);
     operand.push_back(view);
+
 }
 
 template <typename T>

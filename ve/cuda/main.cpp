@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_opcode.h>
 #include <jitk/statistics.hpp>
+#include <jitk/engines/dyn_view.hpp>
 
 #include "engine_cuda.hpp"
 
@@ -141,5 +142,8 @@ void Impl::execute(BhIR *bhir) {
                 break;
             }
         }
+
+        // Change views that slide between iterations
+        slide_views(bhir);
     }
 }

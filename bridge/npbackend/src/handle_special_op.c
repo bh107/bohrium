@@ -158,6 +158,27 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
+PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary;
+    unsigned int dim;
+    unsigned int stride;
+
+    static char *kwlist[] = {"ary", "dim:int", "stride:int", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OKK", kwlist, &ary, &dim, &stride)) {
+        return NULL;
+    }
+
+    bhc_dtype type;
+    bhc_bool constant;
+    void *operand;
+    normalize_cleanup_handle cleanup;
+    cleanup.objs2free_count = 0;
+    int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
+    bhc_slide_view(type, operand, dim, stride);
+    normalize_operand_cleanup(&cleanup);
+    Py_RETURN_NONE;
+}
+
 PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
     unsigned long long size;
     unsigned long long seed;
