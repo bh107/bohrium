@@ -48,10 +48,12 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
         if (b.isInstr() or &b.getLoop() != child) {
             loop.size = parent.size;
             loop._block_list.push_back(b);
+            loop._frees.insert(parent._frees.begin(), parent._frees.end());
         } else {
             loop.size = child->size;
             const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
             loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
+            loop._frees.insert(child->_frees.begin(), child->_frees.end());
         }
         loop.metadataUpdate();
         ret.push_back(Block(std::move(loop)));
@@ -206,7 +208,13 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
                     newloop._block_list.push_back(*it);
                     newloop.metadataUpdate();
                     ret.push_back(Block(std::move(newloop)));
-                } else {
+                }
+                // TODO: for now the last new block gets all frees.
+                assert(not ret.back().isInstr());
+                ret.back().getLoop()._frees = loop._frees;
+
+                // Make sure we don't overflow
+                if (it == loop._block_list.end()) {
                     break;
                 }
             }
