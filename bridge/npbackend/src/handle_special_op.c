@@ -145,7 +145,7 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
     normalize_cleanup_handle cleanup;
     cleanup.objs2free_count = 0;
     int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
-    if (err != -1) {
+    if (err == -1) {
         normalize_operand_cleanup(&cleanup);
         if (PyErr_Occurred() != NULL) {
             return NULL;
@@ -174,6 +174,14 @@ PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
     normalize_cleanup_handle cleanup;
     cleanup.objs2free_count = 0;
     int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
+    if (err == -1) {
+        normalize_operand_cleanup(&cleanup);
+        if (PyErr_Occurred() != NULL) {
+            return NULL;
+        } else {
+            Py_RETURN_NONE;
+        }
+    }
     bhc_slide_view(type, operand, dim, stride);
     normalize_operand_cleanup(&cleanup);
     Py_RETURN_NONE;
