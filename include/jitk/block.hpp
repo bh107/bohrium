@@ -132,11 +132,6 @@ public:
     // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
     std::pair<LoopB*, int64_t> findLastAccessBy(const bh_base *base);
 
-    // Insert the system instruction 'instr' after the instruction that accesses 'base' last.
-    // If no instruction accesses 'base' we insert it after the last instruction.
-    // NB: Force reshape the instruction to match the instructions accesses 'base' last.
-    void insertSystemAfter(InstrPtr instr, const bh_base *base);
-
     // Returns the amount of threading in this block (excl. nested blocks)
     uint64_t localThreading() const;
 
@@ -182,7 +177,6 @@ public:
     }
 
     // Instruction Block Constructor
-    // Note, the rank is only to make pretty printing easier
     Block(const bh_instruction &instr, int rank) {
         assert(_var.which() == 0);
         InstrB _instr{std::make_shared<bh_instruction>(instr), rank};
@@ -277,10 +271,11 @@ public:
 LoopB merge(const LoopB &a, const LoopB &b);
 
 // Create a nested block based on 'instr_list' fully (from 'rank' to the innermost block)
+// The arrays in `frees` will be added to frees of the returned innermost block
 // NB: ALL instructions (excl. sysop) must be fusible and have the same dominating shape.
-Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0);
+Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0, std::set<bh_base*> frees = {});
 
-// Create a nested block based on 'instr_list' partially (only 'rank' dimension.
+// Create a nested block based on 'instr_list' partially (only 'rank' dimension).
 // The dimensions from zero to 'rank-1' are ignored.
 // The 'size_of_rank_dim' specifies the size of the dimension 'rank'.
 Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int64_t size_of_rank_dim);

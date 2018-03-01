@@ -29,7 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-// Creates an instruction of 'InstrPtr' from an instruction list
+// Creates an instruction of 'InstrPtr' from an instruction list with all noop operations removed
 std::vector<InstrPtr> simplify_instr_list(const std::vector<bh_instruction *> &instr_list);
 
 // Creates a block list based on the 'instr_list' where only fully fusible instructions

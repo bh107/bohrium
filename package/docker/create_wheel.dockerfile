@@ -30,7 +30,7 @@ RUN pip install benchpress
 # Deploy script
 WORKDIR /bh
 RUN echo "#/usr/bin/env bash"          > deploy.sh && \
-    echo "python2.7 -m twine upload /bh/b*/dist/*" >> deploy.sh && \
+    echo "python2.7 -m twine upload /bh/b*/dist/* || true" >> deploy.sh && \
     chmod +x deploy.sh
 
 # Execute script

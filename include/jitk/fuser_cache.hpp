@@ -32,7 +32,13 @@ namespace jitk {
 
 class FuseCache {
 private:
-    std::map<size_t, std::vector<Block> > _cache;
+    // Help struct to contain the payload of the FuseCache
+    struct CachePayload {
+        std::vector<Block> block_list;
+        std::vector<bh_base*> base_ids; // The base IDs corresponds to their position in `base_ids`
+    };
+    // The hash to payload map
+    std::map<size_t, CachePayload> _cache;
 public:
     // Some statistics
     jitk::Statistics &stat;
@@ -43,7 +49,7 @@ public:
     // Check the cache for a block list that matches 'instr_list'
     std::pair<std::vector<Block>, bool> get(const std::vector<bh_instruction *> &instr_list);
     // Insert 'block_list' as a hit when requesting 'instr_list'
-    void insert(const std::vector<bh_instruction *> &instr_list, const std::vector<Block> &block_list);
+    void insert(const std::vector<bh_instruction *> &instr_list, std::vector<Block> block_list);
 };
 
 

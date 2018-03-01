@@ -163,7 +163,7 @@ public:
                 copyToHost(bhir->getSyncs());
 
                 // Let's free device buffers
-                for(bh_base *base: symbols.getFrees()) {
+                for(bh_base *base: block.getLoop().getAllFrees()) {
                     delBuffer(base);
                     bh_data_free(base);
                 }
@@ -232,7 +232,7 @@ private:
         copyToHost(set<bh_base*>(v.begin(), v.end()));
 
         // Let's free device buffers
-        for (bh_base *base: symbols.getFrees()) {
+        for (bh_base *base: block.getLoop().getAllFrees()) {
             delBuffer(base);
         }
 
@@ -240,6 +240,13 @@ private:
         vector<bh_instruction> child_instr_list;
         for (const jitk::InstrPtr &instr: block.getAllInstr()) {
             child_instr_list.push_back(*instr);
+        }
+        // Notice, we have to re-create free instructions 
+        for (const bh_base *base: block.getLoop().getAllFrees()) {
+            vector<bh_view> operands(1);
+            bh_assign_complete_base(&operands[0], const_cast<bh_base*>(base));
+            bh_instruction instr(BH_FREE, std::move(operands));
+            child_instr_list.push_back(std::move(instr));
         }
         BhIR tmp_bhir(std::move(child_instr_list), bhir->getSyncs());
         comp.child.execute(&tmp_bhir);

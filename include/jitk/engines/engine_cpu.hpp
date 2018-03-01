@@ -145,7 +145,7 @@ private:
             }
 
             // Finally, let's cleanup
-            for(bh_base *base: symbols.getFrees()) {
+            for(bh_base *base: block.getLoop().getAllFrees()) {
                 bh_data_free(base);
             }
         }
@@ -157,12 +157,13 @@ private:
         // When creating a monolithic kernel (all instructions in one shared library), we first combine
         // the instructions and non-temps from each different block and then we create the kernel
         vector<InstrPtr> all_instr;
-        set<bh_base *> all_non_temps;
+        set<bh_base *> all_non_temps, all_freed;
         bool kernel_is_computing = false;
         for(const Block &block: block_list) {
             assert(not block.isInstr());
             block.getAllInstr(all_instr);
             block.getLoop().getAllNonTemps(all_non_temps);
+            block.getLoop().getAllFrees(all_freed);
             if (not block.isSystemOnly()) {
                 kernel_is_computing = true;
             }
@@ -197,7 +198,7 @@ private:
         }
 
         // Finally, let's cleanup
-        for(bh_base *base: symbols.getFrees()) {
+        for(bh_base *base: all_freed) {
             bh_data_free(base);
         }
     }
