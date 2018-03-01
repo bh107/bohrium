@@ -140,10 +140,6 @@ An example where the function returns a ``bharray`` with one element and of type
         array([3, 3, 3, 3])
 
 
-.. _interop:
-
-
-
 Sliding views between iterations
 ~~~~~~~~~~~~~~~~
 
@@ -185,6 +181,8 @@ The same can be written in Bohrium as::
         >>> bh.for_loop(loop_body, 9, a)
         >>> a
         array([1 3 6 10 15 21 28 36 45 55])
+
+.. _interop:
 
 Interoperability
 ~~~~~~~~~~~~~~~~
