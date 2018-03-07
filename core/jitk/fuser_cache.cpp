@@ -66,7 +66,13 @@ void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
     if (not bh_is_constant(&view)) {
         size_t view_id = views.insert(view).first;
         ss << view_id;
-        ss << view.start;
+        // Sliding views has identical hashes across iterations
+        if (view.slide_dimensions.empty()) {
+            ss << view.start;
+        } //else  {
+            //            ss << view.start;
+        //        }
+
         ss << view.ndim;
         for (int j = 0; j < view.ndim; ++j) {
             ss << view.shape[j];
@@ -113,6 +119,8 @@ void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
             if (not bh_opcode_is_sweep(instr.opcode)) {
                 instr.constant = origin->constant;
             }
+        } else if (not instr.operand[i].slide_dimensions.empty()) {
+            instr.operand[i].start = origin->operand[i].start;
         } else {
             instr.operand[i].base = base_cached2new.at(instr.operand[i].base);
             assert(instr.operand[i].base == origin->operand[i].base);
