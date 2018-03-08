@@ -79,19 +79,6 @@ def set_timestamp(f, timestamp):
 def dtype_bh2np(bh_type_str):
     return bh_type_str[3:].lower()  # Remove BH_ and convert to lower case
 
-
-# Merge bhc.i.head with the bh_c.h to create our SWIG interface bhc.i
-time = 0
-with open(buildpath("bhc.i"), 'w') as outfile:
-    for fname in [srcpath("bhc.i.head"), buildpath("..", "c", "out", "bhc.h")]:
-        t = get_timestamp(fname)
-        if t > time:
-            time = t
-        with open(fname) as infile:
-            for line in infile:
-                outfile.write(line)
-set_timestamp(buildpath("bhc.i"), time)
-
 # Information variables that should be written to the _info.py file
 info_vars = {}
 
@@ -164,7 +151,7 @@ set_timestamp(buildpath("_info.py"), time)
 
 
 # We need to make sure that the extensions is build before the python module because of SWIG
-# Furthermore, '_info.py' and 'bhc.py' should be copied to the build dir
+# Furthermore, '_info.py' should be copied to the build dir
 class CustomBuild(build):
     sub_commands = [
         ('build_ext',     build.has_ext_modules),
@@ -176,7 +163,6 @@ class CustomBuild(build):
     def run(self):
         if not self.dry_run:
             self.copy_file(buildpath('_info.py'), buildpath(self.build_lib, 'bohrium', '_info.py'))
-            self.copy_file(buildpath('bhc.py'),   buildpath(self.build_lib, 'bohrium', 'bhc.py'))
         build.run(self)
 
 # We need the pyx files in the build path for the Cython.Distutils to work
@@ -245,19 +231,6 @@ setup(
                 buildpath('..', 'c'),
                 buildpath('..', '..', 'core')
             ],
-        ),
-        Extension(
-            name='_bhc',
-            sources=[buildpath('bhc.i')],
-            include_dirs=[
-                buildpath("..", "c", "out"),
-                srcpath('..', '..', 'include')
-            ],
-            libraries=['dl', 'bhc', 'bh'],
-            library_dirs=[
-                buildpath('..', 'c'),
-                buildpath('..', '..', 'core')
-            ]
         ),
         Extension(
             name='random123',
