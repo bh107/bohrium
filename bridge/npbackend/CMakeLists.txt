@@ -9,15 +9,11 @@ endif()
 
 find_package(NumPy)
 set_package_properties(NumPy PROPERTIES DESCRIPTION "Numerical Python" URL "www.numpy.org")
-set_package_properties(NumPy PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and SWIG).")
-
-find_package(SWIG)
-set_package_properties(SWIG PROPERTIES DESCRIPTION "Simplified Wrapper and Interface Generator" URL "www.swig.org")
-set_package_properties(SWIG PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and NumPy).")
+set_package_properties(NumPy PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python).")
 
 find_package(Cython)
 set_package_properties(Cython PROPERTIES DESCRIPTION "C-Extensions for Python" URL "cython.org")
-set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python and SWIG).")
+set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python).")
 
 if(APPLE) # Apple's default Python compiler doesn't support OpenMP
     set(CYTHON_OPENMP false CACHE BOOL "Use OpenMP in Cython extensions")
@@ -25,7 +21,7 @@ else()
     set(CYTHON_OPENMP true CACHE BOOL "Use OpenMP in Cython extensions")
 endif()
 
-if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND SWIG_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
+if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
 
     # Get the OpenMP flag for the Cython OpenMP builds
     if(${VE_OPENMP_COMPILER_OPENMP} AND ${CYTHON_OPENMP})

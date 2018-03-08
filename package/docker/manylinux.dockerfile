@@ -22,21 +22,11 @@ ENV PATH /opt/gcc7/bin:$PATH
 ENV LD_LIBRARY_PATH "/opt/gcc7/lib64:$LD_LIBRARY_PATH"
 
 # Install Boost with -fPIC (system-wide)
-RUN wget --no-check-certificate  https://downloads.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.gz
-RUN tar -xzf boost_1_63_0.tar.gz
-WORKDIR boost_1_63_0
+ADD https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz .
+RUN tar -xzf boost_1_66_0.tar.gz
+WORKDIR boost_1_66_0
 RUN ./bootstrap.sh --without-libraries=python --without-libraries=mpi --with-icu
 RUN ./b2 -q variant=release debug-symbols=off threading=multi runtime-link=shared  link=static,shared toolset=gcc cxxflags="-fPIC" --layout=system  install
-WORKDIR /b
-
-# Install SWIG (system-wide)
-RUN yum install -y pcre pcre-devel
-RUN wget --no-check-certificate https://sourceforge.net/projects/swig/files/swig/swig-3.0.12/swig-3.0.12.tar.gz
-RUN tar -xzf swig-3.0.12.tar.gz
-WORKDIR swig-3.0.12
-RUN ./configure
-RUN make -j4
-RUN make install
 WORKDIR /b
 
 # Use Python 2.7 for the reset of the installation
@@ -66,13 +56,16 @@ RUN yum install -y openblas-devel-0.2.18-5.el5.x86_64
 
 # Install OpenCV 3
 WORKDIR /b
-RUN wget --no-check-certificate https://github.com/opencv/opencv/archive/3.2.0.zip
+ADD https://github.com/opencv/opencv/archive/3.2.0.zip .
 RUN unzip 3.2.0
 RUN mkdir -p opencv-3.2.0/build
 WORKDIR opencv-3.2.0/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release -DWITH_LAPACK=OFF -DBUILD_SHARED_LIBS=NO -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
 RUN make install -j4
 RUN ldconfig
+
+# Install GNU's libsigsegv
+RUN yum install -y libsigsegv-devel
 
 # Install deploy dependencies
 RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install twine
