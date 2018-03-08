@@ -25,11 +25,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 // Help function for unprotect memory
 static void _munprotect(void *data, npy_intp size) {
-    if(mprotect(data, size, PROT_WRITE) != 0) {
+    if(mprotect(data, size, PROT_WRITE | PROT_READ) != 0) {
         int errsv = errno; // mprotect() sets the errno.
         fprintf(stderr,
                 "Fatal error: _munprotect() could not (un-)mprotect a data region. "
-                "Returned error code by mremap(): %s.\n",
+                "Returned error code by mprotect(): %s.\n",
                 strerror(errsv));
         assert(1 == 2);
         exit(-1);
