@@ -147,6 +147,8 @@ with open(buildpath("_info.py"), 'w') as o:
             s += "np.dtype('%s'), " % t['numpy']
         s = s[:-2] + "]\n"
     o.write(s)
+    o.flush()
+    os.fsync(o.fileno())
 set_timestamp(buildpath("_info.py"), time)
 
 
