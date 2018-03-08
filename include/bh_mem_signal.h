@@ -28,6 +28,11 @@ If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+/** Callback function type
+ *  The function is called with the address pointer and the memory segment idx
+ */
+typedef int (*bh_mem_signal_callback_t) (void* fault_address, void* segment_idx);
+
 /** Init arrays and signal handler
  *
  * @param void
@@ -43,9 +48,9 @@ void bh_mem_signal_shutdown(void);
  * @param addr - Start address of memory segment.
  * @param size - Size of memory segment in bytes
  * @param callback - Callback function which is executed when segfault hits in the memory
- *                   segment. The function is called with the memory idx and the address pointer
+ *                   segment. The function is called with the address pointer and the memory segment idx
  */
-void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size, void (*callback)(void*, void*));
+void bh_mem_signal_attach(void *idx, void *addr, uint64_t size, bh_mem_signal_callback_t callback);
 
 /** Detach signal
  *

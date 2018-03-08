@@ -58,7 +58,7 @@ static void _mremap_data(void *dst, void *src, npy_intp size) {
 #endif
 }
 
-void mem_access_callback(void *id, void *addr) {
+int mem_access_callback(void *addr, void *id) {
     PyObject *ary = (PyObject *) id;
 
     PyGILState_STATE GIL = PyGILState_Ensure();
@@ -81,6 +81,7 @@ void mem_access_callback(void *id, void *addr) {
     mem_bhc2np((BhArray*)ary);
 
     PyGILState_Release(GIL);
+    return 0;
 }
 
 // Help function for protecting the memory of the NumPy part of 'ary'
