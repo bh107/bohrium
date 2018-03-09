@@ -155,13 +155,14 @@ void bh_mem_signal_attach(void *idx, void *addr, uint64_t size, bh_mem_signal_ca
         pthread_mutex_unlock(&signal_mutex);
         throw runtime_error(ss.str());
     }
-
+    assert(((size_t) addr) % SIGSEGV_FAULT_ADDRESS_ALIGNMENT == 0);
+    assert(size % SIGSEGV_FAULT_ADDRESS_ALIGNMENT == 0);
     // Let's register it in sigsegv and save it in the segment
     void *ticket = sigsegv_register(&dispatcher, addr, size, callback, idx);
     segment.add_callback_and_ticket(callback, ticket);
 
     // Finally, let's insert the new segment
-    segments.insert(std::move(segment));
+    segments.insert(segment);
     pthread_mutex_unlock(&signal_mutex);
 }
 
