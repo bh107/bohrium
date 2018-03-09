@@ -155,7 +155,7 @@ void protected_malloc(BhArray *ary) {
     ary->data_in_bhc = 1;
 }
 
-void mem_signal_attach(const void *idx, const void *addr, uint64_t nbytes) {
+void mem_signal_attach(void *idx, void *addr, uint64_t nbytes) {
     bh_mem_signal_attach(idx, addr, nbytes, mem_access_callback);
 }
 
