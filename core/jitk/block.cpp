@@ -635,7 +635,7 @@ Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
     } else {
         LoopB ret_loop = l1;
         ret_loop.size = size_of_rank_dim;
-        return Block(ret_loop);
+        return Block(std::move(ret_loop));
     }
 }
 } // Unnamed namespace
@@ -658,6 +658,19 @@ Block reshape_and_merge(const LoopB &l1, const LoopB &l2) {
         const LoopB new_l1 = reshape(l1, l2.size).getLoop();
         return Block(merge(new_l1, l2));
     }
+    // Empty blocks are mergeable
+    if (l1.getAllInstr().empty()) {
+        LoopB ret_loop = l2;
+        auto frees = l1.getAllFrees();
+        ret_loop._frees.insert(frees.begin(), frees.end());
+        return Block(std::move(ret_loop));
+    } else if (l2.getAllInstr().empty()) {
+        LoopB ret_loop = l1;
+        auto frees = l2.getAllFrees();
+        ret_loop._frees.insert(frees.begin(), frees.end());
+        return Block(std::move(ret_loop));
+    }
+    // Finally, we give up
     throw runtime_error("reshape_and_merge: the blocks are not mergeable!");
 }
 
