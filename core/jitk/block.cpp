@@ -630,7 +630,13 @@ Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
     for (const InstrPtr &instr: l1.getAllInstr()) {
         instr_list.push_back(reshape_rank(instr, l1.rank, size_of_rank_dim));
     }
-    return create_nested_block(instr_list, l1.rank, l1.getAllFrees());
+    if (not instr_list.empty()) {
+        return create_nested_block(instr_list, l1.rank, l1.getAllFrees());
+    } else {
+        LoopB ret_loop = l1;
+        ret_loop.size = size_of_rank_dim;
+        return Block(ret_loop);
+    }
 }
 } // Unnamed namespace
 
