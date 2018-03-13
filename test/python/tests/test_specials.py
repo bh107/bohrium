@@ -1,10 +1,9 @@
-import util
 
 class test_double_write:
     def init(self):
         yield ""
 
-    def test_double_write(self, cmd):
+    def test_double_write(self, _):
         return """
 def apply_op(p1):
     cf = M.arange(10*2).reshape(10, 2)
@@ -17,3 +16,21 @@ def apply_op(p1):
 
 p1 = M.arange(10+4)
 res = apply_op(p1)"""
+
+
+
+class test_fallback2numpy:
+    def init(self):
+        yield ""
+
+    def test_bh2np(self, _):
+        bh_cmp = """
+import gc
+gc.disable()
+bh.flush()
+a = bh.ones(10)
+b = np.array(a)
+res = np.array(b)
+"""
+        np_cmd = "res = np.ones(10)"
+        return (np_cmd, bh_cmp)

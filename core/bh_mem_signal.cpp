@@ -19,18 +19,15 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <pthread.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <sys/mman.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <cassert>
 #include <stdexcept>
 #include <set>
 #include <iostream>
-
+#include <sigsegv.h>
 #include <bh_mem_signal.h>
+#include <bh_util.hpp>
 
 using namespace std;
 
@@ -38,8 +35,7 @@ static pthread_mutex_t signal_mutex = PTHREAD_MUTEX_INITIALIZER;
 static bool initialized = false;
 static bool mem_warn = false;
 
-struct Segment
-{
+struct Segment {
     //Start address of this memory segment
     const void *addr;
     //Size of memory segment in bytes
@@ -47,17 +43,27 @@ struct Segment
     //Id to identify the memory segment when executing the callback function.
     const void *idx;
     //The callback function to call
-    void (*callback)(void*, void*);
+    bh_mem_signal_callback_t callback;
+    //sigsegv ticket of a registered memory range
+    void *ticket;
 
     //Some constructors
-    Segment(){};
-    Segment(const void *addr) : addr(addr),size(1),idx(NULL),callback(NULL){};
-    Segment(const void *addr, uint64_t size) : addr(addr),size(size),idx(NULL),callback(NULL){};
-    Segment(const void *addr, uint64_t size, const void *idx, void (*callback)(void*, void*))
-            : addr(addr),size(size),idx(idx),callback(callback){};
+    Segment() {};
 
-    bool operator<(const Segment& other) const
-    {
+    Segment(const void *addr) : addr(addr), size(1), idx(nullptr), callback(nullptr), ticket(nullptr) {};
+
+    Segment(const void *addr, uint64_t size) : addr(addr), size(size), idx(nullptr),
+                                               callback(nullptr), ticket(nullptr) {};
+
+    Segment(const void *addr, uint64_t size, const void *idx) : addr(addr), size(size), idx(idx),
+                                                                callback(nullptr), ticket(nullptr) {};
+
+    void add_callback_and_ticket(bh_mem_signal_callback_t callback, void *ticket) {
+        this->callback = callback;
+        this->ticket = ticket;
+    }
+
+    bool operator<(const Segment &other) const {
         const uint64_t a_begin = (uint64_t) addr;
         const uint64_t b_begin = (uint64_t) other.addr;
         const uint64_t a_end = a_begin + size - 1;
@@ -65,108 +71,89 @@ struct Segment
 
         //When the two segments overlaps we return false such that
         //overlapping segments are identical in a set
-        if((a_begin <= b_end) and (a_end >= b_begin))
-        {
+        if ((a_begin <= b_end) and (a_end >= b_begin)) {
             return false;
-        }
-        else//Else we simple compare the begin address
+        } else { //Else we simple compare the begin address
             return a_begin < b_begin;
+        }
     }
 
     //Read begin and end memory address
-    const void *addr_begin() const
-    {
+    const void *addr_begin() const {
         return addr;
     }
-    const void *addr_end() const
-    {
-        return (const void*)(((uint64_t)addr+size));
+
+    const void *addr_end() const {
+        return (const void *) (((uint64_t) addr + size));
     }
 };
+
 //Pretty print of Segment
-ostream& operator<<(ostream& out, const Segment& segment)
-{
+ostream &operator<<(ostream &out, const Segment &segment) {
     out << segment.idx << "{addr: " << segment.addr_begin() << " - "
-        << segment.addr_end() << "}";
+        << segment.addr_end() << ", ticket: " << segment.ticket << "}";
     return out;
 }
-ostream& operator<<(ostream& out, const set<Segment>& segments)
-{
+
+ostream &operator<<(ostream &out, const set<Segment> &segments) {
     out << "bh_mem_signal contains: " << endl;
-    for(const Segment &seg: segments)
-    {
+    for (const Segment &seg: segments) {
         out << seg << endl;
     }
     return out;
+}
+
+// sigsegv boilerplate
+static sigsegv_dispatcher dispatcher;
+static int handler(void *fault_address, int serious) {
+    // We only handle serious faults and not potential faults such as stack overflows
+    if (serious == 1) {
+        return sigsegv_dispatch(&dispatcher, fault_address);
+    } else {
+        return 0;
+    }
 }
 
 // All registered memory segments
 // NB: never insert overlapping memory segments into this set
 static set<Segment> segments;
 
-/** Signal handler.
- *  Executes appropriate callback function associated with memory segment.
- *
- * @param signal_number The signal number for SIGSEGV
- * @param siginfo_t Datastructure containing signal information.
- * @param context User context for the signal trap.
- */
-static void sighandler(int signal_number, siginfo_t *info, void *context)
-{
-    pthread_mutex_lock(&signal_mutex);
-    set<Segment>::const_iterator s = segments.find(Segment(info->si_addr));
-    pthread_mutex_unlock(&signal_mutex);
-    if(s == segments.end())//Address not found in 'segments'
-    {
-        signal(signal_number, SIG_DFL);
-    }
-    else
-    {
-        s->callback((void*)s->idx, info->si_addr);
-    }
-}
-
-void bh_mem_signal_init(void)
-{
-    mem_warn = getenv("BH_MEM_WARN") != NULL;
+void bh_mem_signal_init(void) {
+    mem_warn = getenv("BH_MEM_WARN") != nullptr;
 
     pthread_mutex_lock(&signal_mutex);
-    if(!initialized)
-    {
-        struct sigaction sact;
-        sigfillset(&(sact.sa_mask));
-        sact.sa_flags = SA_SIGINFO | SA_ONSTACK;
-        sact.sa_sigaction = sighandler;
-        sigaction(SIGSEGV, &sact, NULL);
-        sigaction(SIGBUS, &sact, NULL);
+    if (!initialized) {
+        sigsegv_init (&dispatcher);
+        if (sigsegv_install_handler(&handler) == -1) {
+            throw runtime_error("System cannot catch SIGSEGV");
+        }
     }
     initialized = true;
     pthread_mutex_unlock(&signal_mutex);
 }
 
-void bh_mem_signal_shutdown(void)
-{
+void bh_mem_signal_shutdown(void) {
     pthread_mutex_lock(&signal_mutex);
-    if(segments.size() > 0) {
+    if (not segments.empty()) {
         if (mem_warn) {
             cout << "MEM_WARN: bh_mem_signal_shutdown() - not all attached memory segments are detached!" << endl;
             bh_mem_signal_pprint_db();
         }
     }
+    if (initialized) {
+        sigsegv_deinstall_handler();
+    }
     pthread_mutex_unlock(&signal_mutex);
 }
 
-void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
-                          void (*callback)(void*, void*))
-{
+void bh_mem_signal_attach(void *idx, void *addr, uint64_t size, bh_mem_signal_callback_t callback) {
     pthread_mutex_lock(&signal_mutex);
 
     // Create new memory segment that we will attach
-    Segment segment(addr, size, idx, callback);
+    Segment segment(addr, size, idx);
 
     // Let's check for double attachments
-    if(segments.find(segment) != segments.end())
-    {
+    if (util::exist(segments, segment)) {
         auto conflict = segments.find(Segment(addr, size));
         stringstream ss;
         ss << "mem_signal: Could not attach signal, memory segment (" \
@@ -176,29 +163,36 @@ void bh_mem_signal_attach(const void *idx, const void *addr, uint64_t size,
         pthread_mutex_unlock(&signal_mutex);
         throw runtime_error(ss.str());
     }
+    assert(((size_t) addr) % SIGSEGV_FAULT_ADDRESS_ALIGNMENT == 0);
+    assert(size % SIGSEGV_FAULT_ADDRESS_ALIGNMENT == 0);
+    // Let's register it in sigsegv and save it in the segment
+    void *ticket = sigsegv_register(&dispatcher, addr, size, callback, idx);
+    segment.add_callback_and_ticket(callback, ticket);
 
     // Finally, let's insert the new segment
     segments.insert(segment);
     pthread_mutex_unlock(&signal_mutex);
 }
 
-void bh_mem_signal_detach(const void *addr)
-{
+void bh_mem_signal_detach(const void *addr) {
     pthread_mutex_lock(&signal_mutex);
-    segments.erase(addr);
+    auto it = segments.find(addr);
+    if (it != segments.end()) {
+        assert(it->ticket != nullptr);
+        sigsegv_unregister(&dispatcher, it->ticket);
+        segments.erase(it);
+    }
     pthread_mutex_unlock(&signal_mutex);
 }
 
-int bh_mem_signal_exist(const void *addr)
-{
+int bh_mem_signal_exist(const void *addr) {
     int ret;
     pthread_mutex_lock(&signal_mutex);
-    ret = segments.find(addr) != segments.end();
+    ret = util::exist(segments, addr);
     pthread_mutex_unlock(&signal_mutex);
     return ret;
 }
 
-void bh_mem_signal_pprint_db(void)
-{
+void bh_mem_signal_pprint_db(void) {
     cout << segments << endl;
 }

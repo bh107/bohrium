@@ -16,13 +16,13 @@ Source: bohrium
 Section: devel
 Priority: optional
 Maintainer: Bohrium Builder <builder@bh107.org>
-Build-Depends: python-dev, python-numpy, cython, python3-dev, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev, libopenblas-dev, liblapack-dev, liblapacke-dev, libclblas-dev
+Build-Depends: python-dev, python-numpy, cython, python3-dev, python3-numpy, python3-dev, cython3, debhelper, cmake, swig, fftw3-dev, ocl-icd-opencl-dev, libgl-dev, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, freeglut3-dev, libxmu-dev, libxi-dev, zlib1g-dev, libopenblas-dev, liblapack-dev, liblapacke-dev, libclblas-dev, libsigsegv-dev, libsigsegv2
 Standards-Version: 3.9.5
 Homepage: http://www.bh107.org
 
 Package: bohrium
 Architecture: amd64
-Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.8), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, libopenblas-dev, liblapack-dev, liblapacke-dev
+Depends: build-essential, libboost-dev, python (>= 2.7), python-numpy (>= 1.8), fftw3, libboost-serialization-dev, libboost-filesystem-dev, libboost-system-dev, libboost-regex-dev, libhwloc-dev, libopenblas-dev, liblapack-dev, liblapacke-dev, libsigsegv2
 Recommends:
 Suggests: bohrium-opencl, bohrium-visualizer, ipython,
 Description:  Bohrium Runtime System: Automatic Array Parallelization in C, C++, and Python

@@ -111,6 +111,11 @@ set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries"
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
 
+find_package(LibSigSegv REQUIRED)              # Everything
+set_package_properties(LibSigSegv PROPERTIES DESCRIPTION "GNU libsigsegv" URL "www.gnu.org/software/libsigsegv/")
+set_package_properties(LibSigSegv PROPERTIES TYPE REQUIRED PURPOSE "libsigsegv is required to build Bohrium")
+include_directories(${LIBSIGSEGV_INCLUDE_DIR})
+
 #####################
 # Bohrium components
 set(BH_OPENMP_LIBS "")

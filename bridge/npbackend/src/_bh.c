@@ -150,6 +150,7 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
 
     ((BhArray*) obj)->bhc_array = NULL;
     ((BhArray*) obj)->view.initiated = 0;
+    ((BhArray*) obj)->data_in_bhc = 0;
 
     return obj;
 }

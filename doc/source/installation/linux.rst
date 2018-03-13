@@ -32,7 +32,7 @@ To use Anaconda, simply install the Bohrium PIP package in an enviroment::
     source activate my_env
     # Install Bohrium using pip
     pip install bohrium
-    
+
 .. note:: Bohrium requires ``gcc`` in ``$PATH``. E.g. on Ubuntu install the build-essential package: ``sudo apt install build-essential``.
 
 Install From Source Package
@@ -46,7 +46,7 @@ You need to install all packages required to build NumPy::
 
 And some additional packages::
 
-  sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev zlib1g-dev
+  sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev zlib1g-dev libsigsegv-dev
 
 And for python v3 support::
 
