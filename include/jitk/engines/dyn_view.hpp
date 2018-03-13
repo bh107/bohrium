@@ -26,7 +26,7 @@ void slide_views(BhIR *bhir) {
                 // The relevant dimension in the view is updated by the given stride
                 for (size_t i = 0; i < view.slide_strides.size(); i++) {
                     size_t off_dim    = view.slide_dimensions.at(i);
-                    size_t off_stride = view.slide_strides.at(i);
+                    int off_stride = (int) view.slide_strides.at(i);
                     view.start += view.stride[off_dim] * off_stride;
                 }
             }
