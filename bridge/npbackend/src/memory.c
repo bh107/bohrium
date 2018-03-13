@@ -78,6 +78,9 @@ int mem_access_callback(void *addr, void *id) {
     }
     PyErr_Clear();
 
+    // If `addr` is protected, the data of `ary` must be in bhc
+    assert(((BhArray*) ary)->data_in_bhc);
+    // Let's copy the memory from bhc to the numpy address space
     mem_bhc2np((BhArray*)ary);
 
     PyGILState_Release(GIL);
@@ -176,6 +179,7 @@ void mem_bhc2np(BhArray *base_array) {
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
         } else {
+            assert(!bh_mem_signal_exist(d)); // `d` shouldn't be memory protected! 
             _mremap_data(PyArray_DATA((PyArrayObject*) base_array), d, ary_nbytes((BhArray*) base_array));
         }
     } else {

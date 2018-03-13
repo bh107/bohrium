@@ -140,6 +140,9 @@ void bh_mem_signal_shutdown(void) {
             bh_mem_signal_pprint_db();
         }
     }
+    if (initialized) {
+        sigsegv_deinstall_handler();
+    }
     pthread_mutex_unlock(&signal_mutex);
 }
 
