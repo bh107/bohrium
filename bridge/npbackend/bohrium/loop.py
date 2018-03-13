@@ -50,6 +50,7 @@ def do_while(func, niters, *args, **kwargs):
 
     _bh.flush()
     flush_count = _bh.flush_count()
+    args = wrap_arrays(*args)
     cond = func(*args, **kwargs)
     if flush_count != _bh.flush_count():
         raise TypeError("Invalid `func`: the looped function contains operations not support "
@@ -102,6 +103,7 @@ def for_loop(loop_body, niters, *args, **kwargs):
     _bh.flush()
 
     flush_count = _bh.flush_count()
+    args = wrap_arrays(*args)
     loop_body(*args, **kwargs)
     if flush_count != _bh.flush_count():
         raise TypeError("Invalid `func`: the looped function contains operations not support "
@@ -137,10 +139,14 @@ def slide_view(a, dim_stride_tuples):
         _bh.slide_view(b, dim, stride)
     return b
 
+
 def iterator_loop(kernel, niters, *args):
     for_loop(kernel, niters, *args)
 
+
 class iterator(int):
+    '''Iterator integer used for sliding views within loops.'''
+
     def __new__(cls, value, *args, **kwargs):
         return super(iterator, cls).__new__(cls, value)
 
@@ -152,56 +158,31 @@ class iterator(int):
         res = super(iterator, self).__minus__(other)
         return self.__class__(res)
 
+
 def get_iterator(val = 0):
+    '''Returns a iterator with a given starting value'''
     return iterator(val)
 
-def has_iterator(s):
-    return isinstance(s.start, iterator) or \
-           isinstance(s.stop, iterator)
-
-# class it_array(_bh.ndarray):
-#     def __getitem__(self, sliced):
-#         if isinstance(sliced, tuple):
-#             new_slices = ()
-#             slides = []
-#             for i, s in enumerate(sliced):
-#                 if isinstance(s, slice) and has_iterator(s):
-#                     new_slices += (slice(s.start, s.stop),)
-#                     slides.append((i, int(s.step)))
-#             return slide_view(self[new_slices], slides)
-#         elif isinstance(sliced, slice) and has_iterator(sliced):
-#             return slide_view(
-#                 self[sliced.start:sliced.stop],
-#                 [(0, int(sliced.step))])
-#         else:
-#             return self[sliced]
 
 class Wrapper(object):
-    """Wrapper class that provides proxy access to an instance of some
-       internal instance."""
+    '''A wrapper class that proxies another instance. Used for itarray having a proxy to ndarray.'''
 
     __wraps__  = None
-    __ignore__ = "class mro new init setattr getattr getattribute"
+    __ignore__ = "class mro new init setattr getattr getattribute getslice"
 
-    def __init__(self, obj):
-        if self.__wraps__ is None:
-            raise TypeError("base class Wrapper may not be instantiated")
-        elif isinstance(obj, self.__wraps__):
-            self._obj = obj
-        else:
-            raise ValueError("wrapped object must be of %s" % self.__wraps__)
+    def __init__(self, ndarray):
+        self._ndarray = ndarray
 
-    # provide proxy access to regular attributes of wrapped object
+    # proxy for attributes
     def __getattr__(self, name):
-        return getattr(self._obj, name)
+        return getattr(self._ndarray, name)
 
-    # create proxies for wrapped object's double-underscore attributes
+    # proxy for double-underscore attributes
     class __metaclass__(type):
         def __init__(cls, name, bases, dct):
-
             def make_proxy(name):
                 def proxy(self, *args):
-                    return getattr(self._obj, name)
+                    return getattr(self._ndarray, name)
                 return proxy
 
             type.__init__(cls, name, bases, dct)
@@ -212,65 +193,54 @@ class Wrapper(object):
                         if name not in ignore and name not in dct:
                             setattr(cls, name, property(make_proxy(name)))
 
-class it_array(Wrapper):
+
+class itarray(Wrapper):
+    '''An array wrapper that allows using iterators in views during loops iterations'''
     __wraps__ = _bh.ndarray
 
-    def __getslice__(self, a, b):
-        return slide_view(self._obj[a:b], [(0,1)])
-
     def __getitem__(self, sliced):
-        if isinstance(sliced, tuple):
+        '''Method for handling getting a single item or a single with multiple dimesions and/or step size.'''
+
+        def has_iterator(s):
+            '''Checks whether a slice has an iterator'''
+            return isinstance(s.start, iterator) or \
+                isinstance(s.stop, iterator)
+
+        # A single iterator (eg. a[i])
+        if isinstance(sliced, iterator):
+            return slide_view(self._ndarray[sliced], [(0, 1)])
+        # A slice with optional step size (eg. a[i:i+1] or a[i:i+1:2])
+        elif isinstance(sliced, slice) and has_iterator(sliced):
+           if sliced.step:
+            return slide_view(
+                self._ndarray[sliced.start:sliced.stop],
+                [(0, int(sliced.step))])
+           else:
+               return slide_view(
+                   self._ndarray[sliced.start:sliced.stop],
+                   [(0, 1)])
+        # A multidimension slice with optional step size
+        # (eg. a[i:i+1, i+2:i+5] or a[i:i+1:2, i+2:i+5:4])
+        elif isinstance(sliced, tuple):
             new_slices = ()
             slides = []
             for i, s in enumerate(sliced):
                 if isinstance(s, slice) and has_iterator(s):
                     new_slices += (slice(s.start, s.stop),)
                     slides.append((i, int(s.step)))
-            return slide_view(self._obj[new_slices], slides)
-        elif isinstance(sliced, slice) and has_iterator(sliced):
-            if sliced.step:
-                return slide_view(
-                    self._obj[sliced.start:sliced.stop],
-                    [(0, int(sliced.step))])
-            else:
-                return slide_view(
-                    self._obj[sliced.start:sliced.stop],
-                    [(0, 1)])
+            return slide_view(self._ndarray[new_slices], slides)
+        # Slice doesn't contain iterators, handle it normally
         else:
-            return self._obj[sliced]
+            return self._ndarray[sliced]
 
 
-
-# class it_array(object):
-#     def __init__(self, a):
-#         self.array = a
-
-#     def __getitem__(self, sliced):
-#         print("WHAAATTZZ")
-#         if isinstance(sliced, tuple):
-#             new_slices = ()
-#             slides = []
-#             for i, s in enumerate(sliced):
-#                 if isinstance(s, slice) and has_iterator(s):
-#                     new_slices += (slice(s.start, s.stop),)
-#                     slides.append((i, int(s.step)))
-#             return slide_view(self.array[new_slices], slides)
-#         elif isinstance(sliced, slice) and has_iterator(sliced):
-#             if sliced.step:
-#                 return slide_view(
-#                     self.array[sliced.start:sliced.stop],
-#                     [(0, int(sliced.step))])
-#             else:
-#                 return slide_view(
-#                     self.array[sliced.start:sliced.stop],
-#                     [(0, 1)])
-
-#         else:
-#             return self.array
-
-#    def __setitem__(self, *args):
-#        self.array.__setitem__(*args)
-
-#    def __getattr__(*args):
-
-#        self.array.__getattribute__(*args)
+def wrap_arrays(*args):
+    '''Wraps arrays with itarray for handling
+       sliding views between loop iterations'''
+    new_args = ()
+    for i in range(len(args)):
+        if isinstance(args[i], _bh.ndarray):
+            new_args += (itarray(args[i]),)
+        else:
+            new_args += (args[i],)
+    return new_args
