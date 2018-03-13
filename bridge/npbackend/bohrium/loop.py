@@ -140,10 +140,6 @@ def slide_view(a, dim_stride_tuples):
     return b
 
 
-def iterator_loop(kernel, niters, *args):
-    for_loop(kernel, niters, *args)
-
-
 class iterator(int):
     '''Iterator integer used for sliding views within loops.'''
 
@@ -154,8 +150,16 @@ class iterator(int):
         res = super(iterator, self).__add__(other)
         return self.__class__(res)
 
-    def __minus__(self, other):
-        res = super(iterator, self).__minus__(other)
+    def __radd__(self, other):
+        res = super(iterator, self).__add__(other)
+        return self.__class__(res)
+
+    def __sub__(self, other):
+        res = super(iterator, self).__sub__(other)
+        return self.__class__(res)
+
+    def __rsub__(self, other):
+        res = super(iterator, self).__sub__(other)
         return self.__class__(res)
 
 
@@ -198,9 +202,15 @@ class itarray(Wrapper):
     '''An array wrapper that allows using iterators in views during loops iterations'''
     __wraps__ = _bh.ndarray
 
+    def __setitem__(self, sliced, b):
+        '''Method for setting values. Handles the special case with assigning to an array with a single index.'''
+        if isinstance(sliced, slice):
+            self._ndarray.__setitem__(sliced, b)
+        else:
+            self._ndarray.__setitem__(slice(sliced, sliced+1), b)
+
     def __getitem__(self, sliced):
         '''Method for handling getting a single item or a single with multiple dimesions and/or step size.'''
-
         def has_iterator(s):
             '''Checks whether a slice has an iterator'''
             return isinstance(s.start, iterator) or \
@@ -208,14 +218,14 @@ class itarray(Wrapper):
 
         # A single iterator (eg. a[i])
         if isinstance(sliced, iterator):
-            return slide_view(self._ndarray[sliced], [(0, 1)])
+            return slide_view(self._ndarray[slice(sliced,sliced+1)], [(0, 1)])
         # A slice with optional step size (eg. a[i:i+1] or a[i:i+1:2])
         elif isinstance(sliced, slice) and has_iterator(sliced):
-           if sliced.step:
-            return slide_view(
-                self._ndarray[sliced.start:sliced.stop],
-                [(0, int(sliced.step))])
-           else:
+            if sliced.step:
+                return slide_view(
+                    self._ndarray[sliced.start:sliced.stop],
+                    [(0, int(sliced.step))])
+            else:
                return slide_view(
                    self._ndarray[sliced.start:sliced.stop],
                    [(0, 1)])
@@ -231,7 +241,10 @@ class itarray(Wrapper):
             return slide_view(self._ndarray[new_slices], slides)
         # Slice doesn't contain iterators, handle it normally
         else:
-            return self._ndarray[sliced]
+            if isinstance(sliced, slice):
+                return self._ndarray[sliced]
+            else:
+                return self._ndarray[sliced:sliced+1]
 
 
 def wrap_arrays(*args):
