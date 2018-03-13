@@ -32,12 +32,6 @@ WORKDIR /b
 # Use Python 2.7 for the reset of the installation
 ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
 
-# Install Python dependencies
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install numpy cython scipy
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install 'subprocess32==3.5.0rc1'
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install matplotlib netCDF4
-RUN PATH=/opt/python/cp36-cp36m/bin:$PATH  pip install numpy cython scipy matplotlib netCDF4
-
 # Install AMD SDK for OpenCL (/opt/AMDAPPSDK-2.9-1)
 RUN yum install -y redhat-lsb
 RUN mkdir -p amd_src
@@ -67,6 +61,17 @@ RUN ldconfig
 # Install GNU's libsigsegv
 RUN yum install -y libsigsegv-devel
 
+# Install Python build dependencies
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install 'subprocess32==3.5.0rc1'
+RUN PATH=/opt/python/cp34-cp34m/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
+RUN PATH=/opt/python/cp35-cp35m/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
+RUN PATH=/opt/python/cp36-cp36m/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
+
+# Install Python test dependencies
+RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install matplotlib netCDF4
+RUN PATH=/opt/python/cp36-cp36m/bin:$PATH pip install matplotlib netCDF4
+
 # Install deploy dependencies
 RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install twine
 
@@ -74,5 +79,4 @@ RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install twine
 WORKDIR /
 RUN rm -Rf /b
 RUN yum clean all
-
 
