@@ -91,7 +91,7 @@ struct Segment {
 //Pretty print of Segment
 ostream &operator<<(ostream &out, const Segment &segment) {
     out << segment.idx << "{addr: " << segment.addr_begin() << " - "
-        << segment.addr_end() << "}";
+        << segment.addr_end() << ", ticket: " << segment.ticket << "}";
     return out;
 }
 
@@ -106,7 +106,12 @@ ostream &operator<<(ostream &out, const set<Segment> &segments) {
 // sigsegv boilerplate
 static sigsegv_dispatcher dispatcher;
 static int handler(void *fault_address, int serious) {
-    return sigsegv_dispatch(&dispatcher, fault_address);
+    // We only handle serious faults and not potential faults such as stack overflows
+    if (serious == 1) {
+        return sigsegv_dispatch(&dispatcher, fault_address);
+    } else {
+        return 0;
+    }
 }
 
 // All registered memory segments
@@ -119,7 +124,7 @@ void bh_mem_signal_init(void) {
     pthread_mutex_lock(&signal_mutex);
     if (!initialized) {
         sigsegv_init (&dispatcher);
-        if (sigsegv_install_handler (&handler) == -1) {
+        if (sigsegv_install_handler(&handler) == -1) {
             throw runtime_error("System cannot catch SIGSEGV");
         }
     }

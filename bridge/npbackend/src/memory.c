@@ -81,7 +81,7 @@ int mem_access_callback(void *addr, void *id) {
     mem_bhc2np((BhArray*)ary);
 
     PyGILState_Release(GIL);
-    return 0;
+    return 1;
 }
 
 // Help function for protecting the memory of the NumPy part of 'ary'
@@ -100,6 +100,7 @@ static void _mprotect_np_part(BhArray *ary) {
         assert(1 == 2);
         exit(-1);
     }
+    assert(((BhArray*) ary)->data_in_bhc);
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
 }
 
@@ -151,6 +152,7 @@ void protected_malloc(BhArray *ary) {
     // Let's save the pointer to the NumPy allocated memory and use the mprotect'ed memory instead
     ary->npy_data = ary->base.data;
     ary->base.data = addr;
+    assert(((BhArray*) ary)->data_in_bhc);
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
     ary->data_in_bhc = 1;
 }

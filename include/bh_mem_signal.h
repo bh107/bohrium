@@ -48,7 +48,8 @@ void bh_mem_signal_shutdown(void);
  * @param addr - Start address of memory segment.
  * @param size - Size of memory segment in bytes
  * @param callback - Callback function which is executed when segfault hits in the memory
- *                   segment. The function is called with the address pointer and the memory segment idx
+ *                   segment. The function is called with the address pointer and the memory segment idx.
+ *                   NB: the function must return non-zero on success
  */
 void bh_mem_signal_attach(void *idx, void *addr, uint64_t size, bh_mem_signal_callback_t callback);
 
