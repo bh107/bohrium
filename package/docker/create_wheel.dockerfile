@@ -20,6 +20,18 @@ RUN bash /bh/wheel.sh 2.7
 RUN pip install /bh/b2.7/dist/*
 RUN pip install benchpress
 
+# Build Bohrium with python3.4
+ENV PATH /opt/python/cp34-cp34m/bin/:$PATH
+RUN bash /bh/build.sh 3.4
+RUN bash /bh/wheel.sh 3.4
+RUN pip install /bh/b3.4/dist/*
+
+# Build Bohrium with python3.5
+ENV PATH /opt/python/cp35-cp35m/bin/:$PATH
+RUN bash /bh/build.sh 3.5
+RUN bash /bh/wheel.sh 3.5
+RUN pip install /bh/b3.5/dist/*
+
 # Build Bohrium with python3.6
 ENV PATH /opt/python/cp36-cp36m/bin/:$PATH
 RUN bash /bh/build.sh 3.6
@@ -41,3 +53,4 @@ RUN echo "#/usr/bin/env bash" > exec.sh && \
 
 # Run the command in `EXEC`
 ENTRYPOINT echo "$EXEC" >> exec.sh && sleep 1 && cat exec.sh && ./exec.sh
+
