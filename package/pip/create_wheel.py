@@ -105,6 +105,14 @@ def _regex_replace(pattern, repl, src):
     return re.sub(pattern, repl, src)
 
 
+def _update_rpath(filename_list, rpath):
+    """Update the RPATH of the files in `filename_list`"""
+    for filename in filename_list:
+        cmd = "patchelf --set-rpath '%s' %s" % (rpath, filename)
+        print(cmd)
+        subprocess.check_call(cmd, shell=True)
+
+
 # Copy the include dir for the JIT compilation into the Python package
 _copy_dirs(join(args_extra.bh_install_prefix, "share", "bohrium", "include"),
            join(args_extra.npbackend_dir, "include"))
@@ -136,24 +144,13 @@ if args_extra.bin is not None:
 
 
 # Update the RPATH of the Python extensions to look in the the `lib64` dir
-for filename in glob.glob(join(args_extra.npbackend_dir, '*.so')):
-    cmd = "patchelf --set-rpath '$ORIGIN/lib64' %s" % filename
-    print(cmd)
-    subprocess.check_call(cmd, shell=True)
-
+_update_rpath(glob.glob(join(args_extra.npbackend_dir, '*.so')), '$ORIGIN/lib64')
 
 # Update the RPATH of Bohrium's shared libraries to look in the current dir
-for filename in glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')):
-    cmd = "patchelf --set-rpath '$ORIGIN' %s" % filename
-    print(cmd)
-    subprocess.check_call(cmd, shell=True)
-
+_update_rpath(glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')), '$ORIGIN')
 
 # Update the RPATH of Bohrium's binaries to look in the current dir
-for filename in glob.glob(join(args_extra.npbackend_dir, 'bin', '*')):
-    cmd = "patchelf --set-rpath '$ORIGIN/../lib64' %s" % filename
-    print(cmd)
-    subprocess.check_call(cmd, shell=True)
+_update_rpath(glob.glob(join(args_extra.npbackend_dir, 'bin', '*')), '$ORIGIN/../lib64')
 
 
 # Write a modified config file to the Python package dir
