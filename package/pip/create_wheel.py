@@ -26,6 +26,12 @@ parser.add_argument(
     help='Path to the Python library of Bohrium'
 )
 parser.add_argument(
+    '--lib-dir-name',
+    type=str,
+    default='lib64',
+    help='Name of the shared library folder'
+)
+parser.add_argument(
     '--config',
     type=argparse.FileType('r'),
     help='Path to the Bohrium config file'
@@ -58,17 +64,6 @@ args_extra.npbackend_dir = os.path.abspath(args_extra.npbackend_dir)
 def _script_path():
     """Returns the path to the dir this script is in"""
     return os.path.dirname(os.path.realpath(__file__))
-
-
-def _li1st_files(path, prefix=None, regex_include="\.so|\.ini|\.dylib"):
-    """Returns a list of filenames of the files in `path`"""
-    ret = []
-    for f in os.listdir(path):
-        if re.search(regex_include, f):
-            if prefix is not None:
-                f = prefix + f
-            ret.append(f)
-    return ret
 
 
 def _find_data_files(root_path, regex_exclude=None, regex_include=None):
@@ -133,7 +128,8 @@ _copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "pyth
 
 
 # Copy Bohrium's shared libraries into the Python package
-_copy_files(join(args_extra.bh_install_prefix, 'lib64', 'lib*'), join(args_extra.npbackend_dir, "lib64"))
+_copy_files(join(args_extra.bh_install_prefix, args_extra.lib_dir_name, 'lib*'),
+            join(args_extra.npbackend_dir, "lib64"))
 
 
 # Copy extra libraries specified by the user
@@ -150,6 +146,7 @@ if args_extra.bin is not None:
 
 # Update the RPATH of the Python extensions to look in the the `lib64` dir
 _update_rpath(glob.glob(join(args_extra.npbackend_dir, '*.so')), '$ORIGIN/lib64')
+_update_rpath(glob.glob(join(args_extra.npbackend_dir, '*.dylib')), '$ORIGIN/lib64')
 
 # Update the RPATH of Bohrium's shared libraries to look in the current dir
 _update_rpath(glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')), '$ORIGIN')
