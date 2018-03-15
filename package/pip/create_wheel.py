@@ -108,6 +108,10 @@ def _regex_replace(pattern, repl, src):
 
 def _update_rpath(filename_list, rpath):
     """Update the RPATH of the files in `filename_list`"""
+
+    if platform.system() == "Darwin":
+        return
+
     for filename in filename_list:
         cmd = "patchelf --set-rpath '%s' %s" % (rpath, filename)
         print(cmd)
