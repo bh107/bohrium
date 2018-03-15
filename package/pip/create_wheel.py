@@ -12,6 +12,7 @@ import sys
 import shutil
 import glob
 import subprocess
+import platform
 from os.path import join
 
 # We overload the setup.py with some extra arguments
@@ -209,7 +210,11 @@ class taged_bdist_wheel(bdist_wheel):
         impl_name = pep425tags.get_abbr_impl()
         impl_ver = pep425tags.get_impl_ver()
         abi_tag = str(pep425tags.get_abi_tag()).lower()
-        return (impl_name + impl_ver, abi_tag, "manylinux1_x86_64")
+        if platform.system() == "Linux":  # Building on Linux, we assume `manylinux1_x86_64`
+            plat_name = "manylinux1_x86_64"
+        else:
+            plat_name = pep425tags.get_platform()
+        return (impl_name + impl_ver, abi_tag, plat_name)
 
 
 # Finally, we call the setup
