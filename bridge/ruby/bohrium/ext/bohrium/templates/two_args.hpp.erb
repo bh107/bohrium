@@ -2,23 +2,6 @@
 
 using namespace std;
 
-inline bool is_constant(VALUE val) {
-    switch (TYPE(val)) {
-        case T_DATA:
-            return false;
-            break;
-        case T_FIXNUM:
-        case T_BIGNUM:
-        case T_FLOAT:
-        case T_TRUE:
-        case T_FALSE:
-            return true;
-            break;
-        default:
-            rb_raise(rb_eRuntimeError, "Invalid type.");
-    }
-}
-
 <% @opcodes_two_args.each do |m, hash| %>
 <%
     types = hash[:types]
@@ -33,14 +16,14 @@ inline bool is_constant(VALUE val) {
 */
 template <typename T>
 inline void _<%= m %>(bhDataObj<T>* result, bhDataObj<T>* selfObj, bhDataObj<T>* otherObj) {
-    bhxx::BhArray<T> selfArray = selfObj->bhary;
-    bhxx::BhArray<T> otherArray = otherObj->bhary;
-    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(selfArray.shape));
+    bhxx::BhArray<T>* selfArray  = get_bhary(selfObj);
+    bhxx::BhArray<T>* otherArray = otherObj->bhary;
+    bhxx::BhArray<T>* bhary      = new bhxx::BhArray<T>(selfArray->shape);
 
-    bhxx::<%= m %>(bhary, selfArray, otherArray);
+    bhxx::<%= m %>(*bhary, *selfArray, *otherArray);
 
     result->bhary = bhary;
-    result->type = selfObj->type;
+    result->type  = selfObj->type;
 }
 
 /**
@@ -51,10 +34,10 @@ inline void _<%= m %>(bhDataObj<T>* result, bhDataObj<T>* selfObj, bhDataObj<T>*
 */
 template <typename T>
 inline void _<%= m %>_bang(bhDataObj<T>* selfObj, bhDataObj<T>* otherObj) {
-    bhxx::BhArray<T> selfArray = selfObj->bhary;
-    bhxx::BhArray<T> otherArray = otherObj->bhary;
+    bhxx::BhArray<T>* selfArray  = get_bhary(selfObj);
+    bhxx::BhArray<T>* otherArray = otherObj->bhary;
 
-    bhxx::<%= m %>(selfArray, selfArray, otherArray);
+    bhxx::<%= m %>(*selfArray, *selfArray, *otherArray);
 }
 
 <% if has_constant %>
@@ -67,13 +50,13 @@ inline void _<%= m %>_bang(bhDataObj<T>* selfObj, bhDataObj<T>* otherObj) {
 */
 template <typename T>
 inline void _<%= m %>_constant(bhDataObj<T>* result, bhDataObj<T>* selfObj, T value) {
-    bhxx::BhArray<T> selfArray = selfObj->bhary;
-    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(selfArray.shape));
+    bhxx::BhArray<T>* selfArray = get_bhary(selfObj);
+    bhxx::BhArray<T>* bhary     = new bhxx::BhArray<T>(selfArray->shape);
 
-    bhxx::<%= m %>(bhary, selfArray, value);
+    bhxx::<%= m %>(*bhary, *selfArray, value);
 
     result->bhary = bhary;
-    result->type = selfObj->type;
+    result->type  = selfObj->type;
 }
 
 /**
@@ -84,8 +67,8 @@ inline void _<%= m %>_constant(bhDataObj<T>* result, bhDataObj<T>* selfObj, T va
 */
 template <typename T>
 inline void _<%= m %>_constant_bang(bhDataObj<T>* selfObj, T value) {
-    bhxx::BhArray<T> selfArray = selfObj->bhary;
-    bhxx::<%= m %>(selfArray, selfArray, value);
+    bhxx::BhArray<T>* selfArray = get_bhary(selfObj);
+    bhxx::<%= m %>(*selfArray, *selfArray, value);
 }
 <% end %>
 

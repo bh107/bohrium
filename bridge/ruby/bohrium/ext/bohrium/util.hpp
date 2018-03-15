@@ -2,6 +2,26 @@
 
 using namespace std;
 
+template <typename T>
+void del_bhc(bhDataObj<T>* dataObj);
+
+inline bool is_constant(VALUE val) {
+    switch (TYPE(val)) {
+        case T_DATA:
+            return false;
+            break;
+        case T_FIXNUM:
+        case T_BIGNUM:
+        case T_FLOAT:
+        case T_TRUE:
+        case T_FALSE:
+            return true;
+            break;
+        default:
+            rb_raise(rb_eRuntimeError, "Invalid type.");
+    }
+}
+
 /**
     Returns the element at index `i` of `ary` with type T.
 
@@ -30,6 +50,20 @@ T _get(VALUE ary, unsigned long i) {
     }
 }
 
+VALUE bh_flush(VALUE self) {
+    bhxx::Runtime::instance().flush();
+    return Qnil;
+}
+
+void bh_array_free(bhDataObj<int64_t>* dataObj) {
+    del_bhc(dataObj);
+    delete dataObj;
+}
+
+void bh_array_mark(bhDataObj<int64_t>* dataObj) {
+    // No-op, as we have no Ruby values to mark for garbage collection.
+}
+
 /**
     Allocate memory for the data object on the Ruby object.
 
@@ -37,8 +71,82 @@ T _get(VALUE ary, unsigned long i) {
     @return The newly allocated Ruby object.
 */
 VALUE bh_array_alloc(VALUE klass) {
-    void* ptr;
-    return Data_Make_Struct(klass, bhDataObj<int64_t>, NULL, RUBY_DEFAULT_FREE, ptr);
+    bhDataObj<int64_t>* dataObj;
+    return Data_Make_Struct(klass, bhDataObj<int64_t>, bh_array_mark, bh_array_free, dataObj);
+}
+
+template <typename T>
+bhDataObj<T>* get_parent(bhDataObj<T>* dataObj) {
+    if (dataObj->parent == nullptr) {
+        return dataObj;
+    }
+
+    bhDataObj<T>* parent = dataObj->parent;
+    while (parent != nullptr) {
+        parent = parent->parent;
+    }
+
+    return parent;
+}
+
+template <typename T, typename S>
+bool identical_views(bhxx::BhArray<T>* bhary, bhxx::BhArray<S>* otherary) {
+    if (!std::is_same<T, S>::value) {
+        return false;
+    } else if (bhary->shape != otherary->shape) {
+        return false;
+    } else if (bhary->stride != otherary->stride) {
+        return false;
+    }
+
+    size_t v1_offset = bhary->offset;
+    size_t v2_offset = otherary->offset;
+
+    return v1_offset == v2_offset;
+}
+
+template <typename T>
+void del_bhc(bhDataObj<T>* dataObj) {
+    delete dataObj->bhary;
+    delete dataObj->view;
+
+    bhDataObj<T>* parent = get_parent(dataObj);
+    if (parent == dataObj) {
+        // dataObj has no parent
+        dataObj->bhary_version += 1;
+    } else {
+        del_bhc(parent);
+    }
+}
+
+template <typename T>
+bhxx::BhArray<T>* get_bhary(bhDataObj<T>* dataObj) {
+    bhDataObj<T>* parent = get_parent<T>(dataObj);
+
+    // There exists a view
+    if (dataObj->view != nullptr) {
+        // This view has the same version as the parents array version
+        if (parent->bhary_version == dataObj->view_version) {
+            // The views are identical
+            if (identical_views(dataObj->bhary, dataObj->view)) {
+                return dataObj->view;
+            } else {
+                dataObj->view = nullptr;
+            }
+        }
+    }
+
+    bhxx::BhArray<T>* ret = new bhxx::BhArray<T>(
+        parent->bhary->base,
+        dataObj->bhary->shape,
+        dataObj->bhary->stride,
+        dataObj->bhary->offset
+    );
+
+    dataObj->view = ret;
+    dataObj->view_version = parent->bhary_version;
+
+    return ret;
 }
 
 /**
@@ -53,18 +161,18 @@ inline void _print_to(VALUE self, ostream &ss) {
     switch (tmpObj->type) {
         case T_FIXNUM: {
             UNPACK(int64_t, dataObj);
-            dataObj->bhary.pprint(ss);
+            get_bhary(dataObj)->pprint(ss);
             break;
         }
         case T_FLOAT: {
             UNPACK(float, dataObj);
-            dataObj->bhary.pprint(ss);
+            get_bhary(dataObj)->pprint(ss);
             break;
         }
         case T_TRUE:
         case T_FALSE: {
             UNPACK(bool, dataObj);
-            dataObj->bhary.pprint(ss);
+            get_bhary(dataObj)->pprint(ss);
             break;
         }
         default:
@@ -126,7 +234,7 @@ template <typename T>
 inline void _to_ary(VALUE self, VALUE rb_ary) {
     UNPACK(T, dataObj);
 
-    bhxx::BhArray<T> bh_view = bhxx::as_contiguous(dataObj->bhary);
+    bhxx::BhArray<T> bh_view = bhxx::as_contiguous(*(get_bhary(dataObj)));
     bhxx::Runtime::instance().sync(bh_view.base);
     bhxx::Runtime::instance().flush();
 
@@ -194,7 +302,7 @@ VALUE bh_array_m_to_ary(VALUE self) {
 */
 VALUE bh_array_m_size(VALUE self) {
     UNPACK(int64_t, dataObj);
-    return INT2NUM(dataObj->bhary.numberOfElements());
+    return INT2NUM(get_bhary(dataObj)->numberOfElements());
 }
 
 /**
@@ -207,7 +315,7 @@ VALUE bh_array_m_shape(VALUE self) {
     UNPACK(int64_t, dataObj);
     VALUE rb_ary = rb_ary_new();
 
-    bhxx::Shape shape(dataObj->bhary.shape);
+    bhxx::Shape shape(get_bhary(dataObj)->shape);
     for (auto it : shape) {
         rb_ary_push(rb_ary, INT2NUM(it));
     }
@@ -265,9 +373,12 @@ VALUE bh_array_m_reshape(VALUE self, VALUE new_shape) {
 
     try {
         UNPACK_(int64_t, newObj, returnObj);
-
-        newObj->bhary = bhxx::reshape(dataObj->bhary, shape);
-        newObj->type = dataObj->type;
+        bhxx::BhArray<int64_t>* bhary = new bhxx::BhArray<int64_t>(get_bhary(dataObj)->shape);
+        bhxx::identity(*bhary, *(get_bhary(dataObj)));
+        bhary->shape  = shape;
+        bhary->stride = contiguous_stride(shape);
+        newObj->bhary = bhary;
+        newObj->type  = dataObj->type;
     } catch(const std::runtime_error& e) {
         // Convert potential C++ error to Ruby exception.
         rb_raise(rb_eRuntimeError, "%s", e.what());
@@ -275,14 +386,6 @@ VALUE bh_array_m_reshape(VALUE self, VALUE new_shape) {
 
     return returnObj;
 }
-
-
-// TODO: DONE! Create view from indexes given. E.g. ary[0]
-// TODO: DONE! Arguments can be ranges, in which case we want the range view. E.g. ary[0..5]
-// TODO: One argument per dimension. Only return the dimensions specified. E.g. ary[0..5, 0..5]
-// TODO: DONE! 'true' will give the entire dimension. E.g. ary[true, 0..5]
-// TODO: ':new' will add an axis E.g. ary[true, :new, 5]
-
 
 /**
     Get a shape from a set of ranges.
@@ -314,26 +417,24 @@ inline bhxx::Shape* _shape_from_range(int num_ranges, VALUE *end, size_t stride_
     @return The array which has the shape of the view on the data.
 */
 template <typename T>
-inline bhxx::BhArray<T> _view_from_ranges(bhDataObj<T>* dataObj, int num_ranges, VALUE *end) {
-    bhxx::Shape _shape = *_shape_from_range(num_ranges, end, dataObj->bhary.stride.size());
+inline bhxx::BhArray<T>* _view_from_ranges(bhDataObj<T>* dataObj, int num_ranges, VALUE *end) {
+    bhxx::Shape _shape = *_shape_from_range(num_ranges, end, get_bhary(dataObj)->stride.size());
     // Only allow same stride for now.
-    bhxx::Stride _stride(dataObj->bhary.stride);
+    bhxx::Stride _stride(get_bhary(dataObj)->stride);
 
     size_t start = _get<int64_t>(end[0], 0);
     if (num_ranges == 2) {
-        start *= dataObj->bhary.shape[1];
+        start *= get_bhary(dataObj)->shape[1];
         start += _get<int64_t>(end[1], 0);
     }
 
     // Create new array, that share the same base.
-    bhxx::BhArray<T>* res = new bhxx::BhArray<T>(
-        dataObj->bhary.base,
+    return new bhxx::BhArray<T>(
+        get_bhary(dataObj)->base,
         _shape,
         _stride,
         start
     );
-
-    return *res;
 }
 
 /**
@@ -355,14 +456,14 @@ VALUE bh_array_m_view_from_ranges(int argc, VALUE *argv, VALUE self) {
             UNPACK(int64_t, dataObj);
             UNPACK_(int64_t, newObj, returnObj);
             newObj->bhary = _view_from_ranges<int64_t>(dataObj, argc, argv);
-            newObj->type = dataObj->type;
+            newObj->type  = dataObj->type;
             break;
         }
         case T_FLOAT: {
             UNPACK(float, dataObj);
             UNPACK_(float, newObj, returnObj);
             newObj->bhary = _view_from_ranges<float>(dataObj, argc, argv);
-            newObj->type = dataObj->type;
+            newObj->type  = dataObj->type;
             break;
         }
         case T_TRUE:
@@ -370,7 +471,7 @@ VALUE bh_array_m_view_from_ranges(int argc, VALUE *argv, VALUE self) {
             UNPACK(bool, dataObj);
             UNPACK_(bool, newObj, returnObj);
             newObj->bhary = _view_from_ranges<bool>(dataObj, argc, argv);
-            newObj->type = dataObj->type;
+            newObj->type  = dataObj->type;
             break;
         }
         default:
@@ -386,21 +487,21 @@ VALUE bh_array_m_view_from_ranges(int argc, VALUE *argv, VALUE self) {
 template <typename T>
 inline void _set_from_ranges(bhDataObj<T>* dataObj, int num_ranges, VALUE *end, VALUE val) {
     // Get the view from the ranges
-    bhxx::BhArray<T> view = _view_from_ranges<T>(dataObj, num_ranges, end);
+    bhxx::BhArray<T>* view = _view_from_ranges<T>(dataObj, num_ranges, end);
 
     // If the value type is a single value, we broadcast it to the entire view.
     switch(TYPE(val)) {
         case T_FIXNUM:
-            bhxx::identity(view, NUM2INT(val));
+            bhxx::identity(*view, NUM2INT(val));
             break;
         case T_FLOAT:
-            bhxx::identity(view, NUM2DBL(val));
+            bhxx::identity(*view, NUM2DBL(val));
             break;
         case T_TRUE:
-            bhxx::identity(view, true);
+            bhxx::identity(*view, true);
             break;
         case T_FALSE:
-            bhxx::identity(view, false);
+            bhxx::identity(*view, false);
             break;
         case T_ARRAY:
             // This case should be handled from Ruby.
@@ -411,7 +512,7 @@ inline void _set_from_ranges(bhDataObj<T>* dataObj, int num_ranges, VALUE *end, 
             if (RBASIC_CLASS(val) == cBhArray) {
                 // If the value type is another array, we set the current view equal to that view.
                 UNPACK_(int64_t, dataObj, val);
-                bhxx::identity(view, dataObj->bhary);
+                bhxx::identity(*view, *(get_bhary(dataObj)));
             } else {
                 rb_raise(rb_eRuntimeError, "Got invalid type while setting values in array.");
             }

@@ -15,9 +15,12 @@ VALUE cBhArray;
 */
 template <typename T>
 struct bhDataObj {
-    ruby_value_type type   = T_FIXNUM;
-    bhxx::BhArray<T> bhary = nullptr;
-    bhxx::BhArray<T> view  = bhary;
+    ruby_value_type type    = T_FIXNUM;
+    bhDataObj<T>* parent    = nullptr;
+    bhxx::BhArray<T>* bhary = nullptr;
+    uint32_t bhary_version  = 0;
+    bhxx::BhArray<T>* view  = nullptr;
+    uint32_t view_version   = 0;
 };
 
 #include "util.hpp"
@@ -25,6 +28,7 @@ struct bhDataObj {
 #include "one_arg.hpp"
 #include "two_args.hpp"
 #include "two_args_constant.hpp"
+#include "two_args_boolean_result.hpp"
 
 using namespace std;
 
@@ -48,8 +52,8 @@ void _initialize(VALUE self, VALUE ary, ruby_value_type type) {
     shared_ptr<bhxx::BhBase> _base = bhxx::make_base_ptr(data_array.begin(), data_array.end());
 
     // TODO: For now we only allow one-dimensional input
-    dataObj->bhary = *(new bhxx::BhArray<T>(_base, {size}));
-    dataObj->type = type;
+    dataObj->bhary = new bhxx::BhArray<T>(_base, {size});
+    dataObj->type  = type;
 }
 
 /**
@@ -90,6 +94,9 @@ VALUE bh_array_m_initialize(VALUE self, VALUE ary) {
 }
 
 extern "C" void Init_bohrium() {
+    VALUE mBohrium = rb_define_module("Bohrium");
+    rb_define_module_function(mBohrium, "flush", F(bh_flush), 0);
+
     // Define 'BhArray' class and #initialize method
     cBhArray = rb_define_class("BhArray", rb_cObject);
     rb_define_alloc_func(cBhArray, bh_array_alloc);
@@ -99,8 +106,12 @@ extern "C" void Init_bohrium() {
     rb_define_singleton_method(cBhArray, "ones",   F(bh_array_s_ones),   -1);
     rb_define_singleton_method(cBhArray, "zeros",  F(bh_array_s_zeros),  -1);
     rb_define_singleton_method(cBhArray, "arange", F(bh_array_s_arange),  1);
+    rb_define_singleton_method(cBhArray, "seq",    F(bh_array_s_arange),  1); // Not an alias, since it's a singleton method
 
     // Bohrium specific methods
+    <% @opcodes_two_args_boolean_result.keys.sort.each do |name| %>
+    rb_define_method(cBhArray, "<%= name %>",  F(bh_array_m_<%= name%>),      1);
+    <% end %>
 
     // `name` and `name!`, with one argument
     <% @opcodes_two_args_constant.keys.sort.each do |name| %>
@@ -122,11 +133,20 @@ extern "C" void Init_bohrium() {
     // The `bh_array_m_"name"` methods have already been created above.
     <%
     {
-        "add"      => "+",
-        "subtract" => "-",
-        "multiply" => "*",
-        "divide"   => "/",
-        "power"    => "**"
+        "add"           => "+",
+        "subtract"      => "-",
+        "multiply"      => "*",
+        "divide"        => "/",
+        "power"         => "**",
+
+        "less"          => "<",
+        "less_equal"    => "<=",
+        "greater"       => ">",
+        "greater_equal" => ">=",
+        "equal"         => "==",
+        "not_equal"     => "!=",
+        "logical_and"   => "&&",
+        "logical_or"    => "||"
     }.each do |name, sym|
     %>
     rb_define_method(cBhArray, "<%= sym %>", F(bh_array_m_<%= name %>), 1);
@@ -139,10 +159,11 @@ extern "C" void Init_bohrium() {
     rb_define_method(cBhArray, "size",    F(bh_array_m_size),   0);
     rb_define_method(cBhArray, "shape",   F(bh_array_m_shape),  0);
     rb_define_method(cBhArray, "print",   F(bh_array_m_print),  0);
-    rb_define_method(cBhArray, "to_ary",  F(bh_array_m_to_ary), 0);
-    rb_define_method(cBhArray, "to_a",    F(bh_array_m_to_ary), 0);
-    rb_define_method(cBhArray, "inspect", F(bh_array_m_to_ary), 0);
     rb_define_method(cBhArray, "type",    F(bh_array_m_type),   0);
+    rb_define_method(cBhArray, "to_ary",  F(bh_array_m_to_ary), 0);
+
+    rb_define_alias(cBhArray, "to_a", "to_ary");
+    rb_define_alias(cBhArray, "inspect", "to_ary");
 
     rb_define_private_method(cBhArray, "view_from_ranges", F(bh_array_m_view_from_ranges), -1);
     rb_define_private_method(cBhArray, "set_from_ranges",  F(bh_array_m_set_from_ranges),  -1);

@@ -1,0 +1,86 @@
+#pragma once
+
+using namespace std;
+
+<% @opcodes_two_args_boolean_result.each do |m, hash| %>
+<%
+    types = hash[:types]
+    has_constant = hash[:layouts].include?(["A", "A", "K"])
+%>
+/**
+    <%= m.capitalize %> two Bohrium arrays of type T.
+
+    @param result The resulting array.
+    @param selfObj The calling object.
+    @param otherObj The other object.
+*/
+template <typename T>
+inline void _<%= m %>(bhDataObj<bool>* result, bhDataObj<T>* selfObj, bhDataObj<T>* otherObj) {
+    bhxx::BhArray<T>* selfArray  = get_bhary(selfObj);
+    bhxx::BhArray<T>* otherArray = otherObj->bhary;
+    bhxx::BhArray<bool>* bhary   = new bhxx::BhArray<bool>(selfArray->shape);
+
+    bhxx::<%= m %>(*bhary, *selfArray, *otherArray);
+
+    result->bhary = bhary;
+    result->type  = T_TRUE; // or T_FALSE
+}
+
+<% if has_constant %>
+/**
+    <%= m.capitalize %> one Bohrium array and a constant of type T.
+
+    @param result The resulting array.
+    @param selfObj The calling object.
+    @param value The constant value.
+*/
+template <typename T>
+inline void _<%= m %>_constant(bhDataObj<bool>* result, bhDataObj<T>* selfObj, T value) {
+    bhxx::BhArray<T>* selfArray = get_bhary(selfObj);
+    bhxx::BhArray<bool>* bhary  = new bhxx::BhArray<bool>(selfArray->shape);
+
+    bhxx::<%= m %>(*bhary, *selfArray, value);
+
+    result->bhary = bhary;
+    result->type  = T_TRUE; // or T_FALSE
+}
+<% end %>
+
+/**
+    <%= m.capitalize %> two Bohrium arrays.
+
+    @param self The calling object.
+    @param other The other object.
+    @returns The resulting array.
+*/
+VALUE bh_array_m_<%= m %>(VALUE self, VALUE other) {
+    UNPACK(int64_t, tmpObj);
+
+    VALUE res = bh_array_alloc(RBASIC_CLASS(self));
+
+    switch (tmpObj->type) {
+        <% types.each do |type, ruby_types| %>
+            <% ruby_types.each do |ruby_type| %>
+            case <%= ruby_type %>: {
+                UNPACK(<%= type %>, selfObj);
+                UNPACK_(bool, result, res);
+
+                <% if has_constant %>
+                if (is_constant(other)) {
+                    _<%= m %>_constant<<%= type %>>(result, selfObj, <%= type_converter(ruby_type) %>(other));
+                } else <% end %>{
+                    UNPACK_(<%= type %>, otherObj, other);
+                    assert(selfObj->type == otherObj->type);
+                    _<%= m %><<%= type %>>(result, selfObj, otherObj);
+                }
+                break;
+            }
+            <% end %>
+        <% end %>
+        default:
+            rb_raise(rb_eRuntimeError, "Wrong type for '<%= m %>'.");
+    }
+
+    return res;
+}
+<% end %>

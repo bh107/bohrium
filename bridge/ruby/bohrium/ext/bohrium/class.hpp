@@ -23,9 +23,9 @@ inline void _identity(VALUE res, unsigned long rows, unsigned long columns, T va
         _shape = {rows, columns};
     }
 
-    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(_shape));
-    bhxx::identity(bhary, value);
-    result->type = type;
+    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(_shape);
+    bhxx::identity(*bhary, value);
+    result->type  = type;
     result->bhary = bhary;
 }
 
@@ -93,9 +93,9 @@ VALUE bh_array_s_zeros(int argc, VALUE *argv, VALUE klass) {
 inline void _range(VALUE res, unsigned long nelems, ruby_value_type type) {
     bhDataObj<uint64_t> *result;
     Data_Get_Struct(res, bhDataObj<uint64_t>, result);
-    bhxx::BhArray<uint64_t> bhary = *(new bhxx::BhArray<uint64_t>({nelems}));
-    bhxx::range(bhary);
-    result->type = type;
+    bhxx::BhArray<uint64_t>* bhary = new bhxx::BhArray<uint64_t>({nelems});
+    bhxx::range(*bhary);
+    result->type  = type;
     result->bhary = bhary;
 }
 

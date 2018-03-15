@@ -32,6 +32,15 @@ $LDFLAGS << " -lboost_system -lbhxx -Wl,-rpath,#{bhxxlib}"
   opcode["layout"].include?(["A", "A"])
 end)
 
+# Opcodes with three operands and BH_BOOL as the result
+@opcodes_two_args_boolean_result = convert_opcodes(@opcodes.select do |opcode|
+  # Only look at layouts with array equal array (one argument array)
+  opcode["nop"] == 3 && opcode["types"].map(&:first).uniq == ["BH_BOOL"]
+end.reject do |opcode|
+  # Remove SCATTER and GATHER as they are special
+  ["BH_LOGICAL_AND_REDUCE", "BH_LOGICAL_OR_REDUCE", "BH_LOGICAL_XOR_REDUCE"].include?(opcode["opcode"])
+end, false)
+
 # Opcodes with ["A", "A", "A"] layout
 @opcodes_two_args = convert_opcodes(@opcodes.select do |opcode|
   # Only look at layouts with array `op` array (two argument arrays)
@@ -39,6 +48,10 @@ end)
 end.reject do |opcode|
   # Remove SCATTER and GATHER as they are special
   ["BH_SCATTER", "BH_GATHER"].include?(opcode["opcode"])
+end.reject do |opcode|
+  # Reject the ones already part of the above
+  name = opcode["opcode"].sub(/^BH_/, "").downcase
+  @opcodes_two_args_boolean_result.keys.include?(name)
 end)
 
 # Opcodes with ["A", "A", "K"] layout
@@ -50,7 +63,7 @@ end.reject do |opcode|
 end.reject do |opcode|
   # Reject the ones already part of the above
   name = opcode["opcode"].sub(/^BH_/, "").downcase
-  @opcodes_two_args.keys.include?(name)
+  @opcodes_two_args.keys.include?(name) || @opcodes_two_args_boolean_result.keys.include?(name)
 end, false)
 
 # Create 'hpp' and 'cpp' from templates

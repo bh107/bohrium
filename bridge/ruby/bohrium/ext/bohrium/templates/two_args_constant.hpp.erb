@@ -3,9 +3,7 @@
 using namespace std;
 
 <% @opcodes_two_args_constant.each do |m, hash| %>
-<%
-    types = hash[:types]
-%>
+<% types = hash[:types] %>
 /**
     <%= m.capitalize %> a Bohrium array of type T.
 
@@ -15,29 +13,29 @@ using namespace std;
 */
 template <typename T>
 inline void _<%= m %>(bhDataObj<T>* result, bhDataObj<T>* selfObj, size_t arg) {
-    bhxx::BhArray<T> selfArray = selfObj->bhary;
+    bhxx::BhArray<T>* selfArray = get_bhary(selfObj);
     // Cannot choose a dimension larger than the array shape size.
-    assert(selfArray.shape.size() > arg);
+    assert(selfArray->shape.size() > arg);
 
     // FIXME: We assume we only ever have two dimensions
     bhxx::Shape _shape;
-    size_t self_size = selfArray.shape.size();
+    size_t self_size = selfArray->shape.size();
     if (self_size == 1) {
         _shape = {1};
     } else {
-        if (selfArray.shape[self_size - arg - 1] == 1) {
-            _shape = {selfArray.shape[arg]};
+        if (selfArray->shape[self_size - arg - 1] == 1) {
+            _shape = {selfArray->shape[arg]};
         } else {
-            _shape = {selfArray.shape[self_size - arg - 1]};
+            _shape = {selfArray->shape[self_size - arg - 1]};
         }
     }
 
-    bhxx::BhArray<T> bhary = *(new bhxx::BhArray<T>(_shape));
+    bhxx::BhArray<T>* bhary = new bhxx::BhArray<T>(_shape);
 
-    bhxx::<%= m %>(bhary, selfArray, arg);
+    bhxx::<%= m %>(*bhary, *selfArray, arg);
 
     result->bhary = bhary;
-    result->type = selfObj->type;
+    result->type  = selfObj->type;
 }
 
 /**
