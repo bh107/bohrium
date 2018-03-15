@@ -12,6 +12,8 @@ RUN echo "mkdir -p /bh/b\$1 && cd /bh/b\$1 && cmake .. -DCMAKE_BUILD_TYPE=Releas
 RUN echo "cd /bh/b\$1 && python /bh/package/pip/create_wheel.py --npbackend-dir /bh/i\$1/lib64/python\$1/site-packages/bohrium/ --bh-install-prefix /bh/i\$1 --config /bh/i\$1/config.ini bdist_wheel \\" > /bh/wheel.sh
 # Include BLAS/LAPACK
 RUN echo "-L/usr/lib64/atlas/libatlas.so.3 -L/usr/lib64/atlas/libcblas.so.3 -L/usr/lib64/atlas/libf77blas.so.3 -L/usr/lib64/atlas/liblapack.so.3 \\" >> /bh/wheel.sh
+# Include GNU libsigsegv
+RUN echo "-L/usr/lib64/libsigsegv.so.0 \\" >> /bh/wheel.sh
 
 # Build Bohrium with python2.7
 ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
