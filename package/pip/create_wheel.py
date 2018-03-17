@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Creates a PIP wheel of Bohrium"""
 
 from setuptools import setup
 from distutils.dir_util import mkpath, copy_tree
@@ -84,7 +85,13 @@ def _copy_files(glob_str, dst_dir):
     mkpath(dst_dir)
     for fname in glob.glob(glob_str):
         if os.path.isfile(fname):
-            shutil.copy(fname, dst_dir)
+            if ".dylib" in fname:
+                # We need this HACK because osx might not preserve the write and exec permission
+                out_path = join(dst_dir, os.path.basename(fname))
+                shutil.copyfile(fname, out_path)
+                subprocess.check_call("chmod a+x %s" % out_path, shell=True)
+            else:
+                shutil.copy(fname, dst_dir)
             print("copy: %s => %s" % (fname, dst_dir))
 
 
@@ -144,16 +151,33 @@ if args_extra.bin is not None:
         _copy_files(bin, join(args_extra.npbackend_dir, "bin"))
 
 
-# Update the RPATH of the Python extensions to look in the the `lib64` dir
-_update_rpath(glob.glob(join(args_extra.npbackend_dir, '*.so')), '$ORIGIN/lib64')
-_update_rpath(glob.glob(join(args_extra.npbackend_dir, '*.dylib')), '$ORIGIN/lib64')
+py_sos = glob.glob(join(args_extra.npbackend_dir, '*.so'))
+lib64_files = glob.glob(join(args_extra.npbackend_dir, 'lib64', '*'))
+bin_files = glob.glob(join(args_extra.npbackend_dir, 'bin', '*'))
+if platform.system() == "Linux":
+    # Update the RPATH of the Python extensions to look in the the `lib64` dir
+    _update_rpath(py_sos, '$ORIGIN/lib64')
+    # Update the RPATH of Bohrium's shared libraries to look in the current dir
+    _update_rpath(lib64_files, '$ORIGIN')
+    # Update the RPATH of Bohrium's binaries to look in the current dir
+    _update_rpath(bin_files, '$ORIGIN/../lib64')
+elif platform.system() == "Darwin":
+    all_files = {}
+    for file_path in py_sos + lib64_files + bin_files:
+        file_name = os.path.basename(file_path)
+        assert(file_name not in all_files)
+        all_files[file_name] = file_path
 
-# Update the RPATH of Bohrium's shared libraries to look in the current dir
-_update_rpath(glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')), '$ORIGIN')
-
-# Update the RPATH of Bohrium's binaries to look in the current dir
-_update_rpath(glob.glob(join(args_extra.npbackend_dir, 'bin', '*')), '$ORIGIN/../lib64')
-
+    for file_path in py_sos + lib64_files + bin_files:
+        cmd = "otool -L %s" % (file_path)
+        otool_res = subprocess.check_output(cmd, shell=True)
+        for line in otool_res.splitlines()[1:]:  # Each line in `otool_res` represents a linking path (except 1. line)
+            dylib_path = line.strip().split()[0]
+            dylib_name = os.path.basename(dylib_path)
+            if os.path.basename(dylib_path) in all_files:
+                load_path = " @loader_path%s" % all_files[dylib_name].replace(os.path.dirname(file_path), "")
+                cmd = "install_name_tool -change %s %s %s" % (dylib_path, load_path, file_path)
+                subprocess.check_output(cmd, shell=True)
 
 # Write a modified config file to the Python package dir
 _config_path = join(args_extra.npbackend_dir, "config.ini")
@@ -167,6 +191,16 @@ with open(_config_path, "w") as f:
     # Set the JIT compiler to gcc
     config_str = _regex_replace("compiler_cmd = \".* -x c", "compiler_cmd = \"gcc -x c", config_str)
 
+    # clang doesn't support some unneeded flags
+    config_str = _regex_replace("-Wno-expansion-to-defined", "", config_str)
+    config_str = _regex_replace("-Wno-pass-failed", "", config_str)
+
+    # Replace `lib` with `lib64` since we always includes shared libraries in `lib64`
+    config_str = _regex_replace("%s/lib/" % args_extra.bh_install_prefix,
+                                "%s/lib64/" % args_extra.bh_install_prefix, config_str)
+    config_str = _regex_replace("%s/lib " % args_extra.bh_install_prefix,
+                                "%s/lib64 " % args_extra.bh_install_prefix, config_str)
+
     # Compile command: replace absolute include path with a path relative to {CONF_PATH}.
     config_str = _regex_replace("-I%s/share/bohrium/" % args_extra.bh_install_prefix, "-I{CONF_PATH}/", config_str)
 
@@ -175,6 +209,7 @@ with open(_config_path, "w") as f:
 
     # Replace absolute library paths with a relative path.
     config_str = _regex_replace("%s/" % args_extra.bh_install_prefix, "./", config_str)
+
     f.write(config_str)
     print("writing config file: %s" % f.name)
 
