@@ -34,6 +34,7 @@ PyObject *bohrium        = NULL; // The Bohrium Python module
 PyObject *array_create   = NULL; // The array_create Python module
 PyObject *reorganization = NULL; // The reorganization Python module
 PyObject *masking        = NULL; // The masking Python module
+PyObject *iterator       = NULL; // The iterator Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
@@ -414,10 +415,12 @@ static PyMethodDef BhArrayMethods[] = {
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
+
 static PyMemberDef BhArrayMembers[] = {
     {"bhc_mmap_allocated", T_BOOL, offsetof(BhArray, mmap_allocated), 0, "Is the base data allocated with mmap?"},
     {NULL}  /* Sentinel */
 };
+
 
 static int BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v) {
     if(v == NULL) {
@@ -450,6 +453,7 @@ static int BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyOb
     Py_XDECREF(ret);
     return 0;
 }
+
 
 // Help function that returns True when 'o' contains a list or array
 static int obj_contains_a_list_or_ary(PyObject *o) {
@@ -617,6 +621,11 @@ static PyObject* BhArray_GetItem(PyObject *o, PyObject *k) {
     Py_ssize_t i;
     assert(k != NULL);
     assert(BhArray_CheckExact(o));
+
+    PyObject* iterator_check = PyObject_CallMethod(iterator, "has_iterator", "O", k);
+    if (iterator_check == Py_True) {
+        return PyObject_CallMethod(iterator, "slide_from_view", "OO", o, k);
+    }
 
     if (obj_is_a_bool_mask(o, k)) {
         return PyObject_CallMethod(masking, "masked_get", "OO", o, k);
@@ -953,12 +962,14 @@ PyMODINIT_FUNC init_bh(void)
     array_create   = PyImport_ImportModule("bohrium.array_create");
     reorganization = PyImport_ImportModule("bohrium.reorganization");
     masking        = PyImport_ImportModule("bohrium.masking");
+    iterator       = PyImport_ImportModule("bohrium.iterator");
 
     if(ufuncs         == NULL ||
        bohrium        == NULL ||
        array_create   == NULL ||
        reorganization == NULL ||
-       masking        == NULL) {
+       masking        == NULL ||
+       iterator        == NULL) {
         return RETVAL;
     }
 
