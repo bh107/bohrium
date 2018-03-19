@@ -5,10 +5,6 @@ required to become a drop-in replacement for numpy.
 import sys
 import os
 
-# If there is a Bohrium config file within this Python package, we should use it
-_conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini")
-if os.path.exists(_conf_path) and "BH_CONFIG" not in os.environ:
-    os.environ["BH_CONFIG"] = _conf_path
 
 if 'numpy_force' not in sys.modules:
     import numpy
@@ -51,6 +47,25 @@ from .signal import correlate as correlate_scipy, convolve as convolve_scipy
 from numpy_force import dtype
 asarray = array
 asanyarray = array
+
+
+def _pip_specific_config():
+    """Handle pip specific configurations"""
+
+    # Do nothing if we a not a pip package or the user has manually specified a config file
+    _conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini")
+    if not os.path.exists(_conf_path) or "BH_CONFIG" in os.environ:
+        return
+
+    os.environ["BH_CONFIG"] = _conf_path
+    # On OSX, we use the `gcc7`, which contains a complete GCC installation
+    import platform
+    if platform.system() == "Darwin":
+        import gcc7
+        cmd = gcc7.path.gcc() + ' -x c -fPIC -shared -std=gnu99 -O3 -march=native -arch x86_64 -Werror ' \
+                                '-I{CONF_PATH}/include -lm -L{CONF_PATH}/lib64 -lbh {IN} -o {OUT}'
+        os.environ["BH_OPENMP_COMPILER_CMD"] = cmd
+_pip_specific_config()
 
 
 def replace_numpy(function):

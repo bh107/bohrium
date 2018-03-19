@@ -170,7 +170,7 @@ elif platform.system() == "Darwin":
 
     for file_path in py_sos + lib64_files + bin_files:
         cmd = "otool -L %s" % (file_path)
-        otool_res = subprocess.check_output(cmd, shell=True)
+        otool_res = subprocess.check_output(cmd, shell=True).decode('utf-8')
         for line in otool_res.splitlines()[1:]:  # Each line in `otool_res` represents a linking path (except 1. line)
             dylib_path = line.strip().split()[0]
             dylib_name = os.path.basename(dylib_path)
@@ -219,7 +219,7 @@ cmd = "git describe --tags --long --match v[0-9]*"
 print(cmd)
 try:
     # Let's get the Bohrium version without the 'v' and hash (e.g. v0.8.9-47-g6464 => v0.8.9-47)
-    _version = subprocess.check_output(cmd, shell=True, cwd=join(_script_path(), '..', '..'))
+    _version = subprocess.check_output(cmd, shell=True, cwd=join(_script_path(), '..', '..')).decode('utf-8')
     print("_version: '%s'" % str(_version))
     _version = re.match(".*v(.+-\d+)-", str(_version)).group(1)
 except subprocess.CalledProcessError as e:
@@ -251,6 +251,12 @@ class taged_bdist_wheel(bdist_wheel):
         else:
             plat_name = pep425tags.get_platform()
         return (impl_name + impl_ver, abi_tag, plat_name)
+
+
+# For now, only the osx packages requires 'gcc7'
+install_requires = ['numpy>=1.13']
+if platform.system() == "Darwin":
+    install_requires.append('gcc7')
 
 
 # Finally, we call the setup
@@ -311,7 +317,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy>=1.13'],
+    install_requires=install_requires,
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

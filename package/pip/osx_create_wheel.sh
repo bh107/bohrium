@@ -1,18 +1,33 @@
 #!/bin/bash
 
-# Use this script on a MAC OSX platform with homebrew installed.
 # The script pulls the bohrium repos and use create_wheel.py to create a PIP package
+# Use this script on a MAC OSX platform with homebrew and python installed.
 #
 # Command line arguments:
 #   1) Set the first argument to the name of the branch to pull from
-#   2) Set the second argument to "deploy" if you want to upload the wheel packages to PIP,
+#   2) Set the second argument to the python version e.g. 2.7 or 3.6
+#   3) Set the third argument to "testing" if you want to test the wheel package
+#   4) Set the fourth argument to "deploy" if you want to upload the wheel package to PIP,
 #      in which case you need to set the envs TWINE_USERNAME and TWINE_PASSWORD
 
 set -e
 set -x
 unset PYTHONPATH
+export BH_OPENMP_PROF=true
+export BH_OPENMP_VOLATILE=true
+export BH_OPENCL_PROF=true
+export BH_OPENCL_VOLATILE=true
+export HOMEBREW_NO_AUTO_UPDATE=1
 
-# Install non-python dependencies
+if [$# -ne 4];
+    then echo "illegal number of parameters -- e.g. master 2.7 testing nodeploy"
+fi
+
+# Making sure that the python version is installed
+python$2 --version
+
+# Install dependencies
+python$2 -m pip install --user numpy cython twine
 brew install cmake || true
 brew install boost --with-icu4c || true
 brew install libsigsegv || true
@@ -38,30 +53,25 @@ echo "-L/usr/local/opt/boost/lib/libboost_filesystem-mt.dylib \\" >> ~/bh/wheel.
 echo "-L/usr/local/opt/boost/lib/libboost_system-mt.dylib \\" >> ~/bh/wheel.sh
 echo "-L/usr/local/opt/boost/lib/libboost_regex-mt.dylib " >> ~/bh/wheel.sh
 
-# Build Bohrium with python2.7
-brew unlink python || true
-brew install python@2
-brew link python@2 || true
-/usr/local/bin/python2.7 -m pip install numpy cython
-bash ~/bh/build.sh 2.7
-bash ~/bh/wheel.sh 2.7
+# Build Bohrium and the wheel package
+bash ~/bh/build.sh $2
+bash ~/bh/wheel.sh $2
+echo "Build package:" && ls ~/bh/b$2/dist/*
 
-# Build Bohrium with python3.6
-brew unlink python || true
-brew install python@3
-brew link python@3 || true
-/usr/local/bin/python3.6 -m pip install numpy cython
-bash ~/bh/build.sh 3.6
-bash ~/bh/wheel.sh 3.6
-
-echo "Build packages:"
-ls ~/bh/b*/dist/*
+# Testing of the wheel package
+if [ "$3" = "testing" ]; then
+    python$2 -m pip install ~/bh/b$2/dist/*
+    python$2 -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
+    python$2 ~/bh/test/python/run.py ~/bh/test/python/tests/test_*.py
+else
+    echo 'Notice, if you want to run test set third argument to "testing"'
+fi
 
 # Deploy, remember to define TWINE_USERNAME and TWINE_PASSWORD
-if [ "$2" = "deploy" ]; then
-    python3.6 -m pip install --user twine
-    python3.6 -m twine upload ~/bh/b*/dist/*
+if [ "$4" = "deploy" ]; then
+    python$2 -m pip install --user twine
+    python$2 -m twine upload ~/bh/b*/dist/*
 else
-    echo "Notice, if you want to upload the wheel packages use: osx_create_wheel.sh deploy"
+    echo 'Notice, if you want to run test set fourth argument to "deploy"'
 fi
 
