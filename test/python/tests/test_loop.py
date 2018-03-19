@@ -30,7 +30,6 @@ res = M.ones_like(a)
         return (cmd + "do_while(kernel, 5, a, res)", cmd + "M.do_while(kernel, 5, a, res)")
 
 
-
 class test_loop_cond:
     """ Test loop with a condition variable"""
     def init(self):
@@ -54,45 +53,49 @@ res = M.ones_like(a)
         return (cmd + "do_while(kernel, %s, a, res)" % (niter), cmd + "M.do_while(kernel, %s, a, res)" % (niter))
 
 
-np_for_loop_src = """
-def for_loop(loop_body, niters, *args, **kwargs):
+np_dw_loop_slide_src = """
+def do_while_i(func, niters, *args, **kwargs):
+    import sys
+    i = 0
+    if niters is None:
+        niters = sys.maxsize
     args += (0,)
-    for i in range(0, niters):
+    while i < niters:
         args = args[:-1] + (i,)
-        res = loop_body(*args, **kwargs)
-    return res
+        cond = func(*args, **kwargs)
+        if cond is not None and not cond:
+            break
+        i += 1
 """
 
-
-class test_for_loop_view:
+class test_loop_sliding_view:
     """ Test a of sliding two views with a for loop"""
     def init(self):
-        cmd1 = np_for_loop_src + """
+        cmd1 = np_dw_loop_slide_src + \
+"""
 def kernel(a,b,i):
-    c = a[i:i+1]
-    c += b[i:i+1, i:i+1]
-    return a
+    a[i] += b[i, i]
 
 b = M.ones((20, 5))
 b[::2, ::2] += 1
 b[1::2, 1::2] += 1
 res = M.zeros((5, 1))
 """
-        cmd2 = np_for_loop_src + """
+        cmd2 = np_dw_loop_src + \
+"""
 def kernel(a, b):
-    c = bh.slide_view(a[0:1], [(0,1)])
-    c += bh.slide_view(b[0:1,0:1], [(0,1), (1,1)])
+    i = get_iterator()
+    a[i] += b[i, i]
 
 b = M.ones((20, 5))
 b[::2, ::2] += 1
 b[1::2, 1::2] += 1
 res = M.zeros((5, 1))
 """
-
         yield (cmd1, cmd2, 5)
 
     def test_func(self, args):
         """Test of the do_while function"""
         (cmd1, cmd2, niter) = args
 
-        return (cmd1 + "for_loop(kernel, %s, res, b)" % (niter), cmd2 + "M.for_loop(kernel, %s, res, b)" % (niter))
+        return (cmd1 + "do_while_i(kernel, %s, res, b)" % (niter), cmd2 + "M.do_while(kernel, %s, res, b)" % (niter))
