@@ -68,8 +68,34 @@ def do_while_i(func, niters, *args, **kwargs):
         i += 1
 """
 
-class test_loop_sliding_view:
+
+class test_loop_faculty_function_using_sliding_views:
     """ Test a of sliding two views with a for loop"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+def kernel(a,i):
+    a[i+1] += a[i]
+res = M.arange(1,6)
+"""
+        cmd2 = np_dw_loop_src + \
+"""
+def kernel(a):
+    i = get_iterator()
+    a[i+1] += a[i]
+res = M.arange(1,6)
+"""
+        yield (cmd1, cmd2, 4)
+
+    def test_func(self, args):
+        """Test of the loop-based faculty function"""
+        (cmd1, cmd2, niter) = args
+
+        return (cmd1 + "do_while_i(kernel, %s, res)" % (niter), cmd2 + "M.do_while(kernel, %s, res)" % (niter))
+
+
+class test_loop_one_and_two_dimensional_sliding_views:
+    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
@@ -99,3 +125,130 @@ res = M.zeros((5, 1))
         (cmd1, cmd2, niter) = args
 
         return (cmd1 + "do_while_i(kernel, %s, res, b)" % (niter), cmd2 + "M.do_while(kernel, %s, res, b)" % (niter))
+
+
+class test_loop_sliding_view_out_of_bounds:
+    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+def kernel(a,i):
+    a[i] += 1
+
+res = M.zeros(5)
+"""
+        cmd2 = np_dw_loop_src + \
+"""
+iter = %s
+
+def kernel_out_of_bounds_overflow(a):
+    i = get_iterator(1)
+    a[i] += 1
+
+def kernel_out_of_bounds_underflow(a):
+    i = get_iterator(-1)
+    a[i] += 1
+
+def kernel(a):
+    i = get_iterator()
+    a[i] += 1
+
+dummy = M.zeros(iter)
+res   = M.zeros(iter)
+failure = False
+
+try:
+    M.do_while(kernel_out_of_bounds_overflow, iter, dummy)
+    failure = True
+except M.iterator.IteratorOutOfBounds:
+    pass
+
+try:
+    M.do_while(kernel_out_of_bounds_underflow, iter, dummy)
+    failure = True
+except M.iterator.IteratorOutOfBounds:
+    pass
+
+if not failure:
+    M.do_while(kernel, iter, res)
+"""
+        yield (cmd1, cmd2, 5)
+
+    def test_func(self, args):
+        """Test exceptions of underflow and overflow"""
+        (cmd1, cmd2, niter) = args
+        return (cmd1 + "do_while_i(kernel, %s, res)" % (niter), cmd2 % (niter))
+
+
+class test_loop_sliding_change_shape:
+    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+def kernel(a,i):
+    a[i] += 1
+
+res = M.zeros(5)
+"""
+        cmd2 = np_dw_loop_src + \
+"""
+iter = %s
+
+def kernel_excp1(a):
+    i = get_iterator()
+    a[i:2*i] += 1
+
+def kernel_excp2(a):
+    i = get_iterator()
+    a[0:i] += 1
+
+def kernel_excp3(a):
+    i = get_iterator()
+    a[i:iter] += 1
+
+def kernel_excp4(a):
+    i = get_iterator()
+    a[i*2:i] += 1
+
+def kernel(a):
+    i = get_iterator()
+    a[i] += 1
+
+dummy = M.zeros(iter)
+res   = M.zeros(iter)
+failure = False
+
+try:
+    M.do_while(kernel_excp1, iter, dummy)
+    failure = True
+except M.iterator.ViewShape:
+    pass
+
+try:
+    M.do_while(kernel_excp2, iter, dummy)
+    failure = True
+except M.iterator.ViewShape:
+    pass
+
+try:
+    M.do_while(kernel_excp3, iter, dummy)
+    failure = True
+except M.iterator.ViewShape:
+    pass
+
+try:
+    M.do_while(kernel_excp4, iter, dummy)
+    failure = True
+except M.iterator.ViewShape:
+    pass
+
+if not failure:
+    M.do_while(kernel, iter, res)
+    print(res)
+"""
+        yield (cmd1, cmd2, 5)
+
+    def test_func(self, args):
+        """Test exceptions of views changing shape between iterations"""
+        (cmd1, cmd2, niter) = args
+        return (cmd1 + "do_while_i(kernel, %s, res)" % (niter), cmd2 % (niter))
