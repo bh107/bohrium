@@ -18,24 +18,18 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_util.hpp>
-#include <jitk/base_db.hpp>
-#include <jitk/view.hpp>
-
-using namespace std;
-
-namespace bohrium {
-namespace jitk {
-
-void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, stringstream &out) {
-    assert(not isIdxDeclared(view));
-    out << "const " << type_str << " ";
-    getIdxName(view, out);
-    out << " = (";
-    write_array_index(*this, view, out);
-    out << ");";
-    _declared_idx.insert(view);
+void slide_views(BhIR *bhir) {
+    // Iterate through all instructions and slide the relevant views
+    for (bh_instruction &instr : bhir->instr_list) {
+        for (bh_view &view : instr.operand) {
+            if (not view.slide_strides.empty()) {
+                // The relevant dimension in the view is updated by the given stride
+                for (size_t i = 0; i < view.slide_strides.size(); i++) {
+                    size_t off_dim    = view.slide_dimensions.at(i);
+                    int off_stride = (int) view.slide_strides.at(i);
+                    view.start += view.stride[off_dim] * off_stride;
+                }
+            }
+        }
+    }
 }
-
-} // jitk
-} // bohrium

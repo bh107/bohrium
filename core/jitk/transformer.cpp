@@ -48,10 +48,12 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
         if (b.isInstr() or &b.getLoop() != child) {
             loop.size = parent.size;
             loop._block_list.push_back(b);
+            loop._frees.insert(parent._frees.begin(), parent._frees.end());
         } else {
             loop.size = child->size;
             const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
             loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
+            loop._frees.insert(child->_frees.begin(), child->_frees.end());
         }
         loop.metadataUpdate();
         ret.push_back(Block(std::move(loop)));
@@ -62,7 +64,7 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
 // Help function that find a loop block within 'parent' that it make sense to swappable
 const LoopB *find_swappable_sub_block(const LoopB &parent) {
     // For each sweep, we look for a sub-block that contains that sweep instructions.
-    for (const InstrPtr sweep: parent._sweeps) {
+    for (const InstrPtr &sweep: parent._sweeps) {
         for (const Block &b: parent._block_list) {
             if (not b.isInstr()) {
                 for (const Block &instr_block: b.getLoop()._block_list) {
@@ -127,9 +129,10 @@ bool collapse_loop_with_child(LoopB &loop) {
         Block &child = loop._block_list[0];
         if ((not child.isInstr()) and child.getLoop()._sweeps.empty() and child.getLoop()._reshapable) {
             // Let's collapse with our single child
-            loop.size *= loop._block_list[0].getLoop().size;
+            loop.size *= child.getLoop().size;
+            loop._frees.insert(child.getLoop()._frees.begin(), child.getLoop()._frees.end());
             // NB: we need the temporary step in order to avoid copying deleted data
-            auto tmp = std::move(loop._block_list[0].getLoop()._block_list);
+            auto tmp = std::move(child.getLoop()._block_list);
             loop._block_list = std::move(tmp);
             return collapse_instr_axes(loop, loop.rank);
         }
@@ -169,7 +172,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
         }
         const LoopB &loop = block.getLoop();
         uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
-        for (const InstrPtr instr: loop.getAllInstr()) {
+        for (const InstrPtr &instr: loop.getAllInstr()) {
             if (instr->operand.size() > 0) {
                 const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
                 if (nelem > max_nelem)
@@ -206,7 +209,13 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
                     newloop._block_list.push_back(*it);
                     newloop.metadataUpdate();
                     ret.push_back(Block(std::move(newloop)));
-                } else {
+                }
+                // TODO: for now the last new block gets all frees.
+                assert(not ret.back().isInstr());
+                ret.back().getLoop()._frees = loop._frees;
+
+                // Make sure we don't overflow
+                if (it == loop._block_list.end()) {
                     break;
                 }
             }

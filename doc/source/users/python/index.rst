@@ -95,7 +95,7 @@ Print the current Bohrium runtime stack::
 Accelerate Loops
 ~~~~~~~~~~~~~~~~
 
-As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. it the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function ``do_while()``, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
+As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. in the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function ``do_while()``, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
 
 The function signature::
 
@@ -138,6 +138,44 @@ An example where the function returns a ``bharray`` with one element and of type
         >>> bh.do_while(loop_body, None, a)
         >>> a
         array([3, 3, 3, 3])
+
+
+Sliding views between iterations
+~~~~~~~~~~~~~~~~
+
+It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using ``get_iterator()``, which returns a special bohrium iterator. The iterator can be given an optional start value (0 by default). The iterator is increased by one for each iteration, but can be changed increase or decrease by any constant by setting the step-size in a slice (see example 2).
+
+At the moment, iterators does not support boundary checks (if the array is underflowed/overflowed, the behaviour is undefined). Iterators can only be used to change the view of an array. Iterators only supports addition and subtraction.
+
+Example 1. Using iterators to create a loop-based function for calculating the triangular numbers (from 1 to 10). The loop in numpy looks the following::
+
+        >>> a = np.arange(1,11)
+        >>> for i in range(0,9):
+        ...     a[i+1] += a[i]
+        >>> a
+        array([1 3 6 10 15 21 28 36 45 55])
+
+The same can be written in Bohrium as::
+
+        >>> def loop_body(a):
+        ...    i = bh.get_iterator()
+        ...    a[i+1] += a[i]
+        >>> a = bh.arange(1,11)
+        >>> bh.for_loop(loop_body, 9, a)
+        >>> a
+        array([1 3 6 10 15 21 28 36 45 55])
+
+Example 2. Increasing every second element by one, starting at both ends, in the same loop. As it can be seen: `i` is decreased by 2, while `j` is increased by 2 for each iteration::
+
+        >>> def loop_body(a):
+        ...    i = bh.get_iterator(9)
+        ...    a[i-2:i-1:-2] += a[i:i+1:-2]
+        ...    j = bh.get_iterator()
+        ...    a[j+2:j+3:2] += a[j:j+1:2]
+        >>> a = bh.ones(10)
+        >>> bh.for_loop(loop_body, 4, a)
+        >>> a
+        array([1 5 2 4 3 3 4 2 5 1])
 
 
 .. _interop:

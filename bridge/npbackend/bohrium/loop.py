@@ -7,6 +7,8 @@ import sys
 import numpy_force as numpy
 from . import _bh
 from . import bhary
+from . import array_create
+from iterator import get_iterator
 
 
 def do_while(func, niters, *args, **kwargs):
@@ -49,6 +51,7 @@ def do_while(func, niters, *args, **kwargs):
 
     _bh.flush()
     flush_count = _bh.flush_count()
+    func.__globals__['get_iterator'] = lambda x=0: get_iterator(niters, x)
     cond = func(*args, **kwargs)
     if flush_count != _bh.flush_count():
         raise TypeError("Invalid `func`: the looped function contains operations not support "

@@ -204,6 +204,22 @@ def main(args):
 
 """ % t
 
+    doc = "\n// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.\n"
+    impl += doc; head += doc
+    for key, t in type_map.items():
+        decl = "void bhc_slide_view_A%(name)s(const %(bhc_ary)s ary, size_t dim, size_t stride)" % t
+        head += "DLLEXPORT %s;\n" % decl
+        impl += "%s" % decl
+        impl += """\
+{
+   bhxx::Runtime::instance().slide_view(
+        (bhxx::BhArray<%(cpp)s>*) ary,
+        dim,
+        stride);
+}
+
+""" % t
+
     doc = "\n// Extension Method, returns 0 when the extension exist\n"
     impl += doc; head += doc
     for key, t in type_map.items():

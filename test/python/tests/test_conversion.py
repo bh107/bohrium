@@ -1,5 +1,5 @@
-import util
 import sys
+
 
 class test_conversion:
     def init(self):
@@ -25,3 +25,16 @@ class test_conversion:
         def test_long(self, cmd):
             cmd += "res = long(a);"
             return cmd
+
+
+class test_python_lists:
+    def init(self):
+        yield "a = [1,2,3,4]; b = M.arange(4); "
+
+    def test_add(self, cmd):
+        cmd += "res = a + b"
+        return cmd
+
+    def test_sum(self, cmd):
+        cmd += "res = M.sum(a)"
+        return cmd

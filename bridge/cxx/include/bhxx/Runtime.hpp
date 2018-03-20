@@ -86,6 +86,13 @@ class Runtime {
     // Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);
 
+    // Increases the offset of all views with the given base by one
+    template <typename T>
+    void slide_view(BhArray<T>* arr_ptr, size_t dim, size_t stride) {
+        arr_ptr->slide_dimensions.push_back(dim);
+        arr_ptr->slide_strides.push_back(stride);
+    }
+
     // Send and receive a message through the component stack
     std::string message(const std::string &msg);
 

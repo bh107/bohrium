@@ -96,8 +96,8 @@ compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}
 # List of extension methods
 libs = ${BH_OPENMP_LIBS}
-# The pre-fuser to use
-pre_fuser = pre_fuser_lossy
+# The pre-fuser to use ('none' or 'lossy')
+pre_fuser = lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, collapse_redundant_axes
 # Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead

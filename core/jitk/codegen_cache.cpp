@@ -49,6 +49,9 @@ void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstr
     }
     if (symbols.index_as_var) {
         ss << "indexid: " << symbols.idxID(view);
+        if (bh_is_scalar(&view)) { // We optimize indexes into 1-sized arrays, which we need the hash to reflect
+            ss << "is-1-elem: " << endl;
+        }
     }
 }
 
@@ -78,10 +81,22 @@ void hash_stream(const bh_instruction &instr, const SymbolTable &symbols, std::s
  */
 void hash_stream(const Block &block, const SymbolTable &symbols, std::stringstream &ss) {
     if (block.isInstr()) {
-        hash_stream(*block.getInstr(), symbols, ss);
+        if (block.getInstr()->opcode != BH_FREE) {
+            hash_stream(*block.getInstr(), symbols, ss);
+        }
     } else {
         ss << "rank: " << block.rank();
         ss << "size: " << block.getLoop().size;
+        {  // The order of BH_FREE within a block doesn't matter, thus we sort the freed base IDs here
+            ss << "freed: ";
+            set<uint64_t >sorted_freed_bases;
+            for (const bh_base *b: block.getLoop()._frees) {
+                sorted_freed_bases.insert(symbols.baseID(b));
+            }
+            for(uint64_t b_id: sorted_freed_bases) {
+                ss << b_id << ",";
+            }
+        }
         for (const Block &b: block.getLoop()._block_list) {
             hash_stream(b, symbols, ss);
         }

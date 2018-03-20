@@ -36,6 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/statistics.hpp>
 #include <jitk/dtype.hpp>
 #include <jitk/apply_fusion.hpp>
+#include <jitk/engines/dyn_view.hpp>
 
 #include "engine_openmp.hpp"
 
@@ -134,6 +135,7 @@ Impl::~Impl() {
 
 void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
+
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
         engine.handleExtmethod(*this, bhir);
@@ -145,5 +147,8 @@ void Impl::execute(BhIR *bhir) {
         if (cond != nullptr and cond->data != nullptr and not ((bool*) cond->data)[0]) {
             break;
         }
+
+        // Change views that slide between iterations
+        slide_views(bhir);
     }
 }

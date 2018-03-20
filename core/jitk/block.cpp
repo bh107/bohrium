@@ -35,11 +35,13 @@ namespace {
 
 // Returns true if a block consisting of 'instr_list' is reshapable
 bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
-    assert(instr_list.size() > 0);
+    if(instr_list.empty()) {
+        return true;
+    }
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
     int64_t rank = instr_list[0]->ndim();
-    for (InstrPtr instr: instr_list) {
+    for (const InstrPtr &instr: instr_list) {
         if (not instr->reshapable())
             return false;
         if (instr->ndim() != rank)
@@ -58,7 +60,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
         instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
-    vector<int64_t> shape = instr->shape();
+    const vector<int64_t> shape = instr->shape();
 
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
@@ -70,11 +72,16 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
     // Create the rest of the dimension as a singleton block
     if (max_ndim > rank + 1) {
         assert(shape.size() > 0);
+        assert(instr->opcode != BH_FREE); // Blocks should never contain BH_FREEs
         vector<InstrPtr> single_instr = {instr};
         block._block_list.push_back(create_nested_block(single_instr, rank + 1, shape[rank + 1]));
     } else { // No more dimensions -- let's write the instruction block
         assert(max_ndim == rank + 1);
-        block._block_list.emplace_back(*instr, rank + 1);
+        if (instr->opcode == BH_FREE) { // Notice, we only adds the free instruction to `block._frees`
+            block._frees.insert(instr->operand[0].base);
+        } else {
+            block._block_list.emplace_back(*instr, rank + 1);
+        }
     }
     block.metadataUpdate();
 }
@@ -263,13 +270,11 @@ bool LoopB::validation() const {
         return false;
     }
     const vector<InstrPtr> allInstr = getAllInstr();
-    if (allInstr.empty()) {
-        assert(1 == 2);
-        return false;
-    }
     for (const InstrPtr &instr: allInstr) {
-        if (bh_opcode_is_system(instr->opcode))
-            continue;
+        if (bh_opcode_is_system(instr->opcode)) {
+            assert(1 == 2);
+            return false;
+        }
         if (instr->ndim() <= rank) {
             assert(1 == 2);
             return false;
@@ -279,52 +284,17 @@ bool LoopB::validation() const {
             return false;
         }
     }
-    if (_block_list.size() == 0) {
-        assert(1 == 2);
-        return false;
-    }
     for (const Block &b: _block_list) {
         if (not b.validation())
             return false;
     }
-    set<bh_base*> frees;
     for (const InstrPtr &instr: getLocalInstr()) {
-        if (instr->opcode == BH_FREE) {
-            frees.insert(instr->operand[0].base);
-        }
         if (instr->ndim() != rank+1) {
             assert(1 == 2);
             return false;
         }
     }
-    if (frees != _frees) {
-        assert(1 == 2);
-        return false;
-    }
     return true;
-}
-
-void LoopB::insertSystemAfter(InstrPtr instr, const bh_base *base) {
-    assert(validation());
-
-    LoopB *block;
-    int64_t index;
-    tie(block, index) = findLastAccessBy(base);
-    // If no instruction accesses 'base' we insert it after the last instruction
-    if (block == NULL) {
-        tie(block, index) = findLastAccessBy(NULL); //NB: findLastAccessBy(NULL) will always find an instruction
-        assert(block != NULL);
-    }
-    bh_instruction instr_reshaped(*instr);
-    instr_reshaped.reshape_force(block->_block_list[index].getInstr()->shape());
-    Block instr_block(instr_reshaped, block->rank+1);
-    block->_block_list.insert(block->_block_list.begin()+index+1, instr_block);
-
-    // Let's update the '_free' set
-    if (instr->opcode == BH_FREE) {
-        block->_frees.insert(instr->operand[0].base);
-    }
-    assert(validation());
 }
 
 uint64_t LoopB::localThreading() const {
@@ -371,34 +341,35 @@ string LoopB::pprint(const char *newline) const {
         }
         ss << "}";
     }
+    ss << ", block list:";
     if (_block_list.size() > 0) {
-        ss << ", block list:" << newline;
+        ss << newline;
         for (const Block &b : _block_list) {
             ss << b.pprint(newline);
         }
+    } else {
+        ss << " {empty}" << newline;
     }
     return ss.str();
 }
 
 void LoopB::metadataUpdate() {
     _news.clear();
-    _frees.clear();
     _sweeps.clear();
-    for (const InstrPtr instr: getLocalInstr()) {
+    for (const InstrPtr &instr: getLocalInstr()) {
         if (instr->constructor) {
-            if (not bh_opcode_is_accumulate(instr->opcode))// TODO: Support array contraction of accumulated output
+            if (not bh_opcode_is_accumulate(instr->opcode)) { // TODO: Support array contraction of accumulated output
                 _news.insert(instr->operand[0].base);
-        }
-        if (instr->opcode == BH_FREE) {
-            _frees.insert(instr->operand[0].base);
+            }
         }
     }
-    for (const InstrPtr instr: getAllInstr()) {
+    const vector<InstrPtr> allInstr = getAllInstr();
+    for (const InstrPtr &instr: allInstr) {
         if (instr->sweep_axis() == rank) {
             _sweeps.insert(instr);
         }
     }
-    _reshapable = is_reshapeable(getAllInstr());
+    _reshapable = is_reshapeable(allInstr);
 }
 
 
@@ -408,8 +379,10 @@ bool Block::validation() const {
     if (isInstr()) {
         if (getInstr()->ndim() != rank()) {
             assert(1 == 2);
+            return false;
+        } else {
+            return true;
         }
-        return true;
     } else {
         return getLoop().validation();
     }
@@ -419,7 +392,7 @@ void Block::getAllInstr(vector<InstrPtr> &out) const {
     if (isInstr()) {
         out.push_back(getInstr());
     } else {
-        for (const Block &b : getLoop()._block_list) {
+        for (const Block &b: getLoop()._block_list) {
             b.getAllInstr(out);
         }
     }
@@ -432,10 +405,9 @@ vector<InstrPtr> Block::getAllInstr() const {
 }
 
 string Block::pprint(const char *newline) const {
-
     if (isInstr()) {
         stringstream ss;
-        if (getInstr() != NULL) {
+        if (getInstr() != nullptr) {
             util::spaces(ss, rank() * 4);
             ss << *getInstr() << newline;
         }
@@ -463,12 +435,12 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
 }
 
 
-Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_base*> frees) {
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
     }
-    if (bh_opcode_is_system(instr_list[0]->opcode)) {
-        throw runtime_error("create_nested_block: first instruction is a sysop!");
+    if (instr_list[0]->opcode == BH_NONE) {
+        throw runtime_error("create_nested_block: first instruction is BH_NONE!");
     }
     const int ndim = (int) instr_list[0]->ndim();
     const vector<int64_t> shape = instr_list[0]->shape();
@@ -480,18 +452,18 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank) {
     if (rank == ndim - 1) { // The innermost rank
         ret_loop.rank = ndim-1;
         ret_loop.size = shape[ndim-1];
+        ret_loop._frees = std::move(frees);
         for (const InstrPtr &instr: instr_list) {
-            if (bh_opcode_is_system(instr->opcode)) {
-                bh_instruction tmp = *instr;
-                tmp.reshape_force(shape);
-                ret_loop._block_list.emplace_back(tmp, ndim);
+            if (instr->opcode == BH_FREE) {
+                ret_loop._frees.insert(instr->operand[0].base);
             } else {
+                assert(not bh_opcode_is_system(instr->opcode));
                 ret_loop._block_list.emplace_back(*instr, ndim);
             }
             assert(ret_loop._block_list.back().getInstr()->shape() == shape);
         }
     } else {
-        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1));
+        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1, std::move(frees)));
     }
     ret_loop.metadataUpdate();
     assert(ret_loop.validation());
@@ -507,7 +479,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     LoopB ret;
     ret.rank = rank;
     ret.size = size_of_rank_dim;
-    for (InstrPtr instr: instr_list) {
+    for (const InstrPtr &instr: instr_list) {
         add_instr_to_block(ret, instr, rank, size_of_rank_dim);
     }
     assert(ret.validation());
@@ -658,7 +630,7 @@ Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
     for (const InstrPtr &instr: l1.getAllInstr()) {
         instr_list.push_back(reshape_rank(instr, l1.rank, size_of_rank_dim));
     }
-    return create_nested_block(instr_list, l1.rank);
+    return create_nested_block(instr_list, l1.rank, l1.getAllFrees());
 }
 } // Unnamed namespace
 

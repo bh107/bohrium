@@ -32,25 +32,6 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-// Compare class for the index sets and maps
-struct idx_less {
-    // This compare is the same as view compare ('v1 < v2') but ignoring their bases
-    bool operator() (const bh_view& v1, const bh_view& v2) const {
-        if (v1.start < v2.start) return true;
-        if (v2.start < v1.start) return false;
-        if (v1.ndim < v2.ndim) return true;
-        if (v2.ndim < v1.ndim) return false;
-        for (int64_t i = 0; i < v1.ndim; ++i) {
-            if (v1.shape[i] < v2.shape[i]) return true;
-            if (v2.shape[i] < v1.shape[i]) return false;
-        }
-        for (int64_t i = 0; i < v1.ndim; ++i) {
-            if (v1.stride[i] < v2.stride[i]) return true;
-            if (v2.stride[i] < v1.stride[i]) return false;
-        }
-        return false;
-    }
-};
 
 // Compare class for the OffsetAndStrides sets and maps
 struct OffsetAndStrides_less {
@@ -84,13 +65,12 @@ class SymbolTable {
 private:
     std::map<const bh_base*, size_t> _base_map; // Mapping a base to its ID
     std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
-    std::map<bh_view, size_t, idx_less> _idx_map; // Mapping a index (of an array) to its ID
+    std::map<bh_view, size_t, OffsetAndStrides_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
     std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID (Order by `origin_id`)
     std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
     std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
-    std::set<bh_base*> _frees; // Set of freed arrays
     bool _useRandom; // Flag: is any instructions using random?
 
 public:
@@ -139,8 +119,6 @@ public:
                 _array_always.insert(instr->operand[0].base);
             } else if (instr->opcode == BH_RANDOM) {
                 _useRandom = true;
-            } else if (instr->opcode == BH_FREE) {
-                _frees.insert(instr->operand[0].base);
             }
             // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
             // already in `_params`. NB: the order of `_params` matches the order of the array IDs
@@ -214,10 +192,6 @@ public:
     const std::vector<bh_base*> &getParams() const {
         return _params;
     }
-    // Return the freed arrays
-    const std::set<bh_base*> &getFrees() const {
-        return _frees;
-    }
     // Is any instructions use the random library?
     bool useRandom() const {
         return _useRandom;
@@ -236,7 +210,7 @@ private:
     std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
     std::set<bh_base*> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
     std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
-    std::set<bh_view, idx_less> _declared_idx; // Set of indexes that have been locally declared
+    std::set<bh_view, OffsetAndStrides_less> _declared_idx; // Set of indexes that have been locally declared
 public:
     template<typename T1, typename T2>
     Scope(const SymbolTable &symbols,

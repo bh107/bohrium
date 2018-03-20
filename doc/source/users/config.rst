@@ -54,6 +54,32 @@ Particularly, ``BH_<backend>_PROF=true`` is very useful to explore why Bohrium m
 
 Which tells us, among other things, that the execution of the compiled JIT kernels (``Exec``) takes 4.91 seconds, the JIT compilation (``Compile``) takes 0.29 seconds, and the time spend outside of Bohrium (``Unaccounted for``) takes 0.61.
 
+
+OpenCL Configuration
+~~~~~~~~~~~~~~~~~~~~
+
+In order to choose which OpenCL platform and deviceto use, set the following environment variables::
+
+  # OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
+  BH_OPENCL_PLATFORM_NO = -1
+  
+  # Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
+  BH_OPENCL_DEVICE_TYPE = auto
+
+You can also set the options in the configure file under the ``[opencl]`` section.
+
+Also under the ``[opencl]`` section, you can set the OpenCL work group sizes::
+  
+  # OpenCL work group sizes
+  work_group_size_1dx = 128
+  work_group_size_2dx = 32
+  work_group_size_2dy = 4
+  work_group_size_3dx = 32
+  work_group_size_3dy = 2
+  work_group_size_3dz = 2
+
+ 
+
 Advanced Configuration
 ~~~~~~~~~~~~~~~~~~~~~~
 

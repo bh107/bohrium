@@ -53,14 +53,22 @@ boost::filesystem::path write_source2file(const std::string &src,
 }
 
 boost::filesystem::path get_tmp_path(const ConfigParser &config) {
-    boost::filesystem::path tmp_path;
+    boost::filesystem::path tmp_path, unique_path;
     const boost::filesystem::path tmp_dir = config.defaultGet<boost::filesystem::path>("tmp_dir", "");
     if (tmp_dir.empty()) {
         tmp_path = boost::filesystem::temp_directory_path();
     } else {
         tmp_path = boost::filesystem::path(tmp_dir);
     }
-    return tmp_path / boost::filesystem::unique_path("bh_%%%%");
+    // On some systems `boost::filesystem::unique_path()` throws a runtime error
+    // when `LC_ALL` is undefined (or invalid). In this case, we set `LC_ALL=C` and try again.
+    try {
+        unique_path = boost::filesystem::unique_path("bh_%%%%");
+    } catch(std::runtime_error &e) {
+        setenv("LC_ALL", "C", 1); // Force C locale
+        unique_path = boost::filesystem::unique_path("bh_%%%%");
+    }
+    return tmp_path / unique_path;
 }
 
 void create_directories(const boost::filesystem::path &path) {
