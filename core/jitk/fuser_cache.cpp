@@ -114,13 +114,15 @@ void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
     for (size_t i = 0; i < instr.operand.size(); ++i) {
+        if (not instr.operand[i].slide_dimensions.empty()) {
+            instr.operand[i].start = origin->operand[i].start;
+        }
+
         if (bh_is_constant(&instr.operand[i])) {
             // NB: sweeped axis values shouldn't be updated
             if (not bh_opcode_is_sweep(instr.opcode)) {
                 instr.constant = origin->constant;
             }
-        } else if (not instr.operand[i].slide_dimensions.empty()) {
-            instr.operand[i].start = origin->operand[i].start;
         } else {
             instr.operand[i].base = base_cached2new.at(instr.operand[i].base);
             assert(instr.operand[i].base == origin->operand[i].base);
