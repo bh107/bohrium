@@ -60,7 +60,7 @@ def _pip_specific_config():
     os.environ["BH_CONFIG"] = _conf_path
     # On OSX, we use the `gcc7`, which contains a complete GCC installation
     import platform
-    if platform.system() == "Darwin":
+    if platform.system() == "Darwin" and "BH_OPENMP_COMPILER_CMD" not in os.environ:
         import gcc7
         cmd = gcc7.path.gcc() + ' -x c -fPIC -shared -std=gnu99 -O3 -march=native -arch x86_64 -Werror ' \
                                 '-I{CONF_PATH}/include -lm -L{CONF_PATH}/lib64 -lbh {IN} -o {OUT}'

@@ -19,12 +19,13 @@ export BH_OPENCL_PROF=true
 export BH_OPENCL_VOLATILE=true
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-if [$# -ne 4];
+if [ "$#" -ne "4" ];
     then echo "illegal number of parameters -- e.g. master 2.7 testing nodeploy"
 fi
 
 # Making sure that the python version is installed
 python$2 --version
+which python$2
 
 # Install dependencies
 python$2 -m pip install --user numpy cython twine
