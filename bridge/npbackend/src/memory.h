@@ -50,7 +50,7 @@ void protected_malloc(BhArray *ary);
  * @param addr Start address of memory segment.
  * @param size Size of memory segment in bytes
  */
-void mem_signal_attach(const void *idx, const void *addr, uint64_t nbytes);
+void mem_signal_attach(void *idx, void *addr, uint64_t nbytes);
 
 /** Move data from the bhc domain to the NumPy domain
  *

@@ -25,11 +25,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 // Help function for unprotect memory
 static void _munprotect(void *data, npy_intp size) {
-    if(mprotect(data, size, PROT_WRITE) != 0) {
+    if(mprotect(data, size, PROT_WRITE | PROT_READ) != 0) {
         int errsv = errno; // mprotect() sets the errno.
         fprintf(stderr,
                 "Fatal error: _munprotect() could not (un-)mprotect a data region. "
-                "Returned error code by mremap(): %s.\n",
+                "Returned error code by mprotect(): %s.\n",
                 strerror(errsv));
         assert(1 == 2);
         exit(-1);
@@ -58,7 +58,7 @@ static void _mremap_data(void *dst, void *src, npy_intp size) {
 #endif
 }
 
-void mem_access_callback(void *id, void *addr) {
+int mem_access_callback(void *addr, void *id) {
     PyObject *ary = (PyObject *) id;
 
     PyGILState_STATE GIL = PyGILState_Ensure();
@@ -78,9 +78,13 @@ void mem_access_callback(void *id, void *addr) {
     }
     PyErr_Clear();
 
+    // If `addr` is protected, the data of `ary` must be in bhc
+    assert(((BhArray*) ary)->data_in_bhc);
+    // Let's copy the memory from bhc to the numpy address space
     mem_bhc2np((BhArray*)ary);
 
     PyGILState_Release(GIL);
+    return 1;
 }
 
 // Help function for protecting the memory of the NumPy part of 'ary'
@@ -99,6 +103,7 @@ static void _mprotect_np_part(BhArray *ary) {
         assert(1 == 2);
         exit(-1);
     }
+    assert(((BhArray*) ary)->data_in_bhc);
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
 }
 
@@ -150,11 +155,12 @@ void protected_malloc(BhArray *ary) {
     // Let's save the pointer to the NumPy allocated memory and use the mprotect'ed memory instead
     ary->npy_data = ary->base.data;
     ary->base.data = addr;
+    assert(((BhArray*) ary)->data_in_bhc);
     bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
     ary->data_in_bhc = 1;
 }
 
-void mem_signal_attach(const void *idx, const void *addr, uint64_t nbytes) {
+void mem_signal_attach(void *idx, void *addr, uint64_t nbytes) {
     bh_mem_signal_attach(idx, addr, nbytes, mem_access_callback);
 }
 
@@ -173,6 +179,7 @@ void mem_bhc2np(BhArray *base_array) {
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
         } else {
+            assert(!bh_mem_signal_exist(d)); // `d` shouldn't be memory protected! 
             _mremap_data(PyArray_DATA((PyArrayObject*) base_array), d, ary_nbytes((BhArray*) base_array));
         }
     } else {
