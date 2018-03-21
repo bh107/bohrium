@@ -63,14 +63,23 @@ echo "Build package:" && ls ~/bh/b$2/dist/*
 if [ "$3" = "testing" ]; then
     python$2 -m pip install ~/bh/b$2/dist/*
     python$2 -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
-    python$2 ~/bh/test/python/run.py ~/bh/test/python/tests/test_*.py
+
+    # We have to skip some tests because of time constraints on travis-ci.org
+    set +x
+    TESTS=""
+    for t in `ls ~/bh/test/python/tests/test_*.py`; do
+        if ! [[ $t =~ (mask|reorganization|summations) ]]; then
+            TESTS="$TESTS $t"
+        fi
+    done
+    set -x
+    BH_STACK=openmp python$2 ~/bh/test/python/run.py $TESTS
 else
     echo 'Notice, if you want to run test set third argument to "testing"'
 fi
 
 # Deploy, remember to define TWINE_USERNAME and TWINE_PASSWORD
 if [ "$4" = "deploy" ]; then
-    python$2 -m pip install --user twine
     python$2 -m twine upload ~/bh/b*/dist/*
 else
     echo 'Notice, if you want to run test set fourth argument to "deploy"'
