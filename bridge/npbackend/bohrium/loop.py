@@ -8,7 +8,7 @@ import numpy_force as numpy
 from . import _bh
 from . import bhary
 from . import array_create
-from iterator import get_iterator
+from .iterator import get_iterator
 
 
 def do_while(func, niters, *args, **kwargs):
