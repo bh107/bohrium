@@ -22,12 +22,21 @@ void slide_views(BhIR *bhir) {
     // Iterate through all instructions and slide the relevant views
     for (bh_instruction &instr : bhir->instr_list) {
         for (bh_view &view : instr.operand) {
-            if (not view.slide_strides.empty()) {
+            if (not view.slide.empty()) {
                 // The relevant dimension in the view is updated by the given stride
-                for (size_t i = 0; i < view.slide_strides.size(); i++) {
-                    size_t off_dim    = view.slide_dimensions.at(i);
-                    int off_stride = (int) view.slide_strides.at(i);
-                    view.start += view.stride[off_dim] * off_stride;
+                for (size_t i = 0; i < view.slide.size(); i++) {
+                    int change = view.slide.at(i)*view.slide_dim_stride.at(i);
+                    int max_rel_idx = view.slide_dim_stride.at(i)*view.slide_dim_shape.at(i);
+                    int rel_idx = view.start%(view.slide_dim_stride.at(i)*view.slide_dim_shape.at(i));
+                    rel_idx += change;
+
+                    if (rel_idx < 0) {
+                        change += max_rel_idx;
+                    } else if (rel_idx >= max_rel_idx) {
+                        change -= max_rel_idx;
+                    }
+
+                    view.start += change;
                 }
             }
         }
