@@ -95,7 +95,7 @@ res = M.arange(1,6)
 
 
 class test_loop_one_and_two_dimensional_sliding_views:
-    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    """Test of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
@@ -128,7 +128,7 @@ res = M.zeros((5, 1))
 
 
 class test_loop_sliding_view_index_switch_negative_positive:
-    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    """Test of a sliding view that goes from a negative to a positive index (and vice versa)"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
@@ -136,7 +136,7 @@ iter = %s
 def kernel(a,i):
     a[i] += 1
 
-def kernelppp2(a,i):
+def kernel2(a,i):
     a[-i] += 1
 
 res = M.zeros(iter)
@@ -168,7 +168,7 @@ M.do_while(kernel2, iter, res)
 
 
 class test_loop_sliding_view_negative_index_3d:
-    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    """Test of negative sliding in a 3-dimensional view"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
@@ -195,7 +195,7 @@ res = M.zeros((3,3,3))
 
 
 class test_loop_sliding_view_out_of_bounds:
-    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    """Test a of error checks when sliding out of bounds"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
@@ -248,7 +248,7 @@ if not failure:
 
 
 class test_loop_sliding_change_shape:
-    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    """Test detecting the view changing shape between iterations"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
