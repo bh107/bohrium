@@ -33,27 +33,35 @@ class iterator(object):
 
     def __rsub__(self, other):
         new_it = copy.copy(self)
-        new_it.offset -= other
+        new_it.step *= -1
+        new_it.offset = other - new_it.offset
         return new_it
 
     def __mul__(self, other):
         new_it = copy.copy(self)
+        new_it.offset *= other
         new_it.step *= other
         return new_it
 
     def __rmul__(self, other):
         new_it = copy.copy(self)
+        new_it.offset *= other
         new_it.step *= other
         return new_it
 
+    def __neg__(self):
+        new_it = copy.copy(self)
+        new_it.step *= -1
+        new_it.offset *= -1
+        return new_it
 
 class IteratorOutOfBounds(Exception):
     '''Exception thrown when a view goes out of bounds after the maximum
        iterations.'''
-    def __init__(self, dim, shape, last_index):
+    def __init__(self, dim, shape, first_index, last_index):
         error_msg = "\n    Iterator out of bounds:\n" \
-                    "     Dimension %d has length %d, iterator goes to %d." \
-                    % (dim, shape, last_index)
+                    "     Dimension %d has length %d, iterator starts from %d and goes to %d." \
+                    % (dim, shape, first_index, last_index)
         super(IteratorOutOfBounds, self).__init__(error_msg)
 
 
@@ -124,7 +132,7 @@ def has_iterator(*s):
         for t in s:
             it = check_simple_type(t)
             if it: return it
-            return False
+        return False
     else:
         return check_simple_type(s)
 
@@ -134,12 +142,12 @@ def slide_from_view(a, sliced):
     def check_bounds(shape, dim, s):
         '''Checks whether the view is within the bounds of the array,
         given the maximum number of iterations'''
-        last_index = s.offset + s.step * s.max_iter
-        if 0 <= s.offset  <= shape[dim] and \
-           0 <= last_index <= shape[dim]:
+        last_index = s.offset + s.step * (s.max_iter-1)
+        if -shape[dim] <= s.offset   < shape[dim] and \
+           -shape[dim] <= last_index < shape[dim]:
             return True
         else:
-            raise IteratorOutOfBounds(dim, shape[dim], last_index)
+            raise IteratorOutOfBounds(dim, shape[dim], s.offset, last_index)
 
 
     def check_shape(s):
@@ -178,15 +186,18 @@ def slide_from_view(a, sliced):
             # A single iterator (eg. a[i])
             else:
                 # Check whether the iterator stays within the array
-                check_bounds(a.shape, 0, s)
-                new_slices += (slice(s.offset, s.offset+1),)
+                check_bounds(a.shape, i, s)
+                if s.offset == -1:
+                    new_slices += (slice(s.offset, None),)
+                else:
+                    new_slices += (slice(s.offset, s.offset+1),)
                 slides.append((i, s.step))
         else:
             new_slices += (s,)
-    return slide_view(a[new_slices], slides)
+    return slide_view(a, new_slices, slides)
 
 
-def slide_view(a, dim_stride_tuples):
+def slide_view(a, s, dim_stride_tuples):
     """Creates a dynamic view within a loop, that updates the given dimensions
        by the given strides at the end of each iteration.
 
@@ -200,9 +211,9 @@ def slide_view(a, dim_stride_tuples):
     from . import _bh
 
     # Allocate a new view
-    b = a
+    b = a[s]
 
     # Set the relevant update conditions for the new view
     for (dim, stride) in dim_stride_tuples:
-        _bh.slide_view(b, dim, stride)
+        _bh.slide_view(a, b, dim, stride)
     return b
