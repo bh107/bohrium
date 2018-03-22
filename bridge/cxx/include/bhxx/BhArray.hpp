@@ -59,11 +59,14 @@ class BhArray {
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
 
-    // The dimensions of this array that is slided during loop iterations
-    std::vector<size_t> slide_dimensions;
+    // The slide the offset should be changed by (can be both positive and negative)
+    std::vector<int64_t> slide;
 
-    // The strides that these dimensions is slided during loop iterations
-    std::vector<size_t> slide_strides;
+    // The strides of the orignal view
+    std::vector<int64_t> slide_dim_stride;
+
+    // The relevant dimensions
+    std::vector<int64_t> slide_dim_shape;
 
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)

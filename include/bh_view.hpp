@@ -54,10 +54,12 @@ struct bh_view {
         start = view.start;
         ndim = view.ndim;
         assert(ndim < BH_MAXDIM);
-        assert(view.slide_strides.size() == view.slide_dimensions.size());
+        assert(view.slide.size() == view.slide_dim_shape.size());
+        assert(view.slide_dim_stride.size() == view.slide_dim_shape.size());
 
-        slide_dimensions = view.slide_dimensions;
-        slide_strides = view.slide_strides;
+        slide = view.slide;
+        slide_dim_stride = view.slide_dim_stride;
+        slide_dim_shape = view.slide_dim_shape;
 
         std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
         std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
@@ -79,10 +81,13 @@ struct bh_view {
     int64_t stride[BH_MAXDIM];
 
     /// Dimensions to be slided each loop iterations
-    std::vector<size_t> slide_dimensions;
+    std::vector<int64_t> slide;
 
     /// The strides these dimensions is slided each dynamically
-    std::vector<size_t> slide_strides;
+    std::vector<int64_t> slide_dim_stride;
+
+    /// The shape of the given dimension (used for negative indices)
+    std::vector<int64_t> slide_dim_shape;
 
 
     // Returns a vector of tuples that describe the view using (almost)

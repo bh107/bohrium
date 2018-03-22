@@ -143,44 +143,39 @@ An example where the function returns a ``bharray`` with one element and of type
 Sliding views between iterations
 ~~~~~~~~~~~~~~~~
 
-It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using ``slide_view()``, which takes a view into an array and a list of tuples. The first argument of a tuple indicates a dimension, while the second dictates the stride the start of a dimension is increased/decreased by for each iteration. At the moment, ``slide_view()`` does not support boundary checks (if the array is underflowed/overflowed, the behaviour is undefined). ``slide_view()`` only supports changes at the end of each iteration and all ``slide_view()`` calls must be placed at the top of the loop body.
+It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using ``get_iterator()``, which returns a special bohrium iterator. The iterator can be given an optional start value (0 by default). The iterator is increased by one for each iteration, but can be changed increase or decrease by multiplying any constant (see example 2).
 
-The function signature::
+Iterators only supports addition, subtraction and multiplication. ``get_iterator()`` can only be used within Bohrium loops. Views using iterators cannot change shape between iterations. Therefore, views such as ``a[i:2*i]`` are not supported.
 
-  def slide_view(a, dim_stride_tuples):
-    """Creates a dynamic view within a loop, that updates the given dimensions by the given strides at the end of each iteration.
+Example 1. Using iterators to create a loop-based function for calculating the triangular numbers (from 1 to 10). The loop in numpy looks the following::
 
-    Parameters
-    ----------
-    a : array view
-        A view into an array
-    dim_stride_tuples: (int, int)[]
-        A list of (dimension, stride) pairs. For each of these pairs, the dimension is updated by the stride in each iteration of a loop.
-
-    Notes
-    -----
-    No boundary checks are performed. If the view overflows the array, the behaviour is undefined.
-    All slide_view() calls must be at the top of the loop body.
-    All views are changed at the end of an iteration and cannot be performed in the middle of a loop body.
-
-An example of using dynamic views could be writing a loop-based function for calculating the triangular numbers (from 1 to 10). The loop in numpy looks the following::
-
-        >>> a = np.arange(10) + 1
+        >>> a = np.arange(1,11)
         >>> for i in range(0,9):
-        ...     a[i+1:i+2] += a[i:i+1]
+        ...     a[i+1] += a[i]
         >>> a
         array([1 3 6 10 15 21 28 36 45 55])
 
 The same can be written in Bohrium as::
 
         >>> def loop_body(a):
-        ...    b = bh.slide_view(a[1:2], [(0,1)])
-        ...    c = bh.slide_view(a[0:1], [(0,1)])
-        ...    b += c
-        >>> a = bh.arange(10)+1
-        >>> bh.for_loop(loop_body, 9, a)
+        ...    i = get_iterator()
+        ...    a[i+1] += a[i]
+        >>> a = bh.arange(1,11)
+        >>> bh.do_while(loop_body, 9, a)
         >>> a
         array([1 3 6 10 15 21 28 36 45 55])
+
+Example 2. Increasing every second element by one, starting at both ends, in the same loop. As it can be seen: `i` is increased by 2, while `j` is descreased by 2 for each iteration::
+
+        >>> def loop_body(a):
+        ...   i = get_iterator(1)
+        ...   a[2*i] += a[2*(i-1)]
+        ...   j = i+1
+        ...   a[1-2*j] += a[1-2*(j-1)]
+        >>> a = bh.ones(10)
+        >>> bh.for_loop(loop_body, 4, a)
+        >>> a
+        array([1 5 2 4 3 3 4 2 5 1])
 
 .. _interop:
 

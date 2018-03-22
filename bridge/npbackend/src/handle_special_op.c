@@ -159,31 +159,50 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
 }
 
 PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
-    PyObject *ary;
+    PyObject *ary1;
+    PyObject *ary2;
     unsigned int dim;
-    unsigned int stride;
+    int slide;
 
-    static char *kwlist[] = {"ary", "dim:int", "stride:int", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OKK", kwlist, &ary, &dim, &stride)) {
+    static char *kwlist[] = {"ary1", "ary2", "dim:int", "slide:int", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOKK", kwlist, &ary1, &ary2, &dim, &slide)) {
         return NULL;
     }
 
-    bhc_dtype type;
-    bhc_bool constant;
-    void *operand;
-    normalize_cleanup_handle cleanup;
-    cleanup.objs2free_count = 0;
-    int err = normalize_operand(ary, &type, &constant, &operand, &cleanup);
-    if (err == -1) {
-        normalize_operand_cleanup(&cleanup);
+    bhc_dtype type1;
+    bhc_bool constant1;
+    void *operand1;
+    normalize_cleanup_handle cleanup1;
+    int err1 = normalize_operand(ary1, &type1, &constant1, &operand1, &cleanup1);
+    cleanup1.objs2free_count = 0;
+    if (err1 == -1) {
+        normalize_operand_cleanup(&cleanup1);
         if (PyErr_Occurred() != NULL) {
             return NULL;
         } else {
             Py_RETURN_NONE;
         }
     }
-    bhc_slide_view(type, operand, dim, stride);
-    normalize_operand_cleanup(&cleanup);
+
+    bhc_dtype type2;
+    bhc_bool constant2;
+    void *operand2;
+    normalize_cleanup_handle cleanup2;
+    int err2 = normalize_operand(ary2, &type2, &constant2, &operand2, &cleanup2);
+    cleanup2.objs2free_count = 0;
+    if (err2 == -1) {
+        normalize_operand_cleanup(&cleanup2);
+        if (PyErr_Occurred() != NULL) {
+            return NULL;
+        } else {
+            Py_RETURN_NONE;
+        }
+    }
+
+    bhc_slide_view(type1, operand1, operand2, dim, slide);
+    normalize_operand_cleanup(&cleanup1);
+    normalize_operand_cleanup(&cleanup2);
+
     Py_RETURN_NONE;
 }
 
