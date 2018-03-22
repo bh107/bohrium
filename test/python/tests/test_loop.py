@@ -102,7 +102,7 @@ class test_loop_one_and_two_dimensional_sliding_views:
 def kernel(a,b,i):
     a[i] += b[i, i]
 
-b = M.ones((2pppp0, 5))
+b = M.ones((20, 5))
 b[::2, ::2] += 1
 b[1::2, 1::2] += 1
 res = M.zeros((5, 1))
