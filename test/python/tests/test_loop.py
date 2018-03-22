@@ -102,7 +102,7 @@ class test_loop_one_and_two_dimensional_sliding_views:
 def kernel(a,b,i):
     a[i] += b[i, i]
 
-b = M.ones((20, 5))
+b = M.ones((2pppp0, 5))
 b[::2, ::2] += 1
 b[1::2, 1::2] += 1
 res = M.zeros((5, 1))
@@ -127,6 +127,73 @@ res = M.zeros((5, 1))
         return (cmd1 + "do_while_i(kernel, %s, res, b)" % (niter), cmd2 + "M.do_while(kernel, %s, res, b)" % (niter))
 
 
+class test_loop_sliding_view_index_switch_negative_positive:
+    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+iter = %s
+def kernel(a,i):
+    a[i] += 1
+
+def kernelppp2(a,i):
+    a[-i] += 1
+
+res = M.zeros(iter)
+do_while_i(kernel, iter, res)
+do_while_i(kernel2, iter, res)
+"""
+        cmd2 = np_dw_loop_src + \
+"""
+iter = %s
+def kernel(a):
+    i = get_iterator(-2)
+    a[i] += 1
+
+def kernel2(a):
+    i = get_iterator(-2)
+    a[-i] += 1
+
+res = M.zeros(iter)
+M.do_while(kernel, iter, res)
+M.do_while(kernel2, iter, res)
+"""
+        yield (cmd1, cmd2, 5)
+
+    def test_func(self, args):
+        """Test of the do_while function"""
+        (cmd1, cmd2, niter) = args
+
+        return (cmd1 % (niter), cmd2 % (niter))
+
+
+class test_loop_sliding_view_negative_index_3d:
+    """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+def kernel(a,i):
+    a[-i, -i, -i] += 1
+
+res = M.zeros((3,3,3))
+"""
+        cmd2 = np_dw_loop_src + \
+"""
+def kernel(a):
+    i = get_iterator()
+    a[-i, -i, -i] += 1
+
+res = M.zeros((3,3,3))
+"""
+        yield (cmd1, cmd2, 3)
+
+    def test_func(self, args):
+        """Test of the do_while function"""
+        (cmd1, cmd2, niter) = args
+
+        return (cmd1 + "do_while_i(kernel, %s, res)" % (niter), cmd2 + "M.do_while(kernel, %s, res)" % (niter))
+
+
 class test_loop_sliding_view_out_of_bounds:
     """Test a of sliding two views with a for loop. One view is one-dimensional, while the other is two-dimensional"""
     def init(self):
@@ -146,8 +213,8 @@ def kernel_out_of_bounds_overflow(a):
     a[i] += 1
 
 def kernel_out_of_bounds_underflow(a):
-    i = get_iterator(-1)
-    a[i] += 1
+    i = get_iterator(2)
+    a[-i] += 1
 
 def kernel(a):
     i = get_iterator()
@@ -158,13 +225,13 @@ res   = M.zeros(iter)
 failure = False
 
 try:
-    M.do_while(kernel_out_of_bounds_overflow, iter, dummy)
+    M.do_while(kernel_out_of_bounds_overflow, len(res), dummy)
     failure = True
 except M.iterator.IteratorOutOfBounds:
     pass
 
 try:
-    M.do_while(kernel_out_of_bounds_underflow, iter, dummy)
+    M.do_while(kernel_out_of_bounds_underflow, len(res), dummy)
     failure = True
 except M.iterator.IteratorOutOfBounds:
     pass
