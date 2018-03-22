@@ -28,12 +28,12 @@ python$2 --version
 which python$2
 
 # Install dependencies
-python$2 -m pip install --user numpy cython twine
+python$2 -m pip install --user numpy cython twine scipy
 brew install cmake || true
 brew install boost --with-icu4c || true
 brew install libsigsegv || true
-#brew install opencv
-#brew install clblas
+brew install clblas || true
+brew install opencv || true
 
 # Download source into `~/bh`
 git clone https://github.com/madsbk/bohrium.git --branch $1
@@ -52,7 +52,10 @@ echo "-L/usr/local/lib/libsigsegv.2.dylib \\" >> ~/bh/wheel.sh
 echo "-L/usr/local/opt/boost/lib/libboost_serialization-mt.dylib \\" >> ~/bh/wheel.sh
 echo "-L/usr/local/opt/boost/lib/libboost_filesystem-mt.dylib \\" >> ~/bh/wheel.sh
 echo "-L/usr/local/opt/boost/lib/libboost_system-mt.dylib \\" >> ~/bh/wheel.sh
-echo "-L/usr/local/opt/boost/lib/libboost_regex-mt.dylib " >> ~/bh/wheel.sh
+echo "-L/usr/local/opt/boost/lib/libboost_regex-mt.dylib \\" >> ~/bh/wheel.sh
+
+# Include clBLAS
+echo "-L/usr/local/lib/libclBLAS.dylib " >> ~/bh/wheel.sh
 
 # Build Bohrium and the wheel package
 bash ~/bh/build.sh $2
