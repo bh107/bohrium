@@ -67,11 +67,9 @@ void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
         size_t view_id = views.insert(view).first;
         ss << view_id;
         // Sliding views has identical hashes across iterations
-        if (view.slide_dimensions.empty()) {
+        if (view.slide.empty()) {
             ss << view.start;
-        } //else  {
-            //            ss << view.start;
-        //        }
+        }
 
         ss << view.ndim;
         for (int j = 0; j < view.ndim; ++j) {
@@ -114,7 +112,7 @@ void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
     for (size_t i = 0; i < instr.operand.size(); ++i) {
-        if (not instr.operand[i].slide_dimensions.empty()) {
+        if (not instr.operand[i].slide.empty()) {
             instr.operand[i].start = origin->operand[i].start;
         }
 
