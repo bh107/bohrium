@@ -58,7 +58,7 @@ Which tells us, among other things, that the execution of the compiled JIT kerne
 OpenCL Configuration
 ~~~~~~~~~~~~~~~~~~~~
 
-In order to choose which OpenCL platform and deviceto use, set the following environment variables::
+In order to choose which OpenCL platform and device to use, set the following environment variables::
 
   # OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
   BH_OPENCL_PLATFORM_NO = -1
