@@ -74,7 +74,11 @@ def is_cuda_in_stack():
 def pprint():
     """Pretty print Bohrium info"""
 
-    ret = """----
+    ret = ""
+    if not (is_opencl_in_stack() or is_cuda_in_stack()):
+        ret += "Note: in order to activate and retrieve GPU info, set the `BH_STACK=opencl` environment variable.\n"
+
+    ret += """----
 Bohrium version: %s
 Build with NumPy version: %s
 Installed through PyPI: %s
@@ -82,6 +86,5 @@ Config file: %s
 Backend stack:
 %s----
 """ % (version(), numpy_version(), installed_through_pypi(), config_file_path(), runtime_info())
-    if not (is_opencl_in_stack() or is_cuda_in_stack()):
-        ret += "Note: in order to activate and retrieve GPU info, set the `BH_STACK=opencl` environment variable."
+
     return ret
