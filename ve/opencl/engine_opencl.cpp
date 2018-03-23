@@ -514,12 +514,23 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
 
 std::string EngineOpenCL::info() const {
     stringstream ss;
-    ss << "----"                                                                        << "\n";
-    ss << "OpenCL:"                                                                     << "\n";
-    ss << "  Platform: \"" << platform.getInfo<CL_PLATFORM_NAME>()                      << "\"\n";
-    ss << "  Device:   \"" << device.getInfo<CL_DEVICE_NAME>() << " (" \
-                           << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()              << ")\"\n";
-    ss << "  Memory:   \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024 << " MB\"\n";
+    ss << std::boolalpha; // Printing true/false instead of 1/0
+    ss << "----"                                                                                 << "\n";
+    ss << "OpenCL:"                                                                              << "\n";
+    ss << "  Platform no:    \""; if(platform_no == -1) ss << "auto"; else ss << platform_no; ss << "\"\n";
+    ss << "  Platform:       \"" << platform.getInfo<CL_PLATFORM_NAME>()                         << "\"\n";
+    ss << "  Device type:    \"" << default_device_type                                          << "\"\n";
+    ss << "  Device:         \"" << device.getInfo<CL_DEVICE_NAME>() << " (" \
+                                 << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()                 << ")\"\n";
+    ss << "  Memory:         \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\"\n";
+    ss << "  Compiler flags: \"" << compile_flg << "\"\n";
+    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+
+    ss << "  Codegen flags:\n";
+    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 

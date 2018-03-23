@@ -44,7 +44,7 @@ public:
     const bool prof;
     // Maximum number of thread to use
     const uint64_t num_threads;
-    // Maximum number of thread to use
+    // When max threads is set, use round robin?
     const bool num_threads_round_robin;
 
     EngineGPU(const ConfigParser &config, Statistics &stat) :
