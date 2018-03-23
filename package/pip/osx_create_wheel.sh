@@ -83,7 +83,7 @@ fi
 
 # Deploy, remember to define TWINE_USERNAME and TWINE_PASSWORD
 if [ "$4" = "deploy" ]; then
-    python$2 -m twine upload ~/bh/b*/dist/*
+    python$2 -m twine upload ~/bh/b*/dist/* || true
 else
     echo 'Notice, if you want to run test set fourth argument to "deploy"'
 fi
