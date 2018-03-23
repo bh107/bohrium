@@ -36,7 +36,7 @@ brew install clblas || true
 brew install opencv || true
 
 # Download source into `~/bh`
-git clone https://github.com/madsbk/bohrium.git --branch $1
+git clone https://github.com/bh107/bohrium.git --branch $1
 mv bohrium ~/bh
 
 # Create a script `~/bh/build.sh` that build and install Bohrium with the given python version
