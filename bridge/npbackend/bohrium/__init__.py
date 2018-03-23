@@ -53,11 +53,10 @@ def _pip_specific_config():
     """Handle pip specific configurations"""
 
     # Do nothing if we a not a pip package or the user has manually specified a config file
-    _conf_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini")
-    if not os.path.exists(_conf_path) or "BH_CONFIG" in os.environ:
+    if not bh_info.installed_through_pypi() or "BH_CONFIG" in os.environ:
         return
 
-    os.environ["BH_CONFIG"] = _conf_path
+    os.environ["BH_CONFIG"] = bh_info.config_file_path()
     # On OSX, we use the `gcc7`, which contains a complete GCC installation
     import platform
     if platform.system() == "Darwin" and "BH_OPENMP_COMPILER_CMD" not in os.environ:

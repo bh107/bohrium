@@ -78,5 +78,5 @@ Check Your Installation
 
 Check installation by printing the current runtime stack::
 
-    python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
+    python -m bohrium --info
 
