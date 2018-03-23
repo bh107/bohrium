@@ -65,7 +65,7 @@ echo "Build package:" && ls ~/bh/b$2/dist/*
 # Testing of the wheel package
 if [ "$3" = "testing" ]; then
     python$2 -m pip install ~/bh/b$2/dist/*
-    python$2 -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
+    python$2 -m bohrium --info
 
     # We have to skip some tests because of time constraints on travis-ci.org
     set +x
