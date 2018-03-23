@@ -83,6 +83,7 @@ class test_ext_lapack_p:
 
 
 try:
+    import scipy
     class test_ext_scipy:
         def init(self):
             if not has_ext():

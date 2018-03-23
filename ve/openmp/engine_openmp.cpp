@@ -400,9 +400,20 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
 
 std::string EngineOpenMP::info() const {
     stringstream ss;
+    ss << std::boolalpha; // Printing true/false instead of 1/0
     ss << "----"                                                           << "\n";
     ss << "OpenMP:"                                                        << "\n";
     ss << "  Hardware threads: " << std::thread::hardware_concurrency()    << "\n";
+    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+
+    ss << "  Codegen flags:\n";
+    ss << "    OpenMP: " << config.defaultGet<bool>("compiler_openmp", false)  << "\n";
+    ss << "    OpenMP+SIMD: " << config.defaultGet<bool>("compiler_openmp_simd", false)  << "\n";
+    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
+
     ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
     return ss.str();
 }

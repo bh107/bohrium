@@ -41,6 +41,12 @@ RUN bash /bh/wheel.sh 3.6
 RUN pip install /bh/b3.6/dist/*
 RUN pip install benchpress
 
+# Sanity check and info
+RUN BH_STACK=opencl /opt/python/cp27-cp27mu/bin/python -m bohrium --info
+RUN BH_STACK=opencl /opt/python/cp34-cp34m/bin/python -m bohrium --info
+RUN BH_STACK=opencl /opt/python/cp35-cp35m/bin/python -m bohrium --info
+RUN BH_STACK=opencl /opt/python/cp36-cp36m/bin/python -m bohrium --info
+
 # Deploy script
 WORKDIR /bh
 RUN echo "#/usr/bin/env bash" > deploy.sh && \

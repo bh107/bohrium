@@ -5,7 +5,9 @@
 
 import sys
 import os
+import argparse
 import bohrium
+from . import bh_info
 
 
 @bohrium.replace_numpy
@@ -21,15 +23,39 @@ def execfile_wrapper(path):
     return execfile(path, {"__name__": "__main__", "__file__": path})
 
 
-# Set the module search path to the dir of the script
-sys.argv.pop(0)
-if len(sys.argv) > 0:
-    sys.path[0] = os.path.dirname(os.path.abspath(sys.argv[0]))
-else:
-    sys.path[0] = ""
+if len(sys.argv) <= 1:
+    sys.stderr.write('ERR: the "-m bohrium" does not support interactive mode\n')
+    sys.exit(-1)
 
-# Let's run the script
-if len(sys.argv) > 0:
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--info',
+    action="store_true",
+    default=False,
+    help='Print Runtime Info'
+)
+(args, argv) = parser.parse_known_args()
+
+# If there are more arguments than parsed, we are running a regular script
+# Else we are running one of the build-in Bohrium scripts
+if len(argv) > 0:
+    # Set the module search path to the dir of the script
+    sys.argv.pop(0)
+    if len(sys.argv) > 0:
+        sys.path[0] = os.path.dirname(os.path.abspath(sys.argv[0]))
+    else:
+        sys.path[0] = ""
     execfile_wrapper(sys.argv[0])
 else:
-    print ('ERR: the "-m bohrium" does not support interactive mode')
+    if args.info:
+        print(bh_info.pprint())
+
+        cmd = "import bohrium as bh; import numpy as np; assert((bh.arange(10) == np.arange(10)).all())"
+        sys.stdout.write('Sanity Check: "%s"' % cmd)
+        try:
+            exec(cmd)
+            sys.stdout.write(' - success!\n')
+        except AssertionError as e:
+            sys.stdout.write('\n')
+            sys.stderr.write("ERROR - the sanity checked failed!\n")

@@ -1,14 +1,16 @@
 Linux
 =====
 
-PIP Package
------------
+.. highlight:: ruby
 
-If you use Bohrium through Python, we strongly recommend to install Bohrium through PIP, which will include BLAS, LAPACK, OpenCV, and OpenCL support::
+PyPI Package
+------------
+
+If you use Bohrium through Python, we strongly recommend to install Bohrium through `pypi <https://pypi.python.org/pypi>`_, which will include BLAS, LAPACK, OpenCV, and OpenCL support::
 
     pip install --user bohrium
 
-.. note:: Bohrium requires ``gcc`` in ``$PATH``. E.g. on Ubuntu install the build-essential package: ``sudo apt install build-essential``.
+.. note:: On linux, Bohrium requires ``gcc`` in ``$PATH``. E.g. on Ubuntu install the build-essential package: ``sudo apt install build-essential``.
 
 Ubuntu
 ------
@@ -26,7 +28,7 @@ On Ubuntu you can use apt-get::
 Anaconda
 --------
 
-To use Anaconda, simply install the Bohrium PIP package in an enviroment::
+To use Anaconda, simply install the Bohrium PyPI package in an environment::
 
     # Activate the environment where you want to install Bohrium:
     source activate my_env
@@ -86,4 +88,4 @@ Check Your Installation
 
 Check installation by printing the current runtime stack::
 
-    python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
+    python -m bohrium --info

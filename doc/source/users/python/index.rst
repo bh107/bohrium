@@ -4,6 +4,13 @@ Python/NumPy
 .. contents::
     :local:
 
+Runtime Info
+~~~~~~~~~~~~
+
+Print the current Bohrium runtime stack::
+
+    python -m bohrium --info
+
 Automatic Parallelization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -84,14 +91,6 @@ Copy a bohrium array into a new NumPy array::
     npy2 = bh_ary.copy2numpy()
 
 
-Runtime Info
-~~~~~~~~~~~~
-
-Print the current Bohrium runtime stack::
-
-    python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
-
-
 Accelerate Loops
 ~~~~~~~~~~~~~~~~
 
@@ -140,8 +139,8 @@ An example where the function returns a ``bharray`` with one element and of type
         array([3, 3, 3, 3])
 
 
-Sliding views between iterations
-~~~~~~~~~~~~~~~~
+Sliding Views Between Iterations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using ``get_iterator()``, which returns a special bohrium iterator. The iterator can be given an optional start value (0 by default). The iterator is increased by one for each iteration, but can be changed increase or decrease by multiplying any constant (see example 2).
 

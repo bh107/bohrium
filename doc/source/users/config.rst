@@ -1,7 +1,7 @@
 Runtime Configuration
 ---------------------
 
-.. highlight:: python
+.. highlight:: ruby
 
 Bohrium supports a broad range of front and back-ends.
 The default backend is OpenMP. You can change which backend to use by defining the ``BH_STACK`` environment variable:
@@ -58,18 +58,18 @@ Which tells us, among other things, that the execution of the compiled JIT kerne
 OpenCL Configuration
 ~~~~~~~~~~~~~~~~~~~~
 
-In order to choose which OpenCL platform and deviceto use, set the following environment variables::
+In order to choose which OpenCL platform and device to use, set the following environment variables::
 
   # OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
   BH_OPENCL_PLATFORM_NO = -1
-  
+
   # Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
   BH_OPENCL_DEVICE_TYPE = auto
 
 You can also set the options in the configure file under the ``[opencl]`` section.
 
 Also under the ``[opencl]`` section, you can set the OpenCL work group sizes::
-  
+
   # OpenCL work group sizes
   work_group_size_1dx = 128
   work_group_size_2dx = 32
@@ -78,7 +78,7 @@ Also under the ``[opencl]`` section, you can set the OpenCL work group sizes::
   work_group_size_3dy = 2
   work_group_size_3dz = 2
 
- 
+
 
 Advanced Configuration
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -88,8 +88,10 @@ In order to configure the runtime setup of Bohrium you must provide a configurat
 At runtime Bohrium will search through the following prioritized list in order to find the configuration file:
 
 * The environment variable ``BH_CONFIG``
-* The home directory config ``~/.bohrium/config.ini`` (ignored in a pip installation)
-* The system-wide config ``/etc/bohrium/config.ini`` (ignored in a pip installation)
+* The config within the Python package ``bohrium/config.ini`` (in the same directory as ``__init__.py``)
+* The home directory config ``~/.bohrium/config.ini``
+* The system-wide config ``/usr/local/etc/bohrium/config.ini``
+* The system-wide config ``/etc/bohrium/config.ini``
 
 The default configuration file looks similar to the config below::
 
@@ -183,7 +185,6 @@ Components marked with square brackets. For example ``[node]``, ``[openmp]``, ``
 
 The ``stacks`` define different default configurations of the runtime environment and one can switch between them using the environment var ``BH_STACK``.
 
-.. highlight:: python
 
 The configuration of a component can be overwritten with environment variables using the naming convention ``BH_[COMPONENT]_[OPTION]``, below are a couple of examples controlling the behavior of the CPU vector engine::
 
