@@ -28,11 +28,6 @@ Then install Bohrium::
   brew tap homebrew/science # for clblas and the likes
   brew install bohrium # you can add additional options, see `brew info bohrium`
 
-Check the current runtime stack::
-
-  python -c "import bohrium as bh; print(bh.bh_info.runtime_info())"
-
-
 Install From Source Package
 ---------------------------
 
