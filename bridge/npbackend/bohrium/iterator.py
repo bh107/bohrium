@@ -205,6 +205,8 @@ def slide_view(a, s, dim_stride_tuples):
     ----------
     a : array view
         A view into an array
+    s : slice
+        The relevant slice of the view
     dim_stride_tuples: (int, int)[]
         A list of (dimension, stride) pairs. For each of these pairs, the
         dimension is updated by the stride in each iteration of a loop."""
