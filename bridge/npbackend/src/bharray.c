@@ -92,7 +92,12 @@ void *bharray_bhc(BhArray *ary) {
 
     // Get the base `ary` and make sure it has a bhc_array
     BhArray *base = get_base((PyObject*) ary);
-    if (base != ary) {
+    if (base == NULL) {
+        fprintf(stderr, "Fatal exception in bharray_bhc()\n");
+        PyErr_Print();
+        assert(1 == 2);
+        exit(-1);
+    } else if (base != ary) {
         bharray_bhc(base);
     } else if (!base->data_in_bhc) {
         mem_np2bhc(base);

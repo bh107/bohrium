@@ -34,6 +34,10 @@ PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
         // We have to handle float view of complex bases, which is something NumPy supports
         if(!IsAnyScalar(op) && PyArray_Check(op)) {
             BhArray *base = get_base(op);
+            if (base == NULL) {
+                normalize_operand_cleanup(&cleanup);
+                return NULL;
+            }
             if(PyArray_ISFLOAT((PyArrayObject *) op) && PyArray_ISCOMPLEX((PyArrayObject *) base)) {
                 if (i == 0) {
                     PyErr_Format(PyExc_ValueError, "Sorry - Bohrium does't handle writing to "

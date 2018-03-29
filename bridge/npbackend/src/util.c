@@ -119,17 +119,15 @@ BhArray *get_base(PyObject *ary) {
     } else {
         base = PyObject_GetAttrString(ary, "base");
         if(base == NULL) {
-            fprintf(stderr, "Fatal error: get_base() - the object has no base!\n");
-            assert(1 == 2);
-            exit(-1);
+            PyErr_Format(PyExc_ValueError, "get_base() - the object has no base!\n");
+            return NULL;
         }
         Py_DECREF(base); // Notice, we are returning a borrowed reference
     }
     if (base == NULL || base == Py_None) {
         if(!BhArray_CheckExact(ary)) {
-            fprintf(stderr, "Fatal error: get_base() - the base object isn't a bohrium array!\n");
-            assert(1 == 2);
-            exit(-1);
+            PyErr_Format(PyExc_ValueError, "get_base() -  the base object isn't a bohrium array!\n");
+            return NULL;
         }
         return (BhArray *) ary;
     } else {

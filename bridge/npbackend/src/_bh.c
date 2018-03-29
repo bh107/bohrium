@@ -197,6 +197,9 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
     BhArray *base = get_base(self);
+    if (base == NULL) {
+        return NULL;
+    }
 
     if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
         PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
@@ -241,7 +244,11 @@ static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     if(ret == NULL) {
         return NULL;
     }
-    if(BhArray_data_bhc2np((PyObject*) get_base(self)) == NULL) {
+    PyObject *base = (PyObject*) get_base(self);
+    if (base == NULL) {
+        Py_DECREF(ret);
+        return NULL;
+    } else if(BhArray_data_bhc2np(base) == NULL) {
         Py_DECREF(ret);
         return NULL;
     }
