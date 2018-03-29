@@ -38,7 +38,7 @@ def check(ary):
     except AttributeError:
         base = ary
     from . import _bh  #We import locally in order to avoid import cycle
-    return isinstance(base, _bh.ndarray)
+    return type(ary) is _bh.ndarray
 
 def check_biclass_np_over_bh(ary):
     """Returns True if 'ary' is a NumPy view with a Bohrium base array"""
