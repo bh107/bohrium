@@ -132,11 +132,6 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
 
     protected_malloc((BhArray *) self);
 
-    if(PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT)) {
-        PyErr_Format(PyExc_RuntimeError, "Array of objects not supported by Bohrium.");
-        return NULL;
-    }
-
     Py_RETURN_NONE;
 }
 
@@ -168,8 +163,6 @@ static void BhArray_dealloc(BhArray* self) {
         BhArrayType.tp_base->tp_dealloc((PyObject*) self);
         return; // The array doesn't own the array data
     }
-
-    assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT));
 
     if (self->mmap_allocated) {
         mem_unmap(PyArray_DATA((PyArrayObject*) self), ary_nbytes(self));
