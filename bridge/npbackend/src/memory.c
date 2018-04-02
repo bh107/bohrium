@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "util.h"
 #include "handle_special_op.h"
 #include <bh_mem_signal.h>
+#include <frameobject.h>
 
 // Help function for unprotect memory
 static void _munprotect(void *data, npy_intp size) {
@@ -58,32 +59,88 @@ static void _mremap_data(void *dst, void *src, npy_intp size) {
 #endif
 }
 
+// Help function to remove whitespaces (from <https://stackoverflow.com/a/122721>)
+// Note: This function returns a pointer to a substring of the original string.
+// If the given string was allocated dynamically, the caller must not overwrite
+// that pointer with the returned value, since the original pointer must be
+// deallocated using the same allocator with which it was allocated.  The return
+// value must NOT be deallocated using free() etc.
+static char *_trimwhitespace(char *str)
+{
+    char *end;
+
+    // Trim leading space
+    while(isspace((unsigned char)*str)) str++;
+
+    if(*str == 0)  // All spaces?
+        return str;
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while(end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator
+    *(end+1) = 0;
+
+    return str;
+}
+
+// Help function that prints the content of a specific line in `filename`
+static void _display_file_line(const char *filename, int lineno) {
+	if (filename != NULL) {
+        FILE *file = fopen(filename, "r");
+        int count = 0;
+        if (file != NULL) {
+            char line[1024];
+            while (fgets(line, 1024, file) != NULL) {
+                if (count++ == lineno-1) {
+                    printf("  %s(%d): %s\n", filename, lineno, _trimwhitespace(line));
+                    fclose(file);
+                    return;
+                }
+            }
+            fclose(file);
+        }
+    }
+	printf("<string>:%d\n", lineno);
+}
+
+// Help function to print the current Python code line.
+// Since we use `PyGILState_GetThisThreadState()`, we require Python version 2.7 or 3.3+
+#if PY_VERSION_HEX >= 0x03000000 && PY_VERSION_HEX < 0x03030000
+    static void _display_backtrace(int stack_limit) {
+        printf("<< traceback info require Python 2.7 or 3.3+ >>\n");
+    }
+#else
+    static void _display_backtrace(int stack_limit) {
+        PyThreadState *tstate = PyGILState_GetThisThreadState();
+        if (NULL != tstate && NULL != tstate->frame) {
+            PyFrameObject *frame = tstate->frame;
+            for(int i=0; i < stack_limit && frame != NULL; ++i) {
+                int line = PyCode_Addr2Line(frame->f_code, frame->f_lasti);
+            #if defined(NPY_PY3K)
+                Py_ssize_t filename_size;
+                const char *filename = PyUnicode_AsUTF8AndSize(frame->f_code->co_filename, &filename_size);
+            #else
+                const char *filename = PyString_AsString(frame->f_code->co_filename);
+            #endif
+                _display_file_line(filename, line);
+                frame = frame->f_back;
+            }
+        }
+    }
+#endif
+
+// The function that will be called when encountering an unsupported NumPy operation
 int mem_access_callback(void *addr, void *id) {
     PyObject *ary = (PyObject *) id;
-
-    PyGILState_STATE GIL = PyGILState_Ensure();
-    int err = PyErr_WarnEx(
-            NULL,
-            "Encountering an operation not supported by Bohrium. It will be handled by the original NumPy.",
-            1
-    );
-
-    if(err == -1) {
-        PyErr_WarnEx(
-                NULL,
-                "Encountering an operation not supported by Bohrium. [Sorry, you cannot upgrade this warning to an exception]",
-                1
-        );
-        PyErr_Print();
-    }
-    PyErr_Clear();
+    printf("Encountering an operation not supported by Bohrium. It will be handled by the original NumPy:\n");
+    _display_backtrace(4);
 
     // If `addr` is protected, the data of `ary` must be in bhc
     assert(((BhArray*) ary)->data_in_bhc);
     // Let's copy the memory from bhc to the numpy address space
     mem_bhc2np((BhArray*)ary);
-
-    PyGILState_Release(GIL);
     return 1;
 }
 
