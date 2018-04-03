@@ -122,7 +122,6 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
             std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
-            stat.addKernel(source_filename);
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {

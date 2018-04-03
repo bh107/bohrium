@@ -245,7 +245,6 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
         std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
-        stat.addKernel(source_filename);
         program = cl::Program(context, source);
         if (verbose) {
             const string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
