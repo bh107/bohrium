@@ -55,10 +55,9 @@ public:
 
     ~EngineOpenMP();
 
-    void execute(const std::string &source,
+    void execute(const jitk::SymbolTable &symbols,
+                 const std::string &source,
                  uint64_t codegen_hash,
-                 const std::vector<bh_base*> &non_temps,
-                 const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants) override;
 
     void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;

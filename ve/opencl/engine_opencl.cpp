@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 
 #include <jitk/compiler.hpp>
+#include <jitk/base_db.hpp>
 
 #include "engine_opencl.hpp"
 
@@ -288,11 +289,10 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     return program;
 }
 
-void EngineOpenCL::execute(const std::string &source,
+void EngineOpenCL::execute(const jitk::SymbolTable &symbols,
+                           const std::string &source,
                            uint64_t codegen_hash,
-                           const std::vector<bh_base*> &non_temps,
                            const vector<uint64_t> &thread_stack,
-                           const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
@@ -308,11 +308,11 @@ void EngineOpenCL::execute(const std::string &source,
     cl::Kernel opencl_kernel = cl::Kernel(program, func_name.c_str());
 
     cl_uint i = 0;
-    for (bh_base *base: non_temps) { // NB: the iteration order matters!
+    for (bh_base *base: symbols.getParams()) { // NB: the iteration order matters!
         opencl_kernel.setArg(i++, *getBuffer(base));
     }
 
-    for (const bh_view *view: offset_strides) {
+    for (const bh_view *view: symbols.offsetStrideViews()) {
         uint64_t t1 = (uint64_t) view->start;
         opencl_kernel.setArg(i++, t1);
         for (int j=0; j<view->ndim; ++j) {

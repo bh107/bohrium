@@ -26,6 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
+#include <jitk/base_db.hpp>
 
 #include "engine_cuda.hpp"
 
@@ -236,11 +237,10 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     ss << "}\n\n";
 }
 
-void EngineCUDA::execute(const std::string &source,
+void EngineCUDA::execute(const jitk::SymbolTable &symbols,
+                         const std::string &source,
                          uint64_t codegen_hash,
-                         const std::vector<bh_base*> &non_temps,
                          const vector<uint64_t> &thread_stack,
-                         const vector<const bh_view*> &offset_strides,
                          const vector<const bh_instruction*> &constants) {
     uint64_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
@@ -253,11 +253,11 @@ void EngineCUDA::execute(const std::string &source,
     // Let's execute the CUDA kernel
     vector<void *> args;
 
-    for (bh_base *base: non_temps) { // NB: the iteration order matters!
+    for (bh_base *base: symbols.getParams()) { // NB: the iteration order matters!
         args.push_back(getBuffer(base));
     }
 
-    for (const bh_view *view: offset_strides) {
+    for (const bh_view *view: symbols.offsetStrideViews()) {
         args.push_back((void*)&view->start);
         for (int j=0; j<view->ndim; ++j) {
             args.push_back((void*)&view->stride[j]);
