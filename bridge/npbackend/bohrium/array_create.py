@@ -371,7 +371,7 @@ def empty_like(a, dtype=None, bohrium=None):
 
     if bohrium and not dtype_support(dtype):
         _warn_dtype(dtype, 3)
-        return numpy.empty_like(a, dtype=dtype)
+        return numpy.empty_like(a, dtype=dtype, subok=False)
 
     return empty(a.shape, dtype, bohrium)
 

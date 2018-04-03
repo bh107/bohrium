@@ -24,7 +24,7 @@ class test_fallback2numpy:
         yield ""
 
     def test_bh2np(self, _):
-        bh_cmp = """
+        bh_cmd = """
 import gc
 gc.disable()
 bh.flush()
@@ -33,4 +33,13 @@ b = np.array(a)
 res = np.array(b)
 """
         np_cmd = "res = np.ones(10)"
-        return (np_cmd, bh_cmp)
+        return (np_cmd, bh_cmd)
+
+    def test_biclass_bh_over_np(self, _):
+        cmd = """
+arr = M.arange(100).reshape(10,10)
+masked = M.ma.masked_where(arr > 50, arr)
+mean = masked.mean(axis=0)
+res = M.where(~masked.mask, mean[bh.newaxis, ...], arr)
+"""
+        return cmd

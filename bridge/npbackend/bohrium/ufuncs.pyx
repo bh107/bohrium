@@ -13,6 +13,7 @@ from . import _util
 from . import array_create
 import numpy_force as np
 from . import _info
+from .numpy_backport import as_strided
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper
 from . import bhary
@@ -120,7 +121,6 @@ class Ufunc(object):
     def __str__(self):
         return "<bohrium Ufunc '%s'>" % self.info['name']
 
-    @fix_biclass_wrapper
     def __call__(self, *args, **kwargs):
         from . import _bh
         args = list(args)
@@ -143,6 +143,13 @@ class Ufunc(object):
         for k, val in kwargs.items():
             if val is not None:
                 raise ValueError("Bohrium ufuncs doesn't support the '%s' argument" % str(k))
+
+        # We let NumPy handle bharray views of ndarray base arrays
+        for i in range(len(args)):
+            if bhary.check_biclass_bh_over_np(args[i]):
+                args[i] = as_strided(bhary.get_base(args[i]), shape=args[i].shape, strides=args[i].strides)
+                np_ufunc = eval("np.%s" % self.info['name'])
+                return np_ufunc(*args)
 
         # Makes sure that `args` are either bohrium arrays or scalars
         for i in range(len(args)):
