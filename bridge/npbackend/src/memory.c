@@ -113,20 +113,29 @@ static void _display_file_line(const char *filename, int lineno) {
     }
 #else
     static void _display_backtrace(int stack_limit) {
+        // First we try to get the current Python thread state using `PyGILState_GetThisThreadState()`
         PyThreadState *tstate = PyGILState_GetThisThreadState();
-        if (NULL != tstate && NULL != tstate->frame) {
-            PyFrameObject *frame = tstate->frame;
-            for(int i=0; i < stack_limit && frame != NULL; ++i) {
-                int line = PyCode_Addr2Line(frame->f_code, frame->f_lasti);
-            #if defined(NPY_PY3K)
-                Py_ssize_t filename_size;
-                const char *filename = PyUnicode_AsUTF8AndSize(frame->f_code->co_filename, &filename_size);
-            #else
-                const char *filename = PyString_AsString(frame->f_code->co_filename);
-            #endif
-                _display_file_line(filename, line);
-                frame = frame->f_back;
+        if (NULL == tstate || NULL == tstate->frame) {
+            // If that fails, we use the previously saved one `py_thread_state`
+            tstate = py_thread_state;
+            if (NULL == tstate || NULL == tstate->frame) {
+                // If that also fails, we give up
+                printf("<< sorry traceback info not available %p >>\n", tstate);
+                return;
             }
+        }
+        // Now that we have the current Python thread state, we can print the backtrace
+        PyFrameObject *frame = tstate->frame;
+        for(int i=0; i < stack_limit && frame != NULL; ++i) {
+            int line = PyCode_Addr2Line(frame->f_code, frame->f_lasti);
+        #if defined(NPY_PY3K)
+            Py_ssize_t filename_size;
+            const char *filename = PyUnicode_AsUTF8AndSize(frame->f_code->co_filename, &filename_size);
+        #else
+            const char *filename = PyString_AsString(frame->f_code->co_filename);
+        #endif
+            _display_file_line(filename, line);
+            frame = frame->f_back;
         }
     }
 #endif

@@ -38,6 +38,8 @@ PyObject *iterator       = NULL; // The iterator Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
+// The current Python thread state
+PyThreadState *py_thread_state = NULL;
 
 // Called when module exits
 static void module_exit(void) {
@@ -985,6 +987,11 @@ PyMODINIT_FUNC init_bh(void)
     if (value != NULL) {
         bh_mem_warn = 1;
     }
+
+    // Let's save the current Python thread state
+    PyGILState_STATE gil = PyGILState_Ensure();
+    py_thread_state = PyGILState_GetThisThreadState();
+    PyGILState_Release(gil);
 
     // Initialize the signal handler
     bh_mem_signal_init();
