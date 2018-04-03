@@ -24,6 +24,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/compiler.hpp>
+#include <jitk/apply_fusion.hpp>
 
 #include <bh_view.hpp>
 #include <bh_component.hpp>
