@@ -38,6 +38,8 @@ public:
     const std::string compile_flg;
     // Default device type
     const std::string default_device_type;
+    // Default device number
+    const int default_device_number;
     // Default platform number
     const int platform_no;
     // Record profiling statistics
@@ -51,6 +53,7 @@ public:
       Engine(config, stat),
       compile_flg(jitk::expand_compile_cmd(config.defaultGet<std::string>("compiler_flg", ""), "", "", config.file_dir.string())),
       default_device_type(config.defaultGet<std::string>("device_type", "auto")),
+      default_device_number(config.defaultGet<int>("device_number", 0)),
       platform_no(config.defaultGet<int>("platform_no", -1)),
       prof(config.defaultGet<bool>("prof", false)),
       num_threads(config.defaultGet<uint64_t>("num_threads", 0)),
@@ -241,7 +244,7 @@ private:
         for (const jitk::InstrPtr &instr: block.getAllInstr()) {
             child_instr_list.push_back(*instr);
         }
-        // Notice, we have to re-create free instructions 
+        // Notice, we have to re-create free instructions
         for (const bh_base *base: block.getLoop().getAllFrees()) {
             vector<bh_view> operands(1);
             bh_assign_complete_base(&operands[0], const_cast<bh_base*>(base));
