@@ -44,8 +44,9 @@ map<const string, cl_device_type> device_map = {
 };
 
 // Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
-cl::Device getDevice(const cl::Platform &platform, const string &default_device_type) {
+cl::Device getDevice(const cl::Platform &platform, const string &default_device_type, const int &device_number) {
     vector<cl::Device> device_list;
+    vector<cl::Device> valid_device_list;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
 
     if(device_list.empty()){
@@ -60,24 +61,34 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
     } else if (device_map[default_device_type] != CL_DEVICE_AUTO) {
         for (auto &device: device_list) {
             if ((device.getInfo<CL_DEVICE_TYPE>() & device_map[default_device_type]) == device_map[default_device_type]) {
-                return device;
+                valid_device_list.push_back(device);
             }
         }
-        stringstream ss;
-        ss << "Could not find selected OpenCL device type ('" \
-           << default_device_type << "') on default platform";
-        throw runtime_error(ss.str());
+
+        try {
+            return valid_device_list.at(device_number);
+        } catch(std::out_of_range &err) {
+            stringstream ss;
+            ss << "Could not find selected OpenCL device type ('" \
+               << default_device_type << "') on default platform";
+            throw runtime_error(ss.str());
+        }
     }
 
     // Type was 'auto'
     for (auto &device_type: device_map) {
         for (auto &device: device_list) {
             if ((device.getInfo<CL_DEVICE_TYPE>() & device_type.second) == device_type.second) {
-                return device;
+                valid_device_list.push_back(device);
             }
         }
     }
-    throw runtime_error("No OpenCL device of usable type found");
+
+    try {
+        return valid_device_list.at(device_number);
+    } catch(std::out_of_range &err) {
+        throw runtime_error("No OpenCL device of usable type found");
+    }
 }
 }
 
@@ -105,7 +116,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
             try {
                 // Get the device of the platform
                 platform = pform;
-                device = getDevice(platform, default_device_type);
+                device = getDevice(platform, default_device_type, default_device_number);
                 found = true;
             } catch(const cl::Error &err) {
                 // We try next platform
@@ -121,7 +132,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
         }
 
         platform = platforms[platform_no];
-        device = getDevice(platform, default_device_type);
+        device = getDevice(platform, default_device_type, default_device_number);
         found = true;
     }
 
