@@ -122,7 +122,6 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
         // NB: this is a nice debug option, but will hurt performance
         if (verbose) {
             std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
-            stat.addKernel(source_filename);
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
             compiler.compile(binfile.string(), srcfile.string());
         } else {
@@ -153,10 +152,9 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
 }
 
 
-void EngineOpenMP::execute(const std::string &source,
+void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
+                           const std::string &source,
                            uint64_t codegen_hash,
-                           const std::vector<bh_base*> &non_temps,
-                           const std::vector<const bh_view*> &offset_strides,
                            const std::vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
@@ -164,7 +162,7 @@ void EngineOpenMP::execute(const std::string &source,
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
 
     // Make sure all arrays are allocated
-    for (bh_base *base: non_temps) {
+    for (bh_base *base: symbols.getParams()) {
         bh_data_malloc(base);
     }
 
@@ -177,16 +175,16 @@ void EngineOpenMP::execute(const std::string &source,
 
     // Create a 'data_list' of data pointers
     vector<void*> data_list;
-    data_list.reserve(non_temps.size());
-    for(bh_base *base: non_temps) {
+    data_list.reserve(symbols.getParams().size());
+    for(bh_base *base: symbols.getParams()) {
         assert(base->data != NULL);
         data_list.push_back(base->data);
     }
 
     // And the offset-and-strides
     vector<uint64_t> offset_and_strides;
-    offset_and_strides.reserve(offset_strides.size());
-    for (const bh_view *view: offset_strides) {
+    offset_and_strides.reserve(symbols.offsetStrideViews().size());
+    for (const bh_view *view: symbols.offsetStrideViews()) {
         const uint64_t t = (uint64_t) view->start;
         offset_and_strides.push_back(t);
         for (int i=0; i<view->ndim; ++i) {

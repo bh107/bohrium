@@ -32,6 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <jitk/base_db.hpp>
 #include <bh_config_parser.hpp>
+#include <jitk/codegen_util.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -233,7 +234,7 @@ class Statistics {
         }
     }
 
-    // Record statistics based on the 'instr_list'
+    // Record statistics based on the 'bhir'
     void record(const BhIR &bhir) {
         if (enabled) {
             for (const bh_instruction &instr: bhir.instr_list) {
@@ -250,10 +251,6 @@ class Statistics {
     void record(const SymbolTable& symbols) {
       num_base_arrays += symbols.getNumBaseArrays();
       num_temp_arrays += symbols.getNumBaseArrays() - symbols.getParams().size();
-    }
-
-    void addKernel(const std::string& kernel_name) {
-      time_per_kernel.insert(std::make_pair(kernel_name, KernelStats()));
     }
 
   private:

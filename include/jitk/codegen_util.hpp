@@ -29,17 +29,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_type.hpp>
 #include <bh_instruction.hpp>
-#include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <bh_config_parser.hpp>
+
 #include <jitk/block.hpp>
+
 #include <jitk/base_db.hpp>
+
 #include <jitk/instruction.hpp>
-#include <jitk/view.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_cache.hpp>
-#include <jitk/apply_fusion.hpp>
-#include <jitk/statistics.hpp>
 
 namespace bohrium {
 namespace jitk {

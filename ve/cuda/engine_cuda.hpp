@@ -90,11 +90,10 @@ public:
     ~EngineCUDA();
 
     // Execute the 'source'
-    void execute(const std::string &source,
+    void execute(const jitk::SymbolTable &symbols,
+                 const std::string &source,
                  uint64_t codegen_hash,
-                 const std::vector<bh_base*> &non_temps,
                  const std::vector<uint64_t> &thread_stack,
-                 const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
     void writeKernel(const jitk::Block &block,

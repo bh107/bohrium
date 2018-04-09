@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/apply_fusion.hpp>
 
 #include <bh_view.hpp>
 #include <bh_component.hpp>
@@ -45,10 +46,9 @@ public:
                              uint64_t codegen_hash,
                              std::stringstream &ss) = 0;
 
-    virtual void execute(const std::string &source,
+    virtual void execute(const jitk::SymbolTable &symbols,
+                         const std::string &source,
                          uint64_t codegen_hash,
-                         const std::vector<bh_base*> &non_temps,
-                         const std::vector<const bh_view*> &offset_strides,
                          const std::vector<const bh_instruction*> &constants) = 0;
 
     virtual void handleExecution(BhIR *bhir) {
@@ -227,7 +227,7 @@ private:
                     assert(1 == 2);
                 }
             #endif
-            execute(lookup.first, lookup.second, symbols.getParams(), symbols.offsetStrideViews(), constants);
+            execute(symbols, lookup.first, lookup.second, constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
@@ -235,7 +235,7 @@ private:
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
-            execute(source, lookup.second, symbols.getParams(), symbols.offsetStrideViews(), constants);
+            execute(symbols, source, lookup.second, constants);
             codegen_cache.insert(std::move(source), block_list, symbols);
         }
     }
