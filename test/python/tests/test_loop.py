@@ -311,7 +311,6 @@ except M.iterator.ViewShape:
 
 if not failure:
     M.do_while(kernel, iter, res)
-    print(res)
 """
         yield (cmd1, cmd2, 5)
 
