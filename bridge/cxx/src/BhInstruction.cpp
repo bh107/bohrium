@@ -73,6 +73,8 @@ void BhInstruction::appendOperand(const BhArray<T>& ary) {
     view.start = static_cast<int64_t>(ary.offset);
     view.ndim  = static_cast<int64_t>(ary.shape.size());
     view.slide = ary.slide;
+    view.slide_dim = ary.slide_dim;
+    view.slide_dim_shape_change = ary.slide_dim_shape_change;
     view.slide_dim_stride = ary.slide_dim_stride;
     view.slide_dim_shape = ary.slide_dim_shape;
 

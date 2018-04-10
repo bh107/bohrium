@@ -62,6 +62,12 @@ class BhArray {
     // The slide the offset should be changed by (can be both positive and negative)
     std::vector<int64_t> slide;
 
+    /// The relevant dimension
+    std::vector<int64_t> slide_dim;
+
+    /// The change to the shape
+    std::vector<int64_t> slide_dim_shape_change;
+
     // The strides of the orignal view
     std::vector<int64_t> slide_dim_stride;
 

@@ -88,13 +88,14 @@ class Runtime {
 
     // Change the offset of slide_view_ptr by slide for each iteration of a loop
     template <typename T>
-    void slide_view(BhArray<T>* orig_view_ptr, BhArray<T>* slide_view_ptr, size_t dim, int slide) {
+    void slide_view(BhArray<T>* orig_view_ptr, BhArray<T>* slide_view_ptr, size_t dim, int slide, int shape) {
         if (not orig_view_ptr->slide.empty()) {
             throw std::runtime_error("Nested views using iterators are not supported.");
         }
 
-        //        assert(orig_view_ptr->slide.empty());
         slide_view_ptr->slide.push_back(slide);
+        slide_view_ptr->slide_dim.push_back(dim);
+        slide_view_ptr->slide_dim_shape_change.push_back(shape);
         slide_view_ptr->slide_dim_stride.push_back(orig_view_ptr->stride[dim]);
         slide_view_ptr->slide_dim_shape.push_back(orig_view_ptr->shape[dim]);
     }

@@ -163,9 +163,10 @@ PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *ary2;
     unsigned int dim;
     int slide;
+    int shape;
 
-    static char *kwlist[] = {"ary1", "ary2", "dim:int", "slide:int", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOKK", kwlist, &ary1, &ary2, &dim, &slide)) {
+    static char *kwlist[] = {"ary1", "ary2", "dim:int", "slide:int", "slide:shape", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOKKK", kwlist, &ary1, &ary2, &dim, &slide, &shape)) {
         return NULL;
     }
 
@@ -199,7 +200,7 @@ PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    bhc_slide_view(type1, operand1, operand2, dim, slide);
+    bhc_slide_view(type1, operand1, operand2, dim, slide, shape);
     normalize_operand_cleanup(&cleanup1);
     normalize_operand_cleanup(&cleanup2);
 

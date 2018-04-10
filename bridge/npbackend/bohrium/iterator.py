@@ -163,6 +163,20 @@ def slide_from_view(a, sliced):
         return True
 
 
+    def get_shape(s):
+        '''Checks whether the view changes shape between iterations.'''
+        if isinstance(s.start, iterator):
+            start_step = s.start.step
+        else:
+            start_step = 0
+
+        if isinstance(s.stop, iterator):
+            stop_step = s.stop.step
+        else:
+            stop_step = 0
+        return stop_step - start_step
+
+
     if not isinstance(sliced, tuple):
         sliced = (sliced,)
 
@@ -172,16 +186,28 @@ def slide_from_view(a, sliced):
         if len(sliced) == 1 or has_iterator(s):
             # A slice with optional step size (eg. a[i:i+2] or a[i:i+2:2])
             if isinstance(s, slice):
-                check_shape(s)
+                #check_shape(s)
                 if s.step:
                     # Set the correct step size
                     setattr(s.start, "step", s.start.step*s.step)
                     setattr(s.stop, "step", s.stop.step*s.step)
-                    # Check whether the iterator stays within the array
-                check_bounds(a.shape, i, s.start)
-                check_bounds(a.shape, i, s.stop-1)
-                new_slices += (slice(s.start.offset, s.stop.offset),)
-                slides.append((i, s.start.step))
+                # Check whether the iterator stays within the array
+                if s.start:
+                    check_bounds(a.shape, i, s.start)
+                    start = s.start.offset
+                    step = s.start.step
+                else:
+                    start = None
+                    step = 0
+
+                if s.stop:
+                    check_bounds(a.shape, i, s.stop-1)
+                    stop = s.stop.offset
+                else:
+                    stop = None
+
+                new_slices += (slice(start, stop),)
+                slides.append((i, step, get_shape(s)))
 
             # A single iterator (eg. a[i])
             else:
@@ -191,31 +217,31 @@ def slide_from_view(a, sliced):
                     new_slices += (slice(s.offset, None),)
                 else:
                     new_slices += (slice(s.offset, s.offset+1),)
-                slides.append((i, s.step))
+                slides.append((i, s.step, 0))
         else:
             new_slices += (s,)
     return slide_view(a, new_slices, slides)
 
 
-def slide_view(a, s, dim_stride_tuples):
+def slide_view(a, s, dim_slide_tuples):
     """Creates a dynamic view within a loop, that updates the given dimensions
-       by the given strides at the end of each iteration.
+       by the given slides at the end of each iteration.
 
     Parameters
     ----------
     a : array view
         A view into an array
-    s : slice
+    s : slicep
         The relevant slice of the view
-    dim_stride_tuples: (int, int)[]
-        A list of (dimension, stride) pairs. For each of these pairs, the
-        dimension is updated by the stride in each iteration of a loop."""
+    dim_slide_tuples: (int, int)[]
+        A list of (dimension, slide) pairs. For each of these pairs, the
+        dimension is updated by the slide in each iteration of a loop."""
     from . import _bh
 
     # Allocate a new view
     b = a[s]
 
     # Set the relevant update conditions for the new view
-    for (dim, stride) in dim_stride_tuples:
-        _bh.slide_view(a, b, dim, stride)
+    for (dim, slide, shape) in dim_slide_tuples:
+        _bh.slide_view(a, b, dim, slide, shape)
     return b

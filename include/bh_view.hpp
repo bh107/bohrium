@@ -58,6 +58,8 @@ struct bh_view {
         assert(view.slide_dim_stride.size() == view.slide_dim_shape.size());
 
         slide = view.slide;
+        slide_dim = view.slide_dim;
+        slide_dim_shape_change = view.slide_dim_shape_change;
         slide_dim_stride = view.slide_dim_stride;
         slide_dim_shape = view.slide_dim_shape;
 
@@ -82,6 +84,12 @@ struct bh_view {
 
     /// Dimensions to be slided each loop iterations
     std::vector<int64_t> slide;
+
+    /// The relevant dimension
+    std::vector<int64_t> slide_dim;
+
+    /// The change to the shape
+    std::vector<int64_t> slide_dim_shape_change;
 
     /// The strides these dimensions is slided each dynamically
     std::vector<int64_t> slide_dim_stride;

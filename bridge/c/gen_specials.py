@@ -209,7 +209,7 @@ def main(args):
     for key, t in type_map.items():
         decl = "void bhc_slide_view"
         decl += "_A%(name)s_A%(name)s" % t
-        decl += "(const %(bhc_ary)s ary1, const %(bhc_ary)s ary2, size_t dim, int slide)" % t
+        decl += "(const %(bhc_ary)s ary1, const %(bhc_ary)s ary2, size_t dim, int slide, int shape)" % t
         head += "DLLEXPORT %s;\n" % decl
         impl += "%s" % decl
         impl += """\
@@ -218,7 +218,8 @@ def main(args):
         (bhxx::BhArray<%(cpp)s>*) ary1,
         (bhxx::BhArray<%(cpp)s>*) ary2,
         dim,
-        slide);
+        slide,
+        shape);
 }
 
 """ % t
