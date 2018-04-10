@@ -687,7 +687,7 @@ cdef class RandomState:
                 return dtype(z0)
         else:
             length = size if numpy.isscalar(size) else functools.reduce(operator.mul, size)
-            hlength = length / 2 + length % 2
+            hlength = length // 2 + length % 2
             u1 = self.random_sample(size=hlength, dtype=dtype, bohrium=bohrium)
             u2 = self.random_sample(size=hlength, dtype=dtype, bohrium=bohrium)
             r = np.sqrt(-2. * np.log(u1))
