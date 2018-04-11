@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 
 #include <jitk/compiler.hpp>
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 
 #include "engine_opencl.hpp"
 

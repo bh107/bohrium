@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <bh_opcode.h>
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 
 // Return the OpenMP reduction symbol
 const char* openmp_reduce_symbol(bh_opcode opcode) {
