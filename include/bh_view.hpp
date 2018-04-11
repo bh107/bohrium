@@ -189,14 +189,6 @@ struct bh_view {
 //Implements pprint of views
 DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_view &v);
 
-/** Create a new base array.
- *
- * @param type The type of data in the array
- * @param nelements The number of elements
- * @param new_base The handler for the newly created base
- */
-DLLEXPORT void bh_create_base(bh_type type, int64_t nelements, bh_base **new_base);
-
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
  *

@@ -65,12 +65,6 @@ struct bh_base
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
-/** Destroy the base array.
- *
- * @param base  The base array in question
- */
-DLLEXPORT void bh_destroy_base(bh_base**  base);
-
 /* Size of the base array in bytes
  *
  * @base    The base in question
