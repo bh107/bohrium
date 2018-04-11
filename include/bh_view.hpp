@@ -272,15 +272,6 @@ DLLEXPORT void bh_flag_constant(bh_view *o);
  */
 DLLEXPORT bool bh_view_same_shape(const bh_view *a, const bh_view *b);
 
-/* Determines whether two views are identical and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_same(const bh_view *a, const bh_view *b);
-
 /* Determines whether a view is contiguous
  *
  * @a The view
@@ -288,23 +279,6 @@ DLLEXPORT bool bh_view_same(const bh_view *a, const bh_view *b);
  */
 DLLEXPORT bool bh_is_contiguous(const bh_view *a);
 
-/* Determines whether two views are aligned and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views are aligned, points
- * to the same base array, and have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b);
 
 /* Determines whether two views access some of the same data points
  * NB: This functions may return True on non-overlapping views.
