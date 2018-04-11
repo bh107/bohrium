@@ -61,8 +61,8 @@ private:
         }
     }
 
-    void _erase(std::vector<Segment>::const_iterator first,
-                std::vector<Segment>::const_iterator last, bool call_free) {
+    void _erase(std::vector<Segment>::iterator first,
+                std::vector<Segment>::iterator last, bool call_free) {
         for (auto it = first; it != last; ++it) {
             if (call_free) {
                 _free(it->mem, it->nbytes);
@@ -72,11 +72,11 @@ private:
         _segments.erase(first, last);
     }
 
-    void _erase(std::vector<Segment>::const_iterator position, bool call_free) {
+    void _erase(std::vector<Segment>::iterator position, bool call_free) {
         _erase(position, std::next(position), call_free);
     }
 
-    void _erase(std::vector<Segment>::const_reverse_iterator position, bool call_free) {
+    void _erase(std::vector<Segment>::reverse_iterator position, bool call_free) {
         // Notice, we need to iterate `position` once when converting from reverse to regular iterator
         _erase(std::next(position).base(), call_free);
     }
@@ -85,11 +85,11 @@ public:
 
     size_t shrink(size_t nbytes) {
         size_t count = 0;
-        std::vector<Segment>::const_iterator it;
-        for (it = _segments.cbegin(); it != _segments.cend() and count < nbytes; ++it) {
+        std::vector<Segment>::iterator it;
+        for (it = _segments.begin(); it != _segments.end() and count < nbytes; ++it) {
             count += it->nbytes;
         }
-        _erase(_segments.cbegin(), it, true);
+        _erase(_segments.begin(), it, true);
         return count;
     }
 
@@ -105,7 +105,7 @@ public:
             return nullptr;
         }
         // Check for segment of size `nbytes`, which is a cache hit!
-        for (auto it = _segments.crbegin(); it != _segments.crend(); ++it) { // Search in reverse
+        for (auto it = _segments.rbegin(); it != _segments.rend(); ++it) { // Search in reverse
             if (it->nbytes == nbytes) {
                 void *ret = it->mem;
                 assert(ret != nullptr);
