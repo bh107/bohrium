@@ -20,11 +20,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <iostream>
-
 #include <bh_instruction.hpp>
 #include <jitk/block.hpp>
-
-#include "base_db.hpp"
+#include <jitk/scope.hpp>
 
 namespace bohrium {
 namespace jitk {
