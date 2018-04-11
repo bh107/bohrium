@@ -44,6 +44,11 @@ struct bh_base
     // Returns pprint string of this base array
     std::string str() const;
 
+    // Returns the of bytes in the array
+    size_t nbytes() const {
+        return nelem * bh_type_size(type);
+    };
+
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
@@ -63,13 +68,6 @@ struct bh_base
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
-
-/* Size of the base array in bytes
- *
- * @base    The base in question
- * @return  The size of the base array in bytes
- */
-int64_t bh_base_size(const bh_base *base);
 
 /* Allocate data memory for the given base if not already allocated.
  * For convenience, the base is allowed to be NULL.

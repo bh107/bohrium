@@ -55,14 +55,9 @@ void bh_data_malloc(bh_base *base) {
     if (base == nullptr) return;
     if (base->data != nullptr) return;
 
-    int64_t bytes = bh_base_size(base);
-
+    const size_t bytes = base->nbytes();
     // We allow zero sized arrays.
     if (bytes == 0) return;
-
-    if (bytes < 0) {
-        throw runtime_error("Cannot allocate less than zero bytes.");
-    }
 
     //Allocate page-size aligned memory.
     //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
@@ -79,14 +74,10 @@ void bh_data_free(bh_base *base) {
     if (base == nullptr) return;
     if (base->data == nullptr) return;
 
-    if (munmap(base->data, bh_base_size(base)) != 0) {
+    if (munmap(base->data, base->nbytes()) != 0) {
         stringstream ss;
         ss << "bh_data_free() could not free a data region. " << "Returned error code: " << strerror(errno);
         throw runtime_error(ss.str());
     }
     base->data = nullptr;
-}
-
-int64_t bh_base_size(const bh_base *base) {
-    return base->nelem * bh_type_size(base->type);
 }

@@ -127,7 +127,7 @@ public:
                 if (verbose) {
                     std::cout << "Copy to host: " << *base << std::endl;
                 }
-                check_cuda_errors(cuMemcpyDtoH(base->data, buffers.at(base), bh_base_size(base)));
+                check_cuda_errors(cuMemcpyDtoH(base->data, buffers.at(base), base->nbytes()));
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
                 delBuffer(base);
@@ -143,7 +143,7 @@ public:
         if (prof) {
             uint64_t sum = 0;
             for (const auto &b: buffers) {
-                sum += bh_base_size(b.first);
+                sum += b.first->nbytes();
             }
             stat.max_memory_usage = sum > stat.max_memory_usage ? sum : stat.max_memory_usage;
         }
@@ -152,7 +152,7 @@ public:
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
                 CUdeviceptr new_buf;
-                check_cuda_errors(cuMemAlloc(&new_buf, bh_base_size(base)));
+                check_cuda_errors(cuMemAlloc(&new_buf, base->nbytes()));
                 buffers[base] = new_buf;
 
                 // If the host data is non-null we should copy it to the device
@@ -160,7 +160,7 @@ public:
                     if (verbose) {
                         std::cout << "Copy to device: " << *base << std::endl;
                     }
-                    check_cuda_errors(cuMemcpyHtoD(new_buf, base->data, bh_base_size(base)));
+                    check_cuda_errors(cuMemcpyHtoD(new_buf, base->data, base->nbytes()));
                 }
             }
         }

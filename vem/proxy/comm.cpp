@@ -55,14 +55,13 @@ void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *base) {
 
     if (size[0] > 0) {
         bh_data_malloc(base);
-        const size_t org_size = bh_base_size(base);
-        size_t new_size = org_size;
+        size_t new_size = base->nbytes();
 
         vector<char> compressed(size[0]);
         boost::asio::read(socket, boost::asio::buffer(compressed));
 
         uncompress((Bytef *) base->data, &new_size, (Bytef *) (&compressed[0]), compressed.size());
-        assert(new_size == org_size);
+        assert(new_size == base->nbytes());
     }
 }
 }
@@ -126,7 +125,7 @@ CommFrontend::~CommFrontend() {
 }
 
 void CommFrontend::send_array_data(const bh_base *base) {
-    comm_send_array_data(socket, base->data, bh_base_size(base));
+    comm_send_array_data(socket, base->data, base->nbytes());
 }
 
 void CommFrontend::recv_array_data(bh_base *base) {
