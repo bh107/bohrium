@@ -23,10 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 #include <cstring>
-
 #include <bh_base.hpp>
+#include <bh_malloc_cache.hpp>
 
 using namespace std;
+using namespace bohrium;
 
 // Returns the label of this base array
 // NB: generated a new label if necessary
@@ -51,33 +52,17 @@ string bh_base::str() const {
     return ss.str();
 }
 
+static MallocCache malloc_cache;
+
 void bh_data_malloc(bh_base *base) {
     if (base == nullptr) return;
     if (base->data != nullptr) return;
-
-    const size_t bytes = base->nbytes();
-    // We allow zero sized arrays.
-    if (bytes == 0) return;
-
-    //Allocate page-size aligned memory.
-    //The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-    //<http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-    base->data = mmap(0, bytes, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    if (base->data == MAP_FAILED or base->data == nullptr) {
-        stringstream ss;
-        ss << "bh_data_malloc() could not allocate a data region. Returned error code: " << strerror(errno);
-        throw runtime_error(ss.str());
-    }
+    base->data = malloc_cache.alloc(base->nbytes());
 }
 
 void bh_data_free(bh_base *base) {
     if (base == nullptr) return;
     if (base->data == nullptr) return;
-
-    if (munmap(base->data, base->nbytes()) != 0) {
-        stringstream ss;
-        ss << "bh_data_free() could not free a data region. " << "Returned error code: " << strerror(errno);
-        throw runtime_error(ss.str());
-    }
+    malloc_cache.free(base->nbytes(), base->data);
     base->data = nullptr;
 }
