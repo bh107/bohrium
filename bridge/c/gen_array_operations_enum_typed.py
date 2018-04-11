@@ -41,7 +41,7 @@ def main(args):
     doc = "// Array operation\n"
     impl += doc; head += doc
     decl = "void bhc_op(bhc_opcode opcode, const bhc_dtype types[], const bhc_bool constants[], void *operands[])"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(opcode) {\n""" % decl
@@ -97,7 +97,7 @@ def main(args):
 #pragma once
 
 #ifdef _WIN32
-#define DLLEXPORT __declspec( dllexport )
+#define __declspec( dllexport )
 #else
 #define DLLEXPORT
 #endif

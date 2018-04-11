@@ -70,7 +70,7 @@ typedef struct { bhc_float64 real, imag; } bhc_complex128;
 typedef struct { bhc_uint64 start, key; } bhc_r123;
 
 #ifdef _WIN32
-#define DLLEXPORT __declspec( dllexport )
+#define __declspec( dllexport )
 #else
 #define DLLEXPORT
 #endif

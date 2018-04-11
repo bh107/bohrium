@@ -30,8 +30,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_type.hpp"
 #include "bh_base.hpp"
 #include <bh_constant.hpp>
-#include "bh_win.h"
-
 #include <boost/serialization/split_member.hpp>
 
 // Forward declaration of class boost::serialization::access
@@ -40,7 +38,7 @@ namespace boost { namespace serialization { class access; }}
 constexpr int64_t BH_MAXDIM = 16;
 
 //Implements pprint of base arrays
-DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_base &b);
+std::ostream &operator<<(std::ostream &out, const bh_base &b);
 
 struct bh_view {
     bh_view() {}
@@ -187,7 +185,7 @@ struct bh_view {
 };
 
 //Implements pprint of views
-DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_view &v);
+std::ostream &operator<<(std::ostream &out, const bh_view &v);
 
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
@@ -195,7 +193,7 @@ DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_view &v);
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
+bh_view bh_view_simplify(const bh_view &view);
 
 /* Simplifies the given view down to the given shape.
  * If that is not possible an std::invalid_argument exception is thrown
@@ -203,7 +201,7 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape);
+bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape);
 
 /* Find the base array for a given view
  *
@@ -218,16 +216,16 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-DLLEXPORT int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
+int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
 
-DLLEXPORT int64_t bh_nelements(const bh_view &view);
+int64_t bh_nelements(const bh_view &view);
 
 /* Set the view stride to contiguous row-major
  *
  * @view    The view in question
  * @return  The total number of elements in view
  */
-DLLEXPORT int64_t bh_set_contiguous_stride(bh_view *view);
+int64_t bh_set_contiguous_stride(bh_view *view);
 
 /* Updates the view with the complete base
  *
@@ -235,27 +233,27 @@ DLLEXPORT int64_t bh_set_contiguous_stride(bh_view *view);
  * @base    The base assign to the view
  * @return  The total number of elements in view
  */
-DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
+void bh_assign_complete_base(bh_view *view, bh_base *base);
 
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *
  * @view The view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_scalar(const bh_view *view);
+bool bh_is_scalar(const bh_view *view);
 
 /* Determines whether the operand is a constant
  *
  * @o The operand
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_constant(const bh_view *o);
+bool bh_is_constant(const bh_view *o);
 
 /* Flag operand as a constant
  *
  * @o The operand
  */
-DLLEXPORT void bh_flag_constant(bh_view *o);
+void bh_flag_constant(bh_view *o);
 
 /* Determines whether two views have same shape.
  *
@@ -263,14 +261,14 @@ DLLEXPORT void bh_flag_constant(bh_view *o);
  * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_view_same_shape(const bh_view *a, const bh_view *b);
+bool bh_view_same_shape(const bh_view *a, const bh_view *b);
 
 /* Determines whether a view is contiguous
  *
  * @a The view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_contiguous(const bh_view *a);
+bool bh_is_contiguous(const bh_view *a);
 
 
 /* Determines whether two views access some of the same data points
@@ -281,4 +279,4 @@ DLLEXPORT bool bh_is_contiguous(const bh_view *a);
  * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
+bool bh_view_disjoint(const bh_view *a, const bh_view *b);

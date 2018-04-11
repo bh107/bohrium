@@ -160,7 +160,7 @@ struct bh_instruction {
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
 
 // Implements pprint of an instruction
-DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_instruction &instr);
+std::ostream &operator<<(std::ostream &out, const bh_instruction &instr);
 
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
@@ -172,4 +172,4 @@ DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_instruction &inst
  * @b The second instruction
  * @return The boolean answer
  */
-DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
+bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);

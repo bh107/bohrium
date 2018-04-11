@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "bh_type.hpp"
 #include <bh_constant.hpp>
-#include "bh_win.h"
 
 #include <boost/serialization/split_member.hpp>
 
@@ -77,7 +76,7 @@ int64_t bh_base_size(const bh_base *base);
  *
  * @base    The base in question
  */
-DLLEXPORT void bh_data_malloc(bh_base* base);
+void bh_data_malloc(bh_base* base);
 
 /* Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.

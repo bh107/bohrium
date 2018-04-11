@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <complex>
 #include <stdint.h>
-#include <bh_win.h>
 
 /* Mapping of bohrium data types to C data types */
 typedef unsigned char bh_bool;
@@ -114,70 +113,70 @@ typedef int64_t    bh_opcode;
  * @type   Type code
  * @return Byte size
  */
-DLLEXPORT int bh_type_size(bh_type type);
+int bh_type_size(bh_type type);
 
 /* Text string for type
  *
  * @type   Type code.
  * @return Text string.
  */
-DLLEXPORT const char* bh_type_text(bh_type type);
+const char* bh_type_text(bh_type type);
 
 /* Is type an integer type
  *
  * @type   The type.
  * @return 1 if integer type else 0.
  */
-DLLEXPORT int bh_type_is_integer(bh_type type);
+int bh_type_is_integer(bh_type type);
 
 /* Is type an signed integer type
  *
  * @type   The type.
  * @return 1 if true else 0.
  */
-DLLEXPORT int bh_type_is_signed_integer(bh_type type);
+int bh_type_is_signed_integer(bh_type type);
 
 /* Is type an unsigned integer type
  *
  * @type   The type.
  * @return 1 if true else 0.
  */
-DLLEXPORT int bh_type_is_unsigned_integer(bh_type type);
+int bh_type_is_unsigned_integer(bh_type type);
 
 /* Is type an float type
  *
  * @type   The type.
  * @return 1 if integer type else 0.
  */
-DLLEXPORT int bh_type_is_float(bh_type type);
+int bh_type_is_float(bh_type type);
 
 /* Is type an complex type
  *
  * @type   The type.
  * @return 1 if integer type else 0.
  */
-DLLEXPORT int bh_type_is_complex(bh_type type);
+int bh_type_is_complex(bh_type type);
 
 /* Maximum value of integer type (incl. boolean)
  *
  * @type   The type.
  */
-DLLEXPORT uint64_t bh_type_limit_max_integer(bh_type type);
+uint64_t bh_type_limit_max_integer(bh_type type);
 
 /* Minimum value of integer type (incl. boolean)
  *
  * @type   The type.
  */
-DLLEXPORT int64_t bh_type_limit_min_integer(bh_type type);
+int64_t bh_type_limit_min_integer(bh_type type);
 
 /* Maximum value of float type (excl. complex)
  *
  * @type   The type.
  */
-DLLEXPORT double bh_type_limit_max_float(bh_type type);
+double bh_type_limit_max_float(bh_type type);
 
 /* Minimum value of float type (excl. complex)
  *
  * @type   The type.
  */
-DLLEXPORT double bh_type_limit_min_float(bh_type type);
+double bh_type_limit_min_float(bh_type type);

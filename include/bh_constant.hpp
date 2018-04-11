@@ -99,4 +99,4 @@ public:
 };
 
 //Implements pprint of a constant (by streaming)
-DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_constant& constant);
+std::ostream& operator<<(std::ostream& out, const bh_constant& constant);
