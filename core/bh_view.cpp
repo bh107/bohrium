@@ -163,28 +163,6 @@ ostream &operator<<(ostream &out, const bh_view &v) {
     return out;
 }
 
-inline int64_t gcd(int64_t a, int64_t b) {
-    if (b == 0) {
-        return a;
-    }
-
-    int64_t c = a % b;
-
-    while (c != 0) {
-        a = b;
-        b = c;
-        c = a % b;
-    }
-
-    return b;
-}
-
-/* Returns the simplest view (fewest dimensions) that access
- * the same elements in the same pattern
- *
- * @view The view
- * @return The simplified view
- */
 bh_view bh_view_simplify(const bh_view &view) {
     bh_view res;
     res.base = view.base;
@@ -224,12 +202,6 @@ bh_view bh_view_simplify(const bh_view &view) {
     return res;
 }
 
-/* Simplifies the given view down to the given shape.
- * If that is not possible an std::invalid_argument exception is thrown
- *
- * @view The view
- * @return The simplified view
- */
 bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape) {
     assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
 
@@ -312,28 +284,6 @@ bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape)
     return res;
 }
 
-/* Number of non-broadcasted elements in a given view
- *
- * @view    The view in question.
- * @return  Number of elements.
- */
-int64_t bh_nelements_nbcast(const bh_view *view) {
-    int64_t res = 1;
-    for (int i = 0; i < view->ndim; ++i) {
-        if (view->stride[i] != 0) {
-            res *= view->shape[i];
-        }
-    }
-
-    return res;
-}
-
-/* Number of element in a given shape
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @return   Number of element operations
- */
 int64_t bh_nelements(int64_t ndim, const int64_t shape[]) {
     assert (ndim > 0);
     int64_t res = 1;
@@ -348,11 +298,6 @@ int64_t bh_nelements(const bh_view &view) {
     return bh_nelements(view.ndim, view.shape);
 }
 
-/* Set the view stride to contiguous row-major
- *
- * @view    The view in question
- * @return  The total number of elements in view
- */
 int64_t bh_set_contiguous_stride(bh_view *view) {
     int64_t s = 1;
     for (int64_t i = view->ndim - 1; i >= 0; --i) {
@@ -363,12 +308,6 @@ int64_t bh_set_contiguous_stride(bh_view *view) {
     return s;
 }
 
-/* Updates the view with the complete base
- *
- * @view    The view to update (in-/out-put)
- * @base    The base assign to the view
- * @return  The total number of elements in view
- */
 void bh_assign_complete_base(bh_view *view, bh_base *base) {
     view->base = base;
     view->ndim = 1;
@@ -377,38 +316,18 @@ void bh_assign_complete_base(bh_view *view, bh_base *base) {
     view->stride[0] = 1;
 }
 
-/* Determines whether the base array is a scalar.
- *
- * @view The view
- * @return The boolean answer
- */
 bool bh_is_scalar(const bh_view *view) {
     return bh_nelements(*view) == 1;
 }
 
-/* Determines whether the operand is a constant
- *
- * @o The operand
- * @return The boolean answer
- */
 bool bh_is_constant(const bh_view *o) {
     return (o->base == NULL);
 }
 
-/* Flag operand as a constant
- *
- * @o      The operand
- */
 void bh_flag_constant(bh_view *o) {
     o->base = NULL;
 }
 
-/* Determines whether two views have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
 bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
     if (a->ndim != b->ndim) {
         return false;
@@ -423,11 +342,6 @@ bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
     return true;
 }
 
-/* Determines whether a view is contiguous
- *
- * @a The view
- * @return The boolean answer
- */
 bool bh_is_contiguous(const bh_view *a) {
     if (bh_is_constant(a)) {
         return false;
@@ -445,49 +359,8 @@ bool bh_is_contiguous(const bh_view *a) {
     return true;
 }
 
-/* Determines whether two views access some of the same data points or not
- * NB: This functions may return True on two non-overlapping views.
- *     But will always return False on overlapping views.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
 bool bh_view_disjoint(const bh_view *a, const bh_view *b) {
     // TODO: In order to fixed BUG like <https://github.com/bh107/bohrium/issues/178>, we say that sharing
     //       the same base makes the views overlapping for now.
     return bh_base_array(a) != bh_base_array(b);
-/*
-
-
-    if (bh_is_constant(a) || bh_is_constant(b)) // One is a constant
-        return true;
-    if(bh_base_array(a) != bh_base_array(b)) //different base
-        return true;
-    if(a->ndim != b->ndim) // we dont handle views of differenr dimensions yet
-        return false;
-
-    int64_t astart = a->start;
-    int64_t bstart = b->start;
-    int64_t stride = 1;
-    for (int i = 0; i < a->ndim; ++i)
-    {
-        //Negative strides is always an overlap
-        if(a->stride[i] < 0 or b->stride[i] < 0)
-            return false;
-
-        stride = gcd(a->stride[i], b->stride[i]);
-        if (stride == 0) // stride is 0 in both views: dimension is virtual
-            continue;
-        int64_t as = astart / stride;
-        int64_t bs = bstart / stride;
-        int64_t ae = as + a->shape[i] * (a->stride[i]/stride);
-        int64_t be = bs + b->shape[i] * (b->stride[i]/stride);
-        if (ae < bs || be < as)
-            return true;
-        astart %= stride;
-        bstart %= stride;
-    }
-    return stride > 1 && a->start % stride != b->start % stride;
-*/
 }

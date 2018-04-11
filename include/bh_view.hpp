@@ -212,13 +212,6 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_
  */
 #define bh_base_array(view) ((view)->base)
 
-/* Number of non-broadcasted elements in a given view
- *
- * @view    The view in question.
- * @return  Number of elements.
- */
-int64_t bh_nelements_nbcast(const bh_view *view);
-
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
