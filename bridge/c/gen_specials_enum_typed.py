@@ -148,12 +148,6 @@ def main(args):
 extern "C" {
 #endif
 
-#ifdef _WIN32
-#define __declspec( dllexport )
-#else
-#define DLLEXPORT
-#endif
-
 %s
 #ifdef __cplusplus
 }

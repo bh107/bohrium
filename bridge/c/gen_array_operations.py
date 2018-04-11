@@ -109,12 +109,6 @@ def main(args):
     head = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 #pragma once
 
-#ifdef _WIN32
-#define __declspec( dllexport )
-#else
-#define DLLEXPORT
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
