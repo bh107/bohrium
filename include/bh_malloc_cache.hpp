@@ -30,19 +30,19 @@ namespace bohrium {
 class MallocCache {
 private:
     struct Segment {
-        std::size_t nbytes;
+        std::uint64_t nbytes;
         void *mem;
     };
     std::vector<Segment> _segments;
-    size_t _total_num_bytes = 0;
-    size_t _total_num_lookups = 0;
-    size_t _total_num_misses = 0;
-    size_t _total_mem_allocated = 0;
-    size_t _max_mem_allocated = 0;
+    uint64_t _total_num_bytes = 0;
+    uint64_t _total_num_lookups = 0;
+    uint64_t _total_num_misses = 0;
+    uint64_t _total_mem_allocated = 0;
+    uint64_t _max_mem_allocated = 0;
 
-    static constexpr size_t MAX_NBYTES = 1000000;
+    static constexpr uint64_t MAX_NBYTES = 1000000;
 
-    void *_malloc(size_t nbytes) {
+    void *_malloc(uint64_t nbytes) {
         // Allocate page-size aligned memory.
         // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
         // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
@@ -60,7 +60,7 @@ private:
         return ret;
     }
 
-    void _free(void *mem, size_t nbytes) {
+    void _free(void *mem, uint64_t nbytes) {
 //        std::cout << "free         - nbytes: " << nbytes << ",  addr: " << mem << std::endl;
         assert(mem != nullptr);
         if (munmap(mem, nbytes) != 0) {
@@ -94,8 +94,8 @@ private:
 
 public:
 
-    size_t shrink(size_t nbytes) {
-        size_t count = 0;
+    uint64_t shrink(uint64_t nbytes) {
+        uint64_t count = 0;
         std::vector<Segment>::iterator it;
         for (it = _segments.begin(); it != _segments.end() and count < nbytes; ++it) {
             count += it->nbytes;
@@ -104,14 +104,14 @@ public:
         return count;
     }
 
-    size_t shrinkToFit(size_t total_num_bytes) {
+    uint64_t shrinkToFit(uint64_t total_num_bytes) {
         if (total_num_bytes < _total_num_bytes) {
             shrink(_total_num_bytes - total_num_bytes);
         }
         return _total_num_bytes;
     }
 
-    void *alloc(size_t nbytes) {
+    void *alloc(uint64_t nbytes) {
         if (nbytes == 0) {
             return nullptr;
         }
@@ -132,7 +132,7 @@ public:
         return ret;
     }
 
-    void free(size_t nbytes, void *memory) {
+    void free(uint64_t nbytes, void *memory) {
         // Let's make sure that we don't exceed `MAX_NBYTES`
         if (nbytes > MAX_NBYTES) {
             return _free(memory, nbytes);
@@ -153,19 +153,19 @@ public:
         assert(_total_mem_allocated == 0);
     }
 
-    size_t getTotalNumBytes() const {
+    uint64_t getTotalNumBytes() const {
         return _total_num_bytes;
     }
 
-    size_t getTotalNumLookups() const {
+    uint64_t getTotalNumLookups() const {
         return _total_num_lookups;
     }
 
-    size_t getTotalNumMisses() const {
+    uint64_t getTotalNumMisses() const {
         return _total_num_misses;
     }
 
-    size_t getMaxMemAllocated() const {
+    uint64_t getMaxMemAllocated() const {
         return _max_mem_allocated;
     }
 
