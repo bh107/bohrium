@@ -22,6 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <bh_base.hpp>
 
+/* Return the size of the physical memory on this machine */
+uint64_t bh_main_memory_total();
+
 /* Allocate data memory for the given base if not already allocated.
  * For convenience, the base is allowed to be NULL.
  *

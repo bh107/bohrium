@@ -18,12 +18,35 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sys/mman.h>
 #include <bh_main_memory.hpp>
 #include <bh_malloc_cache.hpp>
+#include <sys/mman.h>
+#include <sys/types.h>
+
+#if defined(__APPLE__) || defined(__MACOSX)
+#include <sys/sysctl.h>
+#else
+#include <sys/sysinfo.h>
+#endif
 
 using namespace std;
 using namespace bohrium;
+
+uint64_t bh_main_memory_total() {
+#if defined(__APPLE__) || defined(__MACOSX)
+    int mib[2];
+    int64_t physical_memory;
+    mib[0] = CTL_HW;
+    mib[1] = HW_MEMSIZE;
+    size_t length = sizeof(int64_t);
+    sysctl(mib, 2, &physical_memory, &length, nullptr, 0);
+    return physical_memory;
+#else
+    struct sysinfo memInfo;
+    sysinfo(&memInfo);
+    return memInfo.totalram * memInfo.mem_unit;
+#endif
+}
 
 namespace {
 // Allocate page-size aligned main memory.
@@ -69,3 +92,4 @@ void bh_data_malloc_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_
     cache_misses = malloc_cache.getTotalNumMisses();
     max_memory_usage = malloc_cache.getMaxMemAllocated();
 }
+
