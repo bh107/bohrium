@@ -30,8 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <colors.hpp>
 #include <bh_ir.hpp>
 #include <bh_instruction.hpp>
-#include <jitk/symbol_table.hpp>
 #include <bh_config_parser.hpp>
+#include <jitk/symbol_table.hpp>
 #include <jitk/codegen_util.hpp>
 
 namespace bohrium {
@@ -84,6 +84,8 @@ class Statistics {
     uint64_t kernel_cache_misses       = 0;
     uint64_t num_instrs_into_fuser     = 0;
     uint64_t num_blocks_out_of_fuser   = 0;
+    uint64_t malloc_cache_lookups      = 0;
+    uint64_t malloc_cache_misses       = 0;
     std::chrono::duration<double> time_total_execution{0};
     std::chrono::duration<double> time_pre_fusion{0};
     std::chrono::duration<double> time_fusion{0};
@@ -129,6 +131,7 @@ class Statistics {
             out << "Compilation cache hits:          " << GRN << kernelCacheHits()                   << "\n" << RST;
             out << "Array contractions:              " << GRN << arrayContractions()                 << "\n" << RST;
             out << "Outer-fusion ratio:              " << GRN << outerFusionRatio()                  << "\n" << RST;
+            out << "Malloc cache hits:               " << GRN << MallocCacheHits()                   << "\n" << RST;
             out << "\n";
             out << "Max memory usage:                " << GRN << memoryUsage() << " MB"              << "\n" << RST;
             out << "Syncs to NumPy:                  " << GRN << num_syncs                           << "\n" << RST;
@@ -272,6 +275,10 @@ class Statistics {
 
     std::string outerFusionRatio() {
         return pprint_ratio(num_blocks_out_of_fuser, num_instrs_into_fuser);
+    }
+
+    std::string MallocCacheHits() {
+        return pprint_ratio(malloc_cache_lookups - malloc_cache_misses, malloc_cache_lookups);
     }
 
     double memoryUsage() {

@@ -82,3 +82,5 @@ void bh_data_malloc(bh_base* base);
  * @base    The base in question
  */
 void bh_data_free(bh_base* base);
+
+void bh_data_malloc_stat(size_t &cache_lookup, size_t &cache_misses, size_t &max_memory_usage);

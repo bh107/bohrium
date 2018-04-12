@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <sstream>
 #include <stdexcept>
+#include <sys/mman.h>
 #include <bh_util.hpp>
 
 namespace bohrium {
@@ -34,6 +35,10 @@ private:
     };
     std::vector<Segment> _segments;
     size_t _total_num_bytes = 0;
+    size_t _total_num_lookups = 0;
+    size_t _total_num_misses = 0;
+    size_t _total_mem_allocated = 0;
+    size_t _max_mem_allocated = 0;
 
     static constexpr size_t MAX_NBYTES = 1000000;
 
@@ -47,6 +52,10 @@ private:
             ss << "MallocCache() could not allocate a data region. Returned error code: " << strerror(errno);
             throw std::runtime_error(ss.str());
         }
+        _total_mem_allocated += nbytes;
+        if (_total_mem_allocated > _max_mem_allocated) {
+            _max_mem_allocated = _total_mem_allocated;
+        }
 //        std::cout << "malloc       - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
     }
@@ -59,6 +68,8 @@ private:
             ss << "MallocCache() could not free a data region. " << "Returned error code: " << strerror(errno);
             throw std::runtime_error(ss.str());
         }
+        assert(_max_mem_allocated >= nbytes);
+        _total_mem_allocated -= nbytes;
     }
 
     void _erase(std::vector<Segment>::iterator first,
@@ -93,7 +104,7 @@ public:
         return count;
     }
 
-    size_t shrink_to_fit(size_t total_num_bytes) {
+    size_t shrinkToFit(size_t total_num_bytes) {
         if (total_num_bytes < _total_num_bytes) {
             shrink(_total_num_bytes - total_num_bytes);
         }
@@ -104,6 +115,7 @@ public:
         if (nbytes == 0) {
             return nullptr;
         }
+        ++_total_num_lookups;
         // Check for segment of size `nbytes`, which is a cache hit!
         for (auto it = _segments.rbegin(); it != _segments.rend(); ++it) { // Search in reverse
             if (it->nbytes == nbytes) {
@@ -114,6 +126,7 @@ public:
                 return ret;
             }
         }
+        ++_total_num_misses;
         void *ret = _malloc(nbytes); // Cache miss
     //    std::cout << "cache miss!  - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
@@ -124,7 +137,7 @@ public:
         if (nbytes > MAX_NBYTES) {
             return _free(memory, nbytes);
         }
-        shrink_to_fit(MAX_NBYTES - nbytes);
+        shrinkToFit(MAX_NBYTES - nbytes);
 
         // Insert the segment at the end of `_segments`
         Segment seg;
@@ -137,7 +150,25 @@ public:
 
     ~MallocCache() {
         shrink(0);
+        assert(_total_mem_allocated == 0);
     }
+
+    size_t getTotalNumBytes() const {
+        return _total_num_bytes;
+    }
+
+    size_t getTotalNumLookups() const {
+        return _total_num_lookups;
+    }
+
+    size_t getTotalNumMisses() const {
+        return _total_num_misses;
+    }
+
+    size_t getMaxMemAllocated() const {
+        return _max_mem_allocated;
+    }
+
 };
 
 
