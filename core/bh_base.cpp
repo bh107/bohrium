@@ -52,7 +52,31 @@ string bh_base::str() const {
     return ss.str();
 }
 
-static MallocCache malloc_cache;
+namespace {
+// Allocate page-size aligned main memory.
+void *main_mem_malloc(uint64_t nbytes) {
+    // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
+    // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+    void *ret = mmap(0, nbytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (ret == MAP_FAILED or ret == nullptr) {
+        std::stringstream ss;
+        ss << "main_mem_malloc() could not allocate a data region. Returned error code: " << strerror(errno);
+        throw std::runtime_error(ss.str());
+    }
+    return ret;
+}
+
+void main_mem_free(void *mem, uint64_t nbytes) {
+    assert(mem != nullptr);
+    if (munmap(mem, nbytes) != 0) {
+        std::stringstream ss;
+        ss << "main_mem_free() could not free a data region. " << "Returned error code: " << strerror(errno);
+        throw std::runtime_error(ss.str());
+    }
+}
+
+MallocCache malloc_cache(main_mem_malloc, main_mem_free);
+}
 
 void bh_data_malloc(bh_base *base) {
     if (base == nullptr) return;
