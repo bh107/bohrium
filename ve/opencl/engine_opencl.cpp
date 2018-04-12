@@ -442,7 +442,7 @@ void EngineOpenCL::copyAllBasesToHost() {
 }
 
 // Delete a buffer
-void EngineOpenCL::delBuffer(bh_base* &base) {
+void EngineOpenCL::delBuffer(bh_base* base) {
     auto it = buffers.find(base);
     if (it != buffers.end()) {
         delete it->second;

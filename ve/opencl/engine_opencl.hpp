@@ -84,7 +84,7 @@ public:
     void copyAllBasesToHost() override;
 
     // Delete a buffer
-    void delBuffer(bh_base* &base) override;
+    void delBuffer(bh_base* base) override;
 
     void writeKernel(const jitk::Block &block,
                      const jitk::SymbolTable &symbols,

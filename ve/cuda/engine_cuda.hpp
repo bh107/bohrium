@@ -103,7 +103,7 @@ public:
                      std::stringstream &ss) override;
 
     // Delete a buffer
-    void delBuffer(bh_base* &base) override {
+    void delBuffer(bh_base* base) override {
         auto it = buffers.find(base);
         if (it != buffers.end()) {
             check_cuda_errors(cuMemFree(buffers.at(base)));

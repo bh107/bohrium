@@ -66,7 +66,7 @@ public:
     virtual void copyToHost(const std::set<bh_base*> &bases) = 0;
     virtual void copyAllBasesToHost() = 0;
     virtual void copyToDevice(const std::set<bh_base*> &base_list) = 0;
-    virtual void delBuffer(bh_base* &base) = 0;
+    virtual void delBuffer(bh_base* base) = 0;
     virtual void writeKernel(const Block &block,
                              const SymbolTable &symbols,
                              const std::vector<uint64_t> &thread_stack,
