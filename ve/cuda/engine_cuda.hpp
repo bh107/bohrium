@@ -104,8 +104,11 @@ public:
 
     // Delete a buffer
     void delBuffer(bh_base* &base) override {
-        check_cuda_errors(cuMemFree(buffers[base]));
-        buffers.erase(base);
+        auto it = buffers.find(base);
+        if (it != buffers.end()) {
+            check_cuda_errors(cuMemFree(buffers.at(base)));
+            buffers.erase(it);
+        }
     }
 
     // Retrieve a single buffer

@@ -56,7 +56,7 @@ private:
     // Returns the global and local work OpenCL ranges based on the 'thread_stack'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<uint64_t> &thread_stack) const;
     // A map of allocated buffers on the device
-    std::map<bh_base*, std::unique_ptr<cl::Buffer>> buffers;
+    std::map<bh_base*,cl::Buffer*> buffers;
     // Return a kernel function based on the given 'source'
     cl::Program getFunction(const std::string &source);
 
@@ -107,29 +107,35 @@ public:
     const std::string writeType(bh_type dtype) override;
 
     cl::Buffer *createBuffer(bh_base *base) {
-        cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) base->nbytes());
-        buffers[base].reset(buf);
+        auto *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) base->nbytes());
+        bool inserted = buffers.insert(std::make_pair(base, buf)).second;
+        if (not inserted) {
+            throw std::runtime_error("OpenCL - createBuffer(): the base already has a buffer!");
+        }
         return buf;
     }
 
     cl::Buffer *createBuffer(bh_base *base, void* opencl_mem_ptr) {
-        cl::Buffer *buf = new cl::Buffer();
-        cl_mem _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
+        auto *buf = new cl::Buffer();
+        auto _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
         cl_int err = clRetainMemObject(_mem); // Increments the memory object reference count
         if (err != CL_SUCCESS) {
             throw std::runtime_error("OpenCL - clRetainMemObject(): failed");
         }
         (*buf) = _mem;
-        buffers[base].reset(buf);
+        bool inserted = buffers.insert(std::make_pair(base, buf)).second;
+        if (not inserted) {
+            throw std::runtime_error("OpenCL - createBuffer(): the base already has a buffer!");
+        }
         return buf;
     }
 
     // Retrieve a single buffer
     cl::Buffer* getBuffer(bh_base* base) {
-        if(buffers.find(base) == buffers.end()) {
-            copyToDevice({ base });
+        if (not util::exist(buffers, base)) {
+            copyToDevice({base});
         }
-        return &(*buffers[base]);
+        return buffers.at(base);
     }
 
     // Get C buffer from wrapped C++ object

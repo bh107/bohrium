@@ -384,7 +384,7 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
     auto tcopy = std::chrono::steady_clock::now();
     // Let's copy sync'ed arrays back to the host
     for(bh_base *base: bases) {
-        if (buffers.find(base) != buffers.end()) {
+        if (util::exist(buffers, base)) {
             bh_data_malloc(base);
             if (verbose) {
                 std::cout << "Copy to host: " << *base << std::endl;
@@ -392,7 +392,7 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
             queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
             // When syncing we assume that the host writes to the data and invalidate the device data thus
             // we have to remove its data buffer
-            buffers.erase(base);
+            delBuffer(base);
         }
     }
     queue.finish();
@@ -412,11 +412,11 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
 
     auto tcopy = std::chrono::steady_clock::now();
     for(bh_base *base: base_list) {
-        if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+        if (not util::exist(buffers, base)) { // We shouldn't overwrite existing buffers
             cl::Buffer *buf = createBuffer(base);
 
             // If the host data is non-null we should copy it to the device
-            if (base->data != NULL) {
+            if (base->data != nullptr) {
                 if (verbose) {
                     std::cout << "Copy to device: " << *base << std::endl;
                 }
@@ -443,7 +443,11 @@ void EngineOpenCL::copyAllBasesToHost() {
 
 // Delete a buffer
 void EngineOpenCL::delBuffer(bh_base* &base) {
-    buffers.erase(base);
+    auto it = buffers.find(base);
+    if (it != buffers.end()) {
+        delete it->second;
+        buffers.erase(it);
+    }
 }
 
 void EngineOpenCL::writeKernel(const jitk::Block &block,
