@@ -94,6 +94,15 @@ private:
 
 public:
 
+    std::string pprint() {
+        std::stringstream ss;
+        ss << "Malloc Cache: \n";
+        for(const Segment &seg: _segments) {
+            ss << "  (" << seg.nbytes << "B, " << seg.mem << ")\n";
+        }
+        return ss.str();
+    }
+
     uint64_t shrink(uint64_t nbytes) {
         uint64_t count = 0;
         std::vector<Segment>::iterator it;
