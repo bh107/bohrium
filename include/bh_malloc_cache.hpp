@@ -149,7 +149,7 @@ public:
     }
 
     ~MallocCache() {
-        shrink(0);
+        shrinkToFit(0);
         assert(_total_mem_allocated == 0);
     }
 
