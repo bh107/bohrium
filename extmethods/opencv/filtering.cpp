@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh_extmethod.hpp>
+#include <bh_main_memory.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 
 using namespace bohrium;

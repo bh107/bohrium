@@ -4,6 +4,7 @@
  **********************************************************/
 #include <bh_extmethod.hpp>
 #include <bh_pprint.hpp>
+#include <bh_main_memory.hpp>
 
 #include "opencv2/imgproc/imgproc.hpp"
 

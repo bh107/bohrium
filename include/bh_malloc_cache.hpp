@@ -22,7 +22,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <sstream>
 #include <stdexcept>
-#include <sys/mman.h>
 #include <bh_util.hpp>
 
 namespace bohrium {

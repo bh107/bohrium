@@ -68,19 +68,3 @@ struct bh_base
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
-
-/* Allocate data memory for the given base if not already allocated.
- * For convenience, the base is allowed to be NULL.
- *
- * @base    The base in question
- */
-void bh_data_malloc(bh_base* base);
-
-/* Frees data memory for the given view.
- * For convenience, the view is allowed to be NULL.
- *
- * @base    The base in question
- */
-void bh_data_free(bh_base* base);
-
-void bh_data_malloc_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage);

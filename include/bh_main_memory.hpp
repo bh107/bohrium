@@ -17,35 +17,23 @@ GNU Lesser General Public License along with Bohrium.
 
 If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once
 
-#include <map>
-#include <iostream>
-#include <sstream>
+#include <cstddef>
 #include <bh_base.hpp>
-#include <bh_malloc_cache.hpp>
 
-using namespace std;
-using namespace bohrium;
+/* Allocate data memory for the given base if not already allocated.
+ * For convenience, the base is allowed to be NULL.
+ *
+ * @base    The base in question
+ */
+void bh_data_malloc(bh_base* base);
 
-// Returns the label of this base array
-// NB: generated a new label if necessary
-static map<const bh_base *, size_t> _label_map;
+/* Frees data memory for the given view.
+ * For convenience, the view is allowed to be NULL.
+ *
+ * @base    The base in question
+ */
+void bh_data_free(bh_base* base);
 
-size_t bh_base::get_label() const {
-    if (_label_map.find(this) == _label_map.end()) {
-        _label_map[this] = _label_map.size();
-    }
-    return _label_map[this];
-}
-
-ostream &operator<<(ostream &out, const bh_base &b) {
-    out << "a" << b.get_label() << "{dtype: " << bh_type_text(b.type) << ", nelem: " << b.nelem 
-        << ", address: " << &b << "}";
-    return out;
-}
-
-string bh_base::str() const {
-    stringstream ss;
-    ss << *this;
-    return ss.str();
-}
+void bh_data_malloc_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage);

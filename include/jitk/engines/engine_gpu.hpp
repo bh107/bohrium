@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <bh_component.hpp>
 #include <bh_instruction.hpp>
+#include <bh_main_memory.hpp>
 
 namespace bohrium {
 namespace jitk {
