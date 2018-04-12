@@ -52,6 +52,10 @@ void main_mem_free(void *mem, uint64_t nbytes) {
 }
 
 class MallocCache {
+public:
+    typedef std::function<void *(uint64_t)> FuncAllocT;
+    typedef std::function<void(void *, uint64_t)> FuncFreeT;
+
 private:
     struct Segment {
         std::uint64_t nbytes;
@@ -63,9 +67,8 @@ private:
     uint64_t _total_num_misses = 0;
     uint64_t _total_mem_allocated = 0;
     uint64_t _max_mem_allocated = 0;
-
-    std::function<void *(uint64_t)> _func_alloc;
-    std::function<void(void *, uint64_t)> _func_free;
+    FuncAllocT _func_alloc;
+    FuncFreeT _func_free;
 
     static constexpr uint64_t MAX_NBYTES = 1000000;
 
@@ -108,8 +111,8 @@ private:
 
 public:
 
-    MallocCache(std::function<void *(uint64_t)> func_alloc = main_mem_malloc,
-                std::function<void(void *, uint64_t)> func_free = main_mem_free) : _func_alloc(func_alloc),
+    MallocCache(FuncAllocT func_alloc = main_mem_malloc,
+                FuncFreeT func_free = main_mem_free) : _func_alloc(func_alloc),
                                                                                    _func_free(func_free) {}
 
     std::string pprint() {
