@@ -83,7 +83,7 @@ private:
 //        std::cout << "free         - nbytes: " << nbytes << ",  addr: " << mem << std::endl;
         assert(mem != nullptr);
         _func_free(mem, nbytes);
-        assert(_max_mem_allocated >= nbytes);
+        assert(_total_mem_allocated >= nbytes);
         _total_mem_allocated -= nbytes;
     }
 
@@ -109,8 +109,8 @@ private:
 public:
 
     MallocCache(std::function<void *(uint64_t)> func_alloc = main_mem_malloc,
-                std::function<void(void *, uint64_t)> func_free = main_mem_free) : _func_alloc(main_mem_malloc),
-                                                                                   _func_free(main_mem_free) {}
+                std::function<void(void *, uint64_t)> func_free = main_mem_free) : _func_alloc(func_alloc),
+                                                                                   _func_free(func_free) {}
 
     std::string pprint() {
         std::stringstream ss;
