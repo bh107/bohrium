@@ -34,7 +34,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <jitk/block.hpp>
 
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 
 #include <jitk/instruction.hpp>
 

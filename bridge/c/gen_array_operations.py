@@ -36,7 +36,7 @@ def main(args):
         # Generate functions that takes no operands
         if len(op['types']) == 0:
             decl = "void bhc_%s()" % (op['opcode'][3:].lower())
-            head += "DLLEXPORT %s;\n" % decl
+            head += "%s;\n" % decl
             impl += decl;
             impl += "{\n"
             impl += "\t %s();\n" % op['opcode'].lower()
@@ -61,7 +61,7 @@ def main(args):
                     else:
                         decl += "%s in%d" % (type_map[t]['bhc'],i+1)
                 decl += ")"
-                head += "DLLEXPORT %s;\n" % decl
+                head += "%s;\n" % decl
                 impl += decl;
                 impl += "{\n"
                 impl += "\tbhxx::BhArray<%(t)s> *o = (bhxx::BhArray<%(t)s> *) out;\n" % {'t':type_map[type_sig[0]]['cpp']}
@@ -97,7 +97,7 @@ def main(args):
 """
     impl += doc; head += doc
     decl = "void bhc_random123_Auint64_Kuint64_Kuint64(bhc_ndarray_uint64_p out, uint64_t seed, uint64_t key)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += "%s\n" % decl
     impl += """
 {
@@ -108,12 +108,6 @@ def main(args):
     #Let's add header and footer
     head = """/* Bohrium C Bridge: array operation functions. Auto generated! */
 #pragma once
-
-#ifdef _WIN32
-#define DLLEXPORT __declspec( dllexport )
-#else
-#define DLLEXPORT
-#endif
 
 #ifdef __cplusplus
 extern "C" {

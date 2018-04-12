@@ -25,32 +25,13 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/exceptions.hpp>
 #include <boost/algorithm/string.hpp>
 #include <cstdlib>
-
-#include <bh_config_parser.hpp>
-
-#ifdef _WIN32
-
-#include <windows.h>
-#include <dlfcn-win32.h>
-
-#define HOME_INI_PATH "%APPDATA%\\bohrium\\config.ini"
-#define SYSTEM_INI_PATH_1 "%PROGRAMFILES%\\bohrium\\config.ini"
-#define SYSTEM_INI_PATH_2 "%PROGRAMFILES%\\bohrium\\config.ini"
-
-//Nasty function renaming
-#define snprintf _snprintf
-#define strcasecmp _stricmp
-
-#else
-
 #include <dlfcn.h>
 #include <limits.h>
+#include <bh_config_parser.hpp>
 
 #define HOME_INI_PATH "~/.bohrium/config.ini"
 #define SYSTEM_INI_PATH_1 "/usr/local/etc/bohrium/config.ini"
 #define SYSTEM_INI_PATH_2 "/usr/etc/bohrium/config.ini"
-
-#endif
 
 using namespace std;
 using namespace boost;

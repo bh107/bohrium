@@ -26,7 +26,7 @@ def main(args):
     doc = "\n// Flush the Bohrium runtime system\n"
     impl += doc; head += doc
     decl = "void bhc_flush(void)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += "%s" % decl
     impl += """
 {
@@ -37,7 +37,7 @@ def main(args):
     doc = "\n// Get the number of times flush has been called\n"
     impl += doc; head += doc
     decl = "int bhc_flush_count(void)"
-    head += "DLLEXPORT %s;\n"%decl
+    head += "%s;\n"%decl
     impl += "%s"%decl
     impl += """
 {
@@ -48,7 +48,7 @@ def main(args):
     doc = "\n// Flush and repeat the lazy evaluated operations `nrepeats` times.\n"
     impl += doc; head += doc
     decl = "void bhc_flush_and_repeat(uint64_t nrepeats)"
-    head += "DLLEXPORT %s;\n"%decl
+    head += "%s;\n"%decl
     impl += "%s"%decl
     impl += """
 {
@@ -60,7 +60,7 @@ def main(args):
     doc = "\n// Flush and repeat the lazy evaluated operations until `condition` is false or `nrepeats` is reached.\n"
     impl += doc; head += doc
     decl = "void bhc_flush_and_repeat_condition(uint64_t nrepeats, bhc_ndarray_bool8_p condition)"
-    head += "DLLEXPORT %s;\n"%decl
+    head += "%s;\n"%decl
     impl += "%s"%decl
     impl += """
 {
@@ -73,7 +73,7 @@ def main(args):
     doc += "// NB: the returned string is invalidated on the next call to bhc_message()\n"
     impl += doc; head += doc
     decl = "const char* bhc_message(const char* msg)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += "%s" % decl
     impl += """
 {
@@ -87,7 +87,7 @@ def main(args):
     doc += "// If the first VE isn't a device, NULL is returned.\n"
     impl += doc; head += doc
     decl = "void* bhc_getDeviceContext(void)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += "%s" % decl
     impl += """
 {
@@ -99,7 +99,7 @@ def main(args):
     doc += "// If the first VE isn't a device, nothing happens.\n"
     impl += doc; head += doc
     decl = "void bhc_set_device_context(uint64_t device_context)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += "%s" % decl
     impl += """
 {
@@ -111,7 +111,7 @@ def main(args):
     impl += doc; head += doc
     for key, t in type_map.items():
         decl = "%s bhc_new_A%s(uint64_t size)"%(t['bhc_ary'], t['name'])
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """
 {
@@ -125,7 +125,7 @@ def main(args):
     impl += doc; head += doc
     for key, t in type_map.items():
         decl = "void bhc_destroy_A%s(%s ary)"%(t['name'], t['bhc_ary'])
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """
 {
@@ -140,7 +140,7 @@ def main(args):
         decl = "%s bhc_view_A%s(" % (t['bhc_ary'], t['name'])
         decl += "const %s src, uint64_t rank, int64_t start, " % t['bhc_ary']
         decl += "const int64_t *shape, const int64_t *stride)"
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
@@ -164,7 +164,7 @@ def main(args):
     impl += doc; head += doc
     for key, t in type_map.items():
         decl = "void* bhc_data_get_A%s(const %s ary, bhc_bool copy2host, bhc_bool force_alloc, bhc_bool nullify)" % (t['name'], t['bhc_ary'])
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
@@ -180,7 +180,7 @@ def main(args):
     impl += doc; head += doc
     for key, t in type_map.items():
         decl = "void bhc_data_set_A%(name)s(const %(bhc_ary)s ary, bhc_bool host_ptr, %(bhc)s *data)" % t
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
@@ -194,7 +194,7 @@ def main(args):
     impl += doc; head += doc
     for key, t in type_map.items():
         decl = "void bhc_sync_A%(name)s(const %(bhc_ary)s ary)" % t
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
@@ -210,7 +210,7 @@ def main(args):
         decl = "void bhc_slide_view"
         decl += "_A%(name)s_A%(name)s" % t
         decl += "(const %(bhc_ary)s ary1, const %(bhc_ary)s ary2, size_t dim, int slide)" % t
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
@@ -229,7 +229,7 @@ def main(args):
         decl = "int bhc_extmethod"
         decl += "_A%(name)s_A%(name)s_A%(name)s" % t
         decl += "(const char *name, %(bhc_ary)s out, const %(bhc_ary)s in1, const %(bhc_ary)s in2)" % t
-        head += "DLLEXPORT %s;\n" % decl
+        head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """
 {
@@ -254,12 +254,6 @@ def main(args):
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifdef _WIN32
-#define DLLEXPORT __declspec( dllexport )
-#else
-#define DLLEXPORT
 #endif
 
 %s

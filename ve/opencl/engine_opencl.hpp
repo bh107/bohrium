@@ -107,7 +107,7 @@ public:
     const std::string writeType(bh_type dtype) override;
 
     cl::Buffer *createBuffer(bh_base *base) {
-        cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
+        cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) base->nbytes());
         buffers[base].reset(buf);
         return buf;
     }

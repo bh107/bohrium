@@ -331,8 +331,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     // Write allocations of the kernel temporaries
     for(const bh_base* b: kernel_temps) {
         util::spaces(ss, 4);
-        ss << writeType(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << bh_base_size(b)
-           << ");\n";
+        ss << writeType(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
     }
     ss << "\n";
 

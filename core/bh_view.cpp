@@ -38,10 +38,10 @@ void bh_view::insert_axis(int64_t dim, int64_t size, int64_t stride) {
         this->shape[dim] = size;
         this->stride[dim] = stride;
     } else { // Inserting
-        for (int64_t i = ndim-1; i >= 0; --i) {
+        for (int64_t i = ndim - 1; i >= 0; --i) {
             if (i >= dim) { // Move shape and stride one to the right
-                this->shape[i+1] = this->shape[i];
-                this->stride[i+1] = this->stride[i];
+                this->shape[i + 1] = this->shape[i];
+                this->stride[i + 1] = this->stride[i];
                 if (i == dim) { // Insert the new dimension
                     this->shape[i] = size;
                     this->stride[i] = stride;
@@ -57,9 +57,9 @@ void bh_view::remove_axis(int64_t dim) {
     assert(1 < ndim);
     assert(dim < ndim);
 
-    for (int64_t i=dim; i < ndim-1; ++i) {
-        shape[i] = shape[i+1];
-        stride[i] = stride[i+1];
+    for (int64_t i = dim; i < ndim - 1; ++i) {
+        shape[i] = shape[i + 1];
+        stride[i] = stride[i + 1];
     }
 
     --ndim;
@@ -74,11 +74,10 @@ void bh_view::transpose(int64_t axis1, int64_t axis2) {
     std::swap(stride[axis1], stride[axis2]);
 }
 
-vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
-{
+vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
     //stride&shape&index for each dimension (in that order)
     vector<tuple<int64_t, int64_t, int64_t> > sns;
-    for(int64_t i = 0; i < this->ndim; ++i) {
+    for (int64_t i = 0; i < this->ndim; ++i) {
         sns.push_back(make_tuple(this->stride[i], this->shape[i], i));
     }
 
@@ -89,10 +88,10 @@ vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const
     //makes up the python notation e.g. [2:4:1]
     vector<tuple<int64_t, int64_t, int64_t> > sne(sns.size());
     int64_t offset = this->start;
-    for(size_t i = 0; i < sns.size(); ++i) {
+    for (size_t i = 0; i < sns.size(); ++i) {
         const int64_t stride = std::get<0>(sns[i]);
-        const int64_t shape  = std::get<1>(sns[i]);
-        const int64_t index  = std::get<2>(sns[i]);
+        const int64_t shape = std::get<1>(sns[i]);
+        const int64_t index = std::get<2>(sns[i]);
 
         int64_t start = 0;
 
@@ -137,13 +136,13 @@ string bh_view::pprint(bool py_notation) const {
         ss << "CONST";
     } else if (py_notation) {
         const vector<tuple<int64_t, int64_t, int64_t> > sne = python_notation();
-        for(size_t i = 0; i < sne.size(); ++i) {
-            int64_t start  = std::get<0>(sne[i]);
-            int64_t end    = std::get<1>(sne[i]);
+        for (size_t i = 0; i < sne.size(); ++i) {
+            int64_t start = std::get<0>(sne[i]);
+            int64_t end = std::get<1>(sne[i]);
             int64_t stride = std::get<2>(sne[i]);
             ss << start << ":" << end << ":" << stride;
 
-            if(i < sne.size()-1) { //Not the last iteration
+            if (i < sne.size() - 1) { //Not the last iteration
                 ss << ",";
             }
         }
@@ -159,43 +158,19 @@ string bh_view::pprint(bool py_notation) const {
     return ss.str();
 }
 
-ostream& operator<<(ostream& out, const bh_view& v) {
+ostream &operator<<(ostream &out, const bh_view &v) {
     out << v.pprint(true);
     return out;
 }
 
-inline int64_t gcd(int64_t a, int64_t b)
-{
-    if (b==0) {
-        return a;
-    }
-
-    int64_t c = a % b;
-
-    while(c != 0) {
-        a = b;
-        b = c;
-        c = a % b;
-    }
-
-    return b;
-}
-
-/* Returns the simplest view (fewest dimensions) that access
- * the same elements in the same pattern
- *
- * @view The view
- * @return The simplified view
- */
-bh_view bh_view_simplify(const bh_view& view)
-{
+bh_view bh_view_simplify(const bh_view &view) {
     bh_view res;
     res.base = view.base;
     res.ndim = 0;
     res.start = view.start;
     int64_t i = 0;
 
-    while (view.shape[i] == 1 && i < view.ndim-1) {
+    while (view.shape[i] == 1 && i < view.ndim - 1) {
         ++i;
     }
 
@@ -211,12 +186,12 @@ bh_view bh_view_simplify(const bh_view& view)
             continue;
         }
 
-        if (view.shape[i]*view.stride[i] == res.stride[res.ndim]) {
+        if (view.shape[i] * view.stride[i] == res.stride[res.ndim]) {
             res.shape[res.ndim] *= view.shape[i];
             res.stride[res.ndim] = view.stride[i];
         } else {
             ++res.ndim;
-            res.shape[res.ndim]  = view.shape[i];
+            res.shape[res.ndim] = view.shape[i];
             res.stride[res.ndim] = view.stride[i];
         }
     }
@@ -227,17 +202,10 @@ bh_view bh_view_simplify(const bh_view& view)
     return res;
 }
 
-/* Simplifies the given view down to the given shape.
- * If that is not possible an std::invalid_argument exception is thrown
- *
- * @view The view
- * @return The simplified view
- */
-bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
-{
+bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape) {
     assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
 
-    if (view.ndim < (int64_t)shape.size()) {
+    if (view.ndim < (int64_t) shape.size()) {
         std::stringstream ss;
         ss << "Can not simplify to more dimensions: ";
         ss << "shape: " << shape << " view: " << view;
@@ -250,7 +218,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
     res.start = view.start;
     int64_t i = 0;
 
-    while (view.shape[i] == 1 && i < view.ndim-1) {
+    while (view.shape[i] == 1 && i < view.ndim - 1) {
         ++i;
     }
 
@@ -267,7 +235,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
             }
         }
 
-        if ((int64_t)shape.size() == res.ndim) {
+        if ((int64_t) shape.size() == res.ndim) {
             if (view.shape[i] == 1) {
                 continue;
             } else {
@@ -278,13 +246,13 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
             }
         }
 
-        if (view.shape[i-1] > shape[res.ndim]) {
+        if (view.shape[i - 1] > shape[res.ndim]) {
             std::stringstream ss;
             ss << "Can not simplify to lower dimension size: ";
             ss << "shape: " << shape << " view: " << view;
             throw std::invalid_argument(ss.str());
-        } else if (view.shape[i-1] == shape[res.ndim]) {
-            res.shape[++res.ndim]  = view.shape[i];
+        } else if (view.shape[i - 1] == shape[res.ndim]) {
+            res.shape[++res.ndim] = view.shape[i];
             res.stride[res.ndim] = view.stride[i];
             continue;
         }
@@ -293,11 +261,11 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
             continue;
         }
 
-        if (view.shape[i]*view.stride[i] == res.stride[res.ndim]) {
+        if (view.shape[i] * view.stride[i] == res.stride[res.ndim]) {
             res.shape[res.ndim] *= view.shape[i];
             res.stride[res.ndim] = view.stride[i];
         } else {
-            res.shape[++res.ndim]  = view.shape[i];
+            res.shape[++res.ndim] = view.shape[i];
             res.stride[res.ndim] = view.stride[i];
         }
     }
@@ -306,7 +274,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
         ++res.ndim;
     }
 
-    if (res.ndim != (int64_t)shape.size()) {
+    if (res.ndim != (int64_t) shape.size()) {
         std::stringstream ss;
         ss << "Can not simplify to given shape: ";
         ss << "shape: " << shape << " view: " << view;
@@ -316,31 +284,7 @@ bh_view bh_view_simplify(const bh_view& view, const std::vector<int64_t>& shape)
     return res;
 }
 
-/* Number of non-broadcasted elements in a given view
- *
- * @view    The view in question.
- * @return  Number of elements.
- */
-int64_t bh_nelements_nbcast(const bh_view *view)
-{
-    int64_t res = 1;
-    for (int i = 0; i < view->ndim; ++i) {
-        if(view->stride[i] != 0) {
-            res *= view->shape[i];
-        }
-    }
-
-    return res;
-}
-
-/* Number of element in a given shape
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @return   Number of element operations
- */
-int64_t bh_nelements(int64_t ndim, const int64_t shape[])
-{
+int64_t bh_nelements(int64_t ndim, const int64_t shape[]) {
     assert (ndim > 0);
     int64_t res = 1;
     for (int i = 0; i < ndim; ++i) {
@@ -350,20 +294,13 @@ int64_t bh_nelements(int64_t ndim, const int64_t shape[])
     return res;
 }
 
-int64_t bh_nelements(const bh_view& view)
-{
-    return bh_nelements(view.ndim,view.shape);
+int64_t bh_nelements(const bh_view &view) {
+    return bh_nelements(view.ndim, view.shape);
 }
 
-/* Set the view stride to contiguous row-major
- *
- * @view    The view in question
- * @return  The total number of elements in view
- */
-int64_t bh_set_contiguous_stride(bh_view *view)
-{
+int64_t bh_set_contiguous_stride(bh_view *view) {
     int64_t s = 1;
-    for(int64_t i = view->ndim-1; i >= 0; --i) {
+    for (int64_t i = view->ndim - 1; i >= 0; --i) {
         view->stride[i] = s;
         s *= view->shape[i];
     }
@@ -371,14 +308,7 @@ int64_t bh_set_contiguous_stride(bh_view *view)
     return s;
 }
 
-/* Updates the view with the complete base
- *
- * @view    The view to update (in-/out-put)
- * @base    The base assign to the view
- * @return  The total number of elements in view
- */
-void bh_assign_complete_base(bh_view *view, bh_base *base)
-{
+void bh_assign_complete_base(bh_view *view, bh_base *base) {
     view->base = base;
     view->ndim = 1;
     view->start = 0;
@@ -386,49 +316,25 @@ void bh_assign_complete_base(bh_view *view, bh_base *base)
     view->stride[0] = 1;
 }
 
-/* Determines whether the base array is a scalar.
- *
- * @view The view
- * @return The boolean answer
- */
-bool bh_is_scalar(const bh_view* view)
-{
+bool bh_is_scalar(const bh_view *view) {
     return bh_nelements(*view) == 1;
 }
 
-/* Determines whether the operand is a constant
- *
- * @o The operand
- * @return The boolean answer
- */
-bool bh_is_constant(const bh_view* o)
-{
+bool bh_is_constant(const bh_view *o) {
     return (o->base == NULL);
 }
 
-/* Flag operand as a constant
- *
- * @o      The operand
- */
-void bh_flag_constant(bh_view* o)
-{
+void bh_flag_constant(bh_view *o) {
     o->base = NULL;
 }
 
-/* Determines whether two views have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_same_shape(const bh_view *a, const bh_view *b)
-{
-    if(a->ndim != b->ndim) {
+bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
+    if (a->ndim != b->ndim) {
         return false;
     }
 
-    for(int i=0; i<a->ndim; ++i) {
-        if(a->shape[i] != b->shape[i]) {
+    for (int i = 0; i < a->ndim; ++i) {
+        if (a->shape[i] != b->shape[i]) {
             return false;
         }
     }
@@ -436,35 +342,13 @@ bool bh_view_same_shape(const bh_view *a, const bh_view *b)
     return true;
 }
 
-/* Determines whether two views are identical and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_same(const bh_view *a, const bh_view *b)
-{
-    if(bh_is_constant(a) || bh_is_constant(b)) {
-        return false;
-    }
-
-    return *a == *b;
-}
-
-/* Determines whether a view is contiguous
- *
- * @a The view
- * @return The boolean answer
- */
-bool bh_is_contiguous(const bh_view* a)
-{
+bool bh_is_contiguous(const bh_view *a) {
     if (bh_is_constant(a)) {
         return false;
     }
 
     int64_t weight = 1;
-    for(int64_t dim = a->ndim-1; dim >= 0; --dim) {
+    for (int64_t dim = a->ndim - 1; dim >= 0; --dim) {
         if (a->shape[dim] > 1 && a->stride[dim] != weight) {
             return false;
         }
@@ -475,93 +359,8 @@ bool bh_is_contiguous(const bh_view* a)
     return true;
 }
 
-/* Determines whether two views are aligned and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_aligned(const bh_view *a, const bh_view *b)
-{
-    if(bh_is_constant(a) || bh_is_constant(b)) {
-        return true;
-    }
-
-    bh_view sa = bh_view_simplify(*a);
-    bh_view sb = bh_view_simplify(*b);
-
-    return sa == sb;
-}
-
-/* Determines whether two views are aligned, points
- * to the same base array, and have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b)
-{
-    if(a->ndim != b->ndim) {
-        return false;
-    } else if(not bh_view_aligned(a, b)) {
-        return false;
-    }
-
-    for(int i=0; i<a->ndim; ++i) {
-        if(a->shape[i] != b->shape[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/* Determines whether two views access some of the same data points or not
- * NB: This functions may return True on two non-overlapping views.
- *     But will always return False on overlapping views.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-bool bh_view_disjoint(const bh_view *a, const bh_view *b)
-{
+bool bh_view_disjoint(const bh_view *a, const bh_view *b) {
     // TODO: In order to fixed BUG like <https://github.com/bh107/bohrium/issues/178>, we say that sharing
     //       the same base makes the views overlapping for now.
     return bh_base_array(a) != bh_base_array(b);
-/*
-
-
-    if (bh_is_constant(a) || bh_is_constant(b)) // One is a constant
-        return true;
-    if(bh_base_array(a) != bh_base_array(b)) //different base
-        return true;
-    if(a->ndim != b->ndim) // we dont handle views of differenr dimensions yet
-        return false;
-
-    int64_t astart = a->start;
-    int64_t bstart = b->start;
-    int64_t stride = 1;
-    for (int i = 0; i < a->ndim; ++i)
-    {
-        //Negative strides is always an overlap
-        if(a->stride[i] < 0 or b->stride[i] < 0)
-            return false;
-
-        stride = gcd(a->stride[i], b->stride[i]);
-        if (stride == 0) // stride is 0 in both views: dimension is virtual
-            continue;
-        int64_t as = astart / stride;
-        int64_t bs = bstart / stride;
-        int64_t ae = as + a->shape[i] * (a->stride[i]/stride);
-        int64_t be = bs + b->shape[i] * (b->stride[i]/stride);
-        if (ae < bs || be < as)
-            return true;
-        astart %= stride;
-        bstart %= stride;
-    }
-    return stride > 1 && a->start % stride != b->start % stride;
-*/
 }

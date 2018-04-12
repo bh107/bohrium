@@ -30,7 +30,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <colors.hpp>
 #include <bh_ir.hpp>
 #include <bh_instruction.hpp>
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 #include <bh_config_parser.hpp>
 #include <jitk/codegen_util.hpp>
 

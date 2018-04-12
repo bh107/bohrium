@@ -25,7 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 
 #include <jitk/compiler.hpp>
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 
 #include "engine_opencl.hpp"
 
@@ -389,7 +389,7 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
             if (verbose) {
                 std::cout << "Copy to host: " << *base << std::endl;
             }
-            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
             // When syncing we assume that the host writes to the data and invalidate the device data thus
             // we have to remove its data buffer
             buffers.erase(base);
@@ -405,7 +405,7 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
     if (prof) {
         uint64_t sum = 0;
         for (const auto &b: buffers) {
-            sum += bh_base_size(b.first);
+            sum += b.first->nbytes();
         }
         stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
     }
@@ -420,7 +420,7 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
                 if (verbose) {
                     std::cout << "Copy to device: " << *base << std::endl;
                 }
-                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
             }
         }
     }

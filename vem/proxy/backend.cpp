@@ -90,7 +90,7 @@ static void service(const std::string &address, int port)
                 if (util::exist(remote2local, body.base)) {
                     bh_base &local_base = remote2local.at(body.base);
                     void *data = child->getMemoryPointer(local_base, true, false, body.nullify);
-                    comm_backend.send_array_data(data, bh_base_size(&local_base));
+                    comm_backend.send_array_data(data, local_base.nbytes());
                 } else {
                     comm_backend.send_array_data(nullptr, 0);
                 }

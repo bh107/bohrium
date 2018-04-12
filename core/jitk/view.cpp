@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 
-#include <jitk/base_db.hpp>
+#include <jitk/scope.hpp>
 
 
 using namespace std;

@@ -143,7 +143,7 @@ uint64_t weight(const Block &b1, const Block &b2) {
 
     uint64_t totalsize = 0;
     for (const bh_base *base: new_temps) {
-        totalsize += bh_base_size(base);
+        totalsize += base->nbytes();
     }
     return totalsize;
 }
@@ -163,7 +163,7 @@ uint64_t block_cost(const Block &block) {
     }
     uint64_t totalsize = 0;
     for (const bh_base *base: non_temps) {
-        totalsize += bh_base_size(base);
+        totalsize += base->nbytes();
     }
     return totalsize;
 }

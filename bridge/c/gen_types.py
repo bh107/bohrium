@@ -69,12 +69,6 @@ typedef struct { bhc_float32 real, imag; } bhc_complex64;
 typedef struct { bhc_float64 real, imag; } bhc_complex128;
 typedef struct { bhc_uint64 start, key; } bhc_r123;
 
-#ifdef _WIN32
-#define DLLEXPORT __declspec( dllexport )
-#else
-#define DLLEXPORT
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

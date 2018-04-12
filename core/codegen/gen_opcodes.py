@@ -50,35 +50,35 @@ __OPCODES__
  * @opcode Opcode for operation
  * @return Text string.
  */
-DLLEXPORT const char* bh_opcode_text(bh_opcode opcode);
+const char* bh_opcode_text(bh_opcode opcode);
 
 /* Determines if the operation is a system operation
  *
  * @opcode The operation opcode
  * @return The boolean answer
  */
-DLLEXPORT bool bh_opcode_is_system(bh_opcode opcode);
+bool bh_opcode_is_system(bh_opcode opcode);
 
 /* Determines if the operation is a reduction operation
  *
  * @opcode The operation opcode
  * @return The boolean answer
  */
-DLLEXPORT bool bh_opcode_is_reduction(bh_opcode opcode);
+bool bh_opcode_is_reduction(bh_opcode opcode);
 
 /* Determines if the operation is an accumulate operation
  *
  * @opcode The operation opcode
  * @return The boolean answer
  */
-DLLEXPORT bool bh_opcode_is_accumulate(bh_opcode opcode);
+bool bh_opcode_is_accumulate(bh_opcode opcode);
 
 /* Determines if the operation is performed elementwise
  *
  * @opcode Opcode for operation
  * @return TRUE if the operation is performed elementwise, FALSE otherwise
  */
-DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
+bool bh_opcode_is_elementwise(bh_opcode opcode);
 
 /* Determines whether the opcode is a sweep opcode
  * i.e. either a reduction or an accumulate
@@ -86,7 +86,7 @@ DLLEXPORT bool bh_opcode_is_elementwise(bh_opcode opcode);
  * @opcode
  * @return The boolean answer
  */
-DLLEXPORT bool bh_opcode_is_sweep(bh_opcode opcode);
+bool bh_opcode_is_sweep(bh_opcode opcode);
 
 #ifdef __cplusplus
 }
