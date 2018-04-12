@@ -150,7 +150,7 @@ public:
 
     ~MallocCache() {
         shrinkToFit(0);
-        assert(_total_mem_allocated == 0);
+        assert(_total_num_bytes == 0);
     }
 
     uint64_t getTotalNumBytes() const {
