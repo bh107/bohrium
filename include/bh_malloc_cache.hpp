@@ -27,6 +27,30 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
+namespace {
+// Allocate page-size aligned main memory.
+void *main_mem_malloc(uint64_t nbytes) {
+    // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
+    // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
+    void *ret = mmap(0, nbytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (ret == MAP_FAILED or ret == nullptr) {
+        std::stringstream ss;
+        ss << "main_mem_malloc() could not allocate a data region. Returned error code: " << strerror(errno);
+        throw std::runtime_error(ss.str());
+    }
+    return ret;
+}
+
+void main_mem_free(void *mem, uint64_t nbytes) {
+    assert(mem != nullptr);
+    if (munmap(mem, nbytes) != 0) {
+        std::stringstream ss;
+        ss << "main_mem_free() could not free a data region. " << "Returned error code: " << strerror(errno);
+        throw std::runtime_error(ss.str());
+    }
+}
+}
+
 class MallocCache {
 private:
     struct Segment {
@@ -40,18 +64,13 @@ private:
     uint64_t _total_mem_allocated = 0;
     uint64_t _max_mem_allocated = 0;
 
+    std::function<void *(uint64_t)> _func_alloc;
+    std::function<void(void *, uint64_t)> _func_free;
+
     static constexpr uint64_t MAX_NBYTES = 1000000;
 
     void *_malloc(uint64_t nbytes) {
-        // Allocate page-size aligned memory.
-        // The MAP_PRIVATE and MAP_ANONYMOUS flags is not 100% portable. See:
-        // <http://stackoverflow.com/questions/4779188/how-to-use-mmap-to-allocate-a-memory-in-heap>
-        void *ret = mmap(0, nbytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        if (ret == MAP_FAILED or ret == nullptr) {
-            std::stringstream ss;
-            ss << "MallocCache() could not allocate a data region. Returned error code: " << strerror(errno);
-            throw std::runtime_error(ss.str());
-        }
+        void *ret = _func_alloc(nbytes);
         _total_mem_allocated += nbytes;
         if (_total_mem_allocated > _max_mem_allocated) {
             _max_mem_allocated = _total_mem_allocated;
@@ -63,17 +82,12 @@ private:
     void _free(void *mem, uint64_t nbytes) {
 //        std::cout << "free         - nbytes: " << nbytes << ",  addr: " << mem << std::endl;
         assert(mem != nullptr);
-        if (munmap(mem, nbytes) != 0) {
-            std::stringstream ss;
-            ss << "MallocCache() could not free a data region. " << "Returned error code: " << strerror(errno);
-            throw std::runtime_error(ss.str());
-        }
+        _func_free(mem, nbytes);
         assert(_max_mem_allocated >= nbytes);
         _total_mem_allocated -= nbytes;
     }
 
-    void _erase(std::vector<Segment>::iterator first,
-                std::vector<Segment>::iterator last, bool call_free) {
+    void _erase(std::vector<Segment>::iterator first, std::vector<Segment>::iterator last, bool call_free) {
         for (auto it = first; it != last; ++it) {
             if (call_free) {
                 _free(it->mem, it->nbytes);
@@ -94,10 +108,14 @@ private:
 
 public:
 
+    MallocCache(std::function<void *(uint64_t)> func_alloc = main_mem_malloc,
+                std::function<void(void *, uint64_t)> func_free = main_mem_free) : _func_alloc(main_mem_malloc),
+                                                                                   _func_free(main_mem_free) {}
+
     std::string pprint() {
         std::stringstream ss;
         ss << "Malloc Cache: \n";
-        for(const Segment &seg: _segments) {
+        for (const Segment &seg: _segments) {
             ss << "  (" << seg.nbytes << "B, " << seg.mem << ")\n";
         }
         return ss.str();
@@ -131,13 +149,13 @@ public:
                 void *ret = it->mem;
                 assert(ret != nullptr);
                 _erase(it, false);
-    //            std::cout << "cache hit!   - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
+//               std::cout << "cache hit!   - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
                 return ret;
             }
         }
         ++_total_num_misses;
         void *ret = _malloc(nbytes); // Cache miss
-    //    std::cout << "cache miss!  - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
+//      std::cout << "cache miss!  - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
     }
 
