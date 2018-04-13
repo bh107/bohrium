@@ -211,7 +211,7 @@ public:
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void setConstructorFlag(std::vector<bh_instruction*> &instr_list);
+    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
 
     // Return a YAML string describing this component
     std::string info() const;
@@ -222,7 +222,7 @@ public:
                         const jitk::LoopB &block,
                         bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
-                        std::stringstream &out) {
+                        std::stringstream &out) override {
         // Write the for-loop header
         std::string itername;
         { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
@@ -241,7 +241,7 @@ public:
     }
 
     // Return CUDA types, which are used inside the JIT kernels
-    const std::string writeType(bh_type dtype) {
+    const std::string writeType(bh_type dtype) override {
         switch (dtype) {
             case bh_type::BOOL:       return "bool";
             case bh_type::INT8:       return "char";
@@ -277,7 +277,7 @@ public:
     }
 
     // Update statistics with final aggregated values of the engine
-    void updateFinalStatistics() {
+    void updateFinalStatistics() override {
         stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
         stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }

@@ -170,7 +170,7 @@ public:
     }
 
     // Update statistics with final aggregated values of the engine
-    void updateFinalStatistics() {
+    void updateFinalStatistics() override {
         stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
         stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }
