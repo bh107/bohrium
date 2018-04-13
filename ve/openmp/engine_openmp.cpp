@@ -48,7 +48,7 @@ EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
 
     // Initiate cache limits
     const uint64_t sys_mem = bh_main_memory_total();
-    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 60);
+    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 80);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
