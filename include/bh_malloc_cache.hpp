@@ -37,20 +37,23 @@ private:
         void *mem;
     };
     std::vector<Segment> _segments;
-    uint64_t _total_num_bytes = 0;
-    uint64_t _total_num_lookups = 0;
-    uint64_t _total_num_misses = 0;
-    uint64_t _total_mem_allocated = 0;
-    uint64_t _max_mem_allocated = 0;
     FuncAllocT _func_alloc;
     FuncFreeT _func_free;
-    uint64_t _limit_num_bytes;
+    
+    uint64_t _cache_size = 0; // Current size of the cache (in bytes)
+    uint64_t _mem_allocated = 0; // Current memory allocated inside and outside the cache (in bytes)
+    uint64_t _mem_allocated_limit; // The limit of `_mem_allocated`
+
+    // Some statistics
+    uint64_t _stat_lookups = 0;
+    uint64_t _stat_misses = 0;
+    uint64_t _stat_allocated_max = 0;
 
     void *_malloc(uint64_t nbytes) {
         void *ret = _func_alloc(nbytes);
-        _total_mem_allocated += nbytes;
-        if (_total_mem_allocated > _max_mem_allocated) {
-            _max_mem_allocated = _total_mem_allocated;
+        _mem_allocated += nbytes;
+        if (_mem_allocated > _stat_allocated_max) {
+            _stat_allocated_max = _mem_allocated;
         }
 //        std::cout << "malloc       - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
@@ -60,8 +63,8 @@ private:
 //        std::cout << "free         - nbytes: " << nbytes << ",  addr: " << mem << std::endl;
         assert(mem != nullptr);
         _func_free(mem, nbytes);
-        assert(_total_mem_allocated >= nbytes);
-        _total_mem_allocated -= nbytes;
+        assert(_mem_allocated >= nbytes);
+        _mem_allocated -= nbytes;
     }
 
     void _erase(std::vector<Segment>::iterator first, std::vector<Segment>::iterator last, bool call_free) {
@@ -69,7 +72,7 @@ private:
             if (call_free) {
                 _free(it->mem, it->nbytes);
             }
-            _total_num_bytes -= it->nbytes;
+            _cache_size -= it->nbytes;
         }
         _segments.erase(first, last);
     }
@@ -85,9 +88,16 @@ private:
 
 public:
 
+    /** Constructor
+     *
+     * @param func_alloc A function that takes size and returns a new memory allocation
+     * @param func_free  A function that takes a memory allocation and size and frees the allocation
+     * @param limit_num_bytes
+     */
     MallocCache(FuncAllocT func_alloc, FuncFreeT func_free, uint64_t limit_num_bytes) :
-            _func_alloc(func_alloc), _func_free(func_free), _limit_num_bytes(limit_num_bytes) {}
+            _func_alloc(func_alloc), _func_free(func_free), _mem_allocated_limit(limit_num_bytes) {}
 
+    /** Pretty print the cache */
     std::string pprint() {
         std::stringstream ss;
         ss << "Malloc Cache: \n";
@@ -97,6 +107,11 @@ public:
         return ss.str();
     }
 
+    /** Shrink to size of the cache with at least `nbytes`
+     *
+     * @param nbytes The minimum amount of bytes to shrink with
+     * @return The actual size reduction
+     */
     uint64_t shrink(uint64_t nbytes) {
         uint64_t count = 0;
         std::vector<Segment>::iterator it;
@@ -107,18 +122,28 @@ public:
         return count;
     }
 
-    uint64_t shrinkToFit(uint64_t total_num_bytes) {
-        if (total_num_bytes < _total_num_bytes) {
-            shrink(_total_num_bytes - total_num_bytes);
+    /** Makes sure that the size of the cache is at most `nbytes`
+     *
+     * @param nbytes The maximum size of the cache size
+     * @return The size reduction (if any)
+     */
+    uint64_t shrinkToFit(uint64_t nbytes) {
+        if (nbytes < _cache_size) {
+            return shrink(_cache_size - nbytes);
         }
-        return _total_num_bytes;
+        return 0;
     }
 
+    /** Alloc a memory allocation of size `nbytes`
+     *
+     * @param nbytes Number of bytes to allocate
+     * @return The memory allocation
+     */
     void *alloc(uint64_t nbytes) {
         if (nbytes == 0) {
             return nullptr;
         }
-        ++_total_num_lookups;
+        ++_stat_lookups;
         // Check for segment of size `nbytes`, which is a cache hit!
         for (auto it = _segments.rbegin(); it != _segments.rend(); ++it) { // Search in reverse
             if (it->nbytes == nbytes) {
@@ -129,52 +154,65 @@ public:
                 return ret;
             }
         }
-        ++_total_num_misses;
+        ++_stat_misses;
+
+        // Since we are allocating new memory, we might have to shrink to fit `_mem_allocated_limit`
+        // Notice, we cannot do anything about memory allocation not in the cache; we can only shrink the cache to zero
+        {
+            assert(_mem_allocated > _cache_size);
+            const uint64_t new_mem_not_in_cache = _mem_allocated - _cache_size + nbytes;
+            if (new_mem_not_in_cache < _mem_allocated_limit) {
+                shrinkToFit(_mem_allocated_limit - new_mem_not_in_cache);
+            } else {
+                shrinkToFit(0);
+            }
+        }
+
         void *ret = _malloc(nbytes); // Cache miss
 //      std::cout << "cache miss!  - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
     }
 
+    /** Frees a memory allocation of size `nbytes`
+     *
+     * @param nbytes The size of the memory allocation
+     * @param memory The memory allocation
+     */
     void free(uint64_t nbytes, void *memory) {
-        // Let's make sure that we don't exceed `MAX_NBYTES`
-        if (nbytes > _limit_num_bytes) {
-            return _free(memory, nbytes);
-        }
-        shrinkToFit(_limit_num_bytes - nbytes);
-
         // Insert the segment at the end of `_segments`
         Segment seg;
         seg.nbytes = nbytes;
         seg.mem = memory;
         _segments.push_back(seg);
-        _total_num_bytes += nbytes;
+        _cache_size += nbytes;
 //        std::cout << "cache insert - nbytes: " << nbytes << ",  addr: " << seg.mem << std::endl;
     }
 
+    /** Destructor */
     ~MallocCache() {
         shrinkToFit(0);
-        assert(_total_num_bytes == 0);
+        assert(_cache_size == 0);
     }
 
     void setLimit(uint64_t nbytes) {
         shrinkToFit(nbytes);
-        _limit_num_bytes = nbytes;
+        _mem_allocated_limit = nbytes;
     };
 
     uint64_t getTotalNumBytes() const {
-        return _total_num_bytes;
+        return _cache_size;
     }
 
     uint64_t getTotalNumLookups() const {
-        return _total_num_lookups;
+        return _stat_lookups;
     }
 
     uint64_t getTotalNumMisses() const {
-        return _total_num_misses;
+        return _stat_misses;
     }
 
     uint64_t getMaxMemAllocated() const {
-        return _max_mem_allocated;
+        return _stat_allocated_max;
     }
 };
 
