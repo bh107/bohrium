@@ -69,22 +69,22 @@ public:
                  const std::string &source,
                  uint64_t codegen_hash,
                  const std::vector<uint64_t> &thread_stack,
-                 const std::vector<const bh_instruction*> &constants) override;
+                 const std::vector<const bh_instruction *> &constants) override;
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
-    void copyToHost(const std::set<bh_base*> &bases) override;
+    void copyToHost(const std::set<bh_base *> &bases) override;
 
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
-    void copyToDevice(const std::set<bh_base*> &base_list) override;
+    void copyToDevice(const std::set<bh_base *> &base_list) override;
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
+    void setConstructorFlag(std::vector<bh_instruction *> &instr_list) override;
 
     // Copy all bases to the host (ignoring bases that isn't on the device)
     void copyAllBasesToHost() override;
 
     // Delete a buffer
-    void delBuffer(bh_base* base) override;
+    void delBuffer(bh_base *base) override;
 
     void writeKernel(const jitk::Block &block,
                      const jitk::SymbolTable &symbols,
@@ -115,7 +115,7 @@ public:
         return buf;
     }
 
-    cl::Buffer *createBuffer(bh_base *base, void* opencl_mem_ptr) {
+    cl::Buffer *createBuffer(bh_base *base, void *opencl_mem_ptr) {
         auto *buf = new cl::Buffer();
         auto _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
         cl_int err = clRetainMemObject(_mem); // Increments the memory object reference count
@@ -131,7 +131,7 @@ public:
     }
 
     // Retrieve a single buffer
-    cl::Buffer* getBuffer(bh_base* base) {
+    cl::Buffer *getBuffer(bh_base *base) {
         if (not util::exist(buffers, base)) {
             copyToDevice({base});
         }
@@ -139,7 +139,7 @@ public:
     }
 
     // Get C buffer from wrapped C++ object
-    cl_mem getCBuffer(bh_base* base) {
+    cl_mem getCBuffer(bh_base *base) {
         return (*getBuffer(base))();
     }
 
@@ -149,7 +149,7 @@ public:
     }
 
     // Get the OpenCL command queue object
-    cl::CommandQueue* getQueue() {
+    cl::CommandQueue *getQueue() {
         return &queue;
     }
 

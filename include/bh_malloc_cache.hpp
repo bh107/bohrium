@@ -44,8 +44,7 @@ private:
     uint64_t _max_mem_allocated = 0;
     FuncAllocT _func_alloc;
     FuncFreeT _func_free;
-
-    static constexpr uint64_t MAX_NBYTES = 1000000;
+    uint64_t _limit_num_bytes;
 
     void *_malloc(uint64_t nbytes) {
         void *ret = _func_alloc(nbytes);
@@ -86,7 +85,8 @@ private:
 
 public:
 
-    MallocCache(FuncAllocT func_alloc, FuncFreeT func_free) : _func_alloc(func_alloc), _func_free(func_free) {}
+    MallocCache(FuncAllocT func_alloc, FuncFreeT func_free, uint64_t limit_num_bytes) :
+            _func_alloc(func_alloc), _func_free(func_free), _limit_num_bytes(limit_num_bytes) {}
 
     std::string pprint() {
         std::stringstream ss;
@@ -137,10 +137,10 @@ public:
 
     void free(uint64_t nbytes, void *memory) {
         // Let's make sure that we don't exceed `MAX_NBYTES`
-        if (nbytes > MAX_NBYTES) {
+        if (nbytes > _limit_num_bytes) {
             return _free(memory, nbytes);
         }
-        shrinkToFit(MAX_NBYTES - nbytes);
+        shrinkToFit(_limit_num_bytes - nbytes);
 
         // Insert the segment at the end of `_segments`
         Segment seg;
@@ -155,6 +155,11 @@ public:
         shrinkToFit(0);
         assert(_total_num_bytes == 0);
     }
+
+    void setLimit(uint64_t nbytes) {
+        shrinkToFit(nbytes);
+        _limit_num_bytes = nbytes;
+    };
 
     uint64_t getTotalNumBytes() const {
         return _total_num_bytes;
@@ -171,7 +176,6 @@ public:
     uint64_t getMaxMemAllocated() const {
         return _max_mem_allocated;
     }
-
 };
 
 

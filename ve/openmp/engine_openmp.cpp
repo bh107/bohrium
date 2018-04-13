@@ -42,10 +42,18 @@ namespace fs = boost::filesystem;
 namespace bohrium {
 
 EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-    EngineCPU(config, stat),
-    compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string())
-{
+    EngineCPU(config, stat), compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string()) {
+
     compilation_hash = util::hash(compiler.cmd_template);
+
+    // Initiate cache limits
+    const uint64_t sys_mem = bh_main_memory_total();
+    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 60);
+    if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
+        throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
+    }
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem * (malloc_cache_limit_in_percent/100.0)));
+    bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineOpenMP::~EngineOpenMP() {
@@ -402,6 +410,8 @@ std::string EngineOpenMP::info() const {
     ss << "OpenMP:" << "\n";
     ss << "  Main memory: " << bh_main_memory_total() / 1024 / 1024 << " MB\n";
     ss << "  Hardware threads: " << std::thread::hardware_concurrency() << "\n";
+    ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
+       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
     ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "") << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
 

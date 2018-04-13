@@ -71,7 +71,7 @@ void main_mem_free(void *mem, uint64_t nbytes) {
     }
 }
 
-MallocCache malloc_cache(main_mem_malloc, main_mem_free);
+MallocCache malloc_cache(main_mem_malloc, main_mem_free, 0);
 }
 
 void bh_data_malloc(bh_base *base) {
@@ -85,6 +85,10 @@ void bh_data_free(bh_base *base) {
     if (base->data == nullptr) return;
     malloc_cache.free(base->nbytes(), base->data);
     base->data = nullptr;
+}
+
+void bh_set_malloc_cache_limit(uint64_t nbytes) {
+    malloc_cache.setLimit(nbytes);
 }
 
 void bh_data_malloc_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage) {

@@ -58,7 +58,10 @@ protected:
     const boost::filesystem::path cache_bin_dir;
 
     // The hash of the JIT compilation command
-    uint64_t compilation_hash;
+    uint64_t compilation_hash{0};
+
+    int64_t malloc_cache_limit_in_percent{-1};
+    int64_t malloc_cache_limit_in_bytes{-1};
 
 public:
     Engine(const ConfigParser &config, Statistics &stat) :
