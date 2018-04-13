@@ -92,7 +92,7 @@ public:
      *
      * @param func_alloc A function that takes size and returns a new memory allocation
      * @param func_free  A function that takes a memory allocation and size and frees the allocation
-     * @param limit_num_bytes
+     * @param limit_num_bytes The size limit of the cache (see setLimit())
      */
     MallocCache(FuncAllocT func_alloc, FuncFreeT func_free, uint64_t limit_num_bytes) :
             _func_alloc(func_alloc), _func_free(func_free), _mem_allocated_limit(limit_num_bytes) {}
@@ -134,6 +134,23 @@ public:
         return 0;
     }
 
+    /** Shrink the cache to fit in the `_mem_allocated_limit` limit
+     *
+     * @param extra_mem_allocated  Additional number of bytes added to `_mem_allocated` before checking for overflow
+     */
+    void shrinkToFitLimit(uint64_t extra_mem_allocated=0) {
+        const uint64_t mem_alloc = _mem_allocated + extra_mem_allocated;
+        if (mem_alloc > _mem_allocated_limit) { // We are above the limit
+            assert(mem_alloc >= _cache_size);
+            const uint64_t mem_not_in_cache = mem_alloc - _cache_size;
+            if (mem_not_in_cache < _mem_allocated_limit) {
+                shrinkToFit(_mem_allocated_limit - mem_not_in_cache);
+            } else {
+                shrinkToFit(0); // We can atmost empty the cache
+            }
+        }
+    }
+
     /** Alloc a memory allocation of size `nbytes`
      *
      * @param nbytes Number of bytes to allocate
@@ -157,16 +174,7 @@ public:
         ++_stat_misses;
 
         // Since we are allocating new memory, we might have to shrink to fit `_mem_allocated_limit`
-        // Notice, we cannot do anything about memory allocation not in the cache; we can only shrink the cache to zero
-        {
-            assert(_mem_allocated > _cache_size);
-            const uint64_t new_mem_not_in_cache = _mem_allocated - _cache_size + nbytes;
-            if (new_mem_not_in_cache < _mem_allocated_limit) {
-                shrinkToFit(_mem_allocated_limit - new_mem_not_in_cache);
-            } else {
-                shrinkToFit(0);
-            }
-        }
+        shrinkToFitLimit(nbytes);
 
         void *ret = _malloc(nbytes); // Cache miss
 //      std::cout << "cache miss!  - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
@@ -194,9 +202,15 @@ public:
         assert(_cache_size == 0);
     }
 
+    /** Set the size limit of this cache. The limit is in terms of all memory allocated, which include both
+     * allocations inside and outside the cache.
+     * NB: the total amount of allocated memory might exceed the limit since we can at most shrink the cache to zero.
+     *
+     * @param nbytes The limit in bytes
+     */
     void setLimit(uint64_t nbytes) {
-        shrinkToFit(nbytes);
         _mem_allocated_limit = nbytes;
+        shrinkToFitLimit();
     };
 
     uint64_t getTotalNumBytes() const {
