@@ -282,7 +282,7 @@ class Statistics {
     }
 
     double memoryUsage() {
-        return (double) max_memory_usage / 1024.0 / 1024.0;
+        return max_memory_usage / 1024 / 1024;
     }
 
     double throughput() {
