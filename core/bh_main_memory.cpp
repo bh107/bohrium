@@ -91,7 +91,7 @@ void bh_set_malloc_cache_limit(uint64_t nbytes) {
     malloc_cache.setLimit(nbytes);
 }
 
-void bh_data_malloc_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage) {
+void bh_get_malloc_cache_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage) {
     cache_lookup = malloc_cache.getTotalNumLookups();
     cache_misses = malloc_cache.getTotalNumMisses();
     max_memory_usage = malloc_cache.getMaxMemAllocated();

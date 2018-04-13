@@ -22,23 +22,33 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstddef>
 #include <bh_base.hpp>
 
-/* Return the size of the physical memory on this machine */
+/** Return the size of the physical memory on this machine */
 uint64_t bh_main_memory_total();
 
-/* Allocate data memory for the given base if not already allocated.
+/** Allocate data memory for the given base if not already allocated.
  * For convenience, the base is allowed to be NULL.
  *
  * @base    The base in question
  */
 void bh_data_malloc(bh_base* base);
 
-/* Frees data memory for the given view.
+/** Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.
  *
  * @base    The base in question
  */
 void bh_data_free(bh_base* base);
 
+/** Set the size limit of the main memory malloc cache (see MallocCache::setLimit())
+ *
+ * @param nbytes The memory limit in bytes
+ */
 void bh_set_malloc_cache_limit(uint64_t nbytes);
 
-void bh_data_malloc_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage);
+/** Retrieve statistic from the main memory malloc cache
+ *
+ * @param cache_lookup Cache lookups
+ * @param cache_misses Cache misses
+ * @param max_memory_usage Total memory usage, which includes ALL memory allocated through the memory cache
+ */
+void bh_get_malloc_cache_stat(uint64_t &cache_lookup, uint64_t &cache_misses, uint64_t &max_memory_usage);

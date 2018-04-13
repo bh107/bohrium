@@ -76,7 +76,7 @@ class Impl : public ComponentImpl {
         if (msg == "statistic_enable_and_reset") {
             stat = Statistics(true, config);
         } else if (msg == "statistic") {
-            bh_data_malloc_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
+            bh_get_malloc_cache_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
             stat.write("OpenMP", "", ss);
             return ss.str();
         } else if (msg == "info") {
@@ -130,7 +130,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (stat.print_on_exit) {
-        bh_data_malloc_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
+        bh_get_malloc_cache_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
         stat.write("OpenMP", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }
