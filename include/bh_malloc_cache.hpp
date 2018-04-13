@@ -39,7 +39,7 @@ private:
     std::vector<Segment> _segments;
     FuncAllocT _func_alloc;
     FuncFreeT _func_free;
-    
+
     uint64_t _cache_size = 0; // Current size of the cache (in bytes)
     uint64_t _mem_allocated = 0; // Current memory allocated inside and outside the cache (in bytes)
     uint64_t _mem_allocated_limit; // The limit of `_mem_allocated`
@@ -138,7 +138,7 @@ public:
      *
      * @param extra_mem_allocated  Additional number of bytes added to `_mem_allocated` before checking for overflow
      */
-    void shrinkToFitLimit(uint64_t extra_mem_allocated=0) {
+    void shrinkToFitLimit(uint64_t extra_mem_allocated = 0) {
         const uint64_t mem_alloc = _mem_allocated + extra_mem_allocated;
         if (mem_alloc > _mem_allocated_limit) { // We are above the limit
             assert(mem_alloc >= _cache_size);
@@ -146,7 +146,7 @@ public:
             if (mem_not_in_cache < _mem_allocated_limit) {
                 shrinkToFit(_mem_allocated_limit - mem_not_in_cache);
             } else {
-                shrinkToFit(0); // We can atmost empty the cache
+                shrinkToFit(0); // We can at most empty the cache
             }
         }
     }
