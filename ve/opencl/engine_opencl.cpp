@@ -171,7 +171,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
     malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent/100.0)));
-    bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
+    malloc_cache.setLimit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineOpenCL::~EngineOpenCL() {
