@@ -296,7 +296,6 @@ void EngineCUDA::setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
 }
 
 std::string EngineCUDA::info() const {
-
     char device_name[1000];
     cuDeviceGetName(device_name, 1000, device);
     int major = 0, minor = 0;
@@ -305,11 +304,21 @@ std::string EngineCUDA::info() const {
     check_cuda_errors(cuDeviceTotalMem(&totalGlobalMem, device));
 
     stringstream ss;
-    ss << "----" << "\n";
-    ss << "CUDA:" << "\n";
-    ss << "  Device: \"" << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
-    ss << "  Memory: \"" << totalGlobalMem / 1024 / 1024 << " MB\"\n";
-    ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
+    ss << std::boolalpha; // Printing true/false instead of 1/0
+    ss << "----"                                                                               << "\n";
+    ss << "CUDA:"                                                                            << "\n";
+    ss << "  Device: " << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
+    ss << "  Memory: " << totalGlobalMem / 1024 / 1024 << " MB\n";
+    ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
+       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
+    ss << "  JIT Command: " << compiler.cmd_template << "\n";
+    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+
+    ss << "  Codegen flags:\n";
+    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 
