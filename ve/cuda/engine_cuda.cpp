@@ -36,14 +36,13 @@ namespace fs = boost::filesystem;
 namespace bohrium {
 
 EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
-    EngineGPU(config, stat),
-    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
-{
+        EngineGPU(config, stat),
+        work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
+        work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
+        work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
+        work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
+        work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
+        work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)) {
     int deviceCount = 0;
     CUresult err = cuInit(0);
 
@@ -223,7 +222,7 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        for (unsigned int i=0; i < thread_stack.size(); ++i) {
+        for (unsigned int i = 0; i < thread_stack.size(); ++i) {
             util::spaces(ss, 4);
             ss << "const " << writeType(bh_type::INT64) << " i" << i << " = " << writeThreadId(i) << "; "
                << "if (i" << i << " >= " << thread_stack[i] << ") { return; } // Prevent overflow\n";
@@ -238,12 +237,17 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
                          const std::string &source,
                          uint64_t codegen_hash,
                          const vector<uint64_t> &thread_stack,
-                         const vector<const bh_instruction*> &constants) {
+                         const vector<const bh_instruction *> &constants) {
     uint64_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();
-    string func_name; { stringstream t; t << "execute_" << codegen_hash; func_name = t.str(); }
+    string func_name;
+    {
+        stringstream t;
+        t << "execute_" << codegen_hash;
+        func_name = t.str();
+    }
     CUfunction program = getFunction(source, func_name);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
@@ -255,9 +259,9 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
     }
 
     for (const bh_view *view: symbols.offsetStrideViews()) {
-        args.push_back((void*)&view->start);
-        for (int j=0; j<view->ndim; ++j) {
-            args.push_back((void*)&view->stride[j]);
+        args.push_back((void *) &view->start);
+        for (int j = 0; j < view->ndim; ++j) {
+            args.push_back((void *) &view->stride[j]);
         }
     }
 
@@ -277,7 +281,7 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
     stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
-void EngineCUDA::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
+void EngineCUDA::setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
 }
 
