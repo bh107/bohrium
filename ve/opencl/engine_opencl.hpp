@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 #include <bh_view.hpp>
+#include <bh_malloc_cache.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
 #include <jitk/engines/engine_gpu.hpp>
@@ -53,12 +54,22 @@ private:
     const cl_ulong work_group_size_3dx;
     const cl_ulong work_group_size_3dy;
     const cl_ulong work_group_size_3dz;
+
     // Returns the global and local work OpenCL ranges based on the 'thread_stack'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<uint64_t> &thread_stack) const;
+
     // A map of allocated buffers on the device
-    std::map<bh_base*,cl::Buffer*> buffers;
+    std::map<bh_base *, cl::Buffer *> buffers;
+
     // Return a kernel function based on the given 'source'
     cl::Program getFunction(const std::string &source);
+
+    // We initialize the malloc cache with an alloc and free function
+    MallocCache::FuncAllocT func_alloc = [this](uint64_t nbytes) -> void * {
+        return (void *) new cl::Buffer(this->context, CL_MEM_READ_WRITE, (cl_ulong) nbytes);
+    };
+    MallocCache::FuncFreeT func_free = [](void *mem, uint64_t nbytes) { delete ((cl::Buffer *) mem); };
+    MallocCache malloc_cache{func_alloc, func_free, 0};
 
 public:
     EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
@@ -107,7 +118,7 @@ public:
     const std::string writeType(bh_type dtype) override;
 
     cl::Buffer *createBuffer(bh_base *base) {
-        auto *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) base->nbytes());
+        auto *buf = reinterpret_cast<cl::Buffer *>(malloc_cache.alloc(base->nbytes()));
         bool inserted = buffers.insert(std::make_pair(base, buf)).second;
         if (not inserted) {
             throw std::runtime_error("OpenCL - createBuffer(): the base already has a buffer!");
@@ -156,6 +167,12 @@ public:
     // Get C command queue from wrapped C++ object
     cl_command_queue getCQueue() {
         return queue();
+    }
+
+    // Update statistics with final aggregated values of the engine
+    void updateFinalStatistics() {
+        stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
+        stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }
 };
 

@@ -71,6 +71,7 @@ class Impl : public ComponentImplWithChild {
         if (msg == "statistic_enable_and_reset") {
             stat = Statistics(true, config);
         } else if (msg == "statistic") {
+            engine.updateFinalStatistics();
             stat.write("OpenCL", "", ss);
         } else if (msg == "GPU: disable") {
             engine.copyAllBasesToHost();
@@ -132,6 +133,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (stat.print_on_exit) {
+        engine.updateFinalStatistics();
         stat.write("OpenCL", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }

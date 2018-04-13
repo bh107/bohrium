@@ -163,6 +163,15 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
     compilation_hash = util::hash(ss.str());
+
+    // Initiate cache limits
+    const uint64_t gpu_mem = device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
+        throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
+    }
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent/100.0)));
+    bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineOpenCL::~EngineOpenCL() {
@@ -445,7 +454,7 @@ void EngineOpenCL::copyAllBasesToHost() {
 void EngineOpenCL::delBuffer(bh_base* base) {
     auto it = buffers.find(base);
     if (it != buffers.end()) {
-        delete it->second;
+        malloc_cache.free(base->nbytes(), it->second);
         buffers.erase(it);
     }
 }
@@ -530,14 +539,16 @@ std::string EngineOpenCL::info() const {
     stringstream ss;
     ss << std::boolalpha; // Printing true/false instead of 1/0
     ss << "----"                                                                                 << "\n";
-    ss << "OpenCL:"                                                                              << "\n";
-    ss << "  Platform no:    \""; if(platform_no == -1) ss << "auto"; else ss << platform_no; ss << "\"\n";
-    ss << "  Platform:       \"" << platform.getInfo<CL_PLATFORM_NAME>()                         << "\"\n";
-    ss << "  Device type:    \"" << default_device_type                                          << "\"\n";
-    ss << "  Device:         \"" << device.getInfo<CL_DEVICE_NAME>() << " (" \
-                                 << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()                 << ")\"\n";
-    ss << "  Memory:         \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\"\n";
-    ss << "  Compiler flags: \"" << compile_flg << "\"\n";
+    ss << "OpenCL:"                                                                             << "\n";
+    ss << "  Platform no:    "; if(platform_no == -1) ss << "auto"; else ss << platform_no; ss << "\n";
+    ss << "  Platform:       " << platform.getInfo<CL_PLATFORM_NAME>()                         << "\n";
+    ss << "  Device type:    " << default_device_type                                          << "\n";
+    ss << "  Device:         " << device.getInfo<CL_DEVICE_NAME>() << " (" \
+                                 << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()                 << ")\n";
+    ss << "  Memory:         " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\n";
+    ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
+       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
+    ss << "  Compiler flags: " << compile_flg << "\n";
     ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
 
