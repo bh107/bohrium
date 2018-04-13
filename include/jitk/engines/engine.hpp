@@ -91,6 +91,9 @@ public:
     virtual const std::string writeType(bh_type dtype) = 0;
     virtual void setConstructorFlag(std::vector<bh_instruction*> &instr_list) = 0;
 
+    // Update statistics with final aggregated values of the engine
+    virtual void updateFinalStatistics() {} // Default we do nothing
+
 protected:
     void writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
                                       std::stringstream &ss,

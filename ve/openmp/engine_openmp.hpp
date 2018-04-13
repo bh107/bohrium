@@ -87,6 +87,11 @@ public:
     // Return C99 types, which are used inside the C99 kernels
     const std::string writeType(bh_type dtype) override;
 
+    // Update statistics with final aggregated values of the engine
+    void updateFinalStatistics() override {
+        bh_get_malloc_cache_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
+    }
+
 private:
     // Writes the union of C99 types that can make up a constant
     inline void writeUnionType(std::stringstream& out) {
