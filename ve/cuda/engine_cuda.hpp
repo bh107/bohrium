@@ -28,11 +28,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 #include <bh_view.hpp>
+#include <bh_malloc_cache.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
-
 #include <jitk/engines/engine_gpu.hpp>
-
 #include <cuda.h>
 
 namespace {
@@ -85,6 +84,17 @@ private:
     // Return a kernel function based on the given 'source'
     CUfunction getFunction(const std::string &source, const std::string &func_name);
 
+    // We initialize the malloc cache with an alloc and free function
+    MallocCache::FuncAllocT func_alloc = [](uint64_t nbytes) -> void * {
+        CUdeviceptr new_buf;
+        check_cuda_errors(cuMemAlloc(&new_buf, nbytes));
+        return (void*) new_buf;
+    };
+    MallocCache::FuncFreeT func_free = [](void *mem, uint64_t nbytes) {
+        check_cuda_errors(cuMemFree((CUdeviceptr) mem));
+    };
+    MallocCache malloc_cache{func_alloc, func_free, 0};
+
 public:
     EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
     ~EngineCUDA();
@@ -106,7 +116,7 @@ public:
     void delBuffer(bh_base* base) override {
         auto it = buffers.find(base);
         if (it != buffers.end()) {
-            check_cuda_errors(cuMemFree(buffers.at(base)));
+            malloc_cache.free(base->nbytes(), (void*) it->second);
             buffers.erase(it);
         }
     }
@@ -154,12 +164,11 @@ public:
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                CUdeviceptr new_buf;
-                check_cuda_errors(cuMemAlloc(&new_buf, base->nbytes()));
+                auto new_buf = reinterpret_cast<CUdeviceptr>(malloc_cache.alloc(base->nbytes()));
                 buffers[base] = new_buf;
 
                 // If the host data is non-null we should copy it to the device
-                if (base->data != NULL) {
+                if (base->data != nullptr) {
                     if (verbose) {
                         std::cout << "Copy to device: " << *base << std::endl;
                     }
@@ -265,6 +274,12 @@ public:
             default:
                 throw std::runtime_error("CUDA only support 3 dimensions");
         }
+    }
+
+    // Update statistics with final aggregated values of the engine
+    void updateFinalStatistics() {
+        stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
+        stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }
 };
 

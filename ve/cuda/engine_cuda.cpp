@@ -82,6 +82,16 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
     // Init the compiler
     compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
+
+    // Initiate cache limits
+    size_t gpu_mem;
+    check_cuda_errors(cuDeviceTotalMem(&gpu_mem, device));
+    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
+        throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
+    }
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent/100.0)));
+    bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineCUDA::~EngineCUDA() {
