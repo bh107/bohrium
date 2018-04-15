@@ -95,7 +95,6 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 }
 
 EngineCUDA::~EngineCUDA() {
-    cuCtxDetach(context);
 
     // Move JIT kernels to the cache dir
     if (not cache_bin_dir.empty()) {
@@ -123,6 +122,10 @@ EngineCUDA::~EngineCUDA() {
     if (cache_file_max != -1 and not cache_bin_dir.empty()) {
         util::remove_old_files(cache_bin_dir, cache_file_max);
     }
+
+    // We empty the malloc cache before detaching the context
+    malloc_cache.shrinkToFit(0);
+    cuCtxDetach(context);
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> >
