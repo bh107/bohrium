@@ -69,8 +69,6 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
         jitk::create_directories(cache_bin_dir);
     }
 
-    // Write the compilation hash
-    compilation_hash = util::hash(info());
 
     // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
     string compiler_cmd = config.get<string>("compiler_cmd");
@@ -80,8 +78,17 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     boost::replace_all(compiler_cmd, "{MAJOR}", std::to_string(major));
     boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
-    // Init the compiler
+    // Initiate the compiler
     compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
+
+    // Write the compilation hash
+    {
+        char device_name[1000];
+        cuDeviceGetName(device_name, 1000, device);
+        stringstream ss;
+        ss << compiler_cmd << device_name << major << minor;
+        compilation_hash = util::hash(ss.str());
+    }
 
     // Initiate cache limits
     size_t gpu_mem;
