@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <bh_view.hpp>
+#include <bh_main_memory.hpp>
 #include <memory>
 
 namespace bhxx {

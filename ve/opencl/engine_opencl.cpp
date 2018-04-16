@@ -163,6 +163,15 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
     compilation_hash = util::hash(ss.str());
+
+    // Initiate cache limits
+    const uint64_t gpu_mem = device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
+        throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
+    }
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent/100.0)));
+    malloc_cache.setLimit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineOpenCL::~EngineOpenCL() {
@@ -384,7 +393,7 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
     auto tcopy = std::chrono::steady_clock::now();
     // Let's copy sync'ed arrays back to the host
     for(bh_base *base: bases) {
-        if (buffers.find(base) != buffers.end()) {
+        if (util::exist(buffers, base)) {
             bh_data_malloc(base);
             if (verbose) {
                 std::cout << "Copy to host: " << *base << std::endl;
@@ -392,7 +401,7 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
             queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
             // When syncing we assume that the host writes to the data and invalidate the device data thus
             // we have to remove its data buffer
-            buffers.erase(base);
+            delBuffer(base);
         }
     }
     queue.finish();
@@ -412,11 +421,11 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
 
     auto tcopy = std::chrono::steady_clock::now();
     for(bh_base *base: base_list) {
-        if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+        if (not util::exist(buffers, base)) { // We shouldn't overwrite existing buffers
             cl::Buffer *buf = createBuffer(base);
 
             // If the host data is non-null we should copy it to the device
-            if (base->data != NULL) {
+            if (base->data != nullptr) {
                 if (verbose) {
                     std::cout << "Copy to device: " << *base << std::endl;
                 }
@@ -442,8 +451,12 @@ void EngineOpenCL::copyAllBasesToHost() {
 }
 
 // Delete a buffer
-void EngineOpenCL::delBuffer(bh_base* &base) {
-    buffers.erase(base);
+void EngineOpenCL::delBuffer(bh_base* base) {
+    auto it = buffers.find(base);
+    if (it != buffers.end()) {
+        malloc_cache.free(base->nbytes(), it->second);
+        buffers.erase(it);
+    }
 }
 
 void EngineOpenCL::writeKernel(const jitk::Block &block,
@@ -525,15 +538,17 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
 std::string EngineOpenCL::info() const {
     stringstream ss;
     ss << std::boolalpha; // Printing true/false instead of 1/0
-    ss << "----"                                                                                 << "\n";
-    ss << "OpenCL:"                                                                              << "\n";
-    ss << "  Platform no:    \""; if(platform_no == -1) ss << "auto"; else ss << platform_no; ss << "\"\n";
-    ss << "  Platform:       \"" << platform.getInfo<CL_PLATFORM_NAME>()                         << "\"\n";
-    ss << "  Device type:    \"" << default_device_type                                          << "\"\n";
-    ss << "  Device:         \"" << device.getInfo<CL_DEVICE_NAME>() << " (" \
-                                 << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()                 << ")\"\n";
-    ss << "  Memory:         \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\"\n";
-    ss << "  Compiler flags: \"" << compile_flg << "\"\n";
+    ss << "----"                                                                               << "\n";
+    ss << "OpenCL:"                                                                            << "\n";
+    ss << "  Platform no:    "; if(platform_no == -1) ss << "auto"; else ss << platform_no; ss << "\n";
+    ss << "  Platform:       " << platform.getInfo<CL_PLATFORM_NAME>()                         << "\n";
+    ss << "  Device type:    " << default_device_type                                          << "\n";
+    ss << "  Device:         " << device.getInfo<CL_DEVICE_NAME>() << " (" \
+                               << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()                 << ")\n";
+    ss << "  Memory:         " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\n";
+    ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
+       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
+    ss << "  Compiler flags: " << compile_flg << "\n";
     ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
 

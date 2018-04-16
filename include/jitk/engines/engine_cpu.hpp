@@ -28,28 +28,27 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <bh_component.hpp>
 #include <bh_instruction.hpp>
+#include <bh_main_memory.hpp>
 
 namespace bohrium {
 namespace jitk {
 
 class EngineCPU : public Engine {
 public:
-    EngineCPU(const ConfigParser &config, Statistics &stat) :
-      Engine(config, stat) {
-    }
+    EngineCPU(const ConfigParser &config, Statistics &stat) : Engine(config, stat) {}
 
     virtual ~EngineCPU() {}
 
     virtual void writeKernel(const std::vector<Block> &block_list,
                              const SymbolTable &symbols,
-                             const std::vector<bh_base*> &kernel_temps,
+                             const std::vector<bh_base *> &kernel_temps,
                              uint64_t codegen_hash,
                              std::stringstream &ss) = 0;
 
     virtual void execute(const jitk::SymbolTable &symbols,
                          const std::string &source,
                          uint64_t codegen_hash,
-                         const std::vector<const bh_instruction*> &constants) = 0;
+                         const std::vector<const bh_instruction *> &constants) = 0;
 
     virtual void handleExecution(BhIR *bhir) {
         using namespace std;
@@ -57,23 +56,23 @@ public:
         const auto texecution = chrono::steady_clock::now();
 
         map<string, bool> kernel_config = {
-            { "strides_as_var", config.defaultGet<bool>("strides_as_var", true) },
-            { "index_as_var",   config.defaultGet<bool>("index_as_var",   true) },
-            { "const_as_var",   config.defaultGet<bool>("const_as_var",   true) },
-            { "use_volatile",   config.defaultGet<bool>("use_volatile",  false) }
+                {"strides_as_var", config.defaultGet<bool>("strides_as_var", true)},
+                {"index_as_var",   config.defaultGet<bool>("index_as_var", true)},
+                {"const_as_var",   config.defaultGet<bool>("const_as_var", true)},
+                {"use_volatile",   config.defaultGet<bool>("use_volatile", false)}
         };
 
         // Some statistics
         stat.record(*bhir);
 
         // Let's start by cleanup the instructions from the 'bhir'
-        vector<bh_instruction*> instr_list;
-        set<bh_base*> frees;
+        vector<bh_instruction *> instr_list;
+        set<bh_base *> frees;
 
         instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
 
         // Let's free device buffers and array memory
-        for(bh_base *base: frees) {
+        for (bh_base *base: frees) {
             bh_data_free(base);
         }
 
@@ -97,7 +96,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    template <typename T>
+    template<typename T>
     void handleExtmethod(T &comp, BhIR *bhir) {
         std::vector<bh_instruction> instr_list;
 
@@ -124,28 +123,28 @@ private:
         using namespace std;
 
         // When creating a regular kernels (a block-nest per shared library), we create one kernel at a time
-        for(const Block &block: block_list) {
+        for (const Block &block: block_list) {
             assert(not block.isInstr());
 
             // Let's create the symbol table for the kernel
             const SymbolTable symbols(
-                block.getAllInstr(),
-                block.getLoop().getAllNonTemps(),
-                kernel_config["use_volatile"],
-                kernel_config["strides_as_var"],
-                kernel_config["index_as_var"],
-                kernel_config["const_as_var"]
+                    block.getAllInstr(),
+                    block.getLoop().getAllNonTemps(),
+                    kernel_config["use_volatile"],
+                    kernel_config["strides_as_var"],
+                    kernel_config["index_as_var"],
+                    kernel_config["const_as_var"]
             );
 
             stat.record(symbols);
 
             // Let's execute the kernel
             if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
-                executeKernel({ block }, symbols, {});
+                executeKernel({block}, symbols, {});
             }
 
             // Finally, let's cleanup
-            for(bh_base *base: block.getLoop().getAllFrees()) {
+            for (bh_base *base: block.getLoop().getAllFrees()) {
                 bh_data_free(base);
             }
         }
@@ -159,7 +158,7 @@ private:
         vector<InstrPtr> all_instr;
         set<bh_base *> all_non_temps, all_freed;
         bool kernel_is_computing = false;
-        for(const Block &block: block_list) {
+        for (const Block &block: block_list) {
             assert(not block.isInstr());
             block.getAllInstr(all_instr);
             block.getLoop().getAllNonTemps(all_non_temps);
@@ -169,9 +168,9 @@ private:
             }
         }
         // Let's find the arrays that are allocated and freed between blocks in the kernel
-        vector<bh_base*> kernel_temps;
-        set<bh_base*> constructors;
-        for(const InstrPtr &instr: all_instr) {
+        vector<bh_base *> kernel_temps;
+        set<bh_base *> constructors;
+        for (const InstrPtr &instr: all_instr) {
             if (instr->constructor) {
                 assert(instr->operand[0].base != NULL);
                 constructors.insert(instr->operand[0].base);
@@ -183,12 +182,12 @@ private:
 
         // Let's create the symbol table for the kernel
         const SymbolTable symbols(
-            all_instr,
-            all_non_temps,
-            kernel_config["use_volatile"],
-            kernel_config["strides_as_var"],
-            kernel_config["index_as_var"],
-            kernel_config["const_as_var"]
+                all_instr,
+                all_non_temps,
+                kernel_config["use_volatile"],
+                kernel_config["strides_as_var"],
+                kernel_config["index_as_var"],
+                kernel_config["const_as_var"]
         );
         stat.record(symbols);
 
@@ -198,35 +197,36 @@ private:
         }
 
         // Finally, let's cleanup
-        for(bh_base *base: all_freed) {
+        for (bh_base *base: all_freed) {
             bh_data_free(base);
         }
     }
+
 private:
     void executeKernel(const std::vector<Block> &block_list,
                        const SymbolTable &symbols,
-                       std::vector<bh_base*> kernel_temps) {
+                       std::vector<bh_base *> kernel_temps) {
         using namespace std;
 
         // Create the constant vector
-        vector<const bh_instruction*> constants;
+        vector<const bh_instruction *> constants;
         constants.reserve(symbols.constIDs().size());
         for (const InstrPtr &instr: symbols.constIDs()) {
             constants.push_back(&(*instr));
         }
 
         const auto lookup = codegen_cache.get(block_list, symbols);
-        if(not lookup.first.empty()) {
+        if (not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
-            #ifndef NDEBUG
-                stringstream ss;
-                writeKernel(block_list, symbols, kernel_temps, lookup.second, ss);
-                if (ss.str().compare(lookup.first) != 0) {
-                    cout << "\nCached source code: \n" << lookup.first;
-                    cout << "\nReal source code: \n" << ss.str();
-                    assert(1 == 2);
-                }
-            #endif
+#ifndef NDEBUG
+            stringstream ss;
+            writeKernel(block_list, symbols, kernel_temps, lookup.second, ss);
+            if (ss.str().compare(lookup.first) != 0) {
+                cout << "\nCached source code: \n" << lookup.first;
+                cout << "\nReal source code: \n" << ss.str();
+                assert(1 == 2);
+            }
+#endif
             execute(symbols, lookup.first, lookup.second, constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
@@ -241,4 +241,5 @@ private:
     }
 };
 
-}} // namespace
+}
+} // namespace

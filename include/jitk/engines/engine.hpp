@@ -58,7 +58,12 @@ protected:
     const boost::filesystem::path cache_bin_dir;
 
     // The hash of the JIT compilation command
-    uint64_t compilation_hash;
+    uint64_t compilation_hash{0};
+
+    // The malloc cache limit in percent and bytes.
+    // NB: each backend should set and use these values with the malloc cache
+    int64_t malloc_cache_limit_in_percent{-1};
+    int64_t malloc_cache_limit_in_bytes{-1};
 
 public:
     Engine(const ConfigParser &config, Statistics &stat) :
@@ -87,6 +92,9 @@ public:
     virtual std::string info() const = 0;
     virtual const std::string writeType(bh_type dtype) = 0;
     virtual void setConstructorFlag(std::vector<bh_instruction*> &instr_list) = 0;
+
+    // Update statistics with final aggregated values of the engine
+    virtual void updateFinalStatistics() {} // Default we do nothing
 
 protected:
     void writeKernelFunctionArguments(const jitk::SymbolTable &symbols,

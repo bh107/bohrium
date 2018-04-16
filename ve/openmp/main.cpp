@@ -63,19 +63,20 @@ class Impl : public ComponentImpl {
                             stat(config),
                             engine(config, stat) {}
     ~Impl();
-    void execute(BhIR *bhir);
-    void extmethod(const string &name, bh_opcode opcode) {
+    void execute(BhIR *bhir) override;
+    void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
         extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
     }
 
     // Handle messages from parent
-    string message(const string &msg) {
+    string message(const string &msg) override {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
             stat = Statistics(true, config);
         } else if (msg == "statistic") {
+            engine.updateFinalStatistics();
             stat.write("OpenMP", "", ss);
             return ss.str();
         } else if (msg == "info") {
@@ -85,7 +86,7 @@ class Impl : public ComponentImpl {
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         if (not copy2host) {
             throw runtime_error("OpenMP - getMemoryPointer(): `copy2host` is not True");
         }
@@ -94,13 +95,13 @@ class Impl : public ComponentImpl {
         }
         void *ret = base.data;
         if (nullify) {
-            base.data = NULL;
+            base.data = nullptr;
         }
         return ret;
     }
 
     // Handle memory pointer obtainment
-    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) override {
         if (not host_ptr) {
             throw runtime_error("OpenMP - setMemoryPointer(): `host_ptr` is not True");
         }
@@ -111,12 +112,12 @@ class Impl : public ComponentImpl {
     }
 
     // We have no context so returning NULL
-    void* getDeviceContext() {
+    void* getDeviceContext() override {
         return nullptr;
     };
 
     // We have no context so doing nothing
-    void setDeviceContext(void* device_context) {};
+    void setDeviceContext(void* device_context) override {};
 };
 }
 
@@ -129,6 +130,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (stat.print_on_exit) {
+        engine.updateFinalStatistics();
         stat.write("OpenMP", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }

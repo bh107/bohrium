@@ -36,14 +36,13 @@ namespace fs = boost::filesystem;
 namespace bohrium {
 
 EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
-    EngineGPU(config, stat),
-    work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-    work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-    work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-    work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-    work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2))
-{
+        EngineGPU(config, stat),
+        work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
+        work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
+        work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
+        work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
+        work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
+        work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)) {
     int deviceCount = 0;
     CUresult err = cuInit(0);
 
@@ -70,8 +69,6 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
         jitk::create_directories(cache_bin_dir);
     }
 
-    // Write the compilation hash
-    compilation_hash = util::hash(info());
 
     // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
     string compiler_cmd = config.get<string>("compiler_cmd");
@@ -81,12 +78,30 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     boost::replace_all(compiler_cmd, "{MAJOR}", std::to_string(major));
     boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
-    // Init the compiler
+    // Initiate the compiler
     compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
+
+    // Write the compilation hash
+    {
+        char device_name[1000];
+        cuDeviceGetName(device_name, 1000, device);
+        stringstream ss;
+        ss << compiler_cmd << device_name << major << minor;
+        compilation_hash = util::hash(ss.str());
+    }
+
+    // Initiate cache limits
+    size_t gpu_mem;
+    check_cuda_errors(cuDeviceTotalMem(&gpu_mem, device));
+    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
+        throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
+    }
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent/100.0)));
+    malloc_cache.setLimit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineCUDA::~EngineCUDA() {
-    cuCtxDetach(context);
 
     // Move JIT kernels to the cache dir
     if (not cache_bin_dir.empty()) {
@@ -114,6 +129,10 @@ EngineCUDA::~EngineCUDA() {
     if (cache_file_max != -1 and not cache_bin_dir.empty()) {
         util::remove_old_files(cache_bin_dir, cache_file_max);
     }
+
+    // We empty the malloc cache before detaching the context
+    malloc_cache.shrinkToFit(0);
+    cuCtxDetach(context);
 }
 
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> >
@@ -223,7 +242,7 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
     if (not thread_stack.empty()) {
         util::spaces(ss, 4);
         ss << "// The IDs of the threaded blocks: \n";
-        for (unsigned int i=0; i < thread_stack.size(); ++i) {
+        for (unsigned int i = 0; i < thread_stack.size(); ++i) {
             util::spaces(ss, 4);
             ss << "const " << writeType(bh_type::INT64) << " i" << i << " = " << writeThreadId(i) << "; "
                << "if (i" << i << " >= " << thread_stack[i] << ") { return; } // Prevent overflow\n";
@@ -238,12 +257,17 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
                          const std::string &source,
                          uint64_t codegen_hash,
                          const vector<uint64_t> &thread_stack,
-                         const vector<const bh_instruction*> &constants) {
+                         const vector<const bh_instruction *> &constants) {
     uint64_t hash = util::hash(source);
     std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
 
     auto tcompile = chrono::steady_clock::now();
-    string func_name; { stringstream t; t << "execute_" << codegen_hash; func_name = t.str(); }
+    string func_name;
+    {
+        stringstream t;
+        t << "execute_" << codegen_hash;
+        func_name = t.str();
+    }
     CUfunction program = getFunction(source, func_name);
     stat.time_compile += chrono::steady_clock::now() - tcompile;
 
@@ -255,9 +279,9 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
     }
 
     for (const bh_view *view: symbols.offsetStrideViews()) {
-        args.push_back((void*)&view->start);
-        for (int j=0; j<view->ndim; ++j) {
-            args.push_back((void*)&view->stride[j]);
+        args.push_back((void *) &view->start);
+        for (int j = 0; j < view->ndim; ++j) {
+            args.push_back((void *) &view->stride[j]);
         }
     }
 
@@ -277,12 +301,11 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
     stat.time_per_kernel[source_filename].register_exec_time(texec);
 }
 
-void EngineCUDA::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
+void EngineCUDA::setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
     jitk::util_set_constructor_flag(instr_list, buffers);
 }
 
 std::string EngineCUDA::info() const {
-
     char device_name[1000];
     cuDeviceGetName(device_name, 1000, device);
     int major = 0, minor = 0;
@@ -291,11 +314,21 @@ std::string EngineCUDA::info() const {
     check_cuda_errors(cuDeviceTotalMem(&totalGlobalMem, device));
 
     stringstream ss;
-    ss << "----" << "\n";
-    ss << "CUDA:" << "\n";
-    ss << "  Device: \"" << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
-    ss << "  Memory: \"" << totalGlobalMem / 1024 / 1024 << " MB\"\n";
-    ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
+    ss << std::boolalpha; // Printing true/false instead of 1/0
+    ss << "----"                                                                               << "\n";
+    ss << "CUDA:"                                                                            << "\n";
+    ss << "  Device: " << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
+    ss << "  Memory: " << totalGlobalMem / 1024 / 1024 << " MB\n";
+    ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
+       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
+    ss << "  JIT Command: " << compiler.cmd_template << "\n";
+    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+
+    ss << "  Codegen flags:\n";
+    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 

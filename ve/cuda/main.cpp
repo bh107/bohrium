@@ -54,8 +54,8 @@ class Impl : public ComponentImplWithChild {
                             stat(config),
                             engine(config, stat) {}
     ~Impl();
-    void execute(BhIR *bhir);
-    void extmethod(const string &name, bh_opcode opcode) {
+    void execute(BhIR *bhir) override;
+    void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
         try {
@@ -68,11 +68,12 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle messages from parent
-    string message(const string &msg) {
+    string message(const string &msg) override {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
             stat = Statistics(true, config);
         } else if (msg == "statistic") {
+            engine.updateFinalStatistics();
             stat.write("CUDA", "", ss);
         } else if (msg == "GPU: disable") {
             engine.copyAllBasesToHost();
@@ -88,7 +89,7 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         bh_base *b = &base;
         if (copy2host) {
             std::set <bh_base*> t = { b };
@@ -99,7 +100,7 @@ class Impl : public ComponentImplWithChild {
             }
             void *ret = base.data;
             if (nullify) {
-                base.data = NULL;
+                base.data = nullptr;
             }
             return ret;
         } else {
@@ -118,6 +119,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (stat.print_on_exit) {
+        engine.updateFinalStatistics();
         stat.write("CUDA", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }

@@ -29,6 +29,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 #include <bh_component.hpp>
 #include <bh_instruction.hpp>
+#include <bh_main_memory.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -51,32 +52,38 @@ public:
     const bool num_threads_round_robin;
 
     EngineGPU(const ConfigParser &config, Statistics &stat) :
-      Engine(config, stat),
-      compile_flg(jitk::expand_compile_cmd(config.defaultGet<std::string>("compiler_flg", ""), "", "", config.file_dir.string())),
-      default_device_type(config.defaultGet<std::string>("device_type", "auto")),
-      default_device_number(config.defaultGet<int>("device_number", 0)),
-      platform_no(config.defaultGet<int>("platform_no", -1)),
-      prof(config.defaultGet<bool>("prof", false)),
-      num_threads(config.defaultGet<uint64_t>("num_threads", 0)),
-      num_threads_round_robin(config.defaultGet<bool>("num_threads_round_robin", false)){
+            Engine(config, stat),
+            compile_flg(jitk::expand_compile_cmd(config.defaultGet<std::string>("compiler_flg", ""), "", "",
+                                                 config.file_dir.string())),
+            default_device_type(config.defaultGet<std::string>("device_type", "auto")),
+            default_device_number(config.defaultGet<int>("device_number", 0)),
+            platform_no(config.defaultGet<int>("platform_no", -1)),
+            prof(config.defaultGet<bool>("prof", false)),
+            num_threads(config.defaultGet<uint64_t>("num_threads", 0)),
+            num_threads_round_robin(config.defaultGet<bool>("num_threads_round_robin", false)) {
     }
 
     virtual ~EngineGPU() {}
 
-    virtual void copyToHost(const std::set<bh_base*> &bases) = 0;
+    virtual void copyToHost(const std::set<bh_base *> &bases) = 0;
+
     virtual void copyAllBasesToHost() = 0;
-    virtual void copyToDevice(const std::set<bh_base*> &base_list) = 0;
-    virtual void delBuffer(bh_base* &base) = 0;
+
+    virtual void copyToDevice(const std::set<bh_base *> &base_list) = 0;
+
+    virtual void delBuffer(bh_base *base) = 0;
+
     virtual void writeKernel(const Block &block,
                              const SymbolTable &symbols,
                              const std::vector<uint64_t> &thread_stack,
                              uint64_t codegen_hash,
                              std::stringstream &ss) = 0;
+
     virtual void execute(const SymbolTable &symbols,
                          const std::string &source,
                          uint64_t codegen_hash,
                          const std::vector<uint64_t> &thread_stack,
-                         const std::vector<const bh_instruction*> &constants) = 0;
+                         const std::vector<const bh_instruction *> &constants) = 0;
 
     void handleExecution(component::ComponentImplWithChild &comp, BhIR *bhir) {
         using namespace std;
@@ -84,23 +91,23 @@ public:
         const auto texecution = chrono::steady_clock::now();
 
         map<string, bool> kernel_config = {
-            { "strides_as_var", config.defaultGet<bool>("strides_as_var", true) },
-            { "index_as_var",   config.defaultGet<bool>("index_as_var",   true) },
-            { "const_as_var",   config.defaultGet<bool>("const_as_var",   true) },
-            { "use_volatile",   config.defaultGet<bool>("use_volatile",  false) }
+                {"strides_as_var", config.defaultGet<bool>("strides_as_var", true)},
+                {"index_as_var",   config.defaultGet<bool>("index_as_var", true)},
+                {"const_as_var",   config.defaultGet<bool>("const_as_var", true)},
+                {"use_volatile",   config.defaultGet<bool>("use_volatile", false)}
         };
 
         // Some statistics
         stat.record(*bhir);
 
         // Let's start by cleanup the instructions from the 'bhir'
-        vector<bh_instruction*> instr_list;
+        vector<bh_instruction *> instr_list;
 
-        set<bh_base*> frees;
+        set<bh_base *> frees;
         instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
 
         // Let's free device buffers and array memory
-        for(bh_base *base: frees) {
+        for (bh_base *base: frees) {
             delBuffer(base);
             bh_data_free(base);
         }
@@ -116,19 +123,20 @@ public:
 
         // Let's get the block list
         // NB: 'avoid_rank0_sweep' is set to true when we have a child to offload to.
-        const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat, &(comp.child) != nullptr);
+        const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat,
+                                                              &(comp.child) != nullptr);
 
-        for(const jitk::Block &block: block_list) {
+        for (const jitk::Block &block: block_list) {
             assert(not block.isInstr());
 
             // Let's create the symbol table for the kernel
             const jitk::SymbolTable symbols(
-              block.getAllInstr(),
-              block.getLoop().getAllNonTemps(),
-              kernel_config["use_volatile"],
-              kernel_config["strides_as_var"],
-              kernel_config["index_as_var"],
-              kernel_config["const_as_var"]
+                    block.getAllInstr(),
+                    block.getLoop().getAllNonTemps(),
+                    kernel_config["use_volatile"],
+                    kernel_config["strides_as_var"],
+                    kernel_config["index_as_var"],
+                    kernel_config["const_as_var"]
             );
             stat.record(symbols);
 
@@ -147,9 +155,9 @@ public:
                     thread_stack.push_back(nthds);
                 } else {
                     auto first_block_list = get_first_loop_blocks(block.getLoop());
-                    for (uint64_t i=0; i < nranks; ++i) {
-                         thread_stack.push_back(first_block_list[i]->size);
-                     }
+                    for (uint64_t i = 0; i < nranks; ++i) {
+                        thread_stack.push_back(first_block_list[i]->size);
+                    }
                 }
             }
 
@@ -166,7 +174,7 @@ public:
                 copyToHost(bhir->getSyncs());
 
                 // Let's free device buffers
-                for(bh_base *base: block.getLoop().getAllFrees()) {
+                for (bh_base *base: block.getLoop().getAllFrees()) {
                     delBuffer(base);
                     bh_data_free(base);
                 }
@@ -175,7 +183,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    template <typename T>
+    template<typename T>
     void handleExtmethod(T &comp, BhIR *bhir, std::set<bh_opcode> child_extmethods) {
         std::vector<bh_instruction> instr_list;
 
@@ -216,8 +224,7 @@ private:
     void cpuOffload(component::ComponentImplWithChild &comp,
                     BhIR *bhir,
                     const Block &block,
-                    const SymbolTable &symbols)
-    {
+                    const SymbolTable &symbols) {
         using namespace std;
 
         if (config.defaultGet<bool>("verbose", false)) {
@@ -231,8 +238,8 @@ private:
         auto toffload = chrono::steady_clock::now();
 
         // Let's copy all non-temporary to the host
-        const vector<bh_base*> v = symbols.getParams();
-        copyToHost(set<bh_base*>(v.begin(), v.end()));
+        const vector<bh_base *> v = symbols.getParams();
+        copyToHost(set<bh_base *>(v.begin(), v.end()));
 
         // Let's free device buffers
         for (bh_base *base: block.getLoop().getAllFrees()) {
@@ -247,7 +254,7 @@ private:
         // Notice, we have to re-create free instructions
         for (const bh_base *base: block.getLoop().getAllFrees()) {
             vector<bh_view> operands(1);
-            bh_assign_complete_base(&operands[0], const_cast<bh_base*>(base));
+            bh_assign_complete_base(&operands[0], const_cast<bh_base *>(base));
             bh_instruction instr(BH_FREE, std::move(operands));
             child_instr_list.push_back(std::move(instr));
         }
@@ -258,32 +265,31 @@ private:
 
     void executeKernel(const Block &block,
                        const SymbolTable &symbols,
-                       const std::vector<uint64_t> &thread_stack)
-    {
+                       const std::vector<uint64_t> &thread_stack) {
         using namespace std;
         // We need a memory buffer on the device for each non-temporary array in the kernel
-        const vector<bh_base*> v = symbols.getParams();
-        copyToDevice(set<bh_base*>(v.begin(), v.end()));
+        const vector<bh_base *> v = symbols.getParams();
+        copyToDevice(set<bh_base *>(v.begin(), v.end()));
 
         // Create the constant vector
-        vector<const bh_instruction*> constants;
+        vector<const bh_instruction *> constants;
         constants.reserve(symbols.constIDs().size());
         for (const jitk::InstrPtr &instr: symbols.constIDs()) {
             constants.push_back(&(*instr));
         }
 
-        const auto lookup = codegen_cache.get({ block }, symbols);
-        if(not lookup.first.empty()) {
+        const auto lookup = codegen_cache.get({block}, symbols);
+        if (not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
-            #ifndef NDEBUG
-                stringstream ss;
-                writeKernel(block, symbols, thread_stack, lookup.second, ss);
-                if (ss.str().compare(lookup.first) != 0) {
-                    cout << "\nCached source code: \n" << lookup.first;
-                    cout << "\nReal source code: \n" << ss.str();
-                    assert(1 == 2);
-                }
-            #endif
+#ifndef NDEBUG
+            stringstream ss;
+            writeKernel(block, symbols, thread_stack, lookup.second, ss);
+            if (ss.str().compare(lookup.first) != 0) {
+                cout << "\nCached source code: \n" << lookup.first;
+                cout << "\nReal source code: \n" << ss.str();
+                assert(1 == 2);
+            }
+#endif
             execute(symbols, lookup.first, lookup.second, thread_stack, constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
@@ -292,9 +298,10 @@ private:
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
             execute(symbols, source, lookup.second, thread_stack, constants);
-            codegen_cache.insert(std::move(source), { block }, symbols);
+            codegen_cache.insert(std::move(source), {block}, symbols);
         }
     }
 };
 
-}} // namespace
+}
+} // namespace
