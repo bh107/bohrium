@@ -212,12 +212,16 @@ public:
      * @param memory The memory allocation
      */
     void free(uint64_t nbytes, void *memory) {
-        // Insert the segment at the end of `_segments`
-        Segment seg;
-        seg.nbytes = nbytes;
-        seg.mem = memory;
-        _segments.push_back(seg);
-        _cache_size += nbytes;
+        if (_mem_allocated_limit == 0) {
+            _free(memory, nbytes);
+        } else {
+            // Insert the segment at the end of `_segments`
+            Segment seg;
+            seg.nbytes = nbytes;
+            seg.mem = memory;
+            _segments.push_back(seg);
+            _cache_size += nbytes;
+        }
     }
 
     /** Destructor */
