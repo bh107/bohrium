@@ -26,17 +26,24 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 
+/** Cache of memory allocations. Instead of freeing a memory allocation immediately, this cache
+ * retain the allocation for later reuse.
+ * To use, simply allocate and free all memory allocations through the method `alloc()` and `free()`
+ */
 class MallocCache {
 public:
     typedef std::function<void *(uint64_t)> FuncAllocT;
     typedef std::function<void(void *, uint64_t)> FuncFreeT;
 
 private:
+    // A segment consist of a memory allocation and a size
     struct Segment {
         std::uint64_t nbytes;
         void *mem;
     };
-    std::vector<Segment> _segments;
+    std::vector<Segment> _segments; // Segments in the cache
+
+    // Pointers to malloc and free functions
     FuncAllocT _func_alloc;
     FuncFreeT _func_free;
 
@@ -49,25 +56,35 @@ private:
     uint64_t _stat_misses = 0;
     uint64_t _stat_allocated_max = 0;
 
+    /** Allocate memory of size `nbytes`
+     *
+     * @param nbytes Number of bytes to allocate
+     * @return Pointer to the allocation
+     */
     void *_malloc(uint64_t nbytes) {
         void *ret = _func_alloc(nbytes);
         _mem_allocated += nbytes;
         if (_mem_allocated > _stat_allocated_max) {
             _stat_allocated_max = _mem_allocated;
         }
-//        std::cout << "malloc       - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
     }
 
+    /** Free the memory allocation `mem` of size `nbytes` */
     void _free(void *mem, uint64_t nbytes) {
-//        std::cout << "free         - nbytes: " << nbytes << ",  addr: " << mem << std::endl;
         assert(mem != nullptr);
         _func_free(mem, nbytes);
         assert(_mem_allocated >= nbytes);
         _mem_allocated -= nbytes;
     }
 
-    void _erase(std::vector<Segment>::iterator first, std::vector<Segment>::iterator last, bool call_free) {
+    /** Evict a range of memory allocations from the cache
+     *
+     * @param first Iterator pointing to the first allocation
+     * @param last Iterator pointing to the element just after the last allocation
+     * @param call_free When true, the memory allocations are also freed
+     */
+    void _evict(std::vector<Segment>::iterator first, std::vector<Segment>::iterator last, bool call_free) {
         for (auto it = first; it != last; ++it) {
             if (call_free) {
                 _free(it->mem, it->nbytes);
@@ -77,13 +94,23 @@ private:
         _segments.erase(first, last);
     }
 
-    void _erase(std::vector<Segment>::iterator position, bool call_free) {
-        _erase(position, std::next(position), call_free);
+    /** Evict a memory allocation from the cache
+     *
+     * @param position Iterator pointing to the allocation
+     * @param call_free When true, the memory allocations are also freed
+     */
+    void _evict(std::vector<Segment>::iterator position, bool call_free) {
+        _evict(position, std::next(position), call_free);
     }
 
-    void _erase(std::vector<Segment>::reverse_iterator position, bool call_free) {
+    /** Evict a memory allocation from the cache
+     * 
+     * @param position Reverse iterator pointing to the allocation
+     * @param call_free When true, the memory allocations are also freed
+     */
+    void _evict(std::vector<Segment>::reverse_iterator position, bool call_free) {
         // Notice, we need to iterate `position` once when converting from reverse to regular iterator
-        _erase(std::next(position).base(), call_free);
+        _evict(std::next(position).base(), call_free);
     }
 
 public:
@@ -118,7 +145,7 @@ public:
         for (it = _segments.begin(); it != _segments.end() and count < nbytes; ++it) {
             count += it->nbytes;
         }
-        _erase(_segments.begin(), it, true);
+        _evict(_segments.begin(), it, true);
         return count;
     }
 
@@ -166,8 +193,7 @@ public:
             if (it->nbytes == nbytes) {
                 void *ret = it->mem;
                 assert(ret != nullptr);
-                _erase(it, false);
-//               std::cout << "cache hit!   - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
+                _evict(it, false);
                 return ret;
             }
         }
@@ -177,7 +203,6 @@ public:
         shrinkToFitLimit(nbytes);
 
         void *ret = _malloc(nbytes); // Cache miss
-//      std::cout << "cache miss!  - nbytes: " << nbytes << ",  addr: " << ret << std::endl;
         return ret;
     }
 
@@ -193,7 +218,6 @@ public:
         seg.mem = memory;
         _segments.push_back(seg);
         _cache_size += nbytes;
-//        std::cout << "cache insert - nbytes: " << nbytes << ",  addr: " << seg.mem << std::endl;
     }
 
     /** Destructor */

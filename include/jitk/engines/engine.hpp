@@ -60,6 +60,8 @@ protected:
     // The hash of the JIT compilation command
     uint64_t compilation_hash{0};
 
+    // The malloc cache limit in percent and bytes.
+    // NB: each backend should set and use these values with the malloc cache
     int64_t malloc_cache_limit_in_percent{-1};
     int64_t malloc_cache_limit_in_bytes{-1};
 
