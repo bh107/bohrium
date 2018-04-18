@@ -64,8 +64,8 @@ void transitive_reduction(DAG &dag);
 // Merge pendant vertices that are system only
 void merge_system_pendants(DAG &dag);
 
-// Pretty print the DAG. A "-<id>.dot" is append the filename.
-void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep);
+// Pretty print the DAG. A "-<id>.dot" is append the filename. Set `id` to -1 for a default unique id
+void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep, int id=-1);
 
 // Create a dag based on the 'block_list'
 DAG from_block_list(const std::vector <Block> &block_list);
