@@ -200,7 +200,9 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
         for (size_t o = 1; o < operand.size(); ++o) {
             bh_view &view = operand[o];
             if (not bh_is_constant(&view)) {
-                view.transpose(axis1, axis2);
+                if (not (o == 1 and opcode == BH_GATHER)) { // The input array of gather has arbitrary shape and stride
+                    view.transpose(axis1, axis2);
+                }
             }
         }
         // In the output, we have to handle sweep operations specially
@@ -212,14 +214,28 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
         } else if (sa == axis2) {
             constant.set_double(axis1);
         }
+
+        // The output array of scatter is has arbitrary shape and stride
+        if (opcode == BH_SCATTER or opcode == BH_COND_SCATTER) {
+            return;
+        }
+
         // Swapping a reduction means we might have to correct 'axis1' or 'axis2'
         if (bh_opcode_is_reduction(opcode)) {
-            // But if we are reducing one of the swapped axes, the output shouldn't be transposed at all
             if (sa != axis1 and sa != axis2) {
                 const int64_t t1 = sa < axis1 ? axis1 - 1 : axis1;
                 const int64_t t2 = sa < axis2 ? axis2 - 1 : axis2;
                 assert(t1 != t2);
                 view.transpose(t1, t2);
+            } else {
+                // If we are reducing one of the swapped axes, we insert a dummy dimension into the output,
+                // do the transpose, and than remove the dummy dimension again.
+                if (sa != axis1) { // Make sure that `axis1` is the reduced dimension
+                    std::swap(axis1, axis2);
+                }
+                view.insert_axis(axis1, 1, 1); // Dummy axis at the reduced dimension
+                view.transpose(axis1, axis2);
+                view.remove_axis(axis2); // Notice, now `axis2` is the reduced dimension
             }
         } else {
             // Otherwise, we just do the transpose
