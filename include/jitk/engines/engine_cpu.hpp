@@ -66,10 +66,8 @@ public:
         stat.record(*bhir);
 
         // Let's start by cleanup the instructions from the 'bhir'
-        vector<bh_instruction *> instr_list;
         set<bh_base *> frees;
-
-        instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
+        vector<bh_instruction *> instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
 
         // Let's free device buffers and array memory
         for (bh_base *base: frees) {
