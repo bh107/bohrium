@@ -195,7 +195,7 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
     assert(0 <= axis1 and axis1 < ndim());
     assert(0 <= axis2 and axis2 < ndim());
     assert(axis1 != axis2);
-    if (operand.size() > 0) {
+    if (not operand.empty()) {
         // The input we can simply transpose
         for (size_t o = 1; o < operand.size(); ++o) {
             bh_view &view = operand[o];
@@ -224,6 +224,19 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
         } else {
             // Otherwise, we just do the transpose
             view.transpose(axis1, axis2);
+        }
+    }
+}
+
+void bh_instruction::transpose() {
+    int64_t nd = ndim();
+    if (not operand.empty()) {
+        int64_t lc = 0;
+        int64_t rc = nd-1;
+        while(lc < rc) {
+            transpose(lc, rc);
+            --rc;
+            ++lc;
         }
     }
 }

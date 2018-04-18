@@ -116,6 +116,9 @@ struct bh_instruction {
     // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
+    // Transpose by reversing all axes in the principal shape
+    void transpose();
+
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
 
