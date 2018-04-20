@@ -44,10 +44,13 @@ class Impl : public ComponentVE {
     Statistics stat;
     // The OpenCL engine
     EngineOpenCL engine;
+    // Optimize instruction to access column major
+    const bool to_col_major;
 
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(*this, stat) {}
+                            engine(*this, stat),
+                            to_col_major(config.defaultGet<bool>("to_col_major", false)) {}
     ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
@@ -139,6 +142,10 @@ void Impl::execute(BhIR *bhir) {
     if (disabled) {
         child.execute(bhir);
         return;
+    }
+
+    if (to_col_major) {
+        to_column_major(bhir->instr_list);
     }
 
     bh_base *cond = bhir->getRepeatCondition();

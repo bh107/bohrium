@@ -8,6 +8,7 @@ env:
     - BH_OPENMP_PROF=true
     - BH_OPENMP_VOLATILE=true
     - BH_OPENCL_PROF=true
+    - BH_OPENCL_TO_COL_MAJOR=true
     - BH_OPENCL_VOLATILE=true
     - TEST_ALL="/bh/test/python/run.py /bh/test/python/tests/test_*.py"
     - TEST_SMALL="/bh/test/python/run.py /bh/test/python/tests/test_primitives.py /bh/test/python/tests/test_reduce.py"

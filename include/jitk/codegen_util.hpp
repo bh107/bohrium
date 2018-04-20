@@ -110,5 +110,14 @@ void create_directories(const boost::filesystem::path &path);
 std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
 
 
+// Returns True when `view` is accessing row major style
+bool row_major_access(const bh_view &view);
+
+// Returns True when all views in `instr` is accessing row major style
+bool row_major_access(const bh_instruction &instr);
+
+// Transpose the instructions in `instr_list` to make them access column major style
+void to_column_major(std::vector<bh_instruction> &instr_list);
+
 } // jitk
 } // bohrium
