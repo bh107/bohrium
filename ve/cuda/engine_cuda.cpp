@@ -135,24 +135,40 @@ EngineCUDA::~EngineCUDA() {
     cuCtxDetach(context);
 }
 
+namespace {
+// Calculate the work group sizes.
+// Return pair (global work size, local work size)
+pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
+    if (numeric_limits<uint32_t>::max() <= work_group_size or
+        numeric_limits<uint32_t>::max() <= block_size or
+        block_size < 0) {
+        throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
+    }
+    const auto lsize = (uint32_t) work_group_size;
+    const auto rem   = (uint32_t) block_size % lsize;
+    const auto gsize = (uint32_t) block_size / lsize + (rem==0?0:1);
+    return make_pair(gsize, lsize);
+}
+}
+
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> >
 EngineCUDA::NDRanges(const vector<uint64_t> &thread_stack) const {
     const auto &b = thread_stack;
     switch (b.size()) {
         case 1: {
-            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]);
+            const auto gsize_and_lsize = work_ranges(work_group_size_1dx, b[0]);
             return make_pair(make_tuple(gsize_and_lsize.first, 1, 1), make_tuple(gsize_and_lsize.second, 1, 1));
         }
         case 2: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]);
+            const auto gsize_and_lsize_x = work_ranges(work_group_size_2dx, b[0]);
+            const auto gsize_and_lsize_y = work_ranges(work_group_size_2dy, b[1]);
             return make_pair(make_tuple(gsize_and_lsize_x.first, gsize_and_lsize_y.first, 1),
                              make_tuple(gsize_and_lsize_x.second, gsize_and_lsize_y.second, 1));
         }
         case 3: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]);
-            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]);
+            const auto gsize_and_lsize_x = work_ranges(work_group_size_3dx, b[0]);
+            const auto gsize_and_lsize_y = work_ranges(work_group_size_3dy, b[1]);
+            const auto gsize_and_lsize_z = work_ranges(work_group_size_3dz, b[2]);
             return make_pair(make_tuple(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
                              make_tuple(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }

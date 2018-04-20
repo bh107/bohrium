@@ -109,10 +109,6 @@ void create_directories(const boost::filesystem::path &path);
 // This makes the source of the kernels more identical, which improve the code and compile caches.
 std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
 
-// Calculate the work group sizes.
-// Return pair (global work size, local work size)
-std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size);
-
 // Sets the constructor flag of each instruction in 'instr_list'
 // 'remotely_allocated_bases' is a collection of array bases already remotely allocated
 template<typename T>
