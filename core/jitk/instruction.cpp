@@ -756,8 +756,8 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
             dtype_max(dtype, out);
             break;
         default:
-            cout << "openmp_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
-            throw runtime_error("openmp_reduce_identity: unsupported operation");
+            cout << "write_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
+            throw runtime_error("write_reduce_identity: unsupported operation");
     }
 }
 
