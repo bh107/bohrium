@@ -70,6 +70,21 @@ public:
     // Default Constructor
     LoopB() { static int id_count = 0; _id = id_count++; }
 
+    // Get local sweep instructions
+    const std::set<InstrPtr> &getSweeps() const {
+        return _sweeps;
+    }
+
+    // Get arrays created in this block
+    const std::set<bh_base *> &getNews() const {
+        return _news;
+    }
+
+    // Get arrays freed in this block
+    const std::set<bh_base *> &getFrees() const {
+        return _frees;
+    }
+
     // Search and replace 'subject' with 'replacement' and returns the number of hits
     int replaceInstr(InstrPtr subject, const bh_instruction &replacement);
 
