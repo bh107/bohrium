@@ -375,16 +375,15 @@ protected:
                                 std::stringstream &out) = 0;
 
 private:
-    bool needToPeel(const std::vector<InstrPtr> &ordered_block_sweeps, const Scope &scope) {
+    virtual bool needToPeel(const std::vector<InstrPtr> &ordered_block_sweeps, const Scope &scope) {
         for (const InstrPtr &instr: ordered_block_sweeps) {
             const bh_view &v = instr->operand[0];
-            if (not (has_reduce_identity(instr->opcode) and (scope.isScalarReplaced(v) or scope.isTmp(v.base)))) {
+            if (not (scope.isScalarReplaced(v) or scope.isTmp(v.base))) {
                 return true;
             }
         }
         return false;
     }
-
 };
 
 }} // namespace
