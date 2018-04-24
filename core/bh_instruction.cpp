@@ -167,9 +167,8 @@ void bh_instruction::remove_axis(int64_t axis) {
         // In the input we can simply remove the axis
         for (size_t o = 1; o < operand.size(); ++o) {
             if (not(bh_is_constant(&operand[o]) or     // Ignore constants
-                    (o == 1 and opcode == BH_GATHER) or // Ignore gather's first input operand
-                    (o == 0 and (opcode == BH_SCATTER or opcode == BH_COND_SCATTER)) // Ignore scatter's output operand
-            )) {
+                    (o == 1 and opcode == BH_GATHER))) // Ignore gather's first input operand
+            {
                 operand[o].remove_axis(axis);
             }
         }
@@ -180,12 +179,18 @@ void bh_instruction::remove_axis(int64_t axis) {
         } else if (sa > axis and sa < BH_MAXDIM) {
             constant.set_double(sa - 1);
         }
+
+        // Ignore scatter's output operand, which is allowed any shape
+        if (opcode == BH_SCATTER or opcode == BH_COND_SCATTER) {
+            return;
+        }
+
         // In the output, we might have to correct the axis
         bh_view &view = operand[0];
         if (bh_opcode_is_reduction(opcode)) {
             view.remove_axis(sa < axis ? axis - 1 : axis);
         } else {
-            // Otherwise, we just do the transpose
+            // Otherwise, we just do the removal
             view.remove_axis(axis);
         }
     }
