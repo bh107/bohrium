@@ -33,6 +33,9 @@ void write_instr(const Scope &scope, const bh_instruction &instr, std::stringstr
 // Write the neutral value of a reduction
 void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &out);
 
+// Return the identity value of an sweep operation
+bh_constant sweep_identity(bh_opcode opcode, bh_type dtype);
+
 // Removes syncs and frees from 'instr_list' that are never used in a computation.
 // 'syncs' and 'frees' are the sets of arrays that were removed.
 std::vector<bh_instruction*> remove_non_computed_system_instr(std::vector<bh_instruction> &instr_list,
