@@ -44,6 +44,8 @@ struct OffsetAndStrides_less {
         for (int64_t i = 0; i < v1.ndim; ++i) {
             if (v1.stride[i] < v2.stride[i]) return true;
             if (v2.stride[i] < v1.stride[i]) return false;
+            if (v1.shape[i] < v2.shape[i]) return true;
+            if (v2.shape[i] < v1.shape[i]) return false;
         }
         return false;
     }
