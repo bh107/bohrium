@@ -344,7 +344,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     ss << "\n";
 
     for(const jitk::Block &block: block_list) {
-        writeLoopBlock(symbols, nullptr, block.getLoop(), {}, false, ss);
+        writeBlockFrame(symbols, nullptr, block.getLoop(), {}, false, ss);
     }
 
     // Write frees of the kernel temporaries

@@ -138,7 +138,7 @@ protected:
                                 bool opencl,
                                 std::stringstream &out);
 
-    /** Writes a block, which corresponds to a parallel for-loop.
+    /** Writes a block frame, which corresponds to a parallel for-loop.
      *
      * @param symbols       The symbol table
      * @param parent_scope  The callers scope object or null when there is no parant
@@ -147,12 +147,12 @@ protected:
      * @param opencl        Is this a OpenCL kernel?
      * @param out           The stream output
      */
-    virtual void writeLoopBlock(const jitk::SymbolTable &symbols,
-                                const jitk::Scope *parent_scope,
-                                const jitk::LoopB &block,
-                                const std::vector<uint64_t> &thread_stack,
-                                bool opencl,
-                                std::stringstream &out);
+    virtual void writeBlockFrame(const jitk::SymbolTable &symbols,
+                                 const jitk::Scope *parent_scope,
+                                 const jitk::LoopB &block,
+                                 const std::vector<uint64_t> &thread_stack,
+                                 bool opencl,
+                                 std::stringstream &out);
 
 
     virtual void loopHeadWriter(const SymbolTable &symbols,

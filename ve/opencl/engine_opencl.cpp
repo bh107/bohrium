@@ -507,7 +507,7 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     }
 
     // Write the block that makes up the body of 'execute()'
-    writeLoopBlock(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
+    writeBlockFrame(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
 
     ss << "}\n\n";
 }

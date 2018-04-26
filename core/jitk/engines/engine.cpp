@@ -119,7 +119,7 @@ void Engine::writeBlockBody(const jitk::SymbolTable &symbols,
                     write_instr(scope, *b.getInstr(), out, true);
                 }
             } else {
-                writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
+                writeBlockFrame(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
             }
         }
     } else {
@@ -140,18 +140,18 @@ void Engine::writeBlockBody(const jitk::SymbolTable &symbols,
                     write_instr(scope, *instr, out);
                 }
             } else {
-                writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
+                writeBlockFrame(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
             }
         }
     }
 }
 
-void Engine::writeLoopBlock(const jitk::SymbolTable &symbols,
-                            const jitk::Scope *parent_scope,
-                            const jitk::LoopB &block,
-                            const std::vector<uint64_t> &thread_stack,
-                            bool opencl,
-                            std::stringstream &out) {
+void Engine::writeBlockFrame(const jitk::SymbolTable &symbols,
+                             const jitk::Scope *parent_scope,
+                             const jitk::LoopB &block,
+                             const std::vector<uint64_t> &thread_stack,
+                             bool opencl,
+                             std::stringstream &out) {
     using namespace std;
 
     if (block.isSystemOnly()) {
