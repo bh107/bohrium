@@ -132,8 +132,9 @@ protected:
 
     virtual void writeBlockBody(const jitk::SymbolTable &symbols,
                                 jitk::Scope &scope,
-                                const jitk::LoopB &block,
+                                const std::vector<Block> &block_list,
                                 const std::vector<uint64_t> &thread_stack,
+                                int rank,
                                 bool opencl,
                                 std::stringstream &out);
 
