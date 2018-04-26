@@ -44,9 +44,6 @@ class Impl : public ComponentVE {
     Statistics stat;
     // The OpenCL engine
     EngineOpenCL engine;
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    std::set<bh_opcode> child_extmethods;
 
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),

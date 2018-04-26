@@ -56,8 +56,6 @@ class Impl : public ComponentVE {
     Statistics stat;
     // The OpenMP engine
     EngineOpenMP engine;
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
 
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),

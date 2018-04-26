@@ -46,10 +46,6 @@ class Impl : public ComponentVE {
     // The CUDA engine
     EngineCUDA engine;
 
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    std::set<bh_opcode> child_extmethods;
-
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
                             engine(*this, stat) {}
