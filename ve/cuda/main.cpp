@@ -39,7 +39,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentImpl {
   public:
     // Some statistics
     Statistics stat;
@@ -50,7 +50,7 @@ class Impl : public ComponentImplWithChild {
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     std::set<bh_opcode> child_extmethods;
 
-    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+    Impl(int stack_level) : ComponentImpl(stack_level),
                             stat(config),
                             engine(config, stat) {}
     ~Impl();

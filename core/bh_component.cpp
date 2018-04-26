@@ -31,7 +31,7 @@ ComponentFace::ComponentFace(const string &lib_path, int stack_level) {
 
     // Load the shared library
     _lib_handle = dlopen(lib_path.c_str(), RTLD_NOW);
-    if (_lib_handle == NULL) {
+    if (_lib_handle == nullptr) {
         cerr << "Cannot load library: " << dlerror() << '\n';
         throw runtime_error("ConfigParser: Cannot load library");
     }
@@ -61,11 +61,66 @@ ComponentFace::ComponentFace(const string &lib_path, int stack_level) {
 }
 
 ComponentFace::~ComponentFace() {
-    _destroy(_implementation);
-    dlerror(); // Reset errors
-    if (dlclose(_lib_handle)) {
-        cerr << dlerror() << endl;
+    if (initiated()) {
+        _destroy(_implementation);
+        dlerror(); // Reset errors
+        if (dlclose(_lib_handle)) {
+            cerr << dlerror() << endl;
+        }
     }
+}
+
+bool ComponentFace::initiated() const {
+    return _implementation != nullptr;
+}
+
+void ComponentFace::execute(BhIR *bhir) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    _implementation->execute(bhir);
+}
+
+void ComponentFace::extmethod(const std::string &name, bh_opcode opcode) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    _implementation->extmethod(name, opcode);
+}
+
+std::string ComponentFace::message(const std::string &msg) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    return _implementation->message(msg);
+}
+
+void *ComponentFace::getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    return _implementation->getMemoryPointer(base, copy2host, force_alloc, nullify);
+}
+
+void ComponentFace::setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    return _implementation->setMemoryPointer(base, host_ptr, mem);
+}
+
+void *ComponentFace::getDeviceContext() {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    return _implementation->getDeviceContext();
+}
+
+void ComponentFace::setDeviceContext(void *device_context) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    _implementation->setDeviceContext(device_context);
 }
 
 

@@ -85,7 +85,7 @@ public:
                          const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    void handleExecution(component::ComponentImplWithChild &comp, BhIR *bhir) {
+    void handleExecution(component::ComponentImpl &comp, BhIR *bhir) {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -219,7 +219,7 @@ public:
     }
 
 private:
-    void cpuOffload(component::ComponentImplWithChild &comp,
+    void cpuOffload(component::ComponentImpl &comp,
                     BhIR *bhir,
                     const Block &block,
                     const SymbolTable &symbols) {

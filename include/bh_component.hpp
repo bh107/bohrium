@@ -30,7 +30,9 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace component {
 
-/* A Component in Bohrium is a shared library that implement a specific functionality.
+class ComponentImpl; // Forward declaration
+
+/** A Component in Bohrium is a shared library that implement a specific functionality.
  * Requirements:
  *  - A component must be compiled into a shared library e.g. .so, .dylib, or .dll.
  *
@@ -45,44 +47,127 @@ namespace component {
  *    use these two functions.
  */
 
-// Representation of a component implementation, which is a virtual class
+/** Representation of a component interface */
+class ComponentFace {
+private:
+    // Shared library handle, which is null when the component is uninitiated
+    void *_lib_handle;
+
+    // Pointer to the implementation of the component, which is null when the component is uninitiated
+    ComponentImpl *_implementation;
+
+    // Function pointer to the component's create function
+    ComponentImpl *(*_create)(unsigned int);
+
+    // Function pointer to the component's destroy function
+    void (*_destroy)(ComponentImpl *component);
+
+public:
+    /** Constructor that takes the path to the shared library and the stack level of the component to interface
+     *
+     * @param lib_path    The path to the shared library of the component to interface
+     * @param stack_level The stack level of the component of the component to interface
+     */
+    ComponentFace(const std::string &lib_path, int stack_level);
+
+    /** Default constructor which create an uninitiated component interface */
+    ComponentFace() : _lib_handle(nullptr), _implementation(nullptr){};
+
+    // We only support the move assignment operator
+    ComponentFace(const ComponentFace &other) = delete;
+    ComponentFace(ComponentFace &&other) = delete;
+
+    ~ComponentFace();
+
+    /** Move constructor, which we need to make sure that `other` is left uninitiated */
+    ComponentFace& operator=(ComponentFace&& other) {
+        _lib_handle = other._lib_handle;
+        _implementation = other._implementation;
+        _create = other._create;
+        _destroy = other._destroy;
+        other._lib_handle = nullptr;
+        other._implementation = nullptr;
+        other._create = nullptr;
+        other._destroy = nullptr;
+        return *this;
+    };
+
+    virtual bool initiated() const;
+
+    virtual void execute(BhIR *bhir);
+
+    virtual void extmethod(const std::string &name, bh_opcode opcode);
+
+    virtual std::string message(const std::string &msg);
+
+    virtual void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify);
+
+    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem);
+
+    virtual void *getDeviceContext();
+
+    virtual void setDeviceContext(void *device_context);
+};
+
+
+// Representation of a component implementation, which is an abstract class
 // that all Bohrium components should implement
 class ComponentImpl {
-  public:
+protected:
+    // Flag that indicate whether the component is enabled or disabled.
+    // When disabled, the component should pass through instructions untouched to its child
+    bool disabled = false;
+public:
+
     // The level in the runtime stack starting a -1, which is the bridge,
     // 0 is the first component in the stack list, 1 is the second component etc.
     const int stack_level;
     // The configure file
     const ConfigParser config;
 
+    // The interface of the child. Notice, the child might not exist i.e. `child.exist() == false`
+    ComponentFace child;
+
     // Constructor
-    ComponentImpl(int stack_level) : stack_level(stack_level), config(stack_level) {};
+    ComponentImpl(int stack_level) : stack_level(stack_level), config(stack_level) {
+        std::string child_lib_path = config.getChildLibraryPath();
+        if (not child_lib_path.empty()) { // Has a child
+            child = ComponentFace{ComponentImpl::config.getChildLibraryPath(), stack_level + 1};
+        }
+    }
+
     virtual ~ComponentImpl() {}; // NB: a destructor implementation must exist
 
-    /* Execute a BhIR (graph of instructions)
+    /** Execute a BhIR (graph of instructions)
      *
      * @bhir  The BhIR to execute
      * Throws exceptions on error
      */
-    virtual void execute(BhIR *bhir) = 0;
+    virtual void execute(BhIR *bhir) {
+        child.execute(bhir);
+    };
 
-    /* Register a new extension method.
+    /** Register a new extension method.
      *
      * @name   Name of the function
      * @opcode Opcode for the new function.
      * Throws exceptions on error
      */
-    virtual void extmethod(const std::string &name, bh_opcode opcode) = 0;
+    virtual void extmethod(const std::string &name, bh_opcode opcode) {
+        child.extmethod(name, opcode);
+    }
 
-    /* Send and receive a message through the component stack
+    /** Send and receive a message through the component stack
      *
      * @msg    The message to send
      * @return The received message
      * Throws exceptions on error
      */
-    virtual std::string message(const std::string &msg) = 0;
+    virtual std::string message(const std::string &msg) {
+        return child.message(msg);
+    }
 
-    /* Get data pointer from the first VE in the runtime stack
+    /** Get data pointer from the first VE in the runtime stack
      * NB: this doesn't include a flush
      *
      * @base         The base array that owns the data
@@ -92,9 +177,11 @@ class ComponentImpl {
      * @return       The data pointer (NB: might point to device memory)
      * Throws exceptions on error
      */
-    virtual void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) = 0;
+    virtual void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+        return child.getMemoryPointer(base, copy2host, force_alloc, nullify);
+    }
 
-    /* Set data pointer in the first VE in the runtime stack
+    /** Set data pointer in the first VE in the runtime stack
      * NB: The component will deallocate the memory when encountering a BH_FREE.
      *     Also, this doesn't include a flush
      *
@@ -103,116 +190,30 @@ class ComponentImpl {
      * @mem       The data pointer
      * Throws exceptions on error
      */
-    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) = 0;
+    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+        return child.setMemoryPointer(base, host_ptr, mem);
+    }
 
-    /* Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
+    /** Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
      *
      * @return  The device handle
      * Throws exceptions on error
      */
-    virtual void* getDeviceContext() = 0;
+    virtual void *getDeviceContext() {
+        return child.getDeviceContext();
+    }
 
-    /* Set the device context, such as CUDA's context, of the first VE in the runtime stack.
+    /** Set the device context, such as CUDA's context, of the first VE in the runtime stack.
      * If the first VE isn't a device, nothing happens
      *
      * @device_context  The new device context
      * Throws exceptions on error
      */
-    virtual void setDeviceContext(void* device_context) = 0;
-};
-
-// Representation of a component interface, which consist of a create()
-// and destroy() function.
-class ComponentFace {
-  private:
-    // Shared library handle
-    void* _lib_handle;
-    // Function pointer to the component's create function
-    ComponentImpl* (*_create)(unsigned int);
-    // Function pointer to the component's destroy function
-    void (*_destroy)(ComponentImpl *component);
-    // Pointer to the implementation of the component
-    ComponentImpl *_implementation;
-  public:
-    // Constructor that takes the path to the shared library and
-    // the stack level of the component
-    ComponentFace(const std::string &lib_path, int stack_level);
-    ~ComponentFace();
-
-    // No default, copy, or move constructor!
-    ComponentFace() = delete;
-    ComponentFace(const ComponentFace &other) = delete;
-    ComponentFace(ComponentFace &&other) = delete;
-
-    void execute(BhIR *bhir) {
-        assert(_implementation != NULL);
-        _implementation->execute(bhir);
-    };
-    void extmethod(const std::string &name, bh_opcode opcode) {
-        assert(_implementation != NULL);
-        _implementation->extmethod(name, opcode);
-    };
-    std::string message(const std::string &msg) {
-        assert(_implementation != NULL);
-        return _implementation->message(msg);
-    }
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
-        assert(_implementation != NULL);
-        return _implementation->getMemoryPointer(base, copy2host, force_alloc, nullify);
-    }
-    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
-        assert(_implementation != NULL);
-        return _implementation->setMemoryPointer(base, host_ptr, mem);
-    }
-    void* getDeviceContext() {
-        assert(_implementation != NULL);
-        return _implementation->getDeviceContext();
-    };
-    void setDeviceContext(void* device_context) {
-        assert(_implementation != NULL);
-        _implementation->setDeviceContext(device_context);
-    };
-};
-
-// Representation of a component implementation that has a child.
-// This is purely for convenience, it adds a child interface and implement
-// pass-through implementations of the required component methods.
-class ComponentImplWithChild : public ComponentImpl {
-protected:
-    // Flag that indicate whether the component is enabled or disabled.
-    // When disabled, the component should pass through instructions untouched to its child
-    bool disabled;
-public:
-    // The interface of the child
-    ComponentFace child;
-
-    ComponentImplWithChild(int stack_level)
-            : ComponentImpl(stack_level),
-              disabled(false),
-              child(ComponentImpl::config.getChildLibraryPath(), stack_level+1) {}
-    virtual ~ComponentImplWithChild() {};
-    virtual void execute(BhIR *bhir) {
-        child.execute(bhir);
-    }
-    virtual void extmethod(const std::string &name, bh_opcode opcode) {
-        child.extmethod(name, opcode);
-    };
-    virtual std::string message(const std::string &msg) {
-        return child.message(msg);
-    }
-    virtual void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
-        return child.getMemoryPointer(base, copy2host, force_alloc, nullify);
-    };
-    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
-        return child.setMemoryPointer(base, host_ptr, mem);
-    }
-    virtual void* getDeviceContext() {
-        return child.getDeviceContext();
-    };
-    virtual void setDeviceContext(void* device_context) {
+    virtual void setDeviceContext(void *device_context) {
         child.setDeviceContext(device_context);
-    };
+    }
 };
 
-}} //namespace bohrium::component
+}
+} //namespace bohrium::component

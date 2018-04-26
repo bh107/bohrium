@@ -62,7 +62,7 @@ class Impl : public ComponentImpl {
     Impl(int stack_level) : ComponentImpl(stack_level),
                             stat(config),
                             engine(config, stat) {}
-    ~Impl();
+    ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus

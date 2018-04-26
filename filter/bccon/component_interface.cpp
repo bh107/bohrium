@@ -26,11 +26,11 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentImpl {
 private:
     filter::bccon::Contracter contractor;
 public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+    Impl(int stack_level) : ComponentImpl(stack_level),
                             contractor(config.defaultGet<bool>("verbose", false),
                                        config.defaultGet<bool>("find_repeats", false),
                                        config.defaultGet<bool>("reduction", false),
