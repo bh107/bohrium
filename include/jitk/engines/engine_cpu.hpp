@@ -50,7 +50,7 @@ public:
                          uint64_t codegen_hash,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    virtual void handleExecution(BhIR *bhir) {
+    virtual void handleExecution(BhIR *bhir) override {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -94,7 +94,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    void handleExtmethod(BhIR *bhir) {
+    virtual void handleExtmethod(BhIR *bhir) override {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {

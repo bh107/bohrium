@@ -114,6 +114,12 @@ public:
 
 protected:
 
+    /** Handle execution of the `bhir` */
+    virtual void handleExecution(BhIR *bhir) = 0;
+
+    /** Handle extension methods in the `bhir` */
+    virtual void handleExtmethod(BhIR *bhir) = 0;
+
     /** Write the argument list of the kernel function, which is basicly a comma seperated list of arguments.
      *
      * @param symbols           The symbol table

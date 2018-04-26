@@ -148,7 +148,7 @@ void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handleExtmethod(bhir, child_extmethods);
+        engine.handleExtmethod(bhir);
 
         // And then the regular instructions
         engine.handleExecution(bhir);

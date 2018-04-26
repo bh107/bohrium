@@ -85,7 +85,7 @@ public:
                          const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    void handleExecution(BhIR *bhir) {
+    virtual void handleExecution(BhIR *bhir) override {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -181,14 +181,14 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    void handleExtmethod(BhIR *bhir, std::set<bh_opcode> child_extmethods) {
+    virtual void handleExtmethod(BhIR *bhir) override {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {
             auto ext = comp.extmethods.find(instr.opcode);
-            auto childext = child_extmethods.find(instr.opcode);
+            auto childext = comp.child_extmethods.find(instr.opcode);
 
-            if (ext != comp.extmethods.end() or childext != child_extmethods.end()) {
+            if (ext != comp.extmethods.end() or childext != comp.child_extmethods.end()) {
                 // Execute the instructions up until now
                 BhIR b(std::move(instr_list), bhir->getSyncs());
                 comp.execute(&b);
@@ -198,7 +198,7 @@ public:
                     const auto texecution = std::chrono::steady_clock::now();
                     ext->second.execute(&instr, &*this); // Execute the extension method
                     stat.time_ext_method += std::chrono::steady_clock::now() - texecution;
-                } else if (childext != child_extmethods.end()) {
+                } else if (childext != comp.child_extmethods.end()) {
                     // We let the child component execute the instruction
                     std::set<bh_base *> ext_bases = instr.get_bases();
 

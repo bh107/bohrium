@@ -221,6 +221,9 @@ public:
     // Known extension methods
     std::map<bh_opcode, extmethod::ExtmethodFace> extmethods;
 
+    // The child's known extension methods
+    std::set<bh_opcode> child_extmethods;
+
     // Trivial constructor
     ComponentVE(int stack_level) : ComponentImpl(stack_level) {}
 };
