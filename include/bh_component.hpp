@@ -109,7 +109,6 @@ public:
     virtual void setDeviceContext(void *device_context);
 };
 
-
 // Representation of a component implementation, which is an abstract class
 // that all Bohrium components should implement
 class ComponentImpl {
@@ -215,5 +214,15 @@ public:
     }
 };
 
-}
-} //namespace bohrium::component
+// Representation of a vector engine component
+// All vector engines should inherit from this class
+class ComponentVE : public ComponentImpl {
+public:
+    // Known extension methods
+    std::map<bh_opcode, extmethod::ExtmethodFace> extmethods;
+
+    // Trivial constructor
+    ComponentVE(int stack_level) : ComponentImpl(stack_level) {}
+};
+
+}} //namespace bohrium::component

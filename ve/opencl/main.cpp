@@ -38,7 +38,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentVE {
   public:
     // Some statistics
     Statistics stat;
@@ -48,10 +48,10 @@ class Impl : public ComponentImpl {
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
     std::set<bh_opcode> child_extmethods;
 
-    Impl(int stack_level) : ComponentImpl(stack_level),
+    Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
                             engine(config, stat) {}
-    ~Impl();
+    ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
@@ -142,6 +142,10 @@ void Impl::execute(BhIR *bhir) {
     if (disabled) {
         child.execute(bhir);
         return;
+    }
+
+    if (to_col_major) {
+        to_column_major(bhir->instr_list);
     }
 
     bh_base *cond = bhir->getRepeatCondition();

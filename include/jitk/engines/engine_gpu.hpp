@@ -85,7 +85,7 @@ public:
                          const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    void handleExecution(component::ComponentImpl &comp, BhIR *bhir) {
+    void handleExecution(component::ComponentVE &comp, BhIR *bhir) {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -181,8 +181,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    template<typename T>
-    void handleExtmethod(T &comp, BhIR *bhir, std::set<bh_opcode> child_extmethods) {
+    void handleExtmethod(component::ComponentVE &comp, BhIR *bhir, std::set<bh_opcode> child_extmethods) {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {

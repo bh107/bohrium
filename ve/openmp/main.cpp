@@ -46,7 +46,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentVE {
   private:
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
@@ -59,7 +59,7 @@ class Impl : public ComponentImpl {
     // Known extension methods
     map<bh_opcode, extmethod::ExtmethodFace> extmethods;
 
-    Impl(int stack_level) : ComponentImpl(stack_level),
+    Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
                             engine(config, stat) {}
     ~Impl() override;
