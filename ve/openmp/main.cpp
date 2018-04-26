@@ -61,7 +61,7 @@ class Impl : public ComponentVE {
 
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(config, stat) {}
+                            engine(*this, stat) {}
     ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
@@ -140,7 +140,7 @@ void Impl::execute(BhIR *bhir) {
 
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handleExtmethod(*this, bhir);
+        engine.handleExtmethod(bhir);
 
         // And then the regular instructions
         engine.handleExecution(bhir);

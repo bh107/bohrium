@@ -72,8 +72,8 @@ private:
     MallocCache malloc_cache{func_alloc, func_free, 0};
 
 public:
-    EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
-    ~EngineOpenCL();
+    EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat);
+    ~EngineOpenCL() override;
 
     // Execute the 'source'
     void execute(const jitk::SymbolTable &symbols,

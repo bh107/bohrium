@@ -95,14 +95,14 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
 
 namespace bohrium {
 
-EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
-    EngineGPU(config, stat),
-    work_group_size_1dx(config.defaultGet<cl_ulong>("work_group_size_1dx", 128)),
-    work_group_size_2dx(config.defaultGet<cl_ulong>("work_group_size_2dx", 32)),
-    work_group_size_2dy(config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
-    work_group_size_3dx(config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
-    work_group_size_3dy(config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<cl_ulong>("work_group_size_3dz", 2))
+EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat) :
+    EngineGPU(comp, stat),
+    work_group_size_1dx(comp.config.defaultGet<cl_ulong>("work_group_size_1dx", 128)),
+    work_group_size_2dx(comp.config.defaultGet<cl_ulong>("work_group_size_2dx", 32)),
+    work_group_size_2dy(comp.config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
+    work_group_size_3dx(comp.config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
+    work_group_size_3dy(comp.config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
+    work_group_size_3dz(comp.config.defaultGet<cl_ulong>("work_group_size_3dz", 2))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -166,7 +166,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
 
     // Initiate cache limits
     const uint64_t gpu_mem = device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
-    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 90);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
@@ -565,13 +565,13 @@ std::string EngineOpenCL::info() const {
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
     ss << "  Compiler flags: " << compile_flg << "\n";
-    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
-    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+    ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
 
     ss << "  Codegen flags:\n";
-    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
-    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
-    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
+    ss << "    Index-as-var: " << comp.config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << comp.config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << comp.config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 

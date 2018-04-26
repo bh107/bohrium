@@ -51,7 +51,7 @@ private:
     KernelFunction getFunction(const std::string &source, const std::string &func_name);
 
 public:
-    EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
+    EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat);
 
     ~EngineOpenMP();
 

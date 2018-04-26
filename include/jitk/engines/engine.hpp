@@ -39,7 +39,7 @@ namespace jitk {
  */
 class Engine {
 protected:
-    const ConfigParser &config;
+    component::ComponentVE &comp;
     Statistics &stat;
     FuseCache fcache;
     CodegenCache codegen_cache;
@@ -70,17 +70,17 @@ protected:
 
 public:
     /** The only constructor */
-    Engine(const ConfigParser &config, Statistics &stat) :
-            config(config),
+    Engine(component::ComponentVE &comp, Statistics &stat) :
+            comp(comp),
             stat(stat),
             fcache(stat),
             codegen_cache(stat),
-            verbose(config.defaultGet<bool>("verbose", false)),
-            cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-            tmp_dir(get_tmp_path(config)),
+            verbose(comp.config.defaultGet<bool>("verbose", false)),
+            cache_file_max(comp.config.defaultGet<int64_t>("cache_file_max", 50000)),
+            tmp_dir(get_tmp_path(comp.config)),
             tmp_src_dir(tmp_dir / "src"),
             tmp_bin_dir(tmp_dir / "obj"),
-            cache_bin_dir(config.defaultGet<boost::filesystem::path>("cache_dir", "")),
+            cache_bin_dir(comp.config.defaultGet<boost::filesystem::path>("cache_dir", "")),
             compilation_hash(0) {
         // Let's make sure that the directories exist
         jitk::create_directories(tmp_src_dir);

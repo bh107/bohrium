@@ -51,16 +51,16 @@ public:
     // When max threads is set, use round robin?
     const bool num_threads_round_robin;
 
-    EngineGPU(const ConfigParser &config, Statistics &stat) :
-            Engine(config, stat),
-            compile_flg(jitk::expand_compile_cmd(config.defaultGet<std::string>("compiler_flg", ""), "", "",
-                                                 config.file_dir.string())),
-            default_device_type(config.defaultGet<std::string>("device_type", "auto")),
-            default_device_number(config.defaultGet<int>("device_number", 0)),
-            platform_no(config.defaultGet<int>("platform_no", -1)),
-            prof(config.defaultGet<bool>("prof", false)),
-            num_threads(config.defaultGet<uint64_t>("num_threads", 0)),
-            num_threads_round_robin(config.defaultGet<bool>("num_threads_round_robin", false)) {
+    EngineGPU(component::ComponentVE &comp, Statistics &stat) :
+            Engine(comp, stat),
+            compile_flg(jitk::expand_compile_cmd(comp.config.defaultGet<std::string>("compiler_flg", ""), "", "",
+                                                 comp.config.file_dir.string())),
+            default_device_type(comp.config.defaultGet<std::string>("device_type", "auto")),
+            default_device_number(comp.config.defaultGet<int>("device_number", 0)),
+            platform_no(comp.config.defaultGet<int>("platform_no", -1)),
+            prof(comp.config.defaultGet<bool>("prof", false)),
+            num_threads(comp.config.defaultGet<uint64_t>("num_threads", 0)),
+            num_threads_round_robin(comp.config.defaultGet<bool>("num_threads_round_robin", false)) {
     }
 
     virtual ~EngineGPU() {}
@@ -85,16 +85,16 @@ public:
                          const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    void handleExecution(component::ComponentVE &comp, BhIR *bhir) {
+    void handleExecution(BhIR *bhir) {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
 
         map<string, bool> kernel_config = {
-                {"strides_as_var", config.defaultGet<bool>("strides_as_var", true)},
-                {"index_as_var",   config.defaultGet<bool>("index_as_var", true)},
-                {"const_as_var",   config.defaultGet<bool>("const_as_var", true)},
-                {"use_volatile",   config.defaultGet<bool>("use_volatile", false)}
+                {"strides_as_var", comp.config.defaultGet<bool>("strides_as_var", true)},
+                {"index_as_var",   comp.config.defaultGet<bool>("index_as_var", true)},
+                {"const_as_var",   comp.config.defaultGet<bool>("const_as_var", true)},
+                {"use_volatile",   comp.config.defaultGet<bool>("use_volatile", false)}
         };
 
         // Some statistics
@@ -111,7 +111,7 @@ public:
         }
 
         // Set the constructor flag
-        if (config.defaultGet<bool>("array_contraction", true)) {
+        if (comp.config.defaultGet<bool>("array_contraction", true)) {
             setConstructorFlag(instr_list);
         } else {
             for (bh_instruction *instr: instr_list) {
@@ -121,7 +121,7 @@ public:
 
         // Let's get the block list
         // NB: 'avoid_rank0_sweep' is set to true when we have a child to offload to.
-        const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat,
+        const vector<jitk::Block> block_list = get_block_list(instr_list, comp.config, fcache, stat,
                                                               &(comp.child) != nullptr);
 
         for (const jitk::Block &block: block_list) {
@@ -181,7 +181,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    void handleExtmethod(component::ComponentVE &comp, BhIR *bhir, std::set<bh_opcode> child_extmethods) {
+    void handleExtmethod(BhIR *bhir, std::set<bh_opcode> child_extmethods) {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {
@@ -224,7 +224,7 @@ private:
                     const SymbolTable &symbols) {
         using namespace std;
 
-        if (config.defaultGet<bool>("verbose", false)) {
+        if (comp.config.defaultGet<bool>("verbose", false)) {
             cout << "Offloading to CPU\n";
         }
 

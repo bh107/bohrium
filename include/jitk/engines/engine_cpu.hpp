@@ -35,7 +35,7 @@ namespace jitk {
 
 class EngineCPU : public Engine {
 public:
-    EngineCPU(const ConfigParser &config, Statistics &stat) : Engine(config, stat) {}
+    EngineCPU(component::ComponentVE &comp, Statistics &stat) : Engine(comp, stat) {}
 
     virtual ~EngineCPU() {}
 
@@ -56,10 +56,10 @@ public:
         const auto texecution = chrono::steady_clock::now();
 
         map<string, bool> kernel_config = {
-                {"strides_as_var", config.defaultGet<bool>("strides_as_var", true)},
-                {"index_as_var",   config.defaultGet<bool>("index_as_var", true)},
-                {"const_as_var",   config.defaultGet<bool>("const_as_var", true)},
-                {"use_volatile",   config.defaultGet<bool>("use_volatile", false)}
+                {"strides_as_var", comp.config.defaultGet<bool>("strides_as_var", true)},
+                {"index_as_var",   comp.config.defaultGet<bool>("index_as_var", true)},
+                {"const_as_var",   comp.config.defaultGet<bool>("const_as_var", true)},
+                {"use_volatile",   comp.config.defaultGet<bool>("use_volatile", false)}
         };
 
         // Some statistics
@@ -75,7 +75,7 @@ public:
         }
 
         // Set the constructor flag
-        if (config.defaultGet<bool>("array_contraction", true)) {
+        if (comp.config.defaultGet<bool>("array_contraction", true)) {
             setConstructorFlag(instr_list);
         } else {
             for (bh_instruction *instr: instr_list) {
@@ -84,9 +84,9 @@ public:
         }
 
         // Let's get the block list
-        const vector<jitk::Block> block_list = get_block_list(instr_list, config, fcache, stat, false);
+        const vector<jitk::Block> block_list = get_block_list(instr_list, comp.config, fcache, stat, false);
 
-        if (config.defaultGet<bool>("monolithic", false)) {
+        if (comp.config.defaultGet<bool>("monolithic", false)) {
             createMonolithicKernel(kernel_config, block_list);
         } else {
             createKernel(kernel_config, block_list);
@@ -94,8 +94,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    template<typename T>
-    void handleExtmethod(T &comp, BhIR *bhir) {
+    void handleExtmethod(BhIR *bhir) {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {
@@ -112,7 +111,6 @@ public:
                 instr_list.push_back(instr);
             }
         }
-
         bhir->instr_list = instr_list;
     }
 

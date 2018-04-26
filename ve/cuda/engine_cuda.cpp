@@ -35,14 +35,14 @@ namespace fs = boost::filesystem;
 
 namespace bohrium {
 
-EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
-        EngineGPU(config, stat),
-        work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-        work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-        work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-        work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-        work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-        work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)) {
+EngineCUDA::EngineCUDA(component::ComponentVE &comp, jitk::Statistics &stat) :
+        EngineGPU(comp, stat),
+        work_group_size_1dx(comp.config.defaultGet<int>("work_group_size_1dx", 128)),
+        work_group_size_2dx(comp.config.defaultGet<int>("work_group_size_2dx", 32)),
+        work_group_size_2dy(comp.config.defaultGet<int>("work_group_size_2dy", 4)),
+        work_group_size_3dx(comp.config.defaultGet<int>("work_group_size_3dx", 32)),
+        work_group_size_3dy(comp.config.defaultGet<int>("work_group_size_3dy", 2)),
+        work_group_size_3dz(comp.config.defaultGet<int>("work_group_size_3dz", 2)) {
     int deviceCount = 0;
     CUresult err = cuInit(0);
 
@@ -71,7 +71,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
 
     // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
-    string compiler_cmd = config.get<string>("compiler_cmd");
+    string compiler_cmd = comp.config.get<string>("compiler_cmd");
 
     int major = 0, minor = 0;
     check_cuda_errors(cuDeviceComputeCapability(&major, &minor, device));
@@ -79,7 +79,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
     // Initiate the compiler
-    compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
+    compiler = jitk::Compiler(compiler_cmd, verbose, comp.config.file_dir.string());
 
     // Write the compilation hash
     {
@@ -93,7 +93,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     // Initiate cache limits
     size_t gpu_mem;
     check_cuda_errors(cuDeviceTotalMem(&gpu_mem, device));
-    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 90);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
@@ -331,20 +331,20 @@ std::string EngineCUDA::info() const {
 
     stringstream ss;
     ss << std::boolalpha; // Printing true/false instead of 1/0
-    ss << "----"                                                                               << "\n";
+    ss << "----"                                                                             << "\n";
     ss << "CUDA:"                                                                            << "\n";
     ss << "  Device: " << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
     ss << "  Memory: " << totalGlobalMem / 1024 / 1024 << " MB\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
     ss << "  JIT Command: " << compiler.cmd_template << "\n";
-    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
-    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+    ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
 
     ss << "  Codegen flags:\n";
-    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
-    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
-    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
+    ss << "    Index-as-var: " << comp.config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << comp.config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << comp.config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 
