@@ -130,6 +130,13 @@ protected:
                                               std::stringstream &ss,
                                               const char *array_type_prefix);
 
+    virtual void writeBlockBody(const jitk::SymbolTable &symbols,
+                                jitk::Scope &scope,
+                                const jitk::LoopB &block,
+                                const std::vector<uint64_t> &thread_stack,
+                                bool opencl,
+                                std::stringstream &out);
+
     /** Writes a block, which corresponds to a parallel for-loop.
      *
      * @param symbols       The symbol table

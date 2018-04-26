@@ -61,6 +61,91 @@ void Engine::writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
     }
 }
 
+void Engine::writeBlockBody(const jitk::SymbolTable &symbols,
+                            jitk::Scope &scope,
+                            const jitk::LoopB &block,
+                            const std::vector<uint64_t> &thread_stack,
+                            bool opencl,
+                            std::stringstream &out) {
+    // Write temporary and scalar replaced array declarations
+    for (const InstrPtr &instr: block.getLocalInstr()) {
+        for (const bh_view *view: instr->get_views()) {
+            if (not scope.isDeclared(*view)) {
+                if (scope.isTmp(view->base)) {
+                    util::spaces(out, 8 + block.rank * 4);
+                    scope.writeDeclaration(*view, writeType(view->base->type), out);
+                    out << "\n";
+                } else if (scope.isScalarReplaced_R(*view)) {
+                    util::spaces(out, 8 + block.rank * 4);
+                    scope.writeDeclaration(*view, writeType(view->base->type), out);
+                    out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                    write_array_subscription(scope, *view, out);
+                    out << ";";
+                    out << "\n";
+                }
+            }
+        }
+    }
+
+    // Find indexes we will declare later. Notice, `indexes` might include the identical views
+    // hence please check `isIdxDeclared()` to avoid duplicates
+    std::vector<const bh_view *> indexes;
+    {
+        for (const InstrPtr &instr: block.getLocalInstr()) {
+            for (const bh_view *view: instr->get_views()) {
+                if (symbols.existIdxID(*view) and scope.isArray(*view)) {
+                    indexes.push_back(view);
+                }
+            }
+        }
+    }
+
+    // Write the indexes declarations
+    for (const bh_view *view: indexes) {
+        if (not scope.isIdxDeclared(*view)) {
+            util::spaces(out, 8 + block.rank * 4);
+            scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
+            out << "\n";
+        }
+    }
+
+    // Write the for-loop body
+    // The body in OpenCL and OpenMP are very similar but OpenMP might need to insert "#pragma omp atomic/critical"
+    if (opencl) {
+        for (const Block &b: block._block_list) {
+            if (b.isInstr()) { // Finally, let's write the instruction
+                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
+                    util::spaces(out, 4 + b.rank() * 4);
+                    write_instr(scope, *b.getInstr(), out, true);
+                }
+            } else {
+                writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
+            }
+        }
+    } else {
+        for (const Block &b: block._block_list) {
+            if (b.isInstr()) { // Finally, let's write the instruction
+                const InstrPtr instr = b.getInstr();
+                if (not bh_opcode_is_system(instr->opcode)) {
+                    if (instr->operand.size() > 0) {
+                        if (scope.isOpenmpAtomic(instr->operand[0])) {
+                            util::spaces(out, 4 + b.rank() * 4);
+                            out << "#pragma omp atomic\n";
+                        } else if (scope.isOpenmpCritical(instr->operand[0])) {
+                            util::spaces(out, 4 + b.rank() * 4);
+                            out << "#pragma omp critical\n";
+                        }
+                    }
+                    util::spaces(out, 4 + b.rank() * 4);
+                    write_instr(scope, *instr, out);
+                }
+            } else {
+                writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
+            }
+        }
+    }
+}
+
 void Engine::writeLoopBlock(const jitk::SymbolTable &symbols,
                             const jitk::Scope *parent_scope,
                             const jitk::LoopB &block,
@@ -112,19 +197,6 @@ void Engine::writeLoopBlock(const jitk::SymbolTable &symbols,
         }
     }
 
-    // Find indexes we will declare later. Notice, `indexes` might include the identical views
-    // hence please check `isIdxDeclared()` to avoid duplicates
-    std::vector<const bh_view *> indexes;
-    {
-        for (const InstrPtr &instr: block.getLocalInstr()) {
-            for (const bh_view *view: instr->get_views()) {
-                if (symbols.existIdxID(*view) and scope.isArray(*view)) {
-                    indexes.push_back(view);
-                }
-            }
-        }
-    }
-
     // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
     bool peel = needToPeel(ordered_block_sweeps, scope);
 
@@ -150,7 +222,7 @@ void Engine::writeLoopBlock(const jitk::SymbolTable &symbols,
     if (block._sweeps.size() > 0 and peel) {
         jitk::Scope peeled_scope(scope);
         jitk::LoopB peeled_block(block);
-        for (const InstrPtr instr: ordered_block_sweeps) {
+        for (const InstrPtr &instr: ordered_block_sweeps) {
             // The input is the same as in the sweep
             bh_instruction sweep_instr(BH_IDENTITY, {instr->operand[0], instr->operand[1]});
 
@@ -171,44 +243,8 @@ void Engine::writeLoopBlock(const jitk::SymbolTable &symbols,
         util::spaces(out, 8 + block.rank * 4);
         out << writeType(bh_type::UINT64) << " " << itername << " = 0;\n";
 
-        // Write temporary and scalar replaced array declarations
-        for (const InstrPtr &instr: block.getLocalInstr()) {
-            for (const bh_view *view: instr->get_views()) {
-                if (not peeled_scope.isDeclared(*view)) {
-                    if (peeled_scope.isTmp(view->base)) {
-                        util::spaces(out, 8 + block.rank * 4);
-                        peeled_scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << "\n";
-                    } else if (peeled_scope.isScalarReplaced_R(*view)) {
-                        util::spaces(out, 8 + block.rank * 4);
-                        peeled_scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                        write_array_subscription(peeled_scope, *view, out);
-                        out << ";";
-                        out << "\n";
-                    }
-                }
-            }
-        }
-        // Write the indexes declarations
-        for (const bh_view *view: indexes) {
-            if (not peeled_scope.isIdxDeclared(*view)) {
-                util::spaces(out, 8 + block.rank * 4);
-                peeled_scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
-                out << "\n";
-            }
-        }
-        out << "\n";
-        for (const Block &b: peeled_block._block_list) {
-            if (b.isInstr()) {
-                if (b.getInstr() != nullptr and not bh_opcode_is_system(b.getInstr()->opcode)) {
-                    util::spaces(out, 4 + b.rank() * 4);
-                    write_instr(peeled_scope, *b.getInstr(), out, opencl);
-                }
-            } else {
-                writeLoopBlock(symbols, &peeled_scope, b.getLoop(), thread_stack, opencl, out);
-            }
-        }
+        writeBlockBody(symbols, peeled_scope, peeled_block, thread_stack, opencl, out);
+
         util::spaces(out, 4 + block.rank * 4);
         out << "}\n";
     }
@@ -217,69 +253,8 @@ void Engine::writeLoopBlock(const jitk::SymbolTable &symbols,
     util::spaces(out, 4 + block.rank * 4);
     loopHeadWriter(symbols, scope, block, peel, thread_stack, out);
 
-    // Write temporary and scalar replaced array declarations
-    for (const InstrPtr &instr: block.getLocalInstr()) {
-        for (const bh_view *view: instr->get_views()) {
-            if (not scope.isDeclared(*view)) {
-                if (scope.isTmp(view->base)) {
-                    util::spaces(out, 8 + block.rank * 4);
-                    scope.writeDeclaration(*view, writeType(view->base->type), out);
-                    out << "\n";
-                } else if (scope.isScalarReplaced_R(*view)) {
-                    util::spaces(out, 8 + block.rank * 4);
-                    scope.writeDeclaration(*view, writeType(view->base->type), out);
-                    out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                    write_array_subscription(scope, *view, out);
-                    out << ";";
-                    out << "\n";
-                }
-            }
-        }
-    }
-    // Write the indexes declarations
-    for (const bh_view *view: indexes) {
-        if (not scope.isIdxDeclared(*view)) {
-            util::spaces(out, 8 + block.rank * 4);
-            scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
-            out << "\n";
-        }
-    }
+    writeBlockBody(symbols, scope, block, thread_stack, opencl, out);
 
-    // Write the for-loop body
-    // The body in OpenCL and OpenMP are very similar but OpenMP might need to insert "#pragma omp atomic/critical"
-    if (opencl) {
-        for (const Block &b: block._block_list) {
-            if (b.isInstr()) { // Finally, let's write the instruction
-                if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
-                    util::spaces(out, 4 + b.rank() * 4);
-                    write_instr(scope, *b.getInstr(), out, true);
-                }
-            } else {
-                writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-            }
-        }
-    } else {
-        for (const Block &b: block._block_list) {
-            if (b.isInstr()) { // Finally, let's write the instruction
-                const InstrPtr instr = b.getInstr();
-                if (not bh_opcode_is_system(instr->opcode)) {
-                    if (instr->operand.size() > 0) {
-                        if (scope.isOpenmpAtomic(instr->operand[0])) {
-                            util::spaces(out, 4 + b.rank() * 4);
-                            out << "#pragma omp atomic\n";
-                        } else if (scope.isOpenmpCritical(instr->operand[0])) {
-                            util::spaces(out, 4 + b.rank() * 4);
-                            out << "#pragma omp critical\n";
-                        }
-                    }
-                    util::spaces(out, 4 + b.rank() * 4);
-                    write_instr(scope, *instr, out);
-                }
-            } else {
-                writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-            }
-        }
-    }
     util::spaces(out, 4 + block.rank * 4);
     out << "}\n";
 
