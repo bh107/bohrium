@@ -33,9 +33,13 @@ namespace jitk {
 
 /* Design Overview
 
-   A block can represent two things in Bohrium:
-    * A for-loop, i.e. a traversal of arrays over an axis/dimension (class LoopB)
+   A block can represent three things in Bohrium:
+    * A kernel (i.e. compiled shared library), which consists of a list of for-loops (class LoopB when rank == -1)
+    * A for-loop, i.e. a traversal of arrays over an axis/dimension (class LoopB when rank >= 0)
     * A single instruction such as BH_ADD or BH_MULTIPLY (class InstrB)
+
+   Notice, BH_FREE instructions should never appear in a Block; instead the `_frees` attribute of a Block
+   specifies the freed base array.
 
 */
 
@@ -46,7 +50,7 @@ class Block;
 // instead, create a whole new instruction.
 typedef std::shared_ptr<const bh_instruction> InstrPtr;
 
-// Representation of a for-loop, which contains a list of nested loops (_block_list)
+// Representation of either a kernel (rank == -1) or a for-loop (rank >= 0)
 class LoopB {
 public:
     // The rank of this loop block

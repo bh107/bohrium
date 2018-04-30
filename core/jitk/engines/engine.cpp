@@ -92,17 +92,18 @@ void Engine::writeBlockBody(const jitk::SymbolTable &symbols,
         }
     }
 
-    // Find indexes we will declare later. Notice, `indexes` might include the identical views
-    // hence we check `isIdxDeclared()` to avoid duplicates
-    for (const Block &block: block_list) {
-        if (block.isInstr()) {
-            const InstrPtr instr = block.getInstr();
-            for (const bh_view *view: instr->get_views()) {
-                if (symbols.existIdxID(*view) and scope.isArray(*view)) {
-                    if (not scope.isIdxDeclared(*view)) {
-                        util::spaces(out, 8 + rank * 4);
-                        scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
-                        out << "\n";
+    //Let's declare indexes if we are not at the kernel level (rank == -1)
+    if (rank >= 0) {
+        for (const Block &block: block_list) {
+            if (block.isInstr()) {
+                const InstrPtr instr = block.getInstr();
+                for (const bh_view *view: instr->get_views()) {
+                    if (symbols.existIdxID(*view) and scope.isArray(*view)) {
+                        if (not scope.isIdxDeclared(*view)) {
+                            util::spaces(out, 8 + rank * 4);
+                            scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
+                            out << "\n";
+                        }
                     }
                 }
             }
