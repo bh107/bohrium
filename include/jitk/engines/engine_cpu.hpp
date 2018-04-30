@@ -37,7 +37,7 @@ class EngineCPU : public Engine {
 public:
     EngineCPU(component::ComponentVE &comp, Statistics &stat) : Engine(comp, stat) {}
 
-    virtual ~EngineCPU() {}
+    ~EngineCPU() override = default;
 
     virtual void writeKernel(const std::vector<Block> &block_list,
                              const SymbolTable &symbols,
@@ -50,69 +50,9 @@ public:
                          uint64_t codegen_hash,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    virtual void handleExecution(BhIR *bhir) override {
-        using namespace std;
+    void handleExecution(BhIR *bhir) override;
 
-        const auto texecution = chrono::steady_clock::now();
-
-        map<string, bool> kernel_config = {
-                {"strides_as_var", comp.config.defaultGet<bool>("strides_as_var", true)},
-                {"index_as_var",   comp.config.defaultGet<bool>("index_as_var", true)},
-                {"const_as_var",   comp.config.defaultGet<bool>("const_as_var", true)},
-                {"use_volatile",   comp.config.defaultGet<bool>("use_volatile", false)}
-        };
-
-        // Some statistics
-        stat.record(*bhir);
-
-        // Let's start by cleanup the instructions from the 'bhir'
-        set<bh_base *> frees;
-        vector<bh_instruction *> instr_list = jitk::remove_non_computed_system_instr(bhir->instr_list, frees);
-
-        // Let's free device buffers and array memory
-        for (bh_base *base: frees) {
-            bh_data_free(base);
-        }
-
-        // Set the constructor flag
-        if (comp.config.defaultGet<bool>("array_contraction", true)) {
-            setConstructorFlag(instr_list);
-        } else {
-            for (bh_instruction *instr: instr_list) {
-                instr->constructor = false;
-            }
-        }
-
-        // Let's get the block list
-        const vector<jitk::Block> block_list = get_block_list(instr_list, comp.config, fcache, stat, false);
-
-        if (comp.config.defaultGet<bool>("monolithic", false)) {
-            createMonolithicKernel(kernel_config, block_list);
-        } else {
-            createKernel(kernel_config, block_list);
-        }
-        stat.time_total_execution += chrono::steady_clock::now() - texecution;
-    }
-
-    virtual void handleExtmethod(BhIR *bhir) override {
-        std::vector<bh_instruction> instr_list;
-
-        for (bh_instruction &instr: bhir->instr_list) {
-            auto ext = comp.extmethods.find(instr.opcode);
-
-            if (ext != comp.extmethods.end()) { // Execute the instructions up until now
-                BhIR b(std::move(instr_list), bhir->getSyncs());
-                comp.execute(&b);
-                instr_list.clear(); // Notice, it is legal to clear a moved vector.
-                const auto texecution = std::chrono::steady_clock::now();
-                ext->second.execute(&instr, nullptr); // Execute the extension method
-                stat.time_ext_method += std::chrono::steady_clock::now() - texecution;
-            } else {
-                instr_list.push_back(instr);
-            }
-        }
-        bhir->instr_list = instr_list;
-    }
+    void handleExtmethod(BhIR *bhir) override;
 
 private:
     void createKernel(std::map<std::string, bool> kernel_config, const std::vector<Block> &block_list) {
