@@ -23,7 +23,11 @@ jobs:
     - stage: build docker image
       script:
         - docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
-        - docker build -t bohrium/wheel -f package/docker/create_wheel.dockerfile .
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then
+            docker build -t bohrium/wheel --build-arg BUILD_TYPE=Release -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
+          else
+            docker build -t bohrium/wheel --build-arg BUILD_TYPE=Debug -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
+          fi
         - docker push bohrium/wheel
 
     - stage: verify
