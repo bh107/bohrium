@@ -105,9 +105,22 @@ public:
     /** Set the `bh_instruction->constructor` flag of all instruction in `instr_list`
      * The constructor flag indicates whether the instruction construct the output array
      * (i.e. is the first operation on that array)
+     *
+     * @param instr_list         The list of instruction to update
+     * @param constructed_arrays Arrays already constructed. Will be updated with arrays constructed in `instr_list`
+     */
+    virtual void setConstructorFlag(std::vector<bh_instruction *> &instr_list, std::set<bh_base *> &constructed_arrays);
+
+    /** Set the `bh_instruction->constructor` flag of all instruction in `instr_list`
+     * The constructor flag indicates whether the instruction construct the output array
+     * (i.e. is the first operation on that array)
+     *
      * @param instr_list  The list of instruction to update
      */
-    virtual void setConstructorFlag(std::vector<bh_instruction *> &instr_list) = 0;
+    virtual void setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
+        std::set<bh_base *> constructed_arrays;
+        setConstructorFlag(instr_list, constructed_arrays);
+    };
 
     /** Update statistics with final aggregated values of the engine */
     virtual void updateFinalStatistics() {} // Default we do nothing

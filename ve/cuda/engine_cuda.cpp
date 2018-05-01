@@ -318,7 +318,11 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
 }
 
 void EngineCUDA::setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
-    jitk::util_set_constructor_flag(instr_list, buffers);
+    std::set<bh_base *> constructed_arrays;
+    for (auto it: buffers) {
+        constructed_arrays.insert(it.first);
+    }
+    Engine::setConstructorFlag(instr_list, constructed_arrays);
 }
 
 std::string EngineCUDA::info() const {

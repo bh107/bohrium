@@ -185,7 +185,7 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     vector<void*> data_list;
     data_list.reserve(symbols.getParams().size());
     for(bh_base *base: symbols.getParams()) {
-        assert(base->data != NULL);
+        assert(base->data != nullptr);
         data_list.push_back(base->data);
     }
 
@@ -215,11 +215,6 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     stat.time_exec += texec;
     stat.time_per_kernel[source_filename].register_exec_time(texec);
 
-}
-
-void EngineOpenMP::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
-    const std::set<bh_base*> empty;
-    jitk::util_set_constructor_flag(instr_list, empty);
 }
 
 // Writes the OpenMP specific for-loop header

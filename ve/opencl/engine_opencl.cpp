@@ -454,7 +454,11 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
 }
 
 void EngineOpenCL::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
-    jitk::util_set_constructor_flag(instr_list, buffers);
+    std::set<bh_base *> constructed_arrays;
+    for (auto it: buffers) {
+        constructed_arrays.insert(it.first);
+    }
+    Engine::setConstructorFlag(instr_list, constructed_arrays);
 }
 
 // Copy all bases to the host (ignoring bases that isn't on the device)

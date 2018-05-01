@@ -179,7 +179,7 @@ private:
 public:
 
     // Default Constructor
-    Block() {}
+    Block() = default;
 
     // Loop Block Constructor
     explicit Block(const LoopB &loop_block) {

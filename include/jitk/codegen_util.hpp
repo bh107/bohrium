@@ -109,28 +109,6 @@ void create_directories(const boost::filesystem::path &path);
 // This makes the source of the kernels more identical, which improve the code and compile caches.
 std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
 
-// Sets the constructor flag of each instruction in 'instr_list'
-// 'remotely_allocated_bases' is a collection of array bases already remotely allocated
-template<typename T>
-void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const T &remotely_allocated_bases) {
-    std::set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    for(bh_instruction *instr: instr_list) {
-        instr->constructor = false;
-        for (size_t o = 0; o < instr->operand.size(); ++o) {
-            const bh_view &v = instr->operand[o];
-            if (not bh_is_constant(&v)) {
-                assert(v.base != NULL);
-                if (v.base->data == NULL and not (util::exist_nconst(initiated, v.base)
-                                                  or util::exist_nconst(remotely_allocated_bases, v.base))) {
-                    if (o == 0) { // It is only the output that is initiated
-                        initiated.insert(v.base);
-                        instr->constructor = true;
-                    }
-                }
-            }
-        }
-    }
-}
 
 } // jitk
 } // bohrium

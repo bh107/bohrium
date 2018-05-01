@@ -60,8 +60,6 @@ public:
                  uint64_t codegen_hash,
                  const std::vector<const bh_instruction*> &constants) override;
 
-    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
-
     void writeKernel(const std::vector<jitk::Block> &block_list,
                      const jitk::SymbolTable &symbols,
                      const std::vector<bh_base*> &kernel_temps,

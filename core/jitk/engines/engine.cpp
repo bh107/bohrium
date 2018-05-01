@@ -269,6 +269,20 @@ void Engine::writeBlockFrame(const jitk::SymbolTable &symbols,
     }
 }
 
+void Engine::setConstructorFlag(std::vector<bh_instruction *> &instr_list, std::set<bh_base*> &constructed_arrays) {
+    for(bh_instruction *instr: instr_list) {
+        instr->constructor = false;
+        for (size_t o = 0; o < instr->operand.size(); ++o) {
+            const bh_view &v = instr->operand[o];
+            if (not bh_is_constant(&v)) {
+                if (o == 0 and not util::exist_nconst(constructed_arrays, v.base)) {
+                    instr->constructor = true;
+                }
+                constructed_arrays.insert(v.base);
+            }
+        }
+    }
+}
 
 }
 } // namespace
