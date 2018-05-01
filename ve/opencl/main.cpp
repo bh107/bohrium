@@ -141,10 +141,6 @@ void Impl::execute(BhIR *bhir) {
         return;
     }
 
-    if (to_col_major) {
-        to_column_major(bhir->instr_list);
-    }
-
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
