@@ -137,7 +137,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
             constants.push_back(&(*instr));
         }
 
-        const auto lookup = codegen_cache.get(block.getLoop()._block_list, symbols);
+        const auto lookup = codegen_cache.get({block}, symbols);
         if (not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
@@ -158,7 +158,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
             execute(symbols, source, lookup.second, constants);
-            codegen_cache.insert(std::move(source), block.getLoop()._block_list, symbols);
+            codegen_cache.insert(std::move(source), {block}, symbols);
         }
     }
 
