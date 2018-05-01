@@ -113,7 +113,7 @@ void EngineCPU::handleExtmethod(BhIR *bhir){
     bhir->instr_list = instr_list;
 }
 
-void EngineCPU::createKernel(std::map<std::string, bool> kernel_config, const Block &block) {
+void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const Block &block) {
     assert(block.rank() == -1);
     assert(not block.isInstr());
 

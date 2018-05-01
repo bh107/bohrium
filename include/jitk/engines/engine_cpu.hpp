@@ -61,7 +61,7 @@ private:
      * @param kernel_config A map of configuration options
      * @param block         A special block of rank -1
      */
-    void createKernel(std::map<std::string, bool> kernel_config, const Block &block);
+    void createKernel(std::map<std::string, bool> &kernel_config, const Block &block);
 };
 
 }
