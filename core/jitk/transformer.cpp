@@ -186,9 +186,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
             for (auto it = loop._block_list.begin(); it != loop._block_list.end(); ++it) {
                 // First we will place all sub-blocks that cannot be threaded in a shared block
                 {
-                    LoopB newloop;
-                    newloop.rank = loop.rank;
-                    newloop.size = loop.size;
+                    LoopB newloop{loop.rank, loop.size};
                     while (it != loop._block_list.end() and (it->isInstr() or it->getLoop()._sweeps.size() > 0)) {
                         assert(it->rank() == newloop.rank+1);
                         newloop._block_list.push_back(*it);
@@ -203,9 +201,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
                 if (it != loop._block_list.end()) {
                     assert(not it->isInstr());
                     assert(it->getLoop()._sweeps.size() == 0);
-                    LoopB newloop;
-                    newloop.rank = loop.rank;
-                    newloop.size = loop.size;
+                    LoopB newloop{loop.rank, loop.size};
                     newloop._block_list.push_back(*it);
                     newloop.metadataUpdate();
                     ret.push_back(Block(std::move(newloop)));
