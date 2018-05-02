@@ -32,8 +32,7 @@ namespace jitk {
 // Creates an instruction of 'InstrPtr' from an instruction list with all noop operations removed
 std::vector<InstrPtr> simplify_instr_list(const std::vector<bh_instruction *> &instr_list);
 
-// Creates a block list based on the 'instr_list' where only fully fusible instructions
-// are fused
+// Creates a block list based on the 'instr_list' where only fully fusible instructions are fused
 std::vector<Block> pre_fuser_lossy(const std::vector<bh_instruction *> &instr_list);
 
 // Creates a block list based on the 'instr_list' where each instruction gets its own nested block

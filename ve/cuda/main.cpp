@@ -39,21 +39,17 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentVE {
   public:
     // Some statistics
     Statistics stat;
     // The CUDA engine
     EngineCUDA engine;
 
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    std::set<bh_opcode> child_extmethods;
-
-    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+    Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(config, stat) {}
-    ~Impl();
+                            engine(*this, stat) {}
+    ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
@@ -129,13 +125,14 @@ void Impl::execute(BhIR *bhir) {
         child.execute(bhir);
         return;
     }
+
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handleExtmethod(*this, bhir, child_extmethods);
+        engine.handleExtmethod(bhir);
 
         // And then the regular instructions
-        engine.handleExecution(*this, bhir);
+        engine.handleExecution(bhir);
 
         // Check condition
         if (cond != nullptr) {

@@ -41,14 +41,14 @@ namespace fs = boost::filesystem;
 
 namespace bohrium {
 
-EngineOpenMP::EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat) :
-    EngineCPU(config, stat), compiler(config.get<string>("compiler_cmd"), verbose, config.file_dir.string()) {
+EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat) :
+    EngineCPU(comp, stat), compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
 
     compilation_hash = util::hash(compiler.cmd_template);
 
     // Initiate cache limits
     const uint64_t sys_mem = bh_main_memory_total();
-    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 80);
+    malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 80);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
@@ -185,7 +185,7 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     vector<void*> data_list;
     data_list.reserve(symbols.getParams().size());
     for(bh_base *base: symbols.getParams()) {
-        assert(base->data != NULL);
+        assert(base->data != nullptr);
         data_list.push_back(base->data);
     }
 
@@ -215,11 +215,6 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     stat.time_exec += texec;
     stat.time_per_kernel[source_filename].register_exec_time(texec);
 
-}
-
-void EngineOpenMP::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
-    const std::set<bh_base*> empty;
-    jitk::util_set_constructor_flag(instr_list, empty);
 }
 
 // Writes the OpenMP specific for-loop header
@@ -257,10 +252,10 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
                                jitk::Scope &scope,
                                const jitk::LoopB &block,
                                std::stringstream &out) {
-    if (not config.defaultGet<bool>("compiler_openmp", false)) {
+    if (not comp.config.defaultGet<bool>("compiler_openmp", false)) {
         return;
     }
-    const bool enable_simd = config.defaultGet<bool>("compiler_openmp_simd", false);
+    const bool enable_simd = comp.config.defaultGet<bool>("compiler_openmp_simd", false);
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     std::vector<jitk::InstrPtr> openmp_reductions;
@@ -344,7 +339,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     ss << "\n";
 
     for(const jitk::Block &block: block_list) {
-        writeLoopBlock(symbols, nullptr, block.getLoop(), {}, false, ss);
+        writeBlockFrame(symbols, nullptr, block.getLoop(), {}, false, ss);
     }
 
     // Write frees of the kernel temporaries
@@ -412,15 +407,15 @@ std::string EngineOpenMP::info() const {
     ss << "  Hardware threads: " << std::thread::hardware_concurrency() << "\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
-    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "") << "\n";
-    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+    ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "") << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
 
     ss << "  Codegen flags:\n";
-    ss << "    OpenMP: " << config.defaultGet<bool>("compiler_openmp", false) << "\n";
-    ss << "    OpenMP+SIMD: " << config.defaultGet<bool>("compiler_openmp_simd", false) << "\n";
-    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true) << "\n";
-    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true) << "\n";
-    ss << "    Const-as-var: " << config.defaultGet<bool>("const_as_var", true) << "\n";
+    ss << "    OpenMP: " << comp.config.defaultGet<bool>("compiler_openmp", false) << "\n";
+    ss << "    OpenMP+SIMD: " << comp.config.defaultGet<bool>("compiler_openmp_simd", false) << "\n";
+    ss << "    Index-as-var: " << comp.config.defaultGet<bool>("index_as_var", true) << "\n";
+    ss << "    Strides-as-var: " << comp.config.defaultGet<bool>("strides_as_var", true) << "\n";
+    ss << "    Const-as-var: " << comp.config.defaultGet<bool>("const_as_var", true) << "\n";
 
     ss << "  JIT Command: \"" << compiler.cmd_template << "\"\n";
     return ss.str();

@@ -46,7 +46,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentVE {
   private:
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
@@ -56,13 +56,11 @@ class Impl : public ComponentImpl {
     Statistics stat;
     // The OpenMP engine
     EngineOpenMP engine;
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
 
-    Impl(int stack_level) : ComponentImpl(stack_level),
+    Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(config, stat) {}
-    ~Impl();
+                            engine(*this, stat) {}
+    ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
@@ -140,7 +138,7 @@ void Impl::execute(BhIR *bhir) {
 
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handleExtmethod(*this, bhir);
+        engine.handleExtmethod(bhir);
 
         // And then the regular instructions
         engine.handleExecution(bhir);

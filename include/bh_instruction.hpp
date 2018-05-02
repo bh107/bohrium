@@ -92,7 +92,7 @@ struct bh_instruction {
     bool reshapable() const;
 
     // Returns the principal shape of this instructions, which is the shape of the computation that constitute
-    // this instruction. E.g. in reduce, this function returns the shape of the reduced array
+    // this instruction. E.g. in reduce, this function returns the shape of the input array
     std::vector<int64_t> shape() const;
 
     // Returns the principal number of dimension of this instruction, which is the number of dimension of the
@@ -102,19 +102,22 @@ struct bh_instruction {
     // Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
     int sweep_axis() const;
 
-    // Reshape the views of the instruction to 'shape'
+    // Reshape the views of the instruction to 'shape' with contiguous stride
     void reshape(const std::vector<int64_t> &shape);
 
-    // Reshape the views of the instruction to 'shape' (no checks!)
+    // Reshape the views of the instruction to 'shape' with contiguous stride (no checks!)
     void reshape_force(const std::vector<int64_t> &shape);
 
-    // Remove 'axis' from all views in this instruction.
-    // Notice that 'axis' is based on the 'dominating shape' thus remove_axis() will correct
+    // Remove `axis` from all views in this instruction.
+    // Notice that `axis` is based on the 'dominating shape' thus `remove_axis()` will correct
     // the axis value when handling reductions automatically
     void remove_axis(int64_t axis);
 
     // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
+
+    // Transpose by reversing all axes in the principal shape
+    void transpose();
 
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;

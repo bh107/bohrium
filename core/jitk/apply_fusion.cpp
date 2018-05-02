@@ -101,8 +101,20 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
 
     // Pretty printing the block
     if (config.defaultGet<bool>("graph", false)) {
-        graph::DAG dag = graph::from_block_list(block_list);
-        graph::pprint(dag, "dag", avoid_rank0_sweep);
+        static int dcount = 0;
+        {
+            graph::DAG dag = graph::from_block_list(block_list);
+            graph::pprint(dag, "dag", avoid_rank0_sweep, dcount);
+        }
+        {
+            graph::DAG dag = graph::from_block_list(apply_pre_fusion(config, instr_list, "singleton"));
+            graph::pprint(dag, "dag_singleton", avoid_rank0_sweep, dcount);
+        }
+        {
+            graph::DAG dag = graph::from_block_list(apply_pre_fusion(config, instr_list, "lossy"));
+            graph::pprint(dag, "dag_lossy", avoid_rank0_sweep, dcount);
+        }
+        ++dcount;
     }
 
     // Full block validation

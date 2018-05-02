@@ -13,7 +13,7 @@ add_custom_command(OUTPUT ${OPCODE_H} ${OPCODE_CPP}
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${INCLUDE_DIR})
 
-file(GLOB SRC *.cpp jitk/*.cpp)
+file(GLOB SRC *.cpp jitk/*.cpp jitk/engines/*.cpp)
 add_library(bh SHARED ${SRC} ${CMAKE_CURRENT_BINARY_DIR}/bh_opcode.cpp)
 
 target_link_libraries(bh ${CMAKE_DL_LIBS})      # bh_component depends on dlopen etc.

@@ -35,14 +35,14 @@ namespace fs = boost::filesystem;
 
 namespace bohrium {
 
-EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
-        EngineGPU(config, stat),
-        work_group_size_1dx(config.defaultGet<int>("work_group_size_1dx", 128)),
-        work_group_size_2dx(config.defaultGet<int>("work_group_size_2dx", 32)),
-        work_group_size_2dy(config.defaultGet<int>("work_group_size_2dy", 4)),
-        work_group_size_3dx(config.defaultGet<int>("work_group_size_3dx", 32)),
-        work_group_size_3dy(config.defaultGet<int>("work_group_size_3dy", 2)),
-        work_group_size_3dz(config.defaultGet<int>("work_group_size_3dz", 2)) {
+EngineCUDA::EngineCUDA(component::ComponentVE &comp, jitk::Statistics &stat) :
+        EngineGPU(comp, stat),
+        work_group_size_1dx(comp.config.defaultGet<int>("work_group_size_1dx", 128)),
+        work_group_size_2dx(comp.config.defaultGet<int>("work_group_size_2dx", 32)),
+        work_group_size_2dy(comp.config.defaultGet<int>("work_group_size_2dy", 4)),
+        work_group_size_3dx(comp.config.defaultGet<int>("work_group_size_3dx", 32)),
+        work_group_size_3dy(comp.config.defaultGet<int>("work_group_size_3dy", 2)),
+        work_group_size_3dz(comp.config.defaultGet<int>("work_group_size_3dz", 2)) {
     int deviceCount = 0;
     CUresult err = cuInit(0);
 
@@ -71,7 +71,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
 
 
     // Get the compiler command and replace {MAJOR} and {MINOR} with the SM versions
-    string compiler_cmd = config.get<string>("compiler_cmd");
+    string compiler_cmd = comp.config.get<string>("compiler_cmd");
 
     int major = 0, minor = 0;
     check_cuda_errors(cuDeviceComputeCapability(&major, &minor, device));
@@ -79,7 +79,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
     // Initiate the compiler
-    compiler = jitk::Compiler(compiler_cmd, verbose, config.file_dir.string());
+    compiler = jitk::Compiler(compiler_cmd, verbose, comp.config.file_dir.string());
 
     // Write the compilation hash
     {
@@ -93,7 +93,7 @@ EngineCUDA::EngineCUDA(const ConfigParser &config, jitk::Statistics &stat) :
     // Initiate cache limits
     size_t gpu_mem;
     check_cuda_errors(cuDeviceTotalMem(&gpu_mem, device));
-    malloc_cache_limit_in_percent = config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 90);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
@@ -135,24 +135,40 @@ EngineCUDA::~EngineCUDA() {
     cuCtxDetach(context);
 }
 
+namespace {
+// Calculate the work group sizes.
+// Return pair (global work size, local work size)
+pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
+    if (numeric_limits<uint32_t>::max() <= work_group_size or
+        numeric_limits<uint32_t>::max() <= block_size or
+        block_size < 0) {
+        throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
+    }
+    const auto lsize = (uint32_t) work_group_size;
+    const auto rem   = (uint32_t) block_size % lsize;
+    const auto gsize = (uint32_t) block_size / lsize + (rem==0?0:1);
+    return make_pair(gsize, lsize);
+}
+}
+
 pair<tuple<uint32_t, uint32_t, uint32_t>, tuple<uint32_t, uint32_t, uint32_t> >
 EngineCUDA::NDRanges(const vector<uint64_t> &thread_stack) const {
     const auto &b = thread_stack;
     switch (b.size()) {
         case 1: {
-            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]);
+            const auto gsize_and_lsize = work_ranges(work_group_size_1dx, b[0]);
             return make_pair(make_tuple(gsize_and_lsize.first, 1, 1), make_tuple(gsize_and_lsize.second, 1, 1));
         }
         case 2: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]);
+            const auto gsize_and_lsize_x = work_ranges(work_group_size_2dx, b[0]);
+            const auto gsize_and_lsize_y = work_ranges(work_group_size_2dy, b[1]);
             return make_pair(make_tuple(gsize_and_lsize_x.first, gsize_and_lsize_y.first, 1),
                              make_tuple(gsize_and_lsize_x.second, gsize_and_lsize_y.second, 1));
         }
         case 3: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]);
-            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]);
+            const auto gsize_and_lsize_x = work_ranges(work_group_size_3dx, b[0]);
+            const auto gsize_and_lsize_y = work_ranges(work_group_size_3dy, b[1]);
+            const auto gsize_and_lsize_z = work_ranges(work_group_size_3dz, b[2]);
             return make_pair(make_tuple(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
                              make_tuple(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }
@@ -249,7 +265,7 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
         }
         ss << "\n";
     }
-    writeLoopBlock(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
+    writeBlockFrame(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
     ss << "}\n\n";
 }
 
@@ -302,7 +318,11 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
 }
 
 void EngineCUDA::setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
-    jitk::util_set_constructor_flag(instr_list, buffers);
+    std::set<bh_base *> constructed_arrays;
+    for (auto it: buffers) {
+        constructed_arrays.insert(it.first);
+    }
+    Engine::setConstructorFlag(instr_list, constructed_arrays);
 }
 
 std::string EngineCUDA::info() const {
@@ -315,20 +335,20 @@ std::string EngineCUDA::info() const {
 
     stringstream ss;
     ss << std::boolalpha; // Printing true/false instead of 1/0
-    ss << "----"                                                                               << "\n";
+    ss << "----"                                                                             << "\n";
     ss << "CUDA:"                                                                            << "\n";
     ss << "  Device: " << device_name << " (SM " << major << "." << minor << " compute capability)\"\n";
     ss << "  Memory: " << totalGlobalMem / 1024 / 1024 << " MB\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
     ss << "  JIT Command: " << compiler.cmd_template << "\n";
-    ss << "  Cache dir: " << config.defaultGet<string>("cache_dir", "")  << "\n";
-    ss << "  Temp dir: " << jitk::get_tmp_path(config)  << "\n";
+    ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
 
     ss << "  Codegen flags:\n";
-    ss << "    Index-as-var: " << config.defaultGet<bool>("index_as_var", true)  << "\n";
-    ss << "    Strides-as-var: " << config.defaultGet<bool>("strides_as_var", true)  << "\n";
-    ss << "    const-as-var: " << config.defaultGet<bool>("const_as_var", true)  << "\n";
+    ss << "    Index-as-var: " << comp.config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << comp.config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << comp.config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 

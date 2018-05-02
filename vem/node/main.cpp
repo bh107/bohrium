@@ -26,7 +26,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentImpl {
   private:
     // Allocated base arrays
     set<bh_base*> _allocated_bases;
@@ -35,11 +35,11 @@ class Impl : public ComponentImplWithChild {
     // Show memory warnings
     bool mem_warn;
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level) {
-        mem_warn = getenv("BH_MEM_WARN") != NULL;
+    Impl(int stack_level) : ComponentImpl(stack_level) {
+        mem_warn = getenv("BH_MEM_WARN") != nullptr;
     }
-    ~Impl(); // NB: a destructor implementation must exist
-    void execute(BhIR *bhir);
+    ~Impl() override; // NB: a destructor implementation must exist
+    void execute(BhIR *bhir) override;
 };
 } //Unnamed namespace
 

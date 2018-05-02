@@ -33,9 +33,13 @@ namespace jitk {
 
 /* Design Overview
 
-   A block can represent two things in Bohrium:
-    * A for-loop, i.e. a traversal of arrays over an axis/dimension (class LoopB)
+   A block can represent three things in Bohrium:
+    * A kernel (i.e. compiled shared library), which consists of a list of for-loops (class LoopB when rank == -1)
+    * A for-loop, i.e. a traversal of arrays over an axis/dimension (class LoopB when rank >= 0)
     * A single instruction such as BH_ADD or BH_MULTIPLY (class InstrB)
+
+   Notice, BH_FREE instructions should never appear in a Block; instead the `_frees` attribute of a Block
+   specifies the freed base array.
 
 */
 
@@ -46,13 +50,16 @@ class Block;
 // instead, create a whole new instruction.
 typedef std::shared_ptr<const bh_instruction> InstrPtr;
 
-// Representation of a for-loop, which contains a list of nested loops (_block_list)
+// Representation of either a kernel (rank == -1) or a for-loop (rank >= 0)
 class LoopB {
+private:
+    // Unique id of this block
+    int _id;
 public:
     // The rank of this loop block
     int rank;
     // List of sub-blocks
-    std::vector <Block> _block_list;
+    std::vector<Block> _block_list;
     // Size of the loop
     int64_t size;
     // Sweep instructions within this loop
@@ -64,11 +71,38 @@ public:
     // Is this loop and all its sub-blocks reshapable
     bool _reshapable = false;
 
-    // Unique id of this block
-    int _id;
-
     // Default Constructor
-    LoopB() { static int id_count = 0; _id = id_count++; }
+    LoopB() : rank(-42), size(-42) {
+        static int id_count = 0;
+        _id = id_count++;
+    }
+
+    /** Construct a new Loop Block
+     *
+     * @param rank       The rank of the block, which can be a kernel (rank == -1) or for-loop (rank >= 0)
+     * @param size       The size of the for-loop. A kernel (rank == -1) should have a size of 1
+     * @param block_list The list of sub-blocks (for-loops or instructions)
+     */
+    LoopB(int rank, int64_t size, std::vector<Block> block_list = {}) : LoopB() {
+        this->rank = rank;
+        this->size = size;
+        this->_block_list = std::move(block_list);
+    }
+
+    // Get local sweep instructions
+    const std::set<InstrPtr> &getSweeps() const {
+        return _sweeps;
+    }
+
+    // Get arrays created in this block
+    const std::set<bh_base *> &getNews() const {
+        return _news;
+    }
+
+    // Get arrays freed in this block
+    const std::set<bh_base *> &getFrees() const {
+        return _frees;
+    }
 
     // Search and replace 'subject' with 'replacement' and returns the number of hits
     int replaceInstr(InstrPtr subject, const bh_instruction &replacement);
@@ -77,49 +111,56 @@ public:
     bool isInnermost() const;
 
     // Return all sub-blocks (incl. nested blocks)
-    void getAllSubBlocks(std::vector<const LoopB*> &out) const;
+    void getAllSubBlocks(std::vector<const LoopB *> &out) const;
 
     // Return all sub-blocks (excl. nested blocks)
-    std::vector<const LoopB*> getLocalSubBlocks() const;
+    std::vector<const LoopB *> getLocalSubBlocks() const;
 
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<InstrPtr> &out) const;
+
     std::vector<InstrPtr> getAllInstr() const;
 
     // Return instructions in the block (excl. nested blocks)
     void getLocalInstr(std::vector<InstrPtr> &out) const;
+
     std::vector<InstrPtr> getLocalInstr() const;
 
     // Return all bases accessed by this block
-    std::set<const bh_base*> getAllBases() const {
-        std::set<const bh_base*> ret;
+    std::set<const bh_base *> getAllBases() const {
+        std::set<const bh_base *> ret;
         for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base*> t = instr->get_bases_const();
+            std::set<const bh_base *> t = instr->get_bases_const();
             ret.insert(t.begin(), t.end());
         }
         return ret;
     }
 
     // Return all new arrays in this block (incl. nested blocks)
-    void getAllNews(std::set<bh_base*> &out) const;
-    std::set<bh_base*> getAllNews() const;
+    void getAllNews(std::set<bh_base *> &out) const;
+
+    std::set<bh_base *> getAllNews() const;
 
     // Return all freed arrays in this block (incl. nested blocks)
-    void getAllFrees(std::set<bh_base*> &out) const;
-    std::set<bh_base*> getAllFrees() const;
+    void getAllFrees(std::set<bh_base *> &out) const;
+
+    std::set<bh_base *> getAllFrees() const;
 
     // Return all local temporary arrays in this block (excl. nested blocks)
     // NB: The returned temporary arrays are the arrays that this block should declare
-    void getLocalTemps(std::set<bh_base*> &out) const;
-    std::set<bh_base*> getLocalTemps() const;
+    void getLocalTemps(std::set<bh_base *> &out) const;
+
+    std::set<bh_base *> getLocalTemps() const;
 
     // Return all temporary arrays in this block (incl. nested blocks)
-    void getAllTemps(std::set<bh_base*> &out) const;
-    std::set<bh_base*> getAllTemps() const;
+    void getAllTemps(std::set<bh_base *> &out) const;
+
+    std::set<bh_base *> getAllTemps() const;
 
     // Return all non-temporary arrays in this block (incl. nested blocks)
-    void getAllNonTemps(std::set<bh_base*> &out) const;
-    std::set<bh_base*> getAllNonTemps() const;
+    void getAllNonTemps(std::set<bh_base *> &out) const;
+
+    std::set<bh_base *> getAllNonTemps() const;
 
     // Returns true when all instructions within the block is system or if the block is empty()
     bool isSystemOnly() const;
@@ -130,13 +171,13 @@ public:
     // Finds the block and instruction that accesses 'base' last. If 'base' is NULL, any data access
     // is accepted thus the last instruction is returned.
     // Returns the block and the index of the instruction (or NULL and -1 if not accessed)
-    std::pair<LoopB*, int64_t> findLastAccessBy(const bh_base *base);
+    std::pair<LoopB *, int64_t> findLastAccessBy(const bh_base *base);
 
     // Returns the amount of threading in this block (excl. nested blocks)
     uint64_t localThreading() const;
 
     // Pretty print this block
-    std::string pprint(const char *newline="\n") const;
+    std::string pprint(const char *newline = "\n") const;
 
     // Updates the metadata such as the sets of sweeps, news, frees etc.
     void metadataUpdate();
@@ -164,13 +205,14 @@ private:
 public:
 
     // Default Constructor
-    Block() {}
+    Block() = default;
 
     // Loop Block Constructor
     explicit Block(const LoopB &loop_block) {
         assert(_var.which() == 0);
         _var = loop_block;
     }
+
     explicit Block(LoopB &&loop_block) {
         assert(_var.which() == 0);
         _var = loop_block;
@@ -189,12 +231,15 @@ public:
     }
 
     // Retrieve the Loop Block
-    LoopB &getLoop() {return boost::get<LoopB>(_var);}
-    const LoopB &getLoop() const {return boost::get<LoopB>(_var);}
+    LoopB &getLoop() { return boost::get<LoopB>(_var); }
+
+    const LoopB &getLoop() const { return boost::get<LoopB>(_var); }
 
     // Retrieve the instruction within the instruction block
-    const InstrPtr getInstr() const {return boost::get<InstrB>(_var).instr;}
-    InstrPtr getInstr() {return boost::get<InstrB>(_var).instr;}
+    const InstrPtr getInstr() const { return boost::get<InstrB>(_var).instr; }
+
+    InstrPtr getInstr() { return boost::get<InstrB>(_var).instr; }
+
     void setInstr(const bh_instruction &instr) {
         assert(_var.which() == 0 or _var.which() == 2);
         boost::get<InstrB>(_var).rank = instr.ndim();
@@ -215,13 +260,14 @@ public:
 
     // Return all instructions in the block (incl. nested blocks)
     void getAllInstr(std::vector<InstrPtr> &out) const;
+
     std::vector<InstrPtr> getAllInstr() const;
 
     // Return all bases accessed by this block
-    std::set<const bh_base*> getAllBases() const {
-        std::set<const bh_base*> ret;
+    std::set<const bh_base *> getAllBases() const {
+        std::set<const bh_base *> ret;
         for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base*> t = instr->get_bases_const();
+            std::set<const bh_base *> t = instr->get_bases_const();
             ret.insert(t.begin(), t.end());
         }
         return ret;
@@ -264,7 +310,7 @@ public:
     }
 
     // Pretty print this block
-    std::string pprint(const char *newline="\n") const;
+    std::string pprint(const char *newline = "\n") const;
 };
 
 // Merge the two loop blocks, 'a' and 'b', in that order.
@@ -273,7 +319,7 @@ LoopB merge(const LoopB &a, const LoopB &b);
 // Create a nested block based on 'instr_list' fully (from 'rank' to the innermost block)
 // The arrays in `frees` will be added to frees of the returned innermost block
 // NB: ALL instructions (excl. sysop) must be fusible and have the same dominating shape.
-Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0, std::set<bh_base*> frees = {});
+Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank = 0, std::set<bh_base *> frees = {});
 
 // Create a nested block based on 'instr_list' partially (only 'rank' dimension).
 // The dimensions from zero to 'rank-1' are ignored.
@@ -283,12 +329,13 @@ Block create_nested_block(const std::vector<InstrPtr> &instr_list, int rank, int
 // Returns the number of ranks with no horizontal dependencies (thus support parallelism)
 // and the total amount of parallelism.
 // Use `max_depth` the limit the search depth (e.g. OpenCL and CUDA only supports parallelism in three dimensions)
-std::pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth=3);
+std::pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth = 3);
 
 // Return a list of `block` and all its first sub-blocks.
 // Use this function to easily access the blocks that makes up the parallel ranks.
-void get_first_loop_blocks(const LoopB &block, std::vector<const LoopB*> &out);
-std::vector<const LoopB*> get_first_loop_blocks(const LoopB &block);
+void get_first_loop_blocks(const LoopB &block, std::vector<const LoopB *> &out);
+
+std::vector<const LoopB *> get_first_loop_blocks(const LoopB &block);
 
 // Check if the two blocks 'b1' and 'b2' (in that order) are mergeable.
 // 'avoid_rank0_sweep' will not allow fusion of sweeped and non-sweeped blocks at the root level
@@ -299,13 +346,13 @@ bool mergeable(const Block &b1, const Block &b2, bool avoid_rank0_sweep);
 Block reshape_and_merge(const LoopB &l1, const LoopB &l2);
 
 //Implements pprint of block
-std::ostream& operator<<(std::ostream& out, const LoopB& b);
+std::ostream &operator<<(std::ostream &out, const LoopB &b);
 
 //Implements pprint of block
-std::ostream& operator<<(std::ostream& out, const Block& b);
+std::ostream &operator<<(std::ostream &out, const Block &b);
 
 //Implements pprint of a vector of blocks
-std::ostream& operator<<(std::ostream& out, const std::vector<Block>& b);
+std::ostream &operator<<(std::ostream &out, const std::vector<Block> &b);
 
 } // jit
 } // bohrium

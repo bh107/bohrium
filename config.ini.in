@@ -178,7 +178,7 @@ malloc_cache_limit = 90
 # The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
 # and {CONF_PATH} with the path to this config file.
 # Additionally, {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
-compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
+compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 --disable-warnings ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # List of extension methods
 libs = ${CUDA_LIBS}
 # The pre-fuser to use

@@ -27,15 +27,68 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, stringstream &out) {
-    assert(not isIdxDeclared(view));
-    out << "const " << type_str << " ";
-    getIdxName(view, out);
-    out << " = (";
-    write_array_index(*this, view, out);
-    out << ");";
-    _declared_idx.insert(view);
+SymbolTable::SymbolTable(const LoopB &kernel,
+                         bool use_volatile,
+                         bool strides_as_var,
+                         bool index_as_var,
+                         bool const_as_var) : _useRandom(false),
+                                              use_volatile(use_volatile),
+                                              strides_as_var(strides_as_var),
+                                              index_as_var(index_as_var),
+                                              const_as_var(const_as_var) {
+
+    const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
+
+    // NB: by assigning the IDs in the order they appear in the 'instr_list',
+    //     the kernels can better be reused
+    for (const InstrPtr &instr: instr_list) {
+        for (const bh_view *view: instr->get_views()) {
+            _base_map.insert(std::make_pair(view->base, _base_map.size()));
+            _view_map.insert(std::make_pair(*view, _view_map.size()));
+            if (index_as_var) {
+                _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+            }
+            _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
+        }
+        if (const_as_var) {
+            assert(instr->origin_id >= 0);
+            if (instr->has_constant() and not bh_opcode_is_sweep(instr->opcode)) {
+                _constant_set.insert(instr);
+            }
+        }
+        if (instr->opcode == BH_GATHER) {
+            if (not bh_is_constant(&instr->operand[1])) {
+                _array_always.insert(instr->operand[1].base);
+            }
+        } else if (instr->opcode == BH_SCATTER or instr->opcode == BH_COND_SCATTER) {
+            _array_always.insert(instr->operand[0].base);
+        } else if (instr->opcode == BH_RANDOM) {
+            _useRandom = true;
+        }
+    }
+    // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
+    // already in `_params`. NB: the order of `_params` matches the order of the array IDs
+    {
+        auto non_temp_arrays = kernel.getAllNonTemps();
+        non_temp_arrays.insert(_array_always.begin(), _array_always.end());
+        for (const InstrPtr &instr: instr_list) {
+            for (const bh_view &v: instr->operand) {
+                if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
+                    if (not util::exist_linearly(_params, v.base)) {
+                        _params.push_back(v.base);
+                    }
+                }
+            }
+        }
+    }
+    if (strides_as_var) {
+        _offset_stride_views.resize(_offset_strides_map.size());
+        for (auto &v: _offset_strides_map) {
+            _offset_stride_views[v.second] = &(v.first);
+        }
+    }
 }
+
 
 } // jitk
 } // bohrium

@@ -96,8 +96,8 @@ private:
     MallocCache malloc_cache{func_alloc, func_free, 0};
 
 public:
-    EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
-    ~EngineCUDA();
+    EngineCUDA(component::ComponentVE &comp, jitk::Statistics &stat);
+    ~EngineCUDA() override;
 
     // Execute the 'source'
     void execute(const jitk::SymbolTable &symbols,
