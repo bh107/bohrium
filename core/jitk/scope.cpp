@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <bh_util.hpp>
-#include <jitk/symbol_table.hpp>
+#include <jitk/scope.hpp>
 #include <jitk/view.hpp>
 
 using namespace std;
