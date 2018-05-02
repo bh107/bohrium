@@ -39,7 +39,7 @@ public:
 
     ~EngineCPU() override = default;
 
-    virtual void writeKernel(const std::vector<Block> &block_list,
+    virtual void writeKernel(const Block &block,
                              const SymbolTable &symbols,
                              const std::vector<bh_base *> &kernel_temps,
                              uint64_t codegen_hash,

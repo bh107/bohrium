@@ -36,6 +36,24 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
+namespace {
+// Return a list of scalar instruction in `block` or empty if not all instructions are scalars
+vector<InstrPtr> get_scalar_instr_list(const Block &block) {
+    vector<InstrPtr> ret = block.getAllInstr();
+    // Check if all instructions are scalar
+    for (const InstrPtr &instr: ret) {
+        if (bh_opcode_is_sweep(instr->opcode)) {
+            return {};
+        }
+        const auto shape = instr->shape();
+        if (bh_nelements(shape.size(), &shape[0]) != 1) {
+            return {};
+        }
+    }
+    return ret;
+}
+}
+
 void EngineCPU::handleExecution(BhIR *bhir) {
 
     const auto texecution = chrono::steady_clock::now();
@@ -71,17 +89,35 @@ void EngineCPU::handleExecution(BhIR *bhir) {
     // Let's get the block list
     const vector <Block> block_list = get_block_list(instr_list, comp.config, fcache, stat, false);
 
-    // In a monolithic kernel, the whole block list goes into the same shared library
+    // Let's get the block list
     if (comp.config.defaultGet<bool>("monolithic", false)) {
         LoopB loop{-1, 1};
-        for (const Block &b: block_list) {
-            loop._block_list.push_back(b);
+        for (Block &b: get_block_list(instr_list, comp.config, fcache, stat, false)) {
+            vector<InstrPtr> scalar_list = get_scalar_instr_list(b);
+            if (not scalar_list.empty()) {
+                for (const InstrPtr &instr: scalar_list) {
+                    loop._block_list.emplace_back(*instr, 0);
+                }
+                loop._frees.insert(b.getLoop()._frees.begin(), b.getLoop()._frees.end());
+            } else {
+                loop._block_list.push_back(b);
+            }
         }
+        loop.metadataUpdate();
         createKernel(kernel_config, Block{loop});
     } else {
-        // In a regular kernel, each block goes into individual shared libraries
-        for (const Block &b: block_list) {
-            LoopB loop{-1, 1, {b}};
+        for (Block &b: get_block_list(instr_list, comp.config, fcache, stat, false)) {
+            LoopB loop{-1, 1};
+            vector<InstrPtr> scalar_list = get_scalar_instr_list(b);
+            if (not scalar_list.empty()) {
+                for (const InstrPtr &instr: scalar_list) {
+                    loop._block_list.emplace_back(*instr, 0);
+                }
+                loop._frees.insert(b.getLoop()._frees.begin(), b.getLoop()._frees.end());
+            } else {
+                loop._block_list.push_back(b);
+            }
+            loop.metadataUpdate();
             createKernel(kernel_config, Block{loop});
         }
     }
@@ -135,7 +171,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                writeKernel(block.getLoop()._block_list, symbols, {}, lookup.second, ss);
+                writeKernel(block, symbols, {}, lookup.second, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
@@ -146,7 +182,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block.getLoop()._block_list, symbols, {}, lookup.second, ss);
+            writeKernel(block, symbols, {}, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 

@@ -306,11 +306,14 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
     }
 }
 
-void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
+void EngineOpenMP::writeKernel(const jitk::Block &block,
                                const jitk::SymbolTable &symbols,
                                const std::vector<bh_base*> &kernel_temps,
                                uint64_t codegen_hash,
                                std::stringstream &ss) {
+
+    assert(block.rank() == -1);
+    assert(not block.isInstr());
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -338,9 +341,10 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     }
     ss << "\n";
 
-    for(const jitk::Block &block: block_list) {
-        writeBlockFrame(symbols, nullptr, block.getLoop(), {}, false, ss);
-    }
+    vector<const bh_view *> scalar_replaced_reduction_outputs;
+    vector<const bh_view *> srio;
+    jitk::Scope scope(symbols, nullptr, block.getLoop().getLocalTemps(), scalar_replaced_reduction_outputs, srio);
+    writeBlockBody(symbols, scope, block.getLoop()._block_list, {}, -1, false, ss);
 
     // Write frees of the kernel temporaries
     ss << "\n";
