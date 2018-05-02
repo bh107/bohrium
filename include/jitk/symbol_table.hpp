@@ -71,7 +71,7 @@ private:
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
     std::set<InstrPtr, Constant_less> _constant_set; // Set of instructions to a constant ID (Order by `origin_id`)
-    std::set<const bh_base*> _array_always; // Set of base arrays that should always be arrays
+    std::set<bh_base*> _array_always; // Set of base arrays that should always be arrays
     std::vector<bh_base*> _params; // Vector of non-temporary arrays, which are the in-/out-puts of the JIT kernel
     bool _useRandom; // Flag: is any instructions using random?
 
@@ -188,7 +188,7 @@ public:
     }
     // Return true when 'base' should always be an array
     bool isAlwaysArray(const bh_base *base) const {
-        return util::exist(_array_always, base);
+        return util::exist_nconst(_array_always, base);
     }
     // Return non-temporary arrays, which are the in-/out-puts of the JIT kernel, in the order of their IDs
     const std::vector<bh_base*> &getParams() const {
