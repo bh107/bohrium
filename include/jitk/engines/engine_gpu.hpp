@@ -63,7 +63,7 @@ public:
             num_threads_round_robin(comp.config.defaultGet<bool>("num_threads_round_robin", false)) {
     }
 
-    virtual ~EngineGPU() {}
+    ~EngineGPU() override {}
 
     virtual void copyToHost(const std::set<bh_base *> &bases) = 0;
 
@@ -85,7 +85,7 @@ public:
                          const std::vector<uint64_t> &thread_stack,
                          const std::vector<const bh_instruction *> &constants) = 0;
 
-    virtual void handleExecution(BhIR *bhir) override {
+    void handleExecution(BhIR *bhir) override {
         using namespace std;
 
         const auto texecution = chrono::steady_clock::now();
@@ -126,11 +126,12 @@ public:
 
         for (const jitk::Block &block: block_list) {
             assert(not block.isInstr());
+            // Since GPUs can only handle one loop-nest, we place each `block` in its own kernel.
+            const LoopB kernel{-1, 1, {block}};
 
             // Let's create the symbol table for the kernel
             const jitk::SymbolTable symbols(
-                    block.getAllInstr(),
-                    block.getLoop().getAllNonTemps(),
+                    kernel,
                     kernel_config["use_volatile"],
                     kernel_config["strides_as_var"],
                     kernel_config["index_as_var"],
@@ -181,7 +182,7 @@ public:
         stat.time_total_execution += chrono::steady_clock::now() - texecution;
     }
 
-    virtual void handleExtmethod(BhIR *bhir) override {
+    void handleExtmethod(BhIR *bhir) override {
         std::vector<bh_instruction> instr_list;
 
         for (bh_instruction &instr: bhir->instr_list) {

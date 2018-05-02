@@ -73,9 +73,7 @@ void EngineCPU::handleExecution(BhIR *bhir) {
 
     // In a monolithic kernel, the whole block list goes into the same shared library
     if (comp.config.defaultGet<bool>("monolithic", false)) {
-        LoopB loop;
-        loop.rank = -1;
-        loop.size = 1;
+        LoopB loop{-1, 1};
         for (const Block &b: block_list) {
             loop._block_list.push_back(b);
         }
@@ -83,10 +81,7 @@ void EngineCPU::handleExecution(BhIR *bhir) {
     } else {
         // In a regular kernel, each block goes into individual shared libraries
         for (const Block &b: block_list) {
-            LoopB loop;
-            loop.rank = -1;
-            loop.size = 1;
-            loop._block_list.push_back(b);
+            LoopB loop{-1, 1, {b}};
             createKernel(kernel_config, Block{loop});
         }
     }
@@ -118,9 +113,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
     assert(not block.isInstr());
 
     // Let's create the symbol table for the kernel
-    const SymbolTable symbols(
-            block.getAllInstr(),
-            block.getLoop().getAllNonTemps(),
+    const SymbolTable symbols(block.getLoop(),
             kernel_config["use_volatile"],
             kernel_config["strides_as_var"],
             kernel_config["index_as_var"],

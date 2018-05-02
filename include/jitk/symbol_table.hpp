@@ -85,17 +85,19 @@ public:
     // Should we use constants as variables?
     const bool const_as_var;
 
-    SymbolTable(const std::vector<InstrPtr> &instr_list,
-                const std::set<bh_base *> &non_temp_arrays,
+    SymbolTable(const LoopB &kernel,
                 bool use_volatile,
                 bool strides_as_var,
                 bool index_as_var,
                 bool const_as_var) :
-        _useRandom(false),
-        use_volatile(use_volatile),
-        strides_as_var(strides_as_var),
-        index_as_var(index_as_var),
-        const_as_var(const_as_var) {
+            _useRandom(false),
+            use_volatile(use_volatile),
+            strides_as_var(strides_as_var),
+            index_as_var(index_as_var),
+            const_as_var(const_as_var) {
+
+        const std::vector<InstrPtr> instr_list = kernel.getAllInstr();
+
         // NB: by assigning the IDs in the order they appear in the 'instr_list',
         //     the kernels can better be reused
         for (const InstrPtr &instr: instr_list) {
@@ -122,12 +124,18 @@ public:
             } else if (instr->opcode == BH_RANDOM) {
                 _useRandom = true;
             }
-            // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
-            // already in `_params`. NB: the order of `_params` matches the order of the array IDs
-            for(const bh_view &v: instr->operand) {
-                if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
-                    if (not util::exist_linearly(_params, v.base)) {
-                        _params.push_back(v.base);
+        }
+        // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
+        // already in `_params`. NB: the order of `_params` matches the order of the array IDs
+        {
+            auto non_temp_arrays = kernel.getAllNonTemps();
+            non_temp_arrays.insert(_array_always.begin(), _array_always.end());
+            for (const InstrPtr &instr: instr_list) {
+                for(const bh_view &v: instr->operand) {
+                    if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
+                        if (not util::exist_linearly(_params, v.base)) {
+                            _params.push_back(v.base);
+                        }
                     }
                 }
             }
@@ -135,10 +143,11 @@ public:
         if (strides_as_var) {
             _offset_stride_views.resize(_offset_strides_map.size());
             for(auto &v: _offset_strides_map) {
-                _offset_stride_views[v.second] = &v.first;
+                _offset_stride_views[v.second] = &(v.first);
             }
         }
     };
+
     // Get the ID of 'base', throws exception if 'base' doesn't exist
     size_t baseID(const bh_base *base) const {
         return _base_map.at(base);
