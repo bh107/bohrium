@@ -37,12 +37,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "openmp_util.hpp"
 
 using namespace std;
+using namespace bohrium::jitk;
 namespace fs = boost::filesystem;
 
 namespace bohrium {
 
 EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat) :
-    EngineCPU(comp, stat), compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
+        EngineCPU(comp, stat),
+        compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
 
     compilation_hash = util::hash(compiler.cmd_template);
 
@@ -52,7 +54,7 @@ EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat)
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
-    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem * (malloc_cache_limit_in_percent/100.0)));
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem * (malloc_cache_limit_in_percent / 100.0)));
     bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
@@ -151,7 +153,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
     // avoid any compiler warnings.
     dlerror(); // Reset errors
     *(void **) (&_functions[hash]) = dlsym(lib_handle, func_name.c_str());
-    const char* dlsym_error = dlerror();
+    const char *dlsym_error = dlerror();
     if (dlsym_error != nullptr) {
         cerr << "Cannot load function launcher(): " << dlsym_error << endl;
         throw runtime_error("VE-OPENMP: Cannot load function launcher()");
@@ -163,7 +165,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
 void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
                            const std::string &source,
                            uint64_t codegen_hash,
-                           const std::vector<const bh_instruction*> &constants) {
+                           const std::vector<const bh_instruction *> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
     uint64_t hash = util::hash(source);
@@ -176,15 +178,20 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
 
     // Compile the kernel
     auto tbuild = chrono::steady_clock::now();
-    string func_name; { stringstream t; t << "launcher_" << codegen_hash; func_name = t.str(); }
+    string func_name;
+    {
+        stringstream t;
+        t << "launcher_" << codegen_hash;
+        func_name = t.str();
+    }
     KernelFunction func = getFunction(source, func_name);
     assert(func != nullptr);
     stat.time_compile += chrono::steady_clock::now() - tbuild;
 
     // Create a 'data_list' of data pointers
-    vector<void*> data_list;
+    vector<void *> data_list;
     data_list.reserve(symbols.getParams().size());
-    for(bh_base *base: symbols.getParams()) {
+    for (bh_base *base: symbols.getParams()) {
         assert(base->data != nullptr);
         data_list.push_back(base->data);
     }
@@ -195,7 +202,7 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     for (const bh_view *view: symbols.offsetStrideViews()) {
         const uint64_t t = (uint64_t) view->start;
         offset_and_strides.push_back(t);
-        for (int i=0; i<view->ndim; ++i) {
+        for (int i = 0; i < view->ndim; ++i) {
             const uint64_t s = (uint64_t) view->stride[i];
             offset_and_strides.push_back(s);
         }
@@ -204,7 +211,7 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     // And the constants
     vector<bh_constant_value> constant_arg;
     constant_arg.reserve(constants.size());
-    for (const bh_instruction* instr: constants) {
+    for (const bh_instruction *instr: constants) {
         constant_arg.push_back(instr->constant.value);
     }
 
@@ -236,10 +243,14 @@ void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
     }
     // Write the for-loop header
     string itername;
-    { stringstream t; t << "i" << block.rank; itername = t.str(); }
+    {
+        stringstream t;
+        t << "i" << block.rank;
+        itername = t.str();
+    }
     out << "for(uint64_t " << itername;
     if (block._sweeps.size() > 0 and loop_is_peeled) {
-         // If the for-loop has been peeled, we should start at 1
+        // If the for-loop has been peeled, we should start at 1
         out << " = 1; ";
     } else {
         out << " = 0; ";
@@ -300,15 +311,136 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
         ss << ")";
     }
     const string ss_str = ss.str();
-    if(not ss_str.empty()) {
+    if (not ss_str.empty()) {
         out << "#pragma omp" << ss_str << "\n";
-        util::spaces(out, 4 + block.rank*4);
+        util::spaces(out, 4 + block.rank * 4);
+    }
+}
+
+
+void EngineOpenMP::writeBlock(const jitk::SymbolTable &symbols,
+                              const jitk::Scope *parent_scope,
+                              const jitk::LoopB &kernel,
+                              const std::vector<uint64_t> &thread_stack,
+                              bool opencl,
+                              std::stringstream &out) {
+
+    if (kernel.isSystemOnly()) {
+        out << "// Removed loop with only system instructions\n";
+        return;
+    }
+
+    std::set<jitk::InstrPtr> sweeps_in_child;
+    for (const jitk::Block &sub_block: kernel._block_list) {
+        if (not sub_block.isInstr()) {
+            sweeps_in_child.insert(sub_block.getLoop()._sweeps.begin(), sub_block.getLoop()._sweeps.end());
+        }
+    }
+    // Order all sweep instructions by the viewID of their first operand.
+    // This makes the source of the kernels more identical, which improve the code and compile caches.
+    const vector<jitk::InstrPtr> ordered_block_sweeps = order_sweep_set(sweeps_in_child, symbols);
+
+    // Let's find the local temporary arrays and the arrays to scalar replace
+    const set<bh_base *> &local_tmps = kernel.getLocalTemps();
+
+    // We always scalar replace reduction outputs that reduces over the innermost axis
+    vector<const bh_view *> scalar_replaced_reduction_outputs;
+    for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
+        if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
+            if (local_tmps.find(instr->operand[0].base) == local_tmps.end()) {
+                scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
+            }
+        }
+    }
+
+    // Let's scalar replace input-only arrays that are used multiple times
+    vector<const bh_view *> srio = jitk::scalar_replaced_input_only(kernel, parent_scope, local_tmps);
+    jitk::Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, srio);
+
+    // Write temporary and scalar replaced array declarations
+    vector<const bh_view*> scalar_replaced_to_write_back;
+    for (const jitk::Block &block: kernel._block_list) {
+        if (block.isInstr()) {
+            const jitk::InstrPtr instr = block.getInstr();
+            for (const bh_view *view: instr->get_views()) {
+                if (not scope.isDeclared(*view)) {
+                    if (scope.isTmp(view->base)) {
+                        util::spaces(out, 8 + kernel.rank * 4);
+                        scope.writeDeclaration(*view, writeType(view->base->type), out);
+                        out << "\n";
+                    } else if (scope.isScalarReplaced(*view)) {
+                        util::spaces(out, 8 + kernel.rank * 4);
+                        scope.writeDeclaration(*view, writeType(view->base->type), out);
+                        out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                        write_array_subscription(scope, *view, out);
+                        out << ";";
+                        out << "\n";
+                        if (scope.isScalarReplaced_RW(view->base)) {
+                            scalar_replaced_to_write_back.push_back(view);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //Let's declare indexes if we are not at the kernel level (rank == -1)
+    if (kernel.rank >= 0) {
+        for (const jitk::Block &block: kernel._block_list) {
+            if (block.isInstr()) {
+                const jitk::InstrPtr instr = block.getInstr();
+                for (const bh_view *view: instr->get_views()) {
+                    if (symbols.existIdxID(*view) and scope.isArray(*view)) {
+                        if (not scope.isIdxDeclared(*view)) {
+                            util::spaces(out, 8 + kernel.rank * 4);
+                            scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
+                            out << "\n";
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (const Block &b: kernel._block_list) {
+        if (b.isInstr()) { // Finally, let's write the instruction
+            const InstrPtr instr = b.getInstr();
+            if (not bh_opcode_is_system(instr->opcode)) {
+                if (instr->operand.size() > 0) {
+                    if (scope.isOpenmpAtomic(instr)) {
+                        util::spaces(out, 4 + b.rank() * 4);
+                        out << "#pragma omp atomic\n";
+                    } else if (scope.isOpenmpCritical(instr)) {
+                        util::spaces(out, 4 + b.rank() * 4);
+                        out << "#pragma omp critical\n";
+                    }
+                }
+                util::spaces(out, 4 + b.rank() * 4);
+                write_instr(scope, *instr, out);
+            }
+        } else {
+            util::spaces(out, 4 + b.rank() * 4);
+            loopHeadWriter(symbols, scope, b.getLoop(), false, thread_stack, out);
+            writeBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
+            util::spaces(out, 4 + b.rank() * 4);
+            out << "}\n";
+        }
+    }
+
+    // Let's copy the scalar replaced reduction outputs back to the original array
+    for (const bh_view *view: scalar_replaced_to_write_back) {
+        util::spaces(out, 8 + kernel.rank * 4);
+        out << "a" << symbols.baseID(view->base);
+        write_array_subscription(scope, *view, out, true);
+        out << " = ";
+        scope.getName(*view, out);
+        out << ";\n";
     }
 }
 
 void EngineOpenMP::writeKernel(const jitk::Block &block,
                                const jitk::SymbolTable &symbols,
-                               const std::vector<bh_base*> &kernel_temps,
+                               const std::vector<bh_base *> &kernel_temps,
                                uint64_t codegen_hash,
                                std::stringstream &ss) {
 
@@ -335,20 +467,17 @@ void EngineOpenMP::writeKernel(const jitk::Block &block,
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
     // Write allocations of the kernel temporaries
-    for(const bh_base* b: kernel_temps) {
+    for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
         ss << writeType(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
     }
     ss << "\n";
 
-    vector<const bh_view *> scalar_replaced_reduction_outputs;
-    vector<const bh_view *> srio;
-    jitk::Scope scope(symbols, nullptr, block.getLoop().getLocalTemps(), scalar_replaced_reduction_outputs, srio);
-    writeBlockBody(symbols, scope, block.getLoop()._block_list, {}, -1, false, ss);
+    writeBlock(symbols, nullptr, block.getLoop(), {}, false, ss);
 
     // Write frees of the kernel temporaries
     ss << "\n";
-    for(const bh_base* b: kernel_temps) {
+    for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
         ss << "free(" << "a" << symbols.baseID(b) << ");\n";
     }
@@ -359,7 +488,7 @@ void EngineOpenMP::writeKernel(const jitk::Block &block,
     {
         ss << "void launcher_" << codegen_hash
            << "(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
-        for(size_t i = 0; i < symbols.getParams().size(); ++i) {
+        for (size_t i = 0; i < symbols.getParams().size(); ++i) {
             util::spaces(ss, 4);
             bh_base *b = symbols.getParams()[i];
             ss << writeType(b->type) << " *a" << symbols.baseID(b);
@@ -371,7 +500,7 @@ void EngineOpenMP::writeKernel(const jitk::Block &block,
 
         // We create the comma separated list of args and saves it in `stmp`
         stringstream stmp;
-        for(size_t i = 0; i < symbols.getParams().size(); ++i) {
+        for (size_t i = 0; i < symbols.getParams().size(); ++i) {
             bh_base *b = symbols.getParams()[i];
             stmp << "a" << symbols.baseID(b) << ", ";
         }
@@ -379,7 +508,7 @@ void EngineOpenMP::writeKernel(const jitk::Block &block,
         uint64_t count = 0;
         for (const bh_view *view: symbols.offsetStrideViews()) {
             stmp << "offset_strides[" << count++ << "], ";
-            for (int i = 0; i<view->ndim; ++i) {
+            for (int i = 0; i < view->ndim; ++i) {
                 stmp << "offset_strides[" << count++ << "], ";
             }
         }
@@ -395,7 +524,7 @@ void EngineOpenMP::writeKernel(const jitk::Block &block,
         // And then we write `stmp` into `ss` excluding the last comma
         const string strtmp = stmp.str();
         if (not strtmp.empty()) {
-            ss << strtmp.substr(0, strtmp.size()-2);
+            ss << strtmp.substr(0, strtmp.size() - 2);
         }
         ss << ");\n";
         ss << "}\n";
@@ -412,7 +541,7 @@ std::string EngineOpenMP::info() const {
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
     ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "") << "\n";
-    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config) << "\n";
 
     ss << "  Codegen flags:\n";
     ss << "    OpenMP: " << comp.config.defaultGet<bool>("compiler_openmp", false) << "\n";
@@ -428,20 +557,34 @@ std::string EngineOpenMP::info() const {
 // Return C99 types, which are used inside the C99 kernels
 const std::string EngineOpenMP::writeType(bh_type dtype) {
     switch (dtype) {
-        case bh_type::BOOL:       return "bool";
-        case bh_type::INT8:       return "int8_t";
-        case bh_type::INT16:      return "int16_t";
-        case bh_type::INT32:      return "int32_t";
-        case bh_type::INT64:      return "int64_t";
-        case bh_type::UINT8:      return "uint8_t";
-        case bh_type::UINT16:     return "uint16_t";
-        case bh_type::UINT32:     return "uint32_t";
-        case bh_type::UINT64:     return "uint64_t";
-        case bh_type::FLOAT32:    return "float";
-        case bh_type::FLOAT64:    return "double";
-        case bh_type::COMPLEX64:  return "float complex";
-        case bh_type::COMPLEX128: return "double complex";
-        case bh_type::R123:       return "r123_t"; // Defined by `write_c99_dtype_union()`
+        case bh_type::BOOL:
+            return "bool";
+        case bh_type::INT8:
+            return "int8_t";
+        case bh_type::INT16:
+            return "int16_t";
+        case bh_type::INT32:
+            return "int32_t";
+        case bh_type::INT64:
+            return "int64_t";
+        case bh_type::UINT8:
+            return "uint8_t";
+        case bh_type::UINT16:
+            return "uint16_t";
+        case bh_type::UINT32:
+            return "uint32_t";
+        case bh_type::UINT64:
+            return "uint64_t";
+        case bh_type::FLOAT32:
+            return "float";
+        case bh_type::FLOAT64:
+            return "double";
+        case bh_type::COMPLEX64:
+            return "float complex";
+        case bh_type::COMPLEX128:
+            return "double complex";
+        case bh_type::R123:
+            return "r123_t"; // Defined by `write_c99_dtype_union()`
         default:
             std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown C99 type");
