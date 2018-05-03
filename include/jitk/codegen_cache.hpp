@@ -37,19 +37,24 @@ private:
     jitk::Statistics &stat;
 public:
     // The constructor takes the statistic object
-    CodegenCache(jitk::Statistics &stat) : stat(stat) {}
+    explicit CodegenCache(jitk::Statistics &stat) : stat(stat) {}
 
-    // Check the cache for a source code that matches 'instr_list'
-    // Returns the source code and the hash of the source.
-    // On cache misses, the returned source is an empty string.
-    std::pair<std::string, uint64_t> get(const std::vector<Block> &block_list, const SymbolTable &symbols);
+    /** Check the cache for a source code that matches `kernel`
+     *
+     * @param kernel  The kernel
+     * @param symbols The symbol table
+     * @return The source code and the hash of the source or the empty string on cache misses
+     */
+    std::pair<std::string, uint64_t> lookup(const LoopB &kernel, const SymbolTable &symbols);
 
-    // Insert 'source' as a hit when requesting 'block_list'
-    void insert(std::string source, const std::vector<Block> &block_list, const SymbolTable &symbols);
+    /** Insert `source` as a hit when requesting `kernel`
+     *
+     * @param source  The source code
+     * @param kernel  The kernel
+     * @param symbols The symbol table
+     */
+    void insert(std::string source, const LoopB &kernel, const SymbolTable &symbols);
 };
-
-std::string block_list_string(const std::vector<Block> &block_list, const SymbolTable &symbols);
-
 
 } // jit
 } // bohrium
