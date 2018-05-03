@@ -38,5 +38,18 @@ namespace jitk {
 std::vector<Block> get_block_list(const std::vector<bh_instruction*> &instr_list, const ConfigParser &config,
                                   FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep);
 
+/** Create a kernel list based on 'instr_list' and what is in the 'config' and 'fcache'
+ *
+ * @param instr_list The instruction list to base the kernel list on
+ * @param config     The config
+ * @param fcache     The fuse cache
+ * @param stat       Statistics
+ * @param avoid_rank0_sweep  Flag to avoid fusion of sweeped and non-sweeped blocks at the root level
+ * @param monolithic Flag to place all kernels into one
+ * @return Return a list of kernels
+ */
+std::vector<LoopB> get_kernel_list(const std::vector<bh_instruction*> &instr_list, const ConfigParser &config,
+                                   FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep, bool monolithic);
+
 } // jitk
 } // bohrium

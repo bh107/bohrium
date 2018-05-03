@@ -36,66 +36,6 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-namespace {
-std::vector<InstrPtr> order_sweep_by_origin_id(const std::set<InstrPtr> &sweep_set) {
-    vector<InstrPtr> ret;
-    ret.reserve(sweep_set.size());
-    std::copy(sweep_set.begin(),  sweep_set.end(), std::back_inserter(ret));
-    std::sort(ret.begin(), ret.end(),
-              [](const InstrPtr & a, const InstrPtr & b) -> bool
-              {
-                  return a->origin_id > b->origin_id;
-              });
-    return ret;
-}
-
-
-// Adds identity blocks before sweeping blocks
-void add_identity_block(LoopB &loop, int64_t &origin_count) {
-    vector<Block> ret;
-    for (Block &block: loop._block_list) {
-        if (block.isInstr()) {
-            ret.push_back(block);
-            continue;
-        }
-        add_identity_block(block.getLoop(), origin_count);
-
-        const auto ordered_sweeps = order_sweep_by_origin_id(block.getLoop().getSweeps());
-        for (const InstrPtr &sweep_instr: ordered_sweeps) {
-            bh_instruction identity_instr(BH_IDENTITY, {sweep_instr->operand[0]});
-            identity_instr.operand.resize(2);
-            identity_instr.operand[1].base = nullptr;
-            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->type);
-            identity_instr.origin_id = origin_count++;
-            identity_instr.constructor = sweep_instr->constructor;
-            // We have to manually set the sweep axis of an accumulate output to 1. The backend will execute
-            // the for-loop in serial thus only the first element should be the identity.
-            if (bh_opcode_is_accumulate(sweep_instr->opcode)) {
-                identity_instr.operand[0].shape[sweep_instr->sweep_axis()] = 1;
-            }
-
-            if (loop.rank == -1 and bh_is_scalar(&sweep_instr->operand[0])) {
-                ret.emplace_back(identity_instr, 0);
-            } else if (loop.rank == sweep_instr->operand[0].ndim - 1) {
-                ret.emplace_back(identity_instr, sweep_instr->operand[0].ndim);
-            } else {
-                // Let's create and add the identity loop to `ret`
-                vector<InstrPtr> single_instr = {std::make_shared<const bh_instruction>(identity_instr)};
-                ret.push_back(create_nested_block(single_instr, loop.rank+1));
-            }
-
-            bh_instruction sweep_instr_updated{*sweep_instr};
-            sweep_instr_updated.constructor = false;
-            block.getLoop().replaceInstr(sweep_instr, sweep_instr_updated);
-            block.getLoop().metadataUpdate();
-        }
-        ret.push_back(block);
-    }
-    loop._block_list = ret;
-    loop.metadataUpdate();
-}
-}
-
 void EngineCPU::handleExecution(BhIR *bhir) {
 
     const auto texecution = chrono::steady_clock::now();
@@ -129,64 +69,57 @@ void EngineCPU::handleExecution(BhIR *bhir) {
     }
 
     // Let's get the block list
-    vector<Block> block_list = get_block_list(instr_list, comp.config, fcache, stat, false);
+    vector<LoopB> kernel_list = get_kernel_list(instr_list, comp.config, fcache, stat, false, comp.config.defaultGet<bool>("monolithic", true));
 
-    LoopB kernel{-1, 1, {block_list}};
+    for (const LoopB &kernel: kernel_list) {
+        // Let's create the symbol table for the kernel
+        const SymbolTable symbols(kernel,
+                                  kernel_config["use_volatile"],
+                                  kernel_config["strides_as_var"],
+                                  kernel_config["index_as_var"],
+                                  kernel_config["const_as_var"]
+        );
 
-//    cout << "before add_identity_block " << endl;
-//    cout << kernel._block_list;
-    int64_t origin_count = 100000;
-    add_identity_block(kernel, origin_count);
-//    cout << kernel._block_list;
+        stat.record(symbols);
 
-    // Let's create the symbol table for the kernel
-    const SymbolTable symbols(kernel,
-                              kernel_config["use_volatile"],
-                              kernel_config["strides_as_var"],
-                              kernel_config["index_as_var"],
-                              kernel_config["const_as_var"]
-    );
+        if (not kernel.isSystemOnly()) { // We can skip this step if the kernel does no computation
+            // Create the constant vector
+            vector<const bh_instruction *> constants;
+            constants.reserve(symbols.constIDs().size());
+            for (const InstrPtr &instr: symbols.constIDs()) {
+                constants.push_back(&(*instr));
+            }
 
-    stat.record(symbols);
-
-    if (not kernel.isSystemOnly()) { // We can skip this step if the kernel does no computation
-        // Create the constant vector
-        vector<const bh_instruction *> constants;
-        constants.reserve(symbols.constIDs().size());
-        for (const InstrPtr &instr: symbols.constIDs()) {
-            constants.push_back(&(*instr));
-        }
-
-        const auto lookup = codegen_cache.lookup(kernel, symbols);
-        if (not lookup.first.empty()) {
-            // In debug mode, we check that the cached source code is correct
-            #ifndef NDEBUG
+            const auto lookup = codegen_cache.lookup(kernel, symbols);
+            if (not lookup.first.empty()) {
+                // In debug mode, we check that the cached source code is correct
+                #ifndef NDEBUG
+                    stringstream ss;
+                    writeKernel(kernel, symbols, {}, lookup.second, ss);
+                    if (ss.str().compare(lookup.first) != 0) {
+                        cout << "\nCached source code: \n" << lookup.first;
+                        cout << "\nReal source code: \n" << ss.str();
+                        assert(1 == 2);
+                    }
+                #endif
+                execute(symbols, lookup.first, lookup.second, constants);
+            } else {
+                const auto tcodegen = chrono::steady_clock::now();
                 stringstream ss;
                 writeKernel(kernel, symbols, {}, lookup.second, ss);
-                if (ss.str().compare(lookup.first) != 0) {
-                    cout << "\nCached source code: \n" << lookup.first;
-                    cout << "\nReal source code: \n" << ss.str();
-                    assert(1 == 2);
-                }
-            #endif
-            execute(symbols, lookup.first, lookup.second, constants);
-        } else {
-            const auto tcodegen = chrono::steady_clock::now();
-            stringstream ss;
-            writeKernel(kernel, symbols, {}, lookup.second, ss);
-            string source = ss.str();
-            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
+                string source = ss.str();
+                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 
-            execute(symbols, source, lookup.second, constants);
-            codegen_cache.insert(std::move(source), kernel, symbols);
+                execute(symbols, source, lookup.second, constants);
+                codegen_cache.insert(std::move(source), kernel, symbols);
+            }
+        }
+
+        // Finally, let's cleanup
+        for (bh_base *base: kernel.getAllFrees()) {
+            bh_data_free(base);
         }
     }
-
-    // Finally, let's cleanup
-    for (bh_base *base: kernel.getAllFrees()) {
-        bh_data_free(base);
-    }
-
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
 }
 
