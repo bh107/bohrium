@@ -39,8 +39,8 @@ private:
     std::set<const bh_base*> _tmps; // Set of temporary arrays
     std::set<const bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
     std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
-    std::set<bh_view> _omp_atomic; // Set of arrays that should be guarded by OpenMP atomic
-    std::set<bh_view> _omp_critical; // Set of arrays that should be guarded by OpenMP critical
+    std::set<InstrPtr> _omp_atomic; // Set of instructions that should be guarded by OpenMP atomic
+    std::set<InstrPtr> _omp_critical; // Set of instructions that should be guarded by OpenMP critical
     std::set<bh_base*> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
     std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
     std::set<bh_view, OffsetAndStrides_less> _declared_idx; // Set of indexes that have been locally declared
@@ -86,7 +86,7 @@ public:
     bool isTmp(const bh_base *base) const {
         if (util::exist(_tmps, base)) {
             return true;
-        } else if (parent != NULL) {
+        } else if (parent != nullptr) {
             return parent->isTmp(base);
         } else {
             return false;
@@ -97,7 +97,7 @@ public:
     bool isScalarReplaced_R(const bh_view &view) const {
         if (util::exist(_scalar_replacements_r, view)) {
             return true;
-        } else if (parent != NULL) {
+        } else if (parent != nullptr) {
             return parent->isScalarReplaced_R(view);
         } else {
             return false;
@@ -106,7 +106,7 @@ public:
     bool isScalarReplaced_RW(const bh_base *base) const {
         if (util::exist(_scalar_replacements_rw, base)) {
             return true;
-        } else if (parent != NULL) {
+        } else if (parent != nullptr) {
             return parent->isScalarReplaced_RW(base);
         } else {
             return false;
@@ -123,29 +123,29 @@ public:
         return not (isTmp(view.base) or isScalarReplaced(view));
     }
 
-    // Insert and check if 'base' should be guarded by OpenMP atomic
-    void insertOpenmpAtomic(const bh_view &view) {
-        _omp_atomic.insert(view);
+    // Insert and check if 'instr' should be guarded by OpenMP atomic
+    void insertOpenmpAtomic(const InstrPtr &instr) {
+        _omp_atomic.insert(instr);
     }
-    bool isOpenmpAtomic(const bh_view &view) const {
-        if (_omp_atomic.find(view) != _omp_atomic.end()) {
+    bool isOpenmpAtomic(const InstrPtr &instr) const {
+        if (_omp_atomic.find(instr) != _omp_atomic.end()) {
             return true;
-        } else if (parent != NULL) {
-            return parent->isOpenmpAtomic(view);
+        } else if (parent != nullptr) {
+            return parent->isOpenmpAtomic(instr);
         } else {
             return false;
         }
     }
 
     // Insert and check if 'base' should be guarded by OpenMP critical
-    void insertOpenmpCritical(const bh_view &view) {
-        _omp_critical.insert(view);
+    void insertOpenmpCritical(const InstrPtr &instr) {
+        _omp_critical.insert(instr);
     }
-    bool isOpenmpCritical(const bh_view &view) const {
-        if (_omp_critical.find(view) != _omp_critical.end()) {
+    bool isOpenmpCritical(const InstrPtr &instr) const {
+        if (_omp_critical.find(instr) != _omp_critical.end()) {
             return true;
-        } else if (parent != NULL) {
-            return parent->isOpenmpCritical(view);
+        } else if (parent != nullptr) {
+            return parent->isOpenmpCritical(instr);
         } else {
             return false;
         }
@@ -155,7 +155,7 @@ public:
     bool isBaseDeclared(const bh_base *base) const {
         if (util::exist_nconst(_declared_base, base)) {
             return true;
-        } else if (parent != NULL) {
+        } else if (parent != nullptr) {
             return parent->isBaseDeclared(base);
         } else {
             return false;
@@ -164,7 +164,7 @@ public:
     bool isViewDeclared(const bh_view &view) const {
         if (util::exist(_declared_view, view)) {
             return true;
-        } else if (parent != NULL) {
+        } else if (parent != nullptr) {
             return parent->isViewDeclared(view);
         } else {
             return false;
@@ -178,7 +178,7 @@ public:
     bool isIdxDeclared(const bh_view &index) const {
         if (util::exist(_declared_idx, index)) {
             return true;
-        } else if (parent != NULL) {
+        } else if (parent != nullptr) {
             return parent->isIdxDeclared(index);
         } else {
             return false;

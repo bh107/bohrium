@@ -129,10 +129,10 @@ void Engine::writeBlockBody(const jitk::SymbolTable &symbols,
                 const InstrPtr instr = b.getInstr();
                 if (not bh_opcode_is_system(instr->opcode)) {
                     if (instr->operand.size() > 0) {
-                        if (scope.isOpenmpAtomic(instr->operand[0])) {
+                        if (scope.isOpenmpAtomic(instr)) {
                             util::spaces(out, 4 + b.rank() * 4);
                             out << "#pragma omp atomic\n";
-                        } else if (scope.isOpenmpCritical(instr->operand[0])) {
+                        } else if (scope.isOpenmpCritical(instr)) {
                             util::spaces(out, 4 + b.rank() * 4);
                             out << "#pragma omp critical\n";
                         }

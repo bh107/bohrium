@@ -275,9 +275,9 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
             if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
                 openmp_reductions.push_back(instr);
             } else if (openmp_atomic_compatible(instr->opcode)) {
-                scope.insertOpenmpAtomic(view);
+                scope.insertOpenmpAtomic(instr);
             } else {
-                scope.insertOpenmpCritical(view);
+                scope.insertOpenmpCritical(instr);
             }
         }
     }

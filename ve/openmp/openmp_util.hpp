@@ -72,10 +72,8 @@ bool simd_compatible(const bohrium::jitk::LoopB &block,
 
     // An OpenMP SIMD loop does not support ANY OpenMP pragmas
     for (bohrium::jitk::InstrPtr instr: block.getAllInstr()) {
-        for(const bh_view *view: instr->get_views()) {
-            if (scope.isOpenmpAtomic(*view) or scope.isOpenmpCritical(*view))
-                return false;
-        }
+        if (scope.isOpenmpAtomic(instr) or scope.isOpenmpCritical(instr))
+            return false;
     }
     return true;
 }
