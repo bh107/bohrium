@@ -53,15 +53,6 @@ public:
     void handleExecution(BhIR *bhir) override;
 
     void handleExtmethod(BhIR *bhir) override;
-
-private:
-
-    /** Create and execute a kernel based on `block`
-     *
-     * @param kernel_config A map of configuration options
-     * @param block         A special block of rank -1
-     */
-    void createKernel(std::map<std::string, bool> &kernel_config, const Block &block);
 };
 
 }
