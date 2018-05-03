@@ -479,7 +479,7 @@ void EngineOpenCL::delBuffer(bh_base* base) {
     }
 }
 
-void EngineOpenCL::writeKernel(const jitk::Block &block,
+void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
                                const jitk::SymbolTable &symbols,
                                const vector<uint64_t> &thread_stack,
                                uint64_t codegen_hash,
@@ -511,7 +511,7 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
     }
 
     // Write the block that makes up the body of 'execute()'
-    writeBlockFrame(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
+    writeBlockFrame(symbols, nullptr, kernel, thread_stack, true, ss);
 
     ss << "}\n\n";
 }

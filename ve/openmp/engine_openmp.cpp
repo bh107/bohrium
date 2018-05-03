@@ -438,14 +438,13 @@ void EngineOpenMP::writeBlock(const jitk::SymbolTable &symbols,
     }
 }
 
-void EngineOpenMP::writeKernel(const jitk::Block &block,
+void EngineOpenMP::writeKernel(const LoopB &kernel,
                                const jitk::SymbolTable &symbols,
                                const std::vector<bh_base *> &kernel_temps,
                                uint64_t codegen_hash,
                                std::stringstream &ss) {
 
-    assert(block.rank() == -1);
-    assert(not block.isInstr());
+    assert(kernel.rank == -1);
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -473,7 +472,7 @@ void EngineOpenMP::writeKernel(const jitk::Block &block,
     }
     ss << "\n";
 
-    writeBlock(symbols, nullptr, block.getLoop(), {}, false, ss);
+    writeBlock(symbols, nullptr, kernel, {}, false, ss);
 
     // Write frees of the kernel temporaries
     ss << "\n";

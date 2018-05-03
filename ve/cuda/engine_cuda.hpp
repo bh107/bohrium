@@ -106,7 +106,7 @@ public:
                  const std::vector<uint64_t> &thread_stack,
                  const std::vector<const bh_instruction*> &constants);
 
-    void writeKernel(const jitk::Block &block,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
                      const std::vector<uint64_t> &thread_stack,
                      uint64_t codegen_hash,

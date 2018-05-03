@@ -191,7 +191,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
             // In debug mode, we check that the cached source code is correct
             #ifndef NDEBUG
                 stringstream ss;
-                writeKernel(block, symbols, {}, lookup.second, ss);
+                writeKernel(block.getLoop(), symbols, {}, lookup.second, ss);
                 if (ss.str().compare(lookup.first) != 0) {
                     cout << "\nCached source code: \n" << lookup.first;
                     cout << "\nReal source code: \n" << ss.str();
@@ -202,7 +202,7 @@ void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const B
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block, symbols, {}, lookup.second, ss);
+            writeKernel(block.getLoop(), symbols, {}, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
 

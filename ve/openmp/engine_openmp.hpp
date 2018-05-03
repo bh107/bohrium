@@ -60,9 +60,9 @@ public:
                  uint64_t codegen_hash,
                  const std::vector<const bh_instruction*> &constants) override;
 
-    void writeKernel(const jitk::Block &block,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
-                     const std::vector<bh_base*> &kernel_temps,
+                     const std::vector<bh_base *> &kernel_temps,
                      uint64_t codegen_hash,
                      std::stringstream &ss) override;
 

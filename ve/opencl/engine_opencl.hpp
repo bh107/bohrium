@@ -97,7 +97,7 @@ public:
     // Delete a buffer
     void delBuffer(bh_base *base) override;
 
-    void writeKernel(const jitk::Block &block,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
                      const std::vector<uint64_t> &thread_stack,
                      uint64_t codegen_hash,

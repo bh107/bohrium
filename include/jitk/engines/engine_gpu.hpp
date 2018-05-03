@@ -73,7 +73,7 @@ public:
 
     virtual void delBuffer(bh_base *base) = 0;
 
-    virtual void writeKernel(const Block &block,
+    virtual void writeKernel(const LoopB &kernel,
                              const SymbolTable &symbols,
                              const std::vector<uint64_t> &thread_stack,
                              uint64_t codegen_hash,
@@ -281,7 +281,7 @@ private:
             // In debug mode, we check that the cached source code is correct
 #ifndef NDEBUG
             stringstream ss;
-            writeKernel(block, symbols, thread_stack, lookup.second, ss);
+            writeKernel(block.getLoop(), symbols, thread_stack, lookup.second, ss);
             if (ss.str().compare(lookup.first) != 0) {
                 cout << "\nCached source code: \n" << lookup.first;
                 cout << "\nReal source code: \n" << ss.str();
@@ -292,7 +292,7 @@ private:
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block, symbols, thread_stack, lookup.second, ss);
+            writeKernel(block.getLoop(), symbols, thread_stack, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
             execute(symbols, source, lookup.second, thread_stack, constants);
