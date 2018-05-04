@@ -52,7 +52,7 @@ SymbolTable::SymbolTable(const LoopB &kernel,
         }
         if (const_as_var) {
             assert(instr->origin_id >= 0);
-            if (instr->has_constant() and not bh_opcode_is_sweep(instr->opcode)) {
+            if (instr->has_constant()) {
                 _constant_set.insert(instr);
             }
         }

@@ -509,10 +509,7 @@ void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
         }
         ss << "\n";
     }
-
-    // Write the block that makes up the body of 'execute()'
-    writeBlockFrame(symbols, nullptr, kernel, thread_stack, true, ss);
-
+    writeBlock(symbols, nullptr, kernel, thread_stack, true, ss);
     ss << "}\n\n";
 }
 
@@ -520,7 +517,6 @@ void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
 void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
-                                  bool loop_is_peeled,
                                   const std::vector<uint64_t> &thread_stack,
                                   std::stringstream &out) {
     // Write the for-loop header
@@ -545,11 +541,7 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
             out << "{const " << writeType(bh_type::UINT64) << " " << itername << " = g" << block.rank << ";";
         }
     } else {
-        out << "for (" << writeType(bh_type::UINT64) << " " << itername;
-        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-            out << " = 1; ";
-        else
-            out << " = 0; ";
+        out << "for (" << writeType(bh_type::UINT64) << " " << itername << " = 0; ";
         out << itername << " < " << block.size << "; ++" << itername << ") {";
     }
     out << "\n";

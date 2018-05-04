@@ -220,7 +220,6 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override {
         // Write the for-loop header
@@ -230,11 +229,7 @@ public:
             assert(block._sweeps.size() == 0);
             out << "{ // Threaded block (ID " << itername << ")";
         } else {
-            out << "for(" << writeType(bh_type::INT64) << " " << itername;
-            if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-                out << " = 1; ";
-            else
-                out << " = 0; ";
+            out << "for(" << writeType(bh_type::INT64) << " " << itername << " = 0; ";
             out << itername << " < " << block.size << "; ++" << itername << ") {";
         }
         out << "\n";

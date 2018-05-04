@@ -43,7 +43,7 @@ vector<Block> apply_pre_fusion(const ConfigParser &config, const vector<bh_instr
     }
 }
 
-// Apply the list of tranformers specified by the names in 'transformer_names'
+// Apply the list of transformer specified by the names in 'transformer_names'
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 void apply_transformers(const ConfigParser &config, vector<Block> &block_list, const vector<string> &transformer_names,
                         bool avoid_rank0_sweep) {
@@ -70,6 +70,7 @@ void apply_transformers(const ConfigParser &config, vector<Block> &block_list, c
     }
 }
 
+// For better codegen cache utilization, we make sure that sweep instructions comes in a consisten order
 std::vector<InstrPtr> order_sweep_by_origin_id(const std::set<InstrPtr> &sweep_set) {
     vector<InstrPtr> ret;
     ret.reserve(sweep_set.size());
@@ -83,7 +84,8 @@ std::vector<InstrPtr> order_sweep_by_origin_id(const std::set<InstrPtr> &sweep_s
 }
 
 
-// Adds identity blocks before sweeping blocks
+// Help function that adds identity blocks before sweeping blocks.
+// This version update a block rather then return a kernel list (see the function belove)
 void add_identity_block(LoopB &loop, int64_t &origin_count) {
     vector<Block> ret;
     for (Block &block: loop._block_list) {
@@ -128,7 +130,8 @@ void add_identity_block(LoopB &loop, int64_t &origin_count) {
     loop.metadataUpdate();
 }
 
-// Adds identity blocks before sweeping blocks
+// Help function that adds identity blocks before sweeping blocks.
+// This version creates kernels for each identity+sweep block set
 vector<LoopB> add_identity_block(vector<Block> &block_list, int64_t &origin_count) {
     vector<LoopB> ret;
     for (Block &block: block_list) {
@@ -171,19 +174,11 @@ vector<LoopB> add_identity_block(vector<Block> &block_list, int64_t &origin_coun
     return ret;
 }
 
-}
-
+// Help functions that create a list of block nest (each nest starting a rank 0) based on `instr_list`
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
                              FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep) {
-
     vector<Block> block_list;
-
-    // Assign origin ids to all instructions starting at zero.
-    int64_t count = 0;
-    for (bh_instruction *instr: instr_list) {
-        instr->origin_id = count++;
-    }
-
     bool hit;
     tie(block_list, hit) = fcache.get(instr_list);
     if (not hit) {
@@ -230,19 +225,38 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
     #endif
     return block_list;
 }
+}
 
 
 vector<LoopB> get_kernel_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
                               FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep, bool monolithic) {
-    int64_t origin_count = 100000;
+    // Assign origin ids to all instructions starting at zero.
+    int64_t origin_count = 0;
+    for (bh_instruction *instr: instr_list) {
+        instr->origin_id = origin_count++;
+    }
+
     vector<Block> block_list = get_block_list(instr_list, config, fcache, stat, avoid_rank0_sweep);
-    if (monolithic) {
+
+    vector<LoopB> ret;
+    if (avoid_rank0_sweep) {
+        for (Block &b: block_list) {
+            if (b.isInstr() or not b.getLoop()._sweeps.empty()) {
+                ret.emplace_back(LoopB{-1, 1, {std::move(b)}});
+            } else {
+                LoopB kernel{-1, 1, {std::move(b)}};
+                add_identity_block(kernel, origin_count);
+                ret.emplace_back(std::move(kernel));
+            }
+        }
+    } else if (monolithic) {
         LoopB kernel{-1, 1, {std::move(block_list)}};
         add_identity_block(kernel, origin_count);
-        return {kernel};
+        ret = {std::move(kernel)};
     } else {
-        return add_identity_block(block_list, origin_count);
+        ret = add_identity_block(block_list, origin_count);
     }
+    return ret;
 }
 
 } // jitk

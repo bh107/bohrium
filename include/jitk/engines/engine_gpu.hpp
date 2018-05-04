@@ -63,7 +63,7 @@ public:
             num_threads_round_robin(comp.config.defaultGet<bool>("num_threads_round_robin", false)) {
     }
 
-    ~EngineGPU() override {}
+    ~EngineGPU() override = default;
 
     virtual void copyToHost(const std::set<bh_base *> &bases) = 0;
 
@@ -119,16 +119,9 @@ public:
             }
         }
 
-        // Let's get the block list
-        // NB: 'avoid_rank0_sweep' is set to true when we have a child to offload to.
-        const vector<jitk::Block> block_list = get_block_list(instr_list, comp.config, fcache, stat,
-                                                              &(comp.child) != nullptr);
-
-        for (const jitk::Block &block: block_list) {
-            assert(not block.isInstr());
-            // Since GPUs can only handle one loop-nest, we place each `block` in its own kernel.
-            const LoopB kernel{-1, 1, {block}};
-
+        // Let's get the kernel list
+        // NB: 'avoid_rank0_sweep' is set to true since GPUs cannot reduce over the outermost block
+        for (const jitk::LoopB &kernel: get_kernel_list(instr_list, comp.config, fcache, stat, true, false)) {
             // Let's create the symbol table for the kernel
             const jitk::SymbolTable symbols(
                     kernel,
@@ -140,20 +133,20 @@ public:
             stat.record(symbols);
 
             // We can skip a lot of steps if the kernel does no computation
-            const bool kernel_is_computing = not block.isSystemOnly();
+            const bool kernel_is_computing = not kernel.isSystemOnly();
 
             // Find the parallel blocks
             std::vector<uint64_t> thread_stack;
-            {
-                uint64_t nranks = parallel_ranks(block.getLoop()).first;
+            if (kernel._block_list.size() == 1 and kernel_is_computing) {
+                uint64_t nranks = parallel_ranks(kernel._block_list[0].getLoop()).first;
                 if (num_threads > 0 and nranks > 0) {
-                    uint64_t nthds = static_cast<uint64_t >(block.getLoop().size);
+                    uint64_t nthds = static_cast<uint64_t>(kernel.size);
                     if (nthds > num_threads) {
                         nthds = num_threads;
                     }
                     thread_stack.push_back(nthds);
                 } else {
-                    auto first_block_list = get_first_loop_blocks(block.getLoop());
+                    auto first_block_list = get_first_loop_blocks(kernel._block_list[0].getLoop());
                     for (uint64_t i = 0; i < nranks; ++i) {
                         thread_stack.push_back(first_block_list[i]->size);
                     }
@@ -161,19 +154,19 @@ public:
             }
 
             // We might have to offload the execution to the CPU
-            if (thread_stack.empty() and kernel_is_computing) {
-                cpuOffload(comp, bhir, block, symbols);
+            if (thread_stack.empty()) {
+                cpuOffload(comp, bhir, kernel, symbols);
             } else {
                 // Let's execute the kernel
                 if (kernel_is_computing) {
-                    executeKernel(block, symbols, thread_stack);
+                    executeKernel(kernel, symbols, thread_stack);
                 }
 
                 // Let's copy sync'ed arrays back to the host
                 copyToHost(bhir->getSyncs());
 
                 // Let's free device buffers
-                for (bh_base *base: block.getLoop().getAllFrees()) {
+                for (bh_base *base: kernel.getAllFrees()) {
                     delBuffer(base);
                     bh_data_free(base);
                 }
@@ -221,7 +214,7 @@ public:
 private:
     void cpuOffload(component::ComponentImpl &comp,
                     BhIR *bhir,
-                    const Block &block,
+                    const LoopB &kernel,
                     const SymbolTable &symbols) {
         using namespace std;
 
@@ -236,21 +229,21 @@ private:
         auto toffload = chrono::steady_clock::now();
 
         // Let's copy all non-temporary to the host
-        const vector<bh_base *> v = symbols.getParams();
+        const vector<bh_base *> &v = symbols.getParams();
         copyToHost(set<bh_base *>(v.begin(), v.end()));
 
         // Let's free device buffers
-        for (bh_base *base: block.getLoop().getAllFrees()) {
+        for (bh_base *base: kernel.getAllFrees()) {
             delBuffer(base);
         }
 
         // Let's send the kernel instructions to our child
         vector<bh_instruction> child_instr_list;
-        for (const jitk::InstrPtr &instr: block.getAllInstr()) {
+        for (const jitk::InstrPtr &instr: kernel.getAllInstr()) {
             child_instr_list.push_back(*instr);
         }
         // Notice, we have to re-create free instructions
-        for (const bh_base *base: block.getLoop().getAllFrees()) {
+        for (const bh_base *base: kernel.getAllFrees()) {
             vector<bh_view> operands(1);
             bh_assign_complete_base(&operands[0], const_cast<bh_base *>(base));
             bh_instruction instr(BH_FREE, std::move(operands));
@@ -261,12 +254,12 @@ private:
         stat.time_offload += chrono::steady_clock::now() - toffload;
     }
 
-    void executeKernel(const Block &block,
+    void executeKernel(const LoopB &kernel,
                        const SymbolTable &symbols,
                        const std::vector<uint64_t> &thread_stack) {
         using namespace std;
         // We need a memory buffer on the device for each non-temporary array in the kernel
-        const vector<bh_base *> v = symbols.getParams();
+        const vector<bh_base *> &v = symbols.getParams();
         copyToDevice(set<bh_base *>(v.begin(), v.end()));
 
         // Create the constant vector
@@ -276,27 +269,27 @@ private:
             constants.push_back(&(*instr));
         }
 
-        const auto lookup = codegen_cache.lookup(block.getLoop(), symbols);
+        const auto lookup = codegen_cache.lookup(kernel, symbols);
         if (not lookup.first.empty()) {
             // In debug mode, we check that the cached source code is correct
-#ifndef NDEBUG
-            stringstream ss;
-            writeKernel(block.getLoop(), symbols, thread_stack, lookup.second, ss);
-            if (ss.str().compare(lookup.first) != 0) {
-                cout << "\nCached source code: \n" << lookup.first;
-                cout << "\nReal source code: \n" << ss.str();
-                assert(1 == 2);
-            }
-#endif
+            #ifndef NDEBUG
+                stringstream ss;
+                writeKernel(kernel, symbols, thread_stack, lookup.second, ss);
+                if (ss.str().compare(lookup.first) != 0) {
+                    cout << "\nCached source code: \n" << lookup.first;
+                    cout << "\nReal source code: \n" << ss.str();
+                    assert(1 == 2);
+                }
+            #endif
             execute(symbols, lookup.first, lookup.second, thread_stack, constants);
         } else {
             const auto tcodegen = chrono::steady_clock::now();
             stringstream ss;
-            writeKernel(block.getLoop(), symbols, thread_stack, lookup.second, ss);
+            writeKernel(kernel, symbols, thread_stack, lookup.second, ss);
             string source = ss.str();
             stat.time_codegen += chrono::steady_clock::now() - tcodegen;
             execute(symbols, source, lookup.second, thread_stack, constants);
-            codegen_cache.insert(std::move(source), block.getLoop(), symbols);
+            codegen_cache.insert(std::move(source), kernel, symbols);
         }
     }
 };

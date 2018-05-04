@@ -75,16 +75,8 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
-
-    void writeBlock(const jitk::SymbolTable &symbols,
-                       const jitk::Scope *parent_scope,
-                       const jitk::LoopB &block,
-                       const std::vector<uint64_t> &thread_stack,
-                       bool opencl,
-                       std::stringstream &out);
 
     // Return a YAML string describing this component
     std::string info() const override;

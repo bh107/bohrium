@@ -107,7 +107,6 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
 

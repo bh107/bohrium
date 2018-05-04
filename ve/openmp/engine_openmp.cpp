@@ -228,15 +228,10 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
 void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
-                                  bool loop_is_peeled,
                                   const vector<uint64_t> &thread_stack,
                                   stringstream &out) {
     // Let's write the OpenMP loop header
     int64_t for_loop_size = block.size;
-    // If the for-loop has been peeled, its size is one less
-    if (block._sweeps.size() > 0 and loop_is_peeled) {
-        --for_loop_size;
-    }
     // No need to parallel one-sized loops
     if (for_loop_size > 1) {
         writeHeader(symbols, scope, block, out);
@@ -248,13 +243,7 @@ void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
         t << "i" << block.rank;
         itername = t.str();
     }
-    out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0 and loop_is_peeled) {
-        // If the for-loop has been peeled, we should start at 1
-        out << " = 1; ";
-    } else {
-        out << " = 0; ";
-    }
+    out << "for(uint64_t " << itername << " = 0; ";
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
@@ -314,127 +303,6 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
     if (not ss_str.empty()) {
         out << "#pragma omp" << ss_str << "\n";
         util::spaces(out, 4 + block.rank * 4);
-    }
-}
-
-
-void EngineOpenMP::writeBlock(const jitk::SymbolTable &symbols,
-                              const jitk::Scope *parent_scope,
-                              const jitk::LoopB &kernel,
-                              const std::vector<uint64_t> &thread_stack,
-                              bool opencl,
-                              std::stringstream &out) {
-
-    if (kernel.isSystemOnly()) {
-        out << "// Removed loop with only system instructions\n";
-        return;
-    }
-
-    std::set<jitk::InstrPtr> sweeps_in_child;
-    for (const jitk::Block &sub_block: kernel._block_list) {
-        if (not sub_block.isInstr()) {
-            sweeps_in_child.insert(sub_block.getLoop()._sweeps.begin(), sub_block.getLoop()._sweeps.end());
-        }
-    }
-    // Order all sweep instructions by the viewID of their first operand.
-    // This makes the source of the kernels more identical, which improve the code and compile caches.
-    const vector<jitk::InstrPtr> ordered_block_sweeps = order_sweep_set(sweeps_in_child, symbols);
-
-    // Let's find the local temporary arrays and the arrays to scalar replace
-    const set<bh_base *> &local_tmps = kernel.getLocalTemps();
-
-    // We always scalar replace reduction outputs that reduces over the innermost axis
-    vector<const bh_view *> scalar_replaced_reduction_outputs;
-    for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
-        if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
-            if (local_tmps.find(instr->operand[0].base) == local_tmps.end()) {
-                scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
-            }
-        }
-    }
-
-    // Let's scalar replace input-only arrays that are used multiple times
-    vector<const bh_view *> srio = jitk::scalar_replaced_input_only(kernel, parent_scope, local_tmps);
-    jitk::Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, srio);
-
-    // Write temporary and scalar replaced array declarations
-    vector<const bh_view*> scalar_replaced_to_write_back;
-    for (const jitk::Block &block: kernel._block_list) {
-        if (block.isInstr()) {
-            const jitk::InstrPtr instr = block.getInstr();
-            for (const bh_view *view: instr->get_views()) {
-                if (not scope.isDeclared(*view)) {
-                    if (scope.isTmp(view->base)) {
-                        util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << "\n";
-                    } else if (scope.isScalarReplaced(*view)) {
-                        util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                        write_array_subscription(scope, *view, out);
-                        out << ";";
-                        out << "\n";
-                        if (scope.isScalarReplaced_RW(view->base)) {
-                            scalar_replaced_to_write_back.push_back(view);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //Let's declare indexes if we are not at the kernel level (rank == -1)
-    if (kernel.rank >= 0) {
-        for (const jitk::Block &block: kernel._block_list) {
-            if (block.isInstr()) {
-                const jitk::InstrPtr instr = block.getInstr();
-                for (const bh_view *view: instr->get_views()) {
-                    if (symbols.existIdxID(*view) and scope.isArray(*view)) {
-                        if (not scope.isIdxDeclared(*view)) {
-                            util::spaces(out, 8 + kernel.rank * 4);
-                            scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
-                            out << "\n";
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    for (const Block &b: kernel._block_list) {
-        if (b.isInstr()) { // Finally, let's write the instruction
-            const InstrPtr instr = b.getInstr();
-            if (not bh_opcode_is_system(instr->opcode)) {
-                if (instr->operand.size() > 0) {
-                    if (scope.isOpenmpAtomic(instr)) {
-                        util::spaces(out, 4 + b.rank() * 4);
-                        out << "#pragma omp atomic\n";
-                    } else if (scope.isOpenmpCritical(instr)) {
-                        util::spaces(out, 4 + b.rank() * 4);
-                        out << "#pragma omp critical\n";
-                    }
-                }
-                util::spaces(out, 4 + b.rank() * 4);
-                write_instr(scope, *instr, out);
-            }
-        } else {
-            util::spaces(out, 4 + b.rank() * 4);
-            loopHeadWriter(symbols, scope, b.getLoop(), false, thread_stack, out);
-            writeBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-            util::spaces(out, 4 + b.rank() * 4);
-            out << "}\n";
-        }
-    }
-
-    // Let's copy the scalar replaced reduction outputs back to the original array
-    for (const bh_view *view: scalar_replaced_to_write_back) {
-        util::spaces(out, 8 + kernel.rank * 4);
-        out << "a" << symbols.baseID(view->base);
-        write_array_subscription(scope, *view, out, true);
-        out << " = ";
-        scope.getName(*view, out);
-        out << ";\n";
     }
 }
 
