@@ -50,7 +50,7 @@ class Impl : public ComponentVE {
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
                             engine(*this, stat),
-                            to_col_major(config.defaultGet<bool>("to_col_major", false)) {}
+                            to_col_major(config.defaultGet<bool>("to_col_major", true)) {}
     ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
