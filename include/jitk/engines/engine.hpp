@@ -90,7 +90,7 @@ public:
         }
     }
 
-    virtual ~Engine() {}
+    virtual ~Engine() = default;
 
     /** Return general information of the engine (should be human readable) */
     virtual std::string info() const = 0;
@@ -143,48 +143,35 @@ protected:
                                               std::stringstream &ss,
                                               const char *array_type_prefix);
 
-    virtual void writeBlockBody(const jitk::SymbolTable &symbols,
-                                jitk::Scope &scope,
-                                const std::vector<Block> &block_list,
-                                const std::vector<uint64_t> &thread_stack,
-                                int rank,
-                                bool opencl,
-                                std::stringstream &out);
-
-    /** Writes a block frame, which corresponds to a parallel for-loop.
+    /** Writes a kernel, which corresponds to a set of for-loop nest.
      *
      * @param symbols       The symbol table
      * @param parent_scope  The callers scope object or null when there is no parant
-     * @param block         The block to write
-     * @param thread_stack  A vector that specifies the amount of parallelism in each nest level
-     * @param opencl        Is this a OpenCL kernel?
+     * @param kernel        The kernel (LoopB block with rank -1) to write
+     * @param thread_stack  A vector that specifies the amount of parallelism in each nest level (excl. rank -1)
+     * @param opencl        Is this a OpenCL/CUDA kernel?
      * @param out           The stream output
      */
-    virtual void writeBlockFrame(const jitk::SymbolTable &symbols,
-                                 const jitk::Scope *parent_scope,
-                                 const jitk::LoopB &block,
-                                 const std::vector<uint64_t> &thread_stack,
-                                 bool opencl,
-                                 std::stringstream &out);
+    virtual void writeBlock(const SymbolTable &symbols,
+                            const Scope *parent_scope,
+                            const LoopB &kernel,
+                            const std::vector<uint64_t> &thread_stack,
+                            bool opencl,
+                            std::stringstream &out);
 
-
+    /** Write a loop header
+     *
+     * @param symbols       The symbol table
+     * @param scope         The scope
+     * @param block         The block
+     * @param thread_stack  A vector that specifies the amount of parallelism in each nest level (excl. rank -1)
+     * @param out           The stream output
+     */
     virtual void loopHeadWriter(const SymbolTable &symbols,
                                 Scope &scope,
                                 const LoopB &block,
-                                bool loop_is_peeled,
                                 const std::vector<uint64_t> &thread_stack,
                                 std::stringstream &out) = 0;
-
-private:
-    virtual bool needToPeel(const std::vector<InstrPtr> &ordered_block_sweeps, const Scope &scope) {
-        for (const InstrPtr &instr: ordered_block_sweeps) {
-            const bh_view &v = instr->operand[0];
-            if (not(scope.isScalarReplaced(v) or scope.isTmp(v.base))) {
-                return true;
-            }
-        }
-        return false;
-    }
 };
 
 }

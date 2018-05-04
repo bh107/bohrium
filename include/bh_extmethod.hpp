@@ -32,7 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace extmethod {
 
-/* A extmethod in Bohrium is a function that implement a specific instruction.
+/** A extmethod in Bohrium is a function that implement a specific instruction.
  *
  * Requirements:
  *   - A extmethod must be compiled into a shared library e.g. .so, .dylib, or .dll.
@@ -55,9 +55,10 @@ namespace extmethod {
 // Representation of a extmethod implementation, which is a virtual class
 // that all extension methods should implement
 class ExtmethodImpl {
-  public:
+public:
     ExtmethodImpl() = default;
-    virtual ~ExtmethodImpl() {};
+
+    virtual ~ExtmethodImpl() = default;
 
     /* Execute an instruction
      *
@@ -65,59 +66,60 @@ class ExtmethodImpl {
      * @arg   Additional component specific argument
      * Throws exceptions on error
      */
-    virtual void execute(bh_instruction *instr, void* arg) = 0;
+    virtual void execute(bh_instruction *instr, void *arg) = 0;
 };
 
 // Representation of an extmethod interface, which consist of a create()
 // and destroy() function.
 class ExtmethodFace {
-  private:
+private:
     // The name of the extmethod
     std::string _name;
     // Shared library handle
-    void* _lib_handle;
+    void *_lib_handle;
+
     // Function pointer to the extmethod's create function
-    ExtmethodImpl* (*_create)();
+    ExtmethodImpl *(*_create)();
+
     // Function pointer to the extmethod's destroy function
     void (*_destroy)(ExtmethodImpl *extmethod);
+
     // Pointer to the implementation of the extension method
     ExtmethodImpl *_implementation;
-  public:
+public:
     // Constructor that takes the config file of the parent component and
     // the name of the extmethod
     ExtmethodFace(const ConfigParser &parent_config, const std::string &name);
+
     ~ExtmethodFace();
 
     // Move Constructor
-    ExtmethodFace(ExtmethodFace &&other) {
-        if (this != &other)
-        {
+    ExtmethodFace(ExtmethodFace &&other) noexcept {
+        if (this != &other) {
             _name = other._name;
             _lib_handle = other._lib_handle;
             _create = other._create;
             _destroy = other._destroy;
             _implementation = other._implementation;
             other._name.clear();
-            other._lib_handle = NULL;
-            other._create = NULL;
-            other._destroy = NULL;
-            other._implementation = NULL;
+            other._lib_handle = nullptr;
+            other._create = nullptr;
+            other._destroy = nullptr;
+            other._implementation = nullptr;
         }
     }
+
     // No copy constructor use the move constructor instead.
     ExtmethodFace(const ExtmethodFace &other) = delete;
 
-    // Get the extmethod implementation
-    ExtmethodImpl* getImpl() { return _implementation; };
-
-    /* Execute an instruction
+    /** Execute an instruction
      *
      * @instr The extension method instruction to handle
      * @arg   Additional component specific argument
      * Throws exceptions on error
      */
-    void execute(bh_instruction *instr, void* arg) {
-        assert(_implementation != NULL);
+    void execute(bh_instruction *instr, void *arg) {
+        assert(_implementation != nullptr);
         return _implementation->execute(instr, arg);
     };
 };
@@ -126,8 +128,10 @@ class ExtmethodFace {
 class ExtmethodNotFound : public std::exception {
     std::string _msg;
 public:
-    ExtmethodNotFound(const std::string& msg) : _msg(msg) {}
-    virtual const char* what() const throw() { return _msg.c_str(); }
+    explicit ExtmethodNotFound(std::string msg) : _msg(std::move(msg)) {}
+
+    const char *what() const noexcept override { return _msg.c_str(); }
 };
 
-}} //namespace bohrium::extmethod
+}
+} //namespace bohrium::extmethod

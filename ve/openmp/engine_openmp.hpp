@@ -53,16 +53,16 @@ private:
 public:
     EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat);
 
-    ~EngineOpenMP();
+    ~EngineOpenMP() override;
 
     void execute(const jitk::SymbolTable &symbols,
                  const std::string &source,
                  uint64_t codegen_hash,
                  const std::vector<const bh_instruction*> &constants) override;
 
-    void writeKernel(const std::vector<jitk::Block> &block_list,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
-                     const std::vector<bh_base*> &kernel_temps,
+                     const std::vector<bh_base *> &kernel_temps,
                      uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
@@ -75,7 +75,6 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
 

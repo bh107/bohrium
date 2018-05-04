@@ -236,7 +236,7 @@ CUfunction EngineCUDA::getFunction(const string &source, const std::string &func
     return program;
 }
 
-void EngineCUDA::writeKernel(const jitk::Block &block,
+void EngineCUDA::writeKernel(const jitk::LoopB &kernel,
                              const jitk::SymbolTable &symbols,
                              const std::vector<uint64_t> &thread_stack,
                              uint64_t codegen_hash,
@@ -265,7 +265,7 @@ void EngineCUDA::writeKernel(const jitk::Block &block,
         }
         ss << "\n";
     }
-    writeBlockFrame(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
+    writeBlock(symbols, nullptr, kernel, thread_stack, true, ss);
     ss << "}\n\n";
 }
 

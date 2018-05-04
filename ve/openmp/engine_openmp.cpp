@@ -37,12 +37,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "openmp_util.hpp"
 
 using namespace std;
+using namespace bohrium::jitk;
 namespace fs = boost::filesystem;
 
 namespace bohrium {
 
 EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat) :
-    EngineCPU(comp, stat), compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
+        EngineCPU(comp, stat),
+        compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
 
     compilation_hash = util::hash(compiler.cmd_template);
 
@@ -52,7 +54,7 @@ EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat)
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
-    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem * (malloc_cache_limit_in_percent/100.0)));
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem * (malloc_cache_limit_in_percent / 100.0)));
     bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
@@ -151,7 +153,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
     // avoid any compiler warnings.
     dlerror(); // Reset errors
     *(void **) (&_functions[hash]) = dlsym(lib_handle, func_name.c_str());
-    const char* dlsym_error = dlerror();
+    const char *dlsym_error = dlerror();
     if (dlsym_error != nullptr) {
         cerr << "Cannot load function launcher(): " << dlsym_error << endl;
         throw runtime_error("VE-OPENMP: Cannot load function launcher()");
@@ -163,7 +165,7 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
 void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
                            const std::string &source,
                            uint64_t codegen_hash,
-                           const std::vector<const bh_instruction*> &constants) {
+                           const std::vector<const bh_instruction *> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
     uint64_t hash = util::hash(source);
@@ -176,15 +178,20 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
 
     // Compile the kernel
     auto tbuild = chrono::steady_clock::now();
-    string func_name; { stringstream t; t << "launcher_" << codegen_hash; func_name = t.str(); }
+    string func_name;
+    {
+        stringstream t;
+        t << "launcher_" << codegen_hash;
+        func_name = t.str();
+    }
     KernelFunction func = getFunction(source, func_name);
     assert(func != nullptr);
     stat.time_compile += chrono::steady_clock::now() - tbuild;
 
     // Create a 'data_list' of data pointers
-    vector<void*> data_list;
+    vector<void *> data_list;
     data_list.reserve(symbols.getParams().size());
-    for(bh_base *base: symbols.getParams()) {
+    for (bh_base *base: symbols.getParams()) {
         assert(base->data != nullptr);
         data_list.push_back(base->data);
     }
@@ -195,7 +202,7 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     for (const bh_view *view: symbols.offsetStrideViews()) {
         const uint64_t t = (uint64_t) view->start;
         offset_and_strides.push_back(t);
-        for (int i=0; i<view->ndim; ++i) {
+        for (int i = 0; i < view->ndim; ++i) {
             const uint64_t s = (uint64_t) view->stride[i];
             offset_and_strides.push_back(s);
         }
@@ -204,7 +211,7 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     // And the constants
     vector<bh_constant_value> constant_arg;
     constant_arg.reserve(constants.size());
-    for (const bh_instruction* instr: constants) {
+    for (const bh_instruction *instr: constants) {
         constant_arg.push_back(instr->constant.value);
     }
 
@@ -221,29 +228,22 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
 void EngineOpenMP::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
-                                  bool loop_is_peeled,
                                   const vector<uint64_t> &thread_stack,
                                   stringstream &out) {
     // Let's write the OpenMP loop header
     int64_t for_loop_size = block.size;
-    // If the for-loop has been peeled, its size is one less
-    if (block._sweeps.size() > 0 and loop_is_peeled) {
-        --for_loop_size;
-    }
     // No need to parallel one-sized loops
     if (for_loop_size > 1) {
         writeHeader(symbols, scope, block, out);
     }
     // Write the for-loop header
     string itername;
-    { stringstream t; t << "i" << block.rank; itername = t.str(); }
-    out << "for(uint64_t " << itername;
-    if (block._sweeps.size() > 0 and loop_is_peeled) {
-         // If the for-loop has been peeled, we should start at 1
-        out << " = 1; ";
-    } else {
-        out << " = 0; ";
+    {
+        stringstream t;
+        t << "i" << block.rank;
+        itername = t.str();
     }
+    out << "for(uint64_t " << itername << " = 0; ";
     out << itername << " < " << block.size << "; ++" << itername << ") {\n";
 }
 
@@ -275,9 +275,9 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
             if (openmp_reduce_compatible(instr->opcode) and (scope.isScalarReplaced(view) or scope.isTmp(view.base))) {
                 openmp_reductions.push_back(instr);
             } else if (openmp_atomic_compatible(instr->opcode)) {
-                scope.insertOpenmpAtomic(view);
+                scope.insertOpenmpAtomic(instr);
             } else {
-                scope.insertOpenmpCritical(view);
+                scope.insertOpenmpCritical(instr);
             }
         }
     }
@@ -300,17 +300,19 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
         ss << ")";
     }
     const string ss_str = ss.str();
-    if(not ss_str.empty()) {
+    if (not ss_str.empty()) {
         out << "#pragma omp" << ss_str << "\n";
-        util::spaces(out, 4 + block.rank*4);
+        util::spaces(out, 4 + block.rank * 4);
     }
 }
 
-void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
+void EngineOpenMP::writeKernel(const LoopB &kernel,
                                const jitk::SymbolTable &symbols,
-                               const std::vector<bh_base*> &kernel_temps,
+                               const std::vector<bh_base *> &kernel_temps,
                                uint64_t codegen_hash,
                                std::stringstream &ss) {
+
+    assert(kernel.rank == -1);
 
     // Write the need includes
     ss << "#include <stdint.h>\n";
@@ -332,19 +334,17 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     // Write the block that makes up the body of 'execute()'
     ss << "{\n";
     // Write allocations of the kernel temporaries
-    for(const bh_base* b: kernel_temps) {
+    for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
         ss << writeType(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
     }
     ss << "\n";
 
-    for(const jitk::Block &block: block_list) {
-        writeBlockFrame(symbols, nullptr, block.getLoop(), {}, false, ss);
-    }
+    writeBlock(symbols, nullptr, kernel, {}, false, ss);
 
     // Write frees of the kernel temporaries
     ss << "\n";
-    for(const bh_base* b: kernel_temps) {
+    for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
         ss << "free(" << "a" << symbols.baseID(b) << ");\n";
     }
@@ -355,7 +355,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
     {
         ss << "void launcher_" << codegen_hash
            << "(void* data_list[], uint64_t offset_strides[], union dtype constants[]) {\n";
-        for(size_t i = 0; i < symbols.getParams().size(); ++i) {
+        for (size_t i = 0; i < symbols.getParams().size(); ++i) {
             util::spaces(ss, 4);
             bh_base *b = symbols.getParams()[i];
             ss << writeType(b->type) << " *a" << symbols.baseID(b);
@@ -367,7 +367,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
 
         // We create the comma separated list of args and saves it in `stmp`
         stringstream stmp;
-        for(size_t i = 0; i < symbols.getParams().size(); ++i) {
+        for (size_t i = 0; i < symbols.getParams().size(); ++i) {
             bh_base *b = symbols.getParams()[i];
             stmp << "a" << symbols.baseID(b) << ", ";
         }
@@ -375,7 +375,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
         uint64_t count = 0;
         for (const bh_view *view: symbols.offsetStrideViews()) {
             stmp << "offset_strides[" << count++ << "], ";
-            for (int i = 0; i<view->ndim; ++i) {
+            for (int i = 0; i < view->ndim; ++i) {
                 stmp << "offset_strides[" << count++ << "], ";
             }
         }
@@ -391,7 +391,7 @@ void EngineOpenMP::writeKernel(const std::vector<jitk::Block> &block_list,
         // And then we write `stmp` into `ss` excluding the last comma
         const string strtmp = stmp.str();
         if (not strtmp.empty()) {
-            ss << strtmp.substr(0, strtmp.size()-2);
+            ss << strtmp.substr(0, strtmp.size() - 2);
         }
         ss << ");\n";
         ss << "}\n";
@@ -408,7 +408,7 @@ std::string EngineOpenMP::info() const {
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
     ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "") << "\n";
-    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config) << "\n";
 
     ss << "  Codegen flags:\n";
     ss << "    OpenMP: " << comp.config.defaultGet<bool>("compiler_openmp", false) << "\n";
@@ -424,20 +424,34 @@ std::string EngineOpenMP::info() const {
 // Return C99 types, which are used inside the C99 kernels
 const std::string EngineOpenMP::writeType(bh_type dtype) {
     switch (dtype) {
-        case bh_type::BOOL:       return "bool";
-        case bh_type::INT8:       return "int8_t";
-        case bh_type::INT16:      return "int16_t";
-        case bh_type::INT32:      return "int32_t";
-        case bh_type::INT64:      return "int64_t";
-        case bh_type::UINT8:      return "uint8_t";
-        case bh_type::UINT16:     return "uint16_t";
-        case bh_type::UINT32:     return "uint32_t";
-        case bh_type::UINT64:     return "uint64_t";
-        case bh_type::FLOAT32:    return "float";
-        case bh_type::FLOAT64:    return "double";
-        case bh_type::COMPLEX64:  return "float complex";
-        case bh_type::COMPLEX128: return "double complex";
-        case bh_type::R123:       return "r123_t"; // Defined by `write_c99_dtype_union()`
+        case bh_type::BOOL:
+            return "bool";
+        case bh_type::INT8:
+            return "int8_t";
+        case bh_type::INT16:
+            return "int16_t";
+        case bh_type::INT32:
+            return "int32_t";
+        case bh_type::INT64:
+            return "int64_t";
+        case bh_type::UINT8:
+            return "uint8_t";
+        case bh_type::UINT16:
+            return "uint16_t";
+        case bh_type::UINT32:
+            return "uint32_t";
+        case bh_type::UINT64:
+            return "uint64_t";
+        case bh_type::FLOAT32:
+            return "float";
+        case bh_type::FLOAT64:
+            return "double";
+        case bh_type::COMPLEX64:
+            return "float complex";
+        case bh_type::COMPLEX128:
+            return "double complex";
+        case bh_type::R123:
+            return "r123_t"; // Defined by `write_c99_dtype_union()`
         default:
             std::cerr << "Unknown C99 type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown C99 type");

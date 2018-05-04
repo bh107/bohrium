@@ -68,21 +68,57 @@ void EngineCPU::handleExecution(BhIR *bhir) {
         }
     }
 
-    // Let's get the block list
-    const vector <Block> block_list = get_block_list(instr_list, comp.config, fcache, stat, false);
+    // Let's get the kernel list
+    vector<LoopB> kernel_list = get_kernel_list(instr_list, comp.config, fcache, stat, false,
+                                                comp.config.defaultGet<bool>("monolithic", true));
 
-    // In a monolithic kernel, the whole block list goes into the same shared library
-    if (comp.config.defaultGet<bool>("monolithic", false)) {
-        LoopB loop{-1, 1};
-        for (const Block &b: block_list) {
-            loop._block_list.push_back(b);
+    for (const LoopB &kernel: kernel_list) {
+        // Let's create the symbol table for the kernel
+        const SymbolTable symbols(kernel,
+                                  kernel_config["use_volatile"],
+                                  kernel_config["strides_as_var"],
+                                  kernel_config["index_as_var"],
+                                  kernel_config["const_as_var"]
+        );
+
+        stat.record(symbols);
+
+        if (not kernel.isSystemOnly()) { // We can skip this step if the kernel does no computation
+            // Create the constant vector
+            vector<const bh_instruction *> constants;
+            constants.reserve(symbols.constIDs().size());
+            for (const InstrPtr &instr: symbols.constIDs()) {
+                constants.push_back(&(*instr));
+            }
+
+            const auto lookup = codegen_cache.lookup(kernel, symbols);
+            if (not lookup.first.empty()) {
+                // In debug mode, we check that the cached source code is correct
+                #ifndef NDEBUG
+                    stringstream ss;
+                    writeKernel(kernel, symbols, {}, lookup.second, ss);
+                    if (ss.str().compare(lookup.first) != 0) {
+                        cout << "\nCached source code: \n" << lookup.first;
+                        cout << "\nReal source code: \n" << ss.str();
+                        assert(1 == 2);
+                    }
+                #endif
+                execute(symbols, lookup.first, lookup.second, constants);
+            } else {
+                const auto tcodegen = chrono::steady_clock::now();
+                stringstream ss;
+                writeKernel(kernel, symbols, {}, lookup.second, ss);
+                string source = ss.str();
+                stat.time_codegen += chrono::steady_clock::now() - tcodegen;
+
+                execute(symbols, source, lookup.second, constants);
+                codegen_cache.insert(std::move(source), kernel, symbols);
+            }
         }
-        createKernel(kernel_config, Block{loop});
-    } else {
-        // In a regular kernel, each block goes into individual shared libraries
-        for (const Block &b: block_list) {
-            LoopB loop{-1, 1, {b}};
-            createKernel(kernel_config, Block{loop});
+
+        // Finally, let's cleanup
+        for (bh_base *base: kernel.getAllFrees()) {
+            bh_data_free(base);
         }
     }
     stat.time_total_execution += chrono::steady_clock::now() - texecution;
@@ -106,59 +142,6 @@ void EngineCPU::handleExtmethod(BhIR *bhir){
         }
     }
     bhir->instr_list = instr_list;
-}
-
-void EngineCPU::createKernel(std::map<std::string, bool> &kernel_config, const Block &block) {
-    assert(block.rank() == -1);
-    assert(not block.isInstr());
-
-    // Let's create the symbol table for the kernel
-    const SymbolTable symbols(block.getLoop(),
-            kernel_config["use_volatile"],
-            kernel_config["strides_as_var"],
-            kernel_config["index_as_var"],
-            kernel_config["const_as_var"]
-    );
-
-    stat.record(symbols);
-
-    if (not block.isSystemOnly()) { // We can skip this step if the kernel does no computation
-        // Create the constant vector
-        vector<const bh_instruction *> constants;
-        constants.reserve(symbols.constIDs().size());
-        for (const InstrPtr &instr: symbols.constIDs()) {
-            constants.push_back(&(*instr));
-        }
-
-        const auto lookup = codegen_cache.get({block}, symbols);
-        if (not lookup.first.empty()) {
-            // In debug mode, we check that the cached source code is correct
-            #ifndef NDEBUG
-                stringstream ss;
-                writeKernel(block.getLoop()._block_list, symbols, {}, lookup.second, ss);
-                if (ss.str().compare(lookup.first) != 0) {
-                    cout << "\nCached source code: \n" << lookup.first;
-                    cout << "\nReal source code: \n" << ss.str();
-                    assert(1 == 2);
-                }
-            #endif
-            execute(symbols, lookup.first, lookup.second, constants);
-        } else {
-            const auto tcodegen = chrono::steady_clock::now();
-            stringstream ss;
-            writeKernel(block.getLoop()._block_list, symbols, {}, lookup.second, ss);
-            string source = ss.str();
-            stat.time_codegen += chrono::steady_clock::now() - tcodegen;
-
-            execute(symbols, source, lookup.second, constants);
-            codegen_cache.insert(std::move(source), {block}, symbols);
-        }
-    }
-
-    // Finally, let's cleanup
-    for (bh_base *base: block.getLoop().getAllFrees()) {
-        bh_data_free(base);
-    }
 }
 
 }

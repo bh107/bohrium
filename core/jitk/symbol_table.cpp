@@ -37,10 +37,9 @@ SymbolTable::SymbolTable(const LoopB &kernel,
                                               index_as_var(index_as_var),
                                               const_as_var(const_as_var) {
 
-    const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
-
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
     //     the kernels can better be reused
+    const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
     for (const InstrPtr &instr: instr_list) {
         for (const bh_view *view: instr->get_views()) {
             _base_map.insert(std::make_pair(view->base, _base_map.size()));
@@ -52,20 +51,30 @@ SymbolTable::SymbolTable(const LoopB &kernel,
         }
         if (const_as_var) {
             assert(instr->origin_id >= 0);
-            if (instr->has_constant() and not bh_opcode_is_sweep(instr->opcode)) {
+            if (instr->has_constant()) {
                 _constant_set.insert(instr);
             }
         }
-        if (instr->opcode == BH_GATHER) {
+        // Since accumulate accesses the previous index, it should always be an array
+        if (bh_opcode_is_accumulate(instr->opcode)) {
+            _array_always.insert(instr->operand[0].base);
+        } else if (instr->opcode == BH_GATHER) { // Gather accesses the input arbitrarily
             if (not bh_is_constant(&instr->operand[1])) {
                 _array_always.insert(instr->operand[1].base);
             }
+          // Scatter accesses the output arbitrarily
         } else if (instr->opcode == BH_SCATTER or instr->opcode == BH_COND_SCATTER) {
             _array_always.insert(instr->operand[0].base);
         } else if (instr->opcode == BH_RANDOM) {
             _useRandom = true;
         }
     }
+    
+    // Add frees to the base map since the are not in `kernel.getAllInstr()`
+    for (const bh_base *base: kernel.getAllFrees()) {
+        _base_map.insert(std::make_pair(base, _base_map.size()));
+    }
+
     // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
     // already in `_params`. NB: the order of `_params` matches the order of the array IDs
     {
