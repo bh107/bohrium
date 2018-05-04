@@ -37,10 +37,9 @@ SymbolTable::SymbolTable(const LoopB &kernel,
                                               index_as_var(index_as_var),
                                               const_as_var(const_as_var) {
 
-    const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
-
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
     //     the kernels can better be reused
+    const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
     for (const InstrPtr &instr: instr_list) {
         for (const bh_view *view: instr->get_views()) {
             _base_map.insert(std::make_pair(view->base, _base_map.size()));
@@ -70,6 +69,12 @@ SymbolTable::SymbolTable(const LoopB &kernel,
             _useRandom = true;
         }
     }
+    
+    // Add frees to the base map since the are not in `kernel.getAllInstr()`
+    for (const bh_base *base: kernel.getAllFrees()) {
+        _base_map.insert(std::make_pair(base, _base_map.size()));
+    }
+
     // Find bases that are the parameters to the JIT kernel, which are non-temporary arrays not
     // already in `_params`. NB: the order of `_params` matches the order of the array IDs
     {

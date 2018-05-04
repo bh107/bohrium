@@ -84,7 +84,7 @@ void hash_stream(const LoopB &block, const SymbolTable &symbols, std::stringstre
     ss << "size: " << block.size;
     {  // The order of BH_FREE within a block doesn't matter, thus we sort the freed base IDs here
         ss << "freed: ";
-        set<uint64_t >sorted_freed_bases;
+        set<uint64_t>sorted_freed_bases;
         for (const bh_base *b: block._frees) {
             sorted_freed_bases.insert(symbols.baseID(b));
         }
