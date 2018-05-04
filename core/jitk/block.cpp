@@ -358,9 +358,7 @@ void LoopB::metadataUpdate() {
     _sweeps.clear();
     for (const InstrPtr &instr: getLocalInstr()) {
         if (instr->constructor) {
-            if (not bh_opcode_is_accumulate(instr->opcode)) { // TODO: Support array contraction of accumulated output
-                _news.insert(instr->operand[0].base);
-            }
+            _news.insert(instr->operand[0].base);
         }
     }
     const vector<InstrPtr> allInstr = getAllInstr();
