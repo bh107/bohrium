@@ -207,7 +207,6 @@ public:
                 instr_list.push_back(instr);
             }
         }
-
         bhir->instr_list = instr_list;
     }
 

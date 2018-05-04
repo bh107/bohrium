@@ -53,7 +53,7 @@ private:
 public:
     EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat);
 
-    ~EngineOpenMP();
+    ~EngineOpenMP() override;
 
     void execute(const jitk::SymbolTable &symbols,
                  const std::string &source,

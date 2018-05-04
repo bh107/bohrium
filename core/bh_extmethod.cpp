@@ -90,10 +90,10 @@ ExtmethodFace::ExtmethodFace(const ConfigParser &parent_config,
 }
 
 ExtmethodFace::~ExtmethodFace() {
-    if (_implementation != NULL) {
+    if (_implementation != nullptr) {
         _destroy(_implementation);
         dlerror(); // Reset errors
-        assert(_lib_handle != NULL);
+        assert(_lib_handle != nullptr);
         if (dlclose(_lib_handle)) {
             cerr << dlerror() << endl;
         }
