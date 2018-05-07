@@ -95,6 +95,9 @@ static void service(const std::string &address, int port)
                 } else {
                     comm_backend.send_array_data(nullptr, 0);
                 }
+                if (body.nullify) {
+                    remote2local.erase(body.base);
+                }
                 break;
             }
             case msg::Type::MSG:

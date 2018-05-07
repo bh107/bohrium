@@ -28,13 +28,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 
 // Forward declaration of class boost::serialization::access
-namespace boost {namespace serialization {class access;}}
+namespace boost { namespace serialization { class access; }}
 
 namespace msg {
 
 /* Message type */
-enum class Type
-{
+enum class Type {
     INIT,
     SHUTDOWN,
     EXEC,
@@ -43,30 +42,34 @@ enum class Type
     EXTMETHOD
 };
 
-struct Header
-{
+struct Header {
     Type type;
     size_t body_size;
-    Header(Type type, size_t body_size):type(type),body_size(body_size){}
+
+    Header(Type type, size_t body_size) : type(type), body_size(body_size) {}
+
     Header(const std::vector<char> &buffer);
+
     void serialize(std::vector<char> &buffer);
 };
+
 constexpr size_t HeaderSize = sizeof(Type) + sizeof(size_t);
 
-struct Init
-{
+struct Init {
     int stack_level;// Stack level of the component
-    Init(int stack_level):stack_level(stack_level){}
+    Init(int stack_level) : stack_level(stack_level) {}
+
     Init(const std::vector<char> &buffer);
 
     void serialize(std::vector<char> &buffer);
 };
 
-struct GetData
-{
+struct GetData {
     bh_base *base;
     bool nullify;
-    GetData(bh_base *base, bool nullify):base(base), nullify(nullify) {}
+
+    GetData(bh_base *base, bool nullify) : base(base), nullify(nullify) {}
+
     GetData(const std::vector<char> &buffer);
 
     void serialize(std::vector<char> &buffer);

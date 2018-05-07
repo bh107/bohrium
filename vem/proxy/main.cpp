@@ -41,21 +41,21 @@ public:
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
                                        config.defaultGet<int>("port", 4200)) {}
-    ~Impl() {}
+    ~Impl() override = default;
 
-    void execute(BhIR *bhir);
+    void execute(BhIR *bhir) override;
 
-    void extmethod(const std::string &name, bh_opcode opcode) {
+    void extmethod(const std::string &name, bh_opcode opcode) override {
         throw runtime_error("[PROXY-VEM] extmethod() not implemented!");
     };
 
     // Handle messages from parent
-    string message(const string &msg) {
+    string message(const string &msg) override {
         throw runtime_error("[PROXY-VEM] message() not implemented!");
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         if (not copy2host) {
             throw runtime_error("PROXY - getMemoryPointer(): `copy2host` is not True");
         }
@@ -85,12 +85,13 @@ public:
         void *ret = base.data;
         if (nullify) {
             base.data = nullptr;
+            known_base_arrays.erase(&base);
         }
         return ret;
     }
 
     // Handle memory pointer obtainment
-    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) override {
         if (not host_ptr) {
             throw runtime_error("PROXY - setMemoryPointer(): `host_ptr` is not True");
         }
@@ -98,12 +99,12 @@ public:
     }
 
     // We have no context so returning NULL
-    void* getDeviceContext() {
+    void* getDeviceContext() override {
         return nullptr;
     };
 
     // We have no context so doing nothing
-    void setDeviceContext(void* device_context) {};
+    void setDeviceContext(void* device_context) override {} ;
 };
 } //Unnamed namespace
 
