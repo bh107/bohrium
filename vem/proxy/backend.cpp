@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_util.hpp>
+#include <bh_main_memory.hpp>
 
 #include "comm.hpp"
 

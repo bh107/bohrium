@@ -22,11 +22,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/asio.hpp>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
+#include <zlib.h>
+#include <bh_main_memory.hpp>
 
 #include "serialize.hpp"
 #include "comm.hpp"
 
-#include "zlib.h"
 
 
 using boost::asio::ip::tcp;
