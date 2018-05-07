@@ -65,10 +65,10 @@ public:
      * \param frees On return, will contain pointers to base arrays freed in this BhIR. NB: the pointer are "remote"
      *
      * \note We use the notion of remote and local base arrays. Remote base arrays are pointers to memory on
-     *       the machine that serialized `serialized_archive`. Remote base arrays cannot be dereferenced instead they
+     *       the machine that serialized `serialized_archive`. Remote base arrays cannot be de-referenced instead they
      *       act as base array IDs.
      *       Use `remote2local` to translate remote base arrays to local base arrays, which are regular base arrays
-     *       that can dereferenced.
+     *       that can de-referenced.
      */
     BhIR(const std::vector<char> &serialized_archive,
          std::map<const bh_base*, bh_base> &remote2local,
