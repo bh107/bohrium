@@ -99,7 +99,14 @@ static void service(const std::string &address, int port) {
                 std::vector<char> buffer(head.body_size);
                 comm_backend.read(buffer);
                 msg::Message body(buffer);
-                comm_backend.write(child->message(body.msg));
+                stringstream ss;
+                if (body.msg == "info") {
+                    ss << "  Backend: " << "\n";
+                    ss << "    Hostname: " << comm_backend.hostname() << "\n";
+                    ss << "    IP: "       << comm_backend.ip() << "\n";
+                }
+                ss << child->message(body.msg);
+                comm_backend.write(ss.str());
                 break;
             }
             default: {

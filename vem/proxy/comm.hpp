@@ -45,6 +45,16 @@ public:
     void send_array_data(const bh_base *base);
 
     void recv_array_data(bh_base *base);
+
+    std::string hostname() const {
+        return boost::asio::ip::host_name();
+    }
+
+    std::string ip() const {
+        std::stringstream ss;
+        ss << socket.local_endpoint().address() << "\n";
+        return ss.str();
+    }
 };
 
 class CommBackend {
@@ -71,4 +81,14 @@ public:
     void send_array_data(const void *data, size_t nbytes);
 
     void recv_array_data(bh_base *base);
+
+    std::string hostname() const {
+        return boost::asio::ip::host_name();
+    }
+
+    std::string ip() const {
+        std::stringstream ss;
+        ss << socket.local_endpoint().address() << "\n";
+        return ss.str();
+    }
 };

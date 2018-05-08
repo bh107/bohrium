@@ -65,7 +65,16 @@ public:
         comm_front.write(buf_head);
         comm_front.write(buf_body);
 
-        return comm_front.read(); // Read and return the returned message
+        stringstream ss;
+        if (msg == "info") {
+            ss << "----" << "\n";
+            ss << "Proxy:" << "\n";
+            ss << "  Frontend: " << "\n";
+            ss << "    Hostname: " << comm_front.hostname() << "\n";
+            ss << "    IP: "       << comm_front.ip();
+        }
+        ss << comm_front.read(); // Read the message from the backend
+        return ss.str();
     }
 
     // Handle memory pointer retrieval
