@@ -81,7 +81,7 @@ public:
     ~ComponentFace();
 
     /** Move constructor, which we need to make sure that `other` is left uninitiated */
-    ComponentFace &operator=(ComponentFace &&other) {
+    ComponentFace &operator=(ComponentFace &&other) noexcept {
         _lib_handle = other._lib_handle;
         _implementation = other._implementation;
         _create = other._create;
