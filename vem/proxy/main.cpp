@@ -37,7 +37,7 @@ private:
     std::set<bh_base *> known_base_arrays;
 
 public:
-    Impl(int stack_level) : ComponentImpl(stack_level),
+    Impl(int stack_level) : ComponentImpl(stack_level, false),
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
                                        config.defaultGet<int>("port", 4200)) {}
