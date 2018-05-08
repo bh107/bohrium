@@ -32,7 +32,7 @@ namespace boost { namespace serialization { class access; }}
 
 namespace msg {
 
-/* Message type */
+/** Message type */
 enum class Type {
     INIT,
     SHUTDOWN,
@@ -41,36 +41,63 @@ enum class Type {
     MSG
 };
 
+/** Message Header */
 struct Header {
     Type type;
     size_t body_size;
 
+    /** The regular constructor */
     Header(Type type, size_t body_size) : type(type), body_size(body_size) {}
 
-    Header(const std::vector<char> &buffer);
+    /** The de-serializing constructor */
+    explicit Header(const std::vector<char> &buffer);
 
+    /** Serialize to `buffer` */
     void serialize(std::vector<char> &buffer);
 };
 
 constexpr size_t HeaderSize = sizeof(Type) + sizeof(size_t);
 
+/** RPC: the constructor (the first message send to initiate the backend) */
 struct Init {
     int stack_level;// Stack level of the component
+
+    /** The regular constructor */
     Init(int stack_level) : stack_level(stack_level) {}
 
-    Init(const std::vector<char> &buffer);
+    /** The de-serializing constructor */
+    explicit Init(const std::vector<char> &buffer);
 
+    /** Serialize to `buffer` */
     void serialize(std::vector<char> &buffer);
 };
 
+/** RPC: `getMemoryPointer()` */
 struct GetData {
     bh_base *base;
     bool nullify;
 
+    /** The regular constructor */
     GetData(bh_base *base, bool nullify) : base(base), nullify(nullify) {}
 
-    GetData(const std::vector<char> &buffer);
+    /** The de-serializing constructor */
+    explicit GetData(const std::vector<char> &buffer);
 
+    /** Serialize to `buffer` */
+    void serialize(std::vector<char> &buffer);
+};
+
+/** RPC: `message()` */
+struct Message {
+    std::string msg;
+
+    /** The regular constructor */
+    Message(std::string msg) : msg(std::move(msg)) {}
+
+    /** The de-serializing constructor */
+    explicit Message(const std::vector<char> &buffer);
+
+    /** Serialize to `buffer` */
     void serialize(std::vector<char> &buffer);
 };
 

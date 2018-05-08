@@ -96,6 +96,10 @@ static void service(const std::string &address, int port) {
                 break;
             }
             case msg::Type::MSG: {
+                std::vector<char> buffer(head.body_size);
+                comm_backend.read(buffer);
+                msg::Message body(buffer);
+                comm_backend.write(child->message(body.msg));
                 break;
             }
             default: {

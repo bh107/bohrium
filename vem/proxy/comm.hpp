@@ -38,6 +38,9 @@ public:
         boost::asio::write(socket, boost::asio::buffer(buf));
     }
 
+    // Read string from the `CommBackend`
+    std::string read();
+
     // Send and receive array data to and from the `CommBackend`
     void send_array_data(const bh_base *base);
 
@@ -56,6 +59,12 @@ public:
     // Read from the `CommFrontend`
     void read(std::vector<char> &buf) {
         boost::asio::read(socket, boost::asio::buffer(buf));
+    }
+
+    // Write string to the `CommFrontend`
+    void write(const std::string &str) {
+        // Write the whole string including the `\0` terminator
+        boost::asio::write(socket, boost::asio::buffer(str.c_str(), str.size() + 1));
     }
 
     // Send and receive array data to and from the `CommFrontend`

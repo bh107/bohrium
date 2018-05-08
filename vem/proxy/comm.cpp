@@ -132,6 +132,19 @@ void CommFrontend::recv_array_data(bh_base *base) {
     comm_recv_array_data(socket, base);
 }
 
+std::string CommFrontend::read() {
+    vector<char> str_vec;
+    while(1) {
+        char buf;
+        size_t bytes = boost::asio::read(socket, boost::asio::buffer(&buf, 1));
+        if (bytes != 1 or buf == '\0') {
+            break;
+        }
+        str_vec.push_back(buf);
+    }
+    return std::string(str_vec.begin(), str_vec.end());
+}
+
 CommBackend::CommBackend(const std::string &address, int port) : socket(io_service) {
     cout << "[PROXY-VEM] Server listen on port " << port << endl;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));

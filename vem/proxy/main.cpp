@@ -51,7 +51,21 @@ public:
 
     // Handle messages from parent
     string message(const string &msg) override {
-        throw runtime_error("[PROXY-VEM] message() not implemented!");
+        // Serialize message body
+        vector<char> buf_body;
+        msg::Message body(msg);
+        body.serialize(buf_body);
+
+        // Serialize message head
+        vector<char> buf_head;
+        msg::Header head(msg::Type::MSG, buf_body.size());
+        head.serialize(buf_head);
+
+        // Send serialized message
+        comm_front.write(buf_head);
+        comm_front.write(buf_body);
+
+        return comm_front.read(); // Read and return the returned message
     }
 
     // Handle memory pointer retrieval
