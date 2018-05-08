@@ -88,7 +88,7 @@ GetData::GetData(const std::vector<char> &buffer) {
 
     size_t b;
     ia >> b;
-    this->base = reinterpret_cast<bh_base*>(b);
+    this->base = reinterpret_cast<bh_base *>(b);
     ia >> this->nullify;
 }
 

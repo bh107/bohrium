@@ -24,13 +24,13 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "serialize.hpp"
 
-class CommFrontend
-{
+class CommFrontend {
 public:
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::socket socket;
 
     CommFrontend(int stack_level, const std::string &address, int port);
+
     ~CommFrontend();
 
     // Write to the `CommBackend`
@@ -40,17 +40,18 @@ public:
 
     // Send and receive array data to and from the `CommBackend`
     void send_array_data(const bh_base *base);
+
     void recv_array_data(bh_base *base);
 };
 
-class CommBackend
-{
+class CommBackend {
 private:
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::socket socket;
 public:
     ~CommBackend();
-    CommBackend(const std::string &address, int port=4200);
+
+    CommBackend(const std::string &address, int port = 4200);
 
     // Read from the `CommFrontend`
     void read(std::vector<char> &buf) {
@@ -59,5 +60,6 @@ public:
 
     // Send and receive array data to and from the `CommFrontend`
     void send_array_data(const void *data, size_t nbytes);
+
     void recv_array_data(bh_base *base);
 };

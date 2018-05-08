@@ -29,7 +29,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "comm.hpp"
 
 
-
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -97,7 +96,7 @@ CommFrontend::CommFrontend(int stack_level, const std::string &address, int port
     }
     throw runtime_error("[PROXY-VEM] No connection!");
 
-connected:
+    connected:
     // Serialize message body
     vector<char> buf_body;
     msg::Init body(stack_level);

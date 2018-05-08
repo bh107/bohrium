@@ -38,8 +38,7 @@ enum class Type {
     SHUTDOWN,
     EXEC,
     GET_DATA,
-    MSG,
-    EXTMETHOD
+    MSG
 };
 
 struct Header {
