@@ -17,6 +17,9 @@ def _import_pyopencl_module():
     if not bh_info.is_opencl_in_stack():
         raise RuntimeError("No OpenCL device in the Bohrium stack! "
                            "Try defining the environment variable `BH_STACK=opencl`.")
+
+    if bh_info.is_proxy_in_stack():
+        raise RuntimeError("Cannot directly access the OpenCL device through a proxy.")
     return pyopencl
 
 

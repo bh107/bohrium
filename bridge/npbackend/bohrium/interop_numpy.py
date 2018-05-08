@@ -3,6 +3,7 @@ Interop NumPy
 ~~~~~~~~~~~~~
 """
 from .bhary import get_base
+from . import bh_info
 
 
 def get_array(bh_ary):
@@ -22,6 +23,9 @@ def get_array(bh_ary):
     Changing or deallocating `bh_ary` invalidates the returned NumPy array!
 
     """
+
+    if bh_info.is_proxy_in_stack():
+        raise RuntimeError("Cannot directly access array data through a proxy.")
 
     if get_base(bh_ary) is not bh_ary:
         raise RuntimeError('`bh_ary` must be a base array and not a view')
