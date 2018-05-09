@@ -182,7 +182,7 @@ void* mem_map(uint64_t nbytes) {
     if(addr == MAP_FAILED) {
         int errsv = errno; // mmap() sets the errno.
         fprintf(stderr,
-                "Fatal error: mem_map() could not mmap new memory of size %ld). "
+                "Fatal error: mem_map() could not mmap new memory of size %llu). "
                 "Returned error code by mmap: %s.\n",
                 nbytes,
                 strerror(errsv));
@@ -245,7 +245,7 @@ void mem_bhc2np(BhArray *base_array) {
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
         } else {
-            assert(!bh_mem_signal_exist(d)); // `d` shouldn't be memory protected! 
+            assert(!bh_mem_signal_exist(d)); // `d` shouldn't be memory protected!
             _mremap_data(PyArray_DATA((PyArrayObject*) base_array), d, ary_nbytes((BhArray*) base_array));
         }
     } else {
