@@ -34,8 +34,8 @@ class Impl : public ComponentImpl {
     int count = 0;
   public:
     Impl(int stack_level) : ComponentImpl(stack_level) {};
-    ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(BhIR *bhir) {
+    ~Impl() override = default;
+    void execute(BhIR *bhir) override {
         stringstream ss;
         ss << "trace-" << count << ".txt";
         cout << "pprint-filter: writing trace('" << ss.str() << "')." << endl;

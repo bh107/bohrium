@@ -20,9 +20,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 #include <bh_component.hpp>
-#include "serialize.hpp"
+#include <bh_main_memory.hpp>
 #include <bh_util.hpp>
 
+#include "serialize.hpp"
 #include "comm.hpp"
 
 using namespace bohrium;
@@ -36,25 +37,48 @@ private:
     std::set<bh_base *> known_base_arrays;
 
 public:
-    Impl(int stack_level) : ComponentImpl(stack_level),
+    Impl(int stack_level) : ComponentImpl(stack_level, false),
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
                                        config.defaultGet<int>("port", 4200)) {}
-    ~Impl() {}
+    ~Impl() override = default;
 
-    void execute(BhIR *bhir);
+    void execute(BhIR *bhir) override;
 
-    void extmethod(const std::string &name, bh_opcode opcode) {
+    void extmethod(const std::string &name, bh_opcode opcode) override {
         throw runtime_error("[PROXY-VEM] extmethod() not implemented!");
     };
 
     // Handle messages from parent
-    string message(const string &msg) {
-        throw runtime_error("[PROXY-VEM] message() not implemented!");
+    string message(const string &msg) override {
+        // Serialize message body
+        vector<char> buf_body;
+        msg::Message body(msg);
+        body.serialize(buf_body);
+
+        // Serialize message head
+        vector<char> buf_head;
+        msg::Header head(msg::Type::MSG, buf_body.size());
+        head.serialize(buf_head);
+
+        // Send serialized message
+        comm_front.write(buf_head);
+        comm_front.write(buf_body);
+
+        stringstream ss;
+        if (msg == "info") {
+            ss << "----" << "\n";
+            ss << "Proxy:" << "\n";
+            ss << "  Frontend: " << "\n";
+            ss << "    Hostname: " << comm_front.hostname() << "\n";
+            ss << "    IP: "       << comm_front.ip();
+        }
+        ss << comm_front.read(); // Read the message from the backend
+        return ss.str();
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         if (not copy2host) {
             throw runtime_error("PROXY - getMemoryPointer(): `copy2host` is not True");
         }
@@ -84,12 +108,13 @@ public:
         void *ret = base.data;
         if (nullify) {
             base.data = nullptr;
+            known_base_arrays.erase(&base);
         }
         return ret;
     }
 
     // Handle memory pointer obtainment
-    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) override {
         if (not host_ptr) {
             throw runtime_error("PROXY - setMemoryPointer(): `host_ptr` is not True");
         }
@@ -97,12 +122,12 @@ public:
     }
 
     // We have no context so returning NULL
-    void* getDeviceContext() {
+    void* getDeviceContext() override {
         return nullptr;
     };
 
     // We have no context so doing nothing
-    void setDeviceContext(void* device_context) {};
+    void setDeviceContext(void* device_context) override {} ;
 };
 } //Unnamed namespace
 

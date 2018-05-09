@@ -71,16 +71,17 @@ public:
     ComponentFace(const std::string &lib_path, int stack_level);
 
     /** Default constructor which create an uninitiated component interface */
-    ComponentFace() : _lib_handle(nullptr), _implementation(nullptr){};
+    ComponentFace() : _lib_handle(nullptr), _implementation(nullptr) {};
 
     // We only support the move assignment operator
     ComponentFace(const ComponentFace &other) = delete;
+
     ComponentFace(ComponentFace &&other) = delete;
 
     ~ComponentFace();
 
     /** Move constructor, which we need to make sure that `other` is left uninitiated */
-    ComponentFace& operator=(ComponentFace&& other) {
+    ComponentFace &operator=(ComponentFace &&other) noexcept {
         _lib_handle = other._lib_handle;
         _implementation = other._implementation;
         _create = other._create;
@@ -127,15 +128,20 @@ public:
     // The interface of the child. Notice, the child might not exist i.e. `child.exist() == false`
     ComponentFace child;
 
-    // Constructor
-    ComponentImpl(int stack_level) : stack_level(stack_level), config(stack_level) {
+    /** Constructor for a new component
+     *
+     * @param stack_level     The stack level of the new component
+     * @param initiate_child  Flag: initiate the child (if any)
+     */
+    explicit ComponentImpl(int stack_level, bool initiate_child = true) : stack_level(stack_level),
+                                                                          config(stack_level) {
         std::string child_lib_path = config.getChildLibraryPath();
-        if (not child_lib_path.empty()) { // Has a child
+        if (initiate_child and not child_lib_path.empty()) { // Has a child
             child = ComponentFace{ComponentImpl::config.getChildLibraryPath(), stack_level + 1};
         }
     }
 
-    virtual ~ComponentImpl() {}; // NB: a destructor implementation must exist
+    virtual ~ComponentImpl() = default; // NB: a destructor implementation must exist
 
     /** Execute a BhIR (graph of instructions)
      *
@@ -228,4 +234,5 @@ public:
     ComponentVE(int stack_level) : ComponentImpl(stack_level) {}
 };
 
-}} //namespace bohrium::component
+}
+} //namespace bohrium::component

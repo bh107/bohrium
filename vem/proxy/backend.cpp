@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_component.hpp>
 #include <bh_util.hpp>
+#include <bh_main_memory.hpp>
 
 #include "comm.hpp"
 
@@ -27,22 +28,20 @@ using namespace std;
 using namespace bohrium;
 using namespace component;
 
-static void service(const std::string &address, int port)
-{
+static void service(const std::string &address, int port) {
     CommBackend comm_backend(address, port);
     unique_ptr<ConfigParser> config;
     unique_ptr<ComponentFace> child;
-    std::map<const bh_base*, bh_base> remote2local;
+    std::map<const bh_base *, bh_base> remote2local;
 
-    while(true) {
+    while (true) {
         // Let's read the head of the message
         vector<char> buf_head(msg::HeaderSize);
         comm_backend.read(buf_head);
         msg::Header head(buf_head);
 
-        switch(head.type) {
-            case msg::Type::INIT:
-            {
+        switch (head.type) {
+            case msg::Type::INIT: {
                 std::vector<char> buffer(head.body_size);
                 comm_backend.read(buffer);
                 msg::Init body(buffer);
@@ -50,19 +49,17 @@ static void service(const std::string &address, int port)
                     throw runtime_error("[VEM-PROXY] Received INIT messages multiple times!");
                 }
                 config.reset(new ConfigParser(body.stack_level));
-                child.reset(new ComponentFace(config->getChildLibraryPath(), config->stack_level+1));
+                child.reset(new ComponentFace(config->getChildLibraryPath(), config->stack_level + 1));
                 break;
             }
-            case msg::Type::SHUTDOWN:
-            {
+            case msg::Type::SHUTDOWN: {
                 return;
             }
-            case msg::Type::EXEC:
-            {
+            case msg::Type::EXEC: {
                 std::vector<char> buffer(head.body_size);
                 comm_backend.read(buffer);
-                vector<bh_base*> data_recv;
-                set<bh_base*> freed;
+                vector<bh_base *> data_recv;
+                set<bh_base *> freed;
                 BhIR bhir(buffer, remote2local, data_recv, freed);
 
                 // Receive new base array data
@@ -81,8 +78,7 @@ static void service(const std::string &address, int port)
                 }
                 break;
             }
-            case msg::Type::GET_DATA:
-            {
+            case msg::Type::GET_DATA: {
                 std::vector<char> buffer(head.body_size);
                 comm_backend.read(buffer);
                 msg::GetData body(buffer);
@@ -94,22 +90,33 @@ static void service(const std::string &address, int port)
                 } else {
                     comm_backend.send_array_data(nullptr, 0);
                 }
+                if (body.nullify) {
+                    remote2local.erase(body.base);
+                }
                 break;
             }
-            case msg::Type::MSG:
-            {
+            case msg::Type::MSG: {
+                std::vector<char> buffer(head.body_size);
+                comm_backend.read(buffer);
+                msg::Message body(buffer);
+                stringstream ss;
+                if (body.msg == "info") {
+                    ss << "  Backend: " << "\n";
+                    ss << "    Hostname: " << comm_backend.hostname() << "\n";
+                    ss << "    IP: "       << comm_backend.ip() << "\n";
+                }
+                ss << child->message(body.msg);
+                comm_backend.write(ss.str());
                 break;
             }
-            default:
-            {
+            default: {
                 throw runtime_error("[VEM-PROXY] the backend received a unknown message type");
             }
         }
     }
 }
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char *argv[]) {
     char *address = nullptr;
     int port = 0;
 

@@ -20,6 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <limits>
 #include <iomanip>
+#include <thread>         // std::this_thread::sleep_for
+#include <chrono>         // std::chrono::seconds
 #include <boost/filesystem/operations.hpp>
 #include <jitk/codegen_util.hpp>
 #include <jitk/view.hpp>
@@ -81,6 +83,8 @@ void create_directories(const boost::filesystem::path &path) {
             if (i == tries) {
                 throw;
             }
+            this_thread::sleep_for(chrono::seconds(3));
+            cerr << e.what() << endl;
             cout << "Warning: " << e.what() << " (" << i << " attempt)" << endl;
         }
     }

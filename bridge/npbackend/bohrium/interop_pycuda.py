@@ -22,6 +22,9 @@ def _import_pycuda_module():
     if not bh_info.is_cuda_in_stack():
         raise RuntimeError("No CUDA device in the Bohrium stack! "
                            "Try defining the environment variable `BH_STACK=cuda`.")
+
+    if bh_info.is_proxy_in_stack():
+        raise RuntimeError("Cannot directly access the CUDA device through a proxy.")
     return pycuda
 
 

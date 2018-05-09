@@ -41,7 +41,7 @@ constexpr int64_t BH_MAXDIM = 16;
 std::ostream &operator<<(std::ostream &out, const bh_base &b);
 
 struct bh_view {
-    bh_view() {}
+    bh_view() = default;
 
     bh_view(const bh_view &view) {
         base = view.base;
@@ -163,6 +163,9 @@ struct bh_view {
                 ar << shape[i];
                 ar << stride[i];
             }
+            ar << slide;
+            ar << slide_dim_stride;
+            ar << slide_dim_shape;
         }
     }
 
@@ -178,6 +181,9 @@ struct bh_view {
                 ar >> shape[i];
                 ar >> stride[i];
             }
+            ar >> slide;
+            ar >> slide_dim_stride;
+            ar >> slide_dim_shape;
         }
     }
 

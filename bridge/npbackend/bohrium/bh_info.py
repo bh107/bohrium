@@ -12,6 +12,7 @@ from .backend_messaging import runtime_info, statistic
 # Some cached info
 _opencl_is_in_stack = None
 _cuda_is_in_stack = None
+_proxy_is_in_stack = None
 
 
 def config_file_path():
@@ -71,12 +72,21 @@ def is_cuda_in_stack():
     return _cuda_is_in_stack
 
 
+def is_proxy_in_stack():
+    """Returns True when the Proxy component is in the Bohrium backend"""
+    global _proxy_is_in_stack
+    if _proxy_is_in_stack is None:
+        _proxy_is_in_stack = "Proxy" in runtime_info()
+    return _proxy_is_in_stack
+
+
 def pprint():
     """Pretty print Bohrium info"""
 
     ret = ""
     if not (is_opencl_in_stack() or is_cuda_in_stack()):
-        ret += "Note: in order to activate and retrieve GPU info, set the `BH_STACK=opencl` environment variable.\n"
+        ret += "Note: in order to activate and retrieve GPU info, set the `BH_STACK=opencl` " \
+               "or `BH_STACK=cuda` environment variable.\n"
 
     ret += """----
 Bohrium version: %s

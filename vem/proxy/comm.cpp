@@ -22,11 +22,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/asio.hpp>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
+#include <zlib.h>
+#include <bh_main_memory.hpp>
 
 #include "serialize.hpp"
 #include "comm.hpp"
-
-#include "zlib.h"
 
 
 using boost::asio::ip::tcp;
@@ -96,7 +96,7 @@ CommFrontend::CommFrontend(int stack_level, const std::string &address, int port
     }
     throw runtime_error("[PROXY-VEM] No connection!");
 
-connected:
+    connected:
     // Serialize message body
     vector<char> buf_body;
     msg::Init body(stack_level);
@@ -130,6 +130,19 @@ void CommFrontend::send_array_data(const bh_base *base) {
 
 void CommFrontend::recv_array_data(bh_base *base) {
     comm_recv_array_data(socket, base);
+}
+
+std::string CommFrontend::read() {
+    vector<char> str_vec;
+    while(1) {
+        char buf;
+        size_t bytes = boost::asio::read(socket, boost::asio::buffer(&buf, 1));
+        if (bytes != 1 or buf == '\0') {
+            break;
+        }
+        str_vec.push_back(buf);
+    }
+    return std::string(str_vec.begin(), str_vec.end());
 }
 
 CommBackend::CommBackend(const std::string &address, int port) : socket(io_service) {
