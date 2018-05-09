@@ -93,21 +93,21 @@ public:
         return *this;
     };
 
-    virtual bool initiated() const;
+    bool initiated() const;
 
-    virtual void execute(BhIR *bhir);
+    void execute(BhIR *bhir);
 
-    virtual void extmethod(const std::string &name, bh_opcode opcode);
+    void extmethod(const std::string &name, bh_opcode opcode);
 
-    virtual std::string message(const std::string &msg);
+    std::string message(const std::string &msg);
 
-    virtual void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify);
+    void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify);
 
-    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem);
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem);
 
-    virtual void *getDeviceContext();
+    void *getDeviceContext();
 
-    virtual void setDeviceContext(void *device_context);
+    void setDeviceContext(void *device_context);
 };
 
 // Representation of a component implementation, which is an abstract class
