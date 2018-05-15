@@ -66,20 +66,7 @@ void BhInstruction::appendOperand(const BhArray<T>& ary) {
               "BH_FREE cannot be used as an instruction on arrays in the bhxx interface. "
               "Use Runtime::instance().enqueue(BH_FREE,array) instead.");
     }
-
-    bh_view view;
-    assert(ary.base.use_count() > 0);
-    view.base  = ary.base.get();
-    view.start = static_cast<int64_t>(ary.offset);
-    view.ndim  = static_cast<int64_t>(ary.shape.size());
-    view.slide = ary.slide;
-    view.slide_dim_stride = ary.slide_dim_stride;
-    view.slide_dim_shape = ary.slide_dim_shape;
-
-    std::copy(ary.shape.begin(), ary.shape.end(), &view.shape[0]);
-    std::copy(ary.stride.begin(), ary.stride.end(), &view.stride[0]);
-    operand.push_back(view);
-
+    operand.push_back(ary.getBhView());
 }
 
 template <typename T>
