@@ -43,25 +43,11 @@ std::ostream &operator<<(std::ostream &out, const bh_base &b);
 struct bh_view {
     bh_view() = default;
 
-    bh_view(const bh_view &view) {
-        base = view.base;
-        if (base == nullptr) {
-            return; //'view' is a constant thus the rest are garbage
-        }
+    /// Copy Constructor
+    bh_view(const bh_view &view);
 
-        start = view.start;
-        ndim = view.ndim;
-        assert(ndim < BH_MAXDIM);
-        assert(view.slide.size() == view.slide_dim_shape.size());
-        assert(view.slide_dim_stride.size() == view.slide_dim_shape.size());
-
-        slide = view.slide;
-        slide_dim_stride = view.slide_dim_stride;
-        slide_dim_shape = view.slide_dim_shape;
-
-        std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
-        std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
-    }
+    /// Create a view that represents the whole of `base`
+    explicit bh_view(bh_base &base);
 
     /// Pointer to the base array.
     bh_base *base;
