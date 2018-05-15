@@ -33,36 +33,25 @@ using boost::asio::ip::tcp;
 using namespace std;
 
 namespace {
-void comm_send_array_data(boost::asio::ip::tcp::socket &socket, const void *data, size_t nbytes) {
-    if (nbytes == 0 or data == nullptr) {
+void comm_send_data(boost::asio::ip::tcp::socket &socket, const std::vector<unsigned char> &data) {
+    if (data.empty()) {
         const size_t size[] = {0};
         boost::asio::write(socket, boost::asio::buffer(size));
     } else {
-        const size_t org_size = nbytes;
-        size_t new_size = compressBound(org_size);
-        vector<Bytef> buffer(new_size);
-        compress(&buffer[0], &new_size, (Bytef *) data, org_size);
-
-        const size_t size[] = {new_size};
+        const size_t size[] = {data.size()};
         boost::asio::write(socket, boost::asio::buffer(size));
-        boost::asio::write(socket, boost::asio::buffer(&buffer[0], new_size));
+        boost::asio::write(socket, boost::asio::buffer(data, data.size()));
     }
 }
 
-void comm_recv_array_data(boost::asio::ip::tcp::socket &socket, bh_base *base) {
+std::vector<unsigned char> comm_recv_data(boost::asio::ip::tcp::socket &socket) {
     size_t size[1];
     boost::asio::read(socket, boost::asio::buffer(size));
-
-    if (size[0] > 0) {
-        bh_data_malloc(base);
-        size_t new_size = base->nbytes();
-
-        vector<char> compressed(size[0]);
-        boost::asio::read(socket, boost::asio::buffer(compressed));
-
-        uncompress((Bytef *) base->data, &new_size, (Bytef *) (&compressed[0]), compressed.size());
-        assert(new_size == base->nbytes());
+    std::vector<unsigned char> ret(size[0]);
+    if (not ret.empty()) {
+        boost::asio::read(socket, boost::asio::buffer(ret));
     }
+    return ret;
 }
 }
 
@@ -124,12 +113,12 @@ CommFrontend::~CommFrontend() {
     socket.close();
 }
 
-void CommFrontend::send_array_data(const bh_base *base) {
-    comm_send_array_data(socket, base->data, base->nbytes());
+void CommFrontend::send_data(const std::vector<unsigned char> &data) {
+    comm_send_data(socket, data);
 }
 
-void CommFrontend::recv_array_data(bh_base *base) {
-    comm_recv_array_data(socket, base);
+std::vector<unsigned char> CommFrontend::recv_data() {
+    return comm_recv_data(socket);
 }
 
 std::string CommFrontend::read() {
@@ -157,10 +146,10 @@ CommBackend::~CommBackend() {
     socket.close();
 }
 
-void CommBackend::send_array_data(const void *data, size_t nbytes) {
-    comm_send_array_data(socket, data, nbytes);
+void CommBackend::send_data(const std::vector<unsigned char> &data) {
+    comm_send_data(socket, data);
 }
 
-void CommBackend::recv_array_data(bh_base *base) {
-    comm_recv_array_data(socket, base);
+std::vector<unsigned char> CommBackend::recv_data() {
+    return comm_recv_data(socket);
 }

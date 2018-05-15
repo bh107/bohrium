@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_main_memory.hpp>
 
 #include "comm.hpp"
+#include "compression.hpp"
 
 using namespace std;
 using namespace bohrium;
@@ -65,7 +66,11 @@ static void service(const std::string &address, int port) {
                 // Receive new base array data
                 for (bh_base *base: data_recv) {
                     base->data = nullptr;
-                    comm_backend.recv_array_data(base);
+                    auto data = comm_backend.recv_data();
+                    if (not data.empty()) {
+                        bh_data_malloc(base);
+                        uncompress(data, *base);
+                    }
                 }
 
                 // Send the bhir down to the child
@@ -85,10 +90,18 @@ static void service(const std::string &address, int port) {
 
                 if (util::exist(remote2local, body.base)) {
                     bh_base &local_base = remote2local.at(body.base);
-                    void *data = child->getMemoryPointer(local_base, true, false, body.nullify);
-                    comm_backend.send_array_data(data, local_base.nbytes());
+                    child->getMemoryPointer(local_base, true, false, false); // Note, we delay nullify to after comm.
+                    if (local_base.data != nullptr) {
+                        auto data = compress(local_base);
+                        comm_backend.send_data(data);
+                    } else {
+                        comm_backend.send_data({});
+                    }
+                    if (body.nullify) {
+                        local_base.data = nullptr;
+                    }
                 } else {
-                    comm_backend.send_array_data(nullptr, 0);
+                    comm_backend.send_data({});
                 }
                 if (body.nullify) {
                     remote2local.erase(body.base);

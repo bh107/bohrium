@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "serialize.hpp"
 #include "comm.hpp"
+#include "compression.hpp"
 
 using namespace bohrium;
 using namespace component;
@@ -98,7 +99,11 @@ public:
         comm_front.write(buf_body);
 
         // Receive the array data
-        comm_front.recv_array_data(&base);
+        vector<unsigned char> data = comm_front.recv_data();
+        if (not data.empty()) {
+            bh_data_malloc(&base);
+            uncompress(data, base);
+        }
 
         if (force_alloc) {
             bh_data_malloc(&base);
@@ -158,7 +163,8 @@ void Impl::execute(BhIR *bhir) {
     // Send array data
     for (bh_base *base: new_data) {
         assert(base->data != nullptr);
-        comm_front.send_array_data(base);
+        auto data = compress(*base);
+        comm_front.send_data(data);
     }
 
     // Cleanup freed base array and make them unknown.
