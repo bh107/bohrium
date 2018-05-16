@@ -32,13 +32,13 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentVE {
 private:
     CommFrontend comm_front;
     std::set<bh_base *> known_base_arrays;
 
 public:
-    Impl(int stack_level) : ComponentImpl(stack_level, false),
+    Impl(int stack_level) : ComponentVE(stack_level, false),
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
                                        config.defaultGet<int>("port", 4200)) {}
@@ -46,9 +46,11 @@ public:
 
     void execute(BhIR *bhir) override;
 
-    void extmethod(const std::string &name, bh_opcode opcode) override {
-        throw runtime_error("[PROXY-VEM] extmethod() not implemented!");
-    };
+    void extmethod(const string &name, bh_opcode opcode) override {
+        // ExtmethodFace does not have a default or copy constructor thus
+        // we have to use its move constructor.
+        extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
+    }
 
     // Handle messages from parent
     string message(const string &msg) override {
@@ -133,6 +135,27 @@ public:
 
     // We have no context so doing nothing
     void setDeviceContext(void* device_context) override {} ;
+
+    // Handle extension methods in `bhir`
+    void handleExtmethod(BhIR *bhir){
+        std::vector<bh_instruction> instr_list;
+        for (bh_instruction &instr: bhir->instr_list) {
+            auto ext = extmethods.find(instr.opcode);
+
+            if (ext != extmethods.end()) { // Execute the instructions up until now
+                BhIR b(std::move(instr_list), bhir->getSyncs());
+                execute(&b);
+                instr_list.clear(); // Notice, it is legal to clear a moved vector.
+                for (bh_view &op: instr.operand) {
+                    getMemoryPointer(*op.base, true, true, false);
+                }
+                ext->second.execute(&instr, nullptr); // Execute the extension method
+            } else {
+                instr_list.push_back(instr);
+            }
+        }
+        bhir->instr_list = instr_list;
+    }
 };
 } //Unnamed namespace
 
@@ -146,6 +169,8 @@ extern "C" void destroy(ComponentImpl* self) {
 
 
 void Impl::execute(BhIR *bhir) {
+
+    handleExtmethod(bhir);
 
     // Serialize the BhIR, which becomes the message body
     vector<bh_base *> new_data; // New data in the order they appear in the instruction list
