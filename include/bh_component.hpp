@@ -231,7 +231,7 @@ public:
     std::set<bh_opcode> child_extmethods;
 
     // Trivial constructor
-    ComponentVE(int stack_level) : ComponentImpl(stack_level) {}
+    explicit ComponentVE(int stack_level, bool initiate_child = true) : ComponentImpl(stack_level, initiate_child) {}
 };
 
 }
