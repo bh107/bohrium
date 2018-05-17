@@ -23,11 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 
 
-std::vector<unsigned char> compress(const bh_view &ary);
+std::vector<unsigned char> compress(const bh_view &ary, const std::string &param);
 
-std::vector<unsigned char> compress(const bh_base &ary);
+std::vector<unsigned char> compress(const bh_base &ary, const std::string &param = "");
 
-void uncompress(const std::vector<unsigned char> &data, bh_view &ary);
+void uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std::string &param);
 
-void uncompress(const std::vector<unsigned char> &data, bh_base &ary);
+void uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param = "");
 
