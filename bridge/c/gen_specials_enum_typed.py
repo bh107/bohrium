@@ -98,6 +98,21 @@ def main(args):
     }
 }\n"""
 
+    doc = "\n// Copy the memory of `src` to `dst`\n"
+    doc += "//   Use 'param' to set compression parameters or use the empty string\n"
+    impl += doc; head += doc
+    decl = "void bhc_data_copy(bhc_dtype dtype, const void *src, const void *dst, const char *param)"
+    head += "%s;\n" % decl
+    impl += """%s
+{
+    switch(dtype) {\n""" % decl
+    for key, t in type_map.items():
+        impl += "        case %s: return bhc_data_copy_A%s((%s)src, (%s)dst, param);\n" \
+                % (key, t['name'], t['bhc_ary'], t['bhc_ary'])
+    impl += """        default: fprintf(stderr, "bhc_data_copy(): unknown dtype\\n"); exit(-1);
+    }
+}\n"""
+
     doc = "\n// Informs the runtime system to make data synchronized and available after the next flush().\n"
     impl += doc; head += doc
     decl = "void bhc_sync(bhc_dtype dtype, const void *ary)"

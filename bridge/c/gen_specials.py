@@ -190,6 +190,21 @@ def main(args):
 
 """ % t
 
+    doc = "\n// Copy the memory of `src` to `dst`\n"
+    doc += "//   Use 'param' to set compression parameters or use the empty string\n"
+    impl += doc; head += doc
+    for key, t in type_map.items():
+        decl = "void bhc_data_copy_A%(name)s(const %(bhc_ary)s src, const %(bhc_ary)s dst, const char *param)" % t
+        head += "%s;\n" % decl
+        impl += "%s" % decl
+        impl += """\
+{
+    bhxx::Runtime::instance().memCopy(*((bhxx::BhArray<%(cpp)s>*) src), *((bhxx::BhArray<%(cpp)s>*) dst), 
+                                      std::string{param});
+}
+
+""" % t
+
     doc = "\n// Informs the runtime system to make data synchronized and available after the next flush().\n"
     impl += doc; head += doc
     for key, t in type_map.items():
@@ -198,8 +213,8 @@ def main(args):
         impl += "%s" % decl
         impl += """\
 {
-   std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
-   bhxx::Runtime::instance().sync(b);
+    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+    bhxx::Runtime::instance().sync(b);
 }
 
 """ % t
@@ -214,7 +229,7 @@ def main(args):
         impl += "%s" % decl
         impl += """\
 {
-   bhxx::Runtime::instance().slide_view(
+    bhxx::Runtime::instance().slide_view(
         (bhxx::BhArray<%(cpp)s>*) ary1,
         (bhxx::BhArray<%(cpp)s>*) ary2,
         dim,

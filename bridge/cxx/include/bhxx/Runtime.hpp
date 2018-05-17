@@ -129,6 +129,19 @@ public:
      */
     void setMemoryPointer(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
 
+    /** Copy the memory of `src` to `dst`
+     *
+     * @tparam T     The type of the arrays
+     * @param src    The source
+     * @param dst    The destination
+     * @param param  Parameters to compression (use the empty string for no compression)
+     */
+    template <typename T>
+    void memCopy(BhArray<T> &src, BhArray<T> &dst, const std::string &param) {
+        bh_view _src = src.getBhView();
+        bh_view _dst = dst.getBhView();
+        runtime.memCopy(_src, _dst, param);
+    }
 
     /** Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
