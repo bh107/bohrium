@@ -34,14 +34,17 @@ using namespace std;
 namespace {
 class Impl : public ComponentVE {
 private:
+    Compression compressor;
     CommFrontend comm_front;
     std::set<bh_base *> known_base_arrays;
+    string compress_param;
 
 public:
     Impl(int stack_level) : ComponentVE(stack_level, false),
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
-                                       config.defaultGet<int>("port", 4200)) {}
+                                       config.defaultGet<int>("port", 4200)),
+                            compress_param(config.defaultGet<string>("compress_param", "zlib")) {}
     ~Impl() override = default;
 
     void execute(BhIR *bhir) override;
@@ -104,7 +107,7 @@ public:
         vector<unsigned char> data = comm_front.recv_data();
         if (not data.empty()) {
             bh_data_malloc(&base);
-            uncompress(data, base);
+            compressor.uncompress(data, base, compress_param);
         }
 
         if (force_alloc) {
@@ -188,7 +191,7 @@ void Impl::execute(BhIR *bhir) {
     // Send array data
     for (bh_base *base: new_data) {
         assert(base->data != nullptr);
-        auto data = compress(*base);
+        auto data = compressor.compress(*base, compress_param);
         comm_front.send_data(data);
     }
 

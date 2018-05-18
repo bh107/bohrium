@@ -33,6 +33,8 @@ static void service(const std::string &address, int port) {
     CommBackend comm_backend(address, port);
     unique_ptr<ConfigParser> config;
     unique_ptr<ComponentFace> child;
+    Compression compression;
+    string compress_param;
     std::map<const bh_base *, bh_base> remote2local;
 
     while (true) {
@@ -51,6 +53,7 @@ static void service(const std::string &address, int port) {
                 }
                 config.reset(new ConfigParser(body.stack_level));
                 child.reset(new ComponentFace(config->getChildLibraryPath(), config->stack_level + 1));
+                compress_param = config->defaultGet<string>("compress_param", "zlib");
                 break;
             }
             case msg::Type::SHUTDOWN: {
@@ -69,7 +72,7 @@ static void service(const std::string &address, int port) {
                     auto data = comm_backend.recv_data();
                     if (not data.empty()) {
                         bh_data_malloc(base);
-                        uncompress(data, *base);
+                        compression.uncompress(data, *base, compress_param);
                     }
                 }
 
@@ -92,7 +95,7 @@ static void service(const std::string &address, int port) {
                     bh_base &local_base = remote2local.at(body.base);
                     child->getMemoryPointer(local_base, true, false, false); // Note, we delay nullify to after comm.
                     if (local_base.data != nullptr) {
-                        auto data = compress(local_base);
+                        auto data = compression.compress(local_base, compress_param);
                         comm_backend.send_data(data);
                     } else {
                         comm_backend.send_data({});

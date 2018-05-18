@@ -24,10 +24,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "compression.hpp"
 #include "zlib.hpp"
 
-
 using namespace std;
 
-std::vector<unsigned char> compress(const bh_view &ary, const std::string &param) {
+namespace bohrium {
+
+std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::string &param) {
     std::vector<unsigned char> ret;
     if (not bh_is_contiguous(&ary) or bh_nelements(ary) != ary.base->nelem) {
         throw std::runtime_error("compress(): `ary` must be contiguous and represent the whole of its base");
@@ -37,10 +38,10 @@ std::vector<unsigned char> compress(const bh_view &ary, const std::string &param
     }
     vector<string> param_list;
     boost::split(param_list, param, boost::is_any_of(","));
-    if(param.empty() or param_list.empty()) {
+    if (param.empty() or param_list.empty()) {
         ret.resize(ary.base->nbytes());
         memcpy(&ret[0], ary.base->data, ary.base->nbytes());
-    } else if(param_list[0] == "zlib") {
+    } else if (param_list[0] == "zlib") {
         ret = zlib_compress(ary.base->data, ary.base->nbytes());
     } else {
         throw std::runtime_error("compress(): unknown param");
@@ -48,13 +49,13 @@ std::vector<unsigned char> compress(const bh_view &ary, const std::string &param
     return ret;
 }
 
-std::vector<unsigned char> compress(const bh_base &ary, const std::string &param) {
-    auto &a = const_cast<bh_base&>(ary);
+std::vector<unsigned char> Compression::compress(const bh_base &ary, const std::string &param) {
+    auto &a = const_cast<bh_base &>(ary);
     const bh_view view{a}; // View of the whole base
     return compress(view, param);
 }
 
-void uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std::string &param) {
+void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std::string &param) {
     if (not bh_is_contiguous(&ary) or bh_nelements(ary) != ary.base->nelem) {
         throw std::runtime_error("uncompress(): `ary` must be contiguous and represent the whole of its base");
     }
@@ -65,18 +66,18 @@ void uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std:
 
     vector<string> param_list;
     boost::split(param_list, param, boost::is_any_of(","));
-    if(param.empty() or param_list.empty()) {
+    if (param.empty() or param_list.empty()) {
         assert(data.size() == ary.base->nbytes());
         memcpy(ary.base->data, &data[0], ary.base->nbytes());
-    } else if(param_list[0] == "zlib") {
+    } else if (param_list[0] == "zlib") {
         zlib_uncompress(data, ary.base->data, ary.base->nbytes());
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
 }
 
-void uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param) {
+void Compression::uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param) {
     bh_view view{ary}; // View of the whole base
     uncompress(data, view, param);
 }
-
+}

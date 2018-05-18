@@ -22,29 +22,41 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_view.hpp>
 
-/** Compress `ary`
- *
- * @param ary    The array view to compress, the view MUST represent the whole base array and be contiguous
- * @param param  A string of parameters to parsed through to the compress library
- * @return       The compressed bytes
- */
-std::vector<unsigned char> compress(const bh_view &ary, const std::string &param);
+namespace bohrium {
+class Compression {
+public:
+    Compression() = default;
 
-/** Compress `ary`
- *
- * @param ary    The array base to compress
- * @param param  A string of parameters to parsed through to the compress library
- * @return       The compressed bytes
- */
-std::vector<unsigned char> compress(const bh_base &ary, const std::string &param = "");
+    /** Compress `ary`
+     *
+     * @param ary    The array view to compress, the view MUST represent the whole base array and be contiguous
+     * @param param  A string of parameters to parsed through to the compress library
+     * @return       The compressed bytes
+     */
+    std::vector<unsigned char> compress(const bh_view &ary, const std::string &param);
 
+    /** Compress `ary`
+     *
+     * @param ary    The array base to compress
+     * @param param  A string of parameters to parsed through to the compress library
+     * @return       The compressed bytes
+     */
+    std::vector<unsigned char> compress(const bh_base &ary, const std::string &param);
 
-/** Uncompress `data` into `ary`
- *
- * @param data   The byte of compressed data
- * @param ary    The output array
- * @param param  A string of parameters to parsed through to the compress library
- */
-void uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std::string &param);
+    /** Uncompress `data` into `ary`
+     *
+     * @param data   The byte of compressed data
+     * @param ary    The output array
+     * @param param  A string of parameters to parsed through to the compress library
+     */
+    void uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std::string &param);
 
-void uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param = "");
+    /** Uncompress `data` into `ary`
+     *
+     * @param data   The byte of compressed data
+     * @param ary    The output array
+     * @param param  A string of parameters to parsed through to the compress library
+     */
+    void uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param);
+};
+}
