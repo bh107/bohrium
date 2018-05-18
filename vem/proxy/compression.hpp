@@ -24,6 +24,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bohrium {
 class Compression {
+    struct Stat {
+        uint64_t total_raw = 0;
+        uint64_t total_compressed = 0;
+    };
+    std::map<std::string, Stat> stat_per_codex;
+
 public:
     Compression() = default;
 
@@ -58,5 +64,11 @@ public:
      * @param param  A string of parameters to parsed through to the compress library
      */
     void uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param);
+
+    /** Pretty print statistics
+     *
+     * @return The printed string
+     */
+    std::string pprintStats() const;
 };
 }

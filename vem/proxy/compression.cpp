@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_main_memory.hpp>
 #include <boost/algorithm/string.hpp>
 #include <opencv2/opencv.hpp>
+#include <colors.hpp>
 #include "compression.hpp"
 #include "zlib.hpp"
 
@@ -95,6 +96,9 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
+
+    stat_per_codex[param].total_compressed += ret.size();
+    stat_per_codex[param].total_raw += ary.base->nbytes();
     return ret;
 }
 
@@ -133,10 +137,25 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
+    stat_per_codex[param].total_compressed += data.size();
+    stat_per_codex[param].total_raw += ary.base->nbytes();
 }
 
 void Compression::uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param) {
     bh_view view{ary}; // View of the whole base
     uncompress(data, view, param);
 }
+
+std::string Compression::pprintStats() const {
+    stringstream ss;
+    ss << BLU << "[PROXY-VEM] Profiling: \n" << RST;
+    for (auto &it: stat_per_codex) {
+        ss << "Codex \"" << it.first << "\":\n";
+        ss << "  Raw data: " << it.second.total_raw << "\n";
+        ss << "  Zip data: " << it.second.total_compressed << "\n";
+        ss << "  Ratio: " << it.second.total_raw / (double) it.second.total_compressed << "\n";
+    }
+    return ss.str();
+}
+
 }

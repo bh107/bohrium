@@ -38,14 +38,20 @@ private:
     CommFrontend comm_front;
     std::set<bh_base *> known_base_arrays;
     string compress_param;
+    bool stat_print_on_exit;
 
 public:
     Impl(int stack_level) : ComponentVE(stack_level, false),
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
                                        config.defaultGet<int>("port", 4200)),
-                            compress_param(config.defaultGet<string>("compress_param", "zlib")) {}
-    ~Impl() override = default;
+                            compress_param(config.defaultGet<string>("compress_param", "zlib")),
+                            stat_print_on_exit(config.defaultGet("prof", false)) {}
+    ~Impl() override {
+        if (stat_print_on_exit) {
+            cout << compressor.pprintStats() << endl;
+        }
+    }
 
     void execute(BhIR *bhir) override;
 
