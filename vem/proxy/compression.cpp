@@ -20,9 +20,9 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_base.hpp>
 #include <bh_main_memory.hpp>
-#include <zlib.h>
 #include <boost/algorithm/string.hpp>
 #include "compression.hpp"
+#include "zlib.hpp"
 
 
 using namespace std;
@@ -41,13 +41,7 @@ std::vector<unsigned char> compress(const bh_view &ary, const std::string &param
         ret.resize(ary.base->nbytes());
         memcpy(&ret[0], ary.base->data, ary.base->nbytes());
     } else if(param_list[0] == "zlib") {
-        uLongf compress_size = compressBound(ary.base->nbytes());
-        ret.resize(compress_size);
-        int err = compress(&ret[0], &compress_size, (Bytef *) ary.base->data, ary.base->nbytes());
-        if (err != Z_OK) {
-            throw std::runtime_error("zlib compress(): failed");
-        }
-        ret.resize(compress_size);
+        ret = zlib_compress(ary.base->data, ary.base->nbytes());
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
@@ -75,12 +69,7 @@ void uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std:
         assert(data.size() == ary.base->nbytes());
         memcpy(ary.base->data, &data[0], ary.base->nbytes());
     } else if(param_list[0] == "zlib") {
-        size_t size = ary.base->nbytes();
-        int err = uncompress((Bytef *) ary.base->data, &size, (Bytef *) (&data[0]), data.size());
-        if (err != Z_OK) {
-            throw std::runtime_error("zlib uncompress(): failed");
-        }
-        assert(size == ary.base->nbytes());
+        zlib_uncompress(data, ary.base->data, ary.base->nbytes());
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
