@@ -21,12 +21,37 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_base.hpp>
 #include <bh_main_memory.hpp>
 #include <boost/algorithm/string.hpp>
+#include <opencv2/opencv.hpp>
 #include "compression.hpp"
 #include "zlib.hpp"
 
 using namespace std;
 
 namespace bohrium {
+
+namespace {
+/// Help function that converts to OpenCV dtypes
+int bh2cv_dtype(bh_type type) {
+    switch (type) {
+        case bh_type::INT8:
+            return CV_8SC1;
+        case bh_type::INT16:
+            return CV_16SC1;
+        case bh_type::INT32:
+            return CV_32SC1;
+        case bh_type::UINT8:
+            return CV_8UC1;
+        case bh_type::UINT16:
+            return CV_16UC1;
+        case bh_type::FLOAT32:
+            return CV_32FC1;
+        case bh_type::FLOAT64:
+            return CV_64FC1;
+        default:
+            throw std::runtime_error("bh2cv_dtype: unsupported type UINT64");
+    }
+}
+}
 
 std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::string &param) {
     std::vector<unsigned char> ret;
@@ -43,6 +68,30 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
         memcpy(&ret[0], ary.base->data, ary.base->nbytes());
     } else if (param_list[0] == "zlib") {
         ret = zlib_compress(ary.base->data, ary.base->nbytes());
+    } else if (param_list[0] == "jpg" or param_list[0] == "png" or param_list[0] == "jp2") {
+        const int cv_type = bh2cv_dtype(ary.base->type);
+        if (ary.base->type != bh_type::UINT8) {
+            throw std::runtime_error("compress(): jpg and png only support uint8 arrays");
+        }
+        int sizes[BH_MAXDIM];
+        for (int i = 0; i < ary.ndim; i++) {
+            sizes[i] = static_cast<int>(ary.shape[i]);
+        }
+
+        // Convert the string `param` to the OpenCV `params`
+        std::vector<int> params;
+        if (param_list.size() > 1) {
+            if (param_list[0] == "jpg") {
+                params.push_back(CV_IMWRITE_JPEG_QUALITY);
+                params.push_back(std::stoi(param_list[1]));
+            } else if (param_list[0] == "png") {
+                params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+                params.push_back(std::stoi(param_list[1]));
+            }
+        }
+
+        cv::Mat mat(static_cast<int>(ary.ndim), sizes, cv_type, ary.base->data);
+        cv::imencode("." + param_list[0], mat, ret, params);
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
@@ -71,6 +120,16 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
         memcpy(ary.base->data, &data[0], ary.base->nbytes());
     } else if (param_list[0] == "zlib") {
         zlib_uncompress(data, ary.base->data, ary.base->nbytes());
+    } else if (param_list[0] == "jpg" or param_list[0] == "png" or param_list[0] == "jp2") {
+        if (ary.base->type != bh_type::UINT8) {
+            throw std::runtime_error("uncompress(): jpg and png only support uint8 arrays");
+        }
+        cv::Mat out = cv::imdecode(data, CV_LOAD_IMAGE_ANYDEPTH);
+        if (out.data == nullptr) {
+            throw std::runtime_error("imdecode(): failed!");
+        }
+        assert(ary.base->nbytes() == (size_t) (out.dataend - out.data));
+        memcpy(ary.base->data, out.data, ary.base->nbytes());
     } else {
         throw std::runtime_error("compress(): unknown param");
     }

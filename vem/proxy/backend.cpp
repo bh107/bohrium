@@ -111,6 +111,25 @@ static void service(const std::string &address, int port) {
                 }
                 break;
             }
+            case msg::Type::MEM_COPY: {
+                std::vector<char> buffer(head.body_size);
+                comm_backend.read(buffer);
+                msg::MemCopy body(buffer);
+                if (util::exist(remote2local, body.src.base)) {
+                    bh_view src = body.src;
+                    src.base = &remote2local.at(body.src.base);
+                    child->getMemoryPointer(*src.base, true, false, false);
+                    if (src.base->data != nullptr) {
+                        auto data = compression.compress(src, body.param);
+                        comm_backend.send_data(data);
+                    } else {
+                        comm_backend.send_data({});
+                    }
+                } else {
+                    comm_backend.send_data({});
+                }
+                break;
+            }
             case msg::Type::MSG: {
                 std::vector<char> buffer(head.body_size);
                 comm_backend.read(buffer);

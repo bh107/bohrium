@@ -131,6 +131,40 @@ public:
         throw runtime_error("PROXY - setMemoryPointer(): not implemented");
     }
 
+    // Handle memory copy
+    void memCopy(bh_view &src, bh_view &dst, const std::string &param) override {
+        if (bh_is_constant(&src) or bh_is_constant(&dst)) {
+            throw runtime_error("PROXY - memCopy(): `src` and `dst` cannot be constants");
+        }
+        if (bh_nelements(src) != bh_nelements(dst)) {
+            throw runtime_error("PROXY - memCopy(): `src` and `dst` must have same size");
+        }
+        if (util::exist(known_base_arrays, dst.base) or dst.base->data != nullptr) {
+            throw runtime_error("PROXY - memCopy(): `dst` must be un-initiated");
+        }
+
+        // Serialize message body
+        vector<char> buf_body;
+        msg::MemCopy body(src, param);
+        body.serialize(buf_body);
+
+        // Serialize message head
+        vector<char> buf_head;
+        msg::Header head(msg::Type::MEM_COPY, buf_body.size());
+        head.serialize(buf_head);
+
+        // Send serialized message
+        comm_front.write(buf_head);
+        comm_front.write(buf_body);
+
+        // Receive the array data
+        vector<unsigned char> data = comm_front.recv_data();
+        if (not data.empty()) {
+            bh_data_malloc(dst.base);
+            compressor.uncompress(data, dst, param);
+        }
+    }
+
     // We have no context so returning NULL
     void* getDeviceContext() override {
         return nullptr;
