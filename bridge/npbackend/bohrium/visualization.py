@@ -9,6 +9,21 @@ from . import ufuncs, array_create
 from bohrium import _bh
 
 
+def compressed_copy(ary, param):
+    a_min = ary.min()
+    a_range = ary.max() - ary.min()
+    # Normalize `ary` into uint8
+    a = (ary - a_min) * 255 / a_range
+    assert (a.min() >= 0)
+    assert (a.max() < 256)
+    a = np.array(a, dtype=np.uint8)
+    # Copy `a` using `param`
+    a = _bh.mem_copy(a, param=param)
+    # un-normalize and convert back to the original dtype of `ary`
+    a = array_create.array(a, dtype=ary.dtype)
+    return (a * a_range + a_min) / 255.0
+
+
 def plot_surface(ary, mode, colormap, lowerbound, upperbound, param=None):
     mode = mode.lower()
 
@@ -48,16 +63,7 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound, param=None):
         dtype=np.float32
     )
 
-    # When param is used, we normalize `ary` to uint8 and use `mem_copy()` to compress `ary`
     if param is not None:
-        ary_min = ary.min()
-        ary_range = ary.max() - ary.min()
-        ary = (ary-ary_min) * 255 / ary_range
-        assert(ary.min() >= 0)
-        assert(ary.max() < 256)
-        ary = np.array(ary, dtype=np.uint8)
-        ary = _bh.mem_copy(ary, param=param)
-        ary = array_create.array(ary, dtype=np.float32)
-        ary = (ary * ary_range + ary_min) / 255.0
+        ary = compressed_copy(ary, param)
 
     ufuncs.extmethod("visualizer", ary, args, ary)  # Send to extension
