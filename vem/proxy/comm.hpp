@@ -25,11 +25,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "serialize.hpp"
 
 class CommFrontend {
+    uint64_t sim_bandwidth = 1000; // bytes per second
 public:
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::socket socket;
 
-    CommFrontend(int stack_level, const std::string &address, int port);
+    CommFrontend(int stack_level, const std::string &address, int port, uint64_t sim_bandwidth);
 
     ~CommFrontend();
 
@@ -41,7 +42,7 @@ public:
     /// Read string from the `CommBackend`
     std::string read();
 
-    /// Send data to  the `CommBackend`
+    /// Send data to the `CommBackend`
     void send_data(const std::vector<unsigned char> &data);
 
     /// Receive data from the `CommBackend`

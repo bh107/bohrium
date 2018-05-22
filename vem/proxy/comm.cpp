@@ -55,7 +55,10 @@ std::vector<unsigned char> comm_recv_data(boost::asio::ip::tcp::socket &socket) 
 }
 }
 
-CommFrontend::CommFrontend(int stack_level, const std::string &address, int port) : socket(io_service) {
+CommFrontend::CommFrontend(int stack_level,
+                           const std::string &address,
+                           int port,
+                           uint64_t sim_bandwidth) : sim_bandwidth(sim_bandwidth), socket(io_service) {
     constexpr unsigned int retries = 100;
     for (unsigned int i = 1; i <= retries; ++i) {
         try {
@@ -114,11 +117,30 @@ CommFrontend::~CommFrontend() {
 }
 
 void CommFrontend::send_data(const std::vector<unsigned char> &data) {
+    auto t = chrono::steady_clock::now();
     comm_send_data(socket, data);
+    std::chrono::duration<double> comm_time = chrono::steady_clock::now() - t;
+    std::chrono::duration<double> sim_time = std::chrono::duration<double>{data.size() / (double) sim_bandwidth};
+    if (comm_time < sim_time) {
+        sim_time -= comm_time;
+    }
+    if (sim_time.count() > 0) {
+        std::this_thread::sleep_for(sim_time);
+    }
 }
 
 std::vector<unsigned char> CommFrontend::recv_data() {
-    return comm_recv_data(socket);
+    auto t = chrono::steady_clock::now();
+    std::vector<unsigned char> ret = comm_recv_data(socket);
+    std::chrono::duration<double> comm_time = chrono::steady_clock::now() - t;
+    std::chrono::duration<double> sim_time = std::chrono::duration<double>{ret.size() / (double) sim_bandwidth};
+    if (comm_time < sim_time) {
+        sim_time -= comm_time;
+    }
+    if (sim_time.count() > 0) {
+        std::this_thread::sleep_for(sim_time);
+    }
+    return ret;
 }
 
 std::string CommFrontend::read() {
