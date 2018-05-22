@@ -84,6 +84,10 @@ public:
             ss << "  Frontend: " << "\n";
             ss << "    Hostname: " << comm_front.hostname() << "\n";
             ss << "    IP: "       << comm_front.ip();
+        } else if (msg == "statistics-detail") {
+            ss << "----" << "\n";
+            ss << "Proxy:" << "\n";
+            ss << compressor.pprintStatsDetail();
         }
         ss << comm_front.read(); // Read the message from the backend
         return ss.str();

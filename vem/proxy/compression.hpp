@@ -25,10 +25,14 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 class Compression {
     struct Stat {
-        uint64_t total_raw = 0;
-        uint64_t total_compressed = 0;
+        uint64_t total_raw;
+        uint64_t total_compressed;
+
+        Stat(uint64_t total_raw, uint64_t total_compressed) : total_raw(total_raw),
+                                                              total_compressed(total_compressed) {}
     };
-    std::map<std::string, Stat> stat_per_codex;
+
+    std::map<std::string, std::vector<Stat> > stat_per_codex;
 
 public:
     Compression() = default;
@@ -70,5 +74,11 @@ public:
      * @return The printed string
      */
     std::string pprintStats() const;
+
+    /** Pretty print detailed statistics, which include statistics for each package transfer
+     *
+     * @return The printed string
+     */
+    std::string pprintStatsDetail() const;
 };
 }

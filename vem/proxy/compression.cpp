@@ -96,9 +96,7 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
-
-    stat_per_codex[param].total_compressed += ret.size();
-    stat_per_codex[param].total_raw += ary.base->nbytes();
+    stat_per_codex[param].push_back(Stat{ary.base->nbytes(), ret.size()});
     return ret;
 }
 
@@ -137,8 +135,7 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
-    stat_per_codex[param].total_compressed += data.size();
-    stat_per_codex[param].total_raw += ary.base->nbytes();
+    stat_per_codex[param].push_back(Stat{ary.base->nbytes(), data.size()});
 }
 
 void Compression::uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param) {
@@ -149,11 +146,40 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_base &ar
 std::string Compression::pprintStats() const {
     stringstream ss;
     ss << BLU << "[PROXY-VEM] Profiling: \n" << RST;
-    for (auto &it: stat_per_codex) {
-        ss << "Codex \"" << it.first << "\":\n";
-        ss << "  Raw data: " << it.second.total_raw << "\n";
-        ss << "  Zip data: " << it.second.total_compressed << "\n";
-        ss << "  Ratio: " << it.second.total_raw / (double) it.second.total_compressed << "\n";
+    for (auto &param: stat_per_codex) {
+        uint64_t total_raw = 0;
+        uint64_t total_compressed = 0;
+        for (const Stat &stat: param.second) {
+            total_raw += stat.total_raw;
+            total_compressed += stat.total_compressed;
+        }
+        ss << "Codex \"" << param.first << "\":\n";
+        ss << "  Raw data: " << total_raw << "\n";
+        ss << "  Zip data: " << total_compressed << "\n";
+        ss << "  Ratio: " << total_raw / (double) total_compressed << "\n";
+    }
+    return ss.str();
+}
+
+std::string Compression::pprintStatsDetail() const {
+    stringstream ss;
+    for (auto &param: stat_per_codex) {
+        ss << "Codex \"" << param.first << "\":\n";
+        ss << "  Raw data: ";
+        for (const Stat &stat: param.second) {
+            ss << stat.total_raw << ", ";
+        }
+        ss << "\n";
+        ss << "  Zip data: ";
+        for (const Stat &stat: param.second) {
+            ss << stat.total_compressed << ", ";
+        }
+        ss << "\n";
+        ss << "  Ratio: ";
+        for (const Stat &stat: param.second) {
+            ss << stat.total_raw / (double) stat.total_compressed << ", ";
+        }
+        ss << "\n";
     }
     return ss.str();
 }
