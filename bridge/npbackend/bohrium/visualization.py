@@ -11,9 +11,9 @@ from bohrium import _bh
 
 def compressed_copy(ary, param):
     a_min = ary.min()
-    a_range = ary.max() - ary.min()
+    a_range = ary.max() - ary.min() + 1
     # Normalize `ary` into uint8
-    a = (ary - a_min) * 255 / a_range
+    a = (ary - a_min) * 256 / a_range
     assert (a.min() >= 0)
     assert (a.max() < 256)
     a = np.array(a, dtype=np.uint8)
@@ -21,7 +21,7 @@ def compressed_copy(ary, param):
     a = _bh.mem_copy(a, param=param)
     # un-normalize and convert back to the original dtype of `ary`
     a = array_create.array(a, dtype=ary.dtype)
-    return (a * a_range + a_min) / 255.0
+    return (a * a_range + a_min) / 256.0
 
 
 def plot_surface(ary, mode, colormap, lowerbound, upperbound, param=None):
