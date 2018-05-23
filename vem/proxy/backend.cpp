@@ -101,6 +101,7 @@ static void service(const std::string &address, int port) {
                         comm_backend.send_data({});
                     }
                     if (body.nullify) {
+                        bh_data_free(&local_base);
                         local_base.data = nullptr;
                     }
                 } else {
