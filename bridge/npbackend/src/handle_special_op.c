@@ -338,6 +338,7 @@ PyObject* PyMemCopy(PyObject *self, PyObject *args, PyObject *kwds) {
         bhc_flush();
         bhc_data_copy(dtype, src_ptr, dst_ptr, param);
     }
+    Py_DECREF(src);
     return dst;
 }
 
