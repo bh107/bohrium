@@ -9,7 +9,8 @@ env:
     - BH_OPENMP_VOLATILE=true
     - BH_OPENCL_PROF=true
     - BH_OPENCL_VOLATILE=true
-    - TEST_RUN="/bh/test/python/run.py /bh/test/python/tests/test_*.py"
+    - TEST_ALL="/bh/test/python/run.py /bh/test/python/tests/test_*.py"
+    - TEST_SMALL="/bh/test/python/run.py /bh/test/python/tests/test_primitives.py /bh/test/python/tests/test_reduce.py"
 
 script:
   - env | grep -E "BH_|EXEC" | sort > .env-file
@@ -31,17 +32,17 @@ jobs:
 
     - stage: verify
     # Test suite
-      env: BH_STACK=openmp EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=opencl EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=openmp EXEC="python3.6 $TEST_RUN"
-    - env: BH_STACK=opencl EXEC="python3.6 $TEST_RUN"
-      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $TEST_RUN"
+      env: BH_STACK=openmp EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=openmp EXEC="python3.6 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="python3.6 $TEST_ALL"
+      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $TEST_ALL"
 
     # Test of older Python versions
-    - env: BH_STACK=opencl EXEC="python3.4 $TEST_RUN"
-    - env: BH_STACK=opencl EXEC="python3.5 $TEST_RUN"
+    - env: BH_STACK=opencl EXEC="python3.4 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="python3.5 $TEST_ALL"
 
 deploy:
   provider: script
