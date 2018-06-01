@@ -116,6 +116,10 @@ set_package_properties(LibSigSegv PROPERTIES DESCRIPTION "GNU libsigsegv" URL "w
 set_package_properties(LibSigSegv PROPERTIES TYPE REQUIRED PURPOSE "libsigsegv is required to build Bohrium")
 include_directories(${LIBSIGSEGV_INCLUDE_DIR})
 
+find_package(OpenCV 3)
+set_package_properties(OpenCV PROPERTIES DESCRIPTION "Open Source Computer Vision" URL "opencv.org")
+set_package_properties(OpenCV PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the OpenCV extended method")
+
 #####################
 # Bohrium components
 set(BH_OPENMP_LIBS "")

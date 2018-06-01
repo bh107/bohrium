@@ -37,21 +37,21 @@ namespace boost { namespace serialization { class access; }}
 //Memory layout of the Bohrium instruction
 struct bh_instruction {
     // Opcode: Identifies the operation
-    bh_opcode opcode;
+    bh_opcode opcode = -1;
     // Id of each operand
     std::vector<bh_view> operand;
     // Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
     // Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
     // For now, this flag is only used by the code generators.
-    bool constructor;
+    bool constructor = false;
     // An identifier to track the original source of instruction transformations thus transformations such as
     // copy, transpose, and reshape does not change the 'origin_id'.
     // For now, this flag is only used by the code generators.
     int64_t origin_id = -1; // -1 indicates: unset
 
     // Constructors
-    bh_instruction() {}
+    bh_instruction() = default;
 
     bh_instruction(bh_opcode opcode, std::vector<bh_view> operands) : opcode(opcode), operand(std::move(operands)) {}
 

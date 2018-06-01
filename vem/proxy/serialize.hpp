@@ -38,6 +38,7 @@ enum class Type {
     SHUTDOWN,
     EXEC,
     GET_DATA,
+    MEM_COPY,
     MSG
 };
 
@@ -82,6 +83,21 @@ struct GetData {
 
     /** The de-serializing constructor */
     explicit GetData(const std::vector<char> &buffer);
+
+    /** Serialize to `buffer` */
+    void serialize(std::vector<char> &buffer);
+};
+
+/** RPC: `memCopy()` */
+struct MemCopy {
+    bh_view src;
+    std::string param;
+
+    /** The regular constructor */
+    explicit MemCopy(const bh_view &src, std::string param) : src(src), param(std::move(param)) {}
+
+    /** The de-serializing constructor */
+    explicit MemCopy(const std::vector<char> &buffer);
 
     /** Serialize to `buffer` */
     void serialize(std::vector<char> &buffer);

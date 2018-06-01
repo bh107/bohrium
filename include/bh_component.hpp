@@ -93,21 +93,23 @@ public:
         return *this;
     };
 
-    bool initiated() const;
+    virtual bool initiated() const;
 
-    void execute(BhIR *bhir);
+    virtual void execute(BhIR *bhir);
 
-    void extmethod(const std::string &name, bh_opcode opcode);
+    virtual void extmethod(const std::string &name, bh_opcode opcode);
 
-    std::string message(const std::string &msg);
+    virtual std::string message(const std::string &msg);
 
-    void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify);
+    virtual void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify);
 
-    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem);
+    virtual void memCopy(bh_view &src, bh_view &dst, const std::string &param);
 
-    void *getDeviceContext();
+    virtual void setMemoryPointer(bh_base *base, bool host_ptr, void *mem);
 
-    void setDeviceContext(void *device_context);
+    virtual void *getDeviceContext();
+
+    virtual void setDeviceContext(void *device_context);
 };
 
 // Representation of a component implementation, which is an abstract class
@@ -199,6 +201,16 @@ public:
         return child.setMemoryPointer(base, host_ptr, mem);
     }
 
+    /** Copy the memory of `src` to `dst`
+     *
+     * @param src    Source
+     * @param dst    Destination
+     * @param param  Parameters to compression (use the empty string for no compression)
+     */
+    virtual void memCopy(bh_view &src, bh_view &dst, const std::string &param) {
+        return child.memCopy(src, dst, param);
+    }
+
     /** Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
      *
@@ -231,7 +243,7 @@ public:
     std::set<bh_opcode> child_extmethods;
 
     // Trivial constructor
-    ComponentVE(int stack_level) : ComponentImpl(stack_level) {}
+    explicit ComponentVE(int stack_level, bool initiate_child = true) : ComponentImpl(stack_level, initiate_child) {}
 };
 
 }

@@ -5,11 +5,6 @@ if(NOT EXT_OPENCV)
     return()
 endif()
 
-# External dependencies
-find_package(OpenCV 3 QUIET)
-set_package_properties(OpenCV PROPERTIES DESCRIPTION "Open Source Computer Vision" URL "opencv.org")
-set_package_properties(OpenCV PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the OpenCV extended method")
-
 if(OpenCV_FOUND)
     set(EXTMETHOD_DIR ${CMAKE_BINARY_DIR}/extmethods/opencv)
     file(MAKE_DIRECTORY ${EXTMETHOD_DIR})

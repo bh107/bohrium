@@ -109,6 +109,13 @@ void ComponentFace::setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
     return _implementation->setMemoryPointer(base, host_ptr, mem);
 }
 
+void ComponentFace::memCopy(bh_view &src, bh_view &dst, const std::string &param) {
+    if (not initiated()) {
+        throw std::runtime_error("uninitiated component interface");
+    }
+    return _implementation->memCopy(src, dst, param);
+}
+
 void *ComponentFace::getDeviceContext() {
     if (not initiated()) {
         throw std::runtime_error("uninitiated component interface");

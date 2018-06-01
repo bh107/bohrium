@@ -25,29 +25,42 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "serialize.hpp"
 #include "comm.hpp"
+#include "compression.hpp"
 
 using namespace bohrium;
 using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentVE {
 private:
+    Compression compressor;
     CommFrontend comm_front;
     std::set<bh_base *> known_base_arrays;
+    string compress_param;
+    bool stat_print_on_exit;
 
 public:
-    Impl(int stack_level) : ComponentImpl(stack_level, false),
+    Impl(int stack_level) : ComponentVE(stack_level, false),
                             comm_front(stack_level,
                                        config.defaultGet<string>("address", "127.0.0.1"),
-                                       config.defaultGet<int>("port", 4200)) {}
-    ~Impl() override = default;
+                                       config.defaultGet<int>("port", 4200),
+                                       config.defaultGet<uint64_t>("delay", 0)),
+                            compress_param(config.defaultGet<string>("compress_param", "zlib")),
+                            stat_print_on_exit(config.defaultGet("prof", false)) {}
+    ~Impl() override {
+        if (stat_print_on_exit) {
+            cout << compressor.pprintStats() << endl;
+        }
+    }
 
     void execute(BhIR *bhir) override;
 
-    void extmethod(const std::string &name, bh_opcode opcode) override {
-        throw runtime_error("[PROXY-VEM] extmethod() not implemented!");
-    };
+    void extmethod(const string &name, bh_opcode opcode) override {
+        // ExtmethodFace does not have a default or copy constructor thus
+        // we have to use its move constructor.
+        extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
+    }
 
     // Handle messages from parent
     string message(const string &msg) override {
@@ -72,6 +85,10 @@ public:
             ss << "  Frontend: " << "\n";
             ss << "    Hostname: " << comm_front.hostname() << "\n";
             ss << "    IP: "       << comm_front.ip();
+        } else if (msg == "statistics-detail") {
+            ss << "----" << "\n";
+            ss << "Proxy:" << "\n";
+            ss << compressor.pprintStatsDetail();
         }
         ss << comm_front.read(); // Read the message from the backend
         return ss.str();
@@ -98,7 +115,11 @@ public:
         comm_front.write(buf_body);
 
         // Receive the array data
-        comm_front.recv_array_data(&base);
+        vector<unsigned char> data = comm_front.recv_data();
+        if (not data.empty()) {
+            bh_data_malloc(&base);
+            compressor.uncompress(data, base, compress_param);
+        }
 
         if (force_alloc) {
             bh_data_malloc(&base);
@@ -121,6 +142,40 @@ public:
         throw runtime_error("PROXY - setMemoryPointer(): not implemented");
     }
 
+    // Handle memory copy
+    void memCopy(bh_view &src, bh_view &dst, const std::string &param) override {
+        if (bh_is_constant(&src) or bh_is_constant(&dst)) {
+            throw runtime_error("PROXY - memCopy(): `src` and `dst` cannot be constants");
+        }
+        if (bh_nelements(src) != bh_nelements(dst)) {
+            throw runtime_error("PROXY - memCopy(): `src` and `dst` must have same size");
+        }
+        if (util::exist(known_base_arrays, dst.base) or dst.base->data != nullptr) {
+            throw runtime_error("PROXY - memCopy(): `dst` must be un-initiated");
+        }
+
+        // Serialize message body
+        vector<char> buf_body;
+        msg::MemCopy body(src, param);
+        body.serialize(buf_body);
+
+        // Serialize message head
+        vector<char> buf_head;
+        msg::Header head(msg::Type::MEM_COPY, buf_body.size());
+        head.serialize(buf_head);
+
+        // Send serialized message
+        comm_front.write(buf_head);
+        comm_front.write(buf_body);
+
+        // Receive the array data
+        vector<unsigned char> data = comm_front.recv_data();
+        if (not data.empty()) {
+            bh_data_malloc(dst.base);
+            compressor.uncompress(data, dst, param);
+        }
+    }
+
     // We have no context so returning NULL
     void* getDeviceContext() override {
         return nullptr;
@@ -128,6 +183,27 @@ public:
 
     // We have no context so doing nothing
     void setDeviceContext(void* device_context) override {} ;
+
+    // Handle extension methods in `bhir`
+    void handleExtmethod(BhIR *bhir){
+        std::vector<bh_instruction> instr_list;
+        for (bh_instruction &instr: bhir->instr_list) {
+            auto ext = extmethods.find(instr.opcode);
+
+            if (ext != extmethods.end()) { // Execute the instructions up until now
+                BhIR b(std::move(instr_list), bhir->getSyncs());
+                execute(&b);
+                instr_list.clear(); // Notice, it is legal to clear a moved vector.
+                for (bh_view &op: instr.operand) {
+                    getMemoryPointer(*op.base, true, true, false);
+                }
+                ext->second.execute(&instr, nullptr); // Execute the extension method
+            } else {
+                instr_list.push_back(instr);
+            }
+        }
+        bhir->instr_list = instr_list;
+    }
 };
 } //Unnamed namespace
 
@@ -141,6 +217,8 @@ extern "C" void destroy(ComponentImpl* self) {
 
 
 void Impl::execute(BhIR *bhir) {
+
+    handleExtmethod(bhir);
 
     // Serialize the BhIR, which becomes the message body
     vector<bh_base *> new_data; // New data in the order they appear in the instruction list
@@ -158,7 +236,8 @@ void Impl::execute(BhIR *bhir) {
     // Send array data
     for (bh_base *base: new_data) {
         assert(base->data != nullptr);
-        comm_front.send_array_data(base);
+        auto data = compressor.compress(*base, compress_param);
+        comm_front.send_data(data);
     }
 
     // Cleanup freed base array and make them unknown.

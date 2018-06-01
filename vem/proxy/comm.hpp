@@ -25,26 +25,28 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "serialize.hpp"
 
 class CommFrontend {
+    uint64_t sim_bandwidth = 1000; // bytes per second
 public:
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::socket socket;
 
-    CommFrontend(int stack_level, const std::string &address, int port);
+    CommFrontend(int stack_level, const std::string &address, int port, uint64_t sim_bandwidth);
 
     ~CommFrontend();
 
-    // Write to the `CommBackend`
+    /// Write to the `CommBackend`
     void write(const std::vector<char> &buf) {
         boost::asio::write(socket, boost::asio::buffer(buf));
     }
 
-    // Read string from the `CommBackend`
+    /// Read string from the `CommBackend`
     std::string read();
 
-    // Send and receive array data to and from the `CommBackend`
-    void send_array_data(const bh_base *base);
+    /// Send data to the `CommBackend`
+    void send_data(const std::vector<unsigned char> &data);
 
-    void recv_array_data(bh_base *base);
+    /// Receive data from the `CommBackend`
+    std::vector<unsigned char> recv_data();
 
     std::string hostname() const {
         return boost::asio::ip::host_name();
@@ -66,21 +68,22 @@ public:
 
     CommBackend(const std::string &address, int port = 4200);
 
-    // Read from the `CommFrontend`
+    /// Read from the `CommFrontend`
     void read(std::vector<char> &buf) {
         boost::asio::read(socket, boost::asio::buffer(buf));
     }
 
-    // Write string to the `CommFrontend`
+    /// Write string to the `CommFrontend`
     void write(const std::string &str) {
         // Write the whole string including the `\0` terminator
         boost::asio::write(socket, boost::asio::buffer(str.c_str(), str.size() + 1));
     }
 
-    // Send and receive array data to and from the `CommFrontend`
-    void send_array_data(const void *data, size_t nbytes);
+    /// Send data to the `CommFrontend`
+    void send_data(const std::vector<unsigned char> &data);
 
-    void recv_array_data(bh_base *base);
+    /// Receive data from the `CommFrontend`
+    std::vector<unsigned char> recv_data();
 
     std::string hostname() const {
         return boost::asio::ip::host_name();

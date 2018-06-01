@@ -14,28 +14,28 @@ if(GLUT_FOUND)
         link_directories(${GLUT_LIBRARIES})
         add_definitions(${GLUT_DEFINITIONS})
     else()
-        set(ERR_MSG "${ERR_MSG}  * GLUT found, but FreeGLUT is required.\n")
+        set(VIZ_VIZ_ERR_MSG "${VIZ_VIZ_ERR_MSG}  * GLUT found, but FreeGLUT is required.\n")
     endif()
 else()
-    set(ERR_MSG "${ERR_MSG}  * FreeGLUT not found, on ubuntu install `freeglut3-dev`\n")
+    set(VIZ_ERR_MSG "${VIZ_ERR_MSG}  * FreeGLUT not found, on ubuntu install `freeglut3-dev`\n")
 endif()
 
 find_package(OpenGL)
 if(NOT OPENGL_FOUND)
-    set(ERR_MSG "${ERR_MSG}  * OpenGL not found, on ubuntu install `libgl1-mesa-dev`.\n")
+    set(VIZ_ERR_MSG "${VIZ_ERR_MSG}  * OpenGL not found, on ubuntu install `libgl1-mesa-dev`.\n")
 endif()
 
 if(GLUT_Xi_LIBRARY MATCHES "NOTFOUND")
-    set(ERR_MSG "${ERR_MSG}  * libxi not found, on ubuntu install `libxi-dev`.\n")
+    set(VIZ_ERR_MSG "${VIZ_ERR_MSG}  * libxi not found, on ubuntu install `libxi-dev`.\n")
 endif()
 
 if(GLUT_Xmu_LIBRARY MATCHES "NOTFOUND")
-    set(ERR_MSG "${ERR_MSG}  * libxmu not found, on ubuntu install `libxmu-dev`.\n")
+    set(VIZ_ERR_MSG "${VIZ_ERR_MSG}  * libxmu not found, on ubuntu install `libxmu-dev`.\n")
 endif()
 
 # Check if found all requirements
-if(DEFINED ERR_MSG)
-    message(FATAL_ERROR "\nBohrium-Visualizer cannot be install, set `-DEXT_VISUALIZER=OFF` or install requirements:\n${ERR_MSG}\n")
+if(DEFINED VIZ_ERR_MSG)
+    message(FATAL_ERROR "\nBohrium-Visualizer cannot be install, set `-DEXT_VISUALIZER=OFF` or install requirements:\n${VIZ_ERR_MSG}\n")
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -61,3 +61,5 @@ install(TARGETS bh_visualizer DESTINATION ${LIBDIR} COMPONENT bohrium-visualizer
 # Add visualizer to OpenMP and OpenCL libs
 set(BH_OPENMP_LIBS ${BH_OPENMP_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
 set(BH_OPENCL_LIBS ${BH_OPENCL_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
+set(BH_CUDA_LIBS ${BH_CUDA_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)
+set(BH_PROXY_LIBS ${BH_PROXY_LIBS} "${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_visualizer${CMAKE_SHARED_LIBRARY_SUFFIX}" PARENT_SCOPE)

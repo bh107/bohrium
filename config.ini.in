@@ -26,6 +26,7 @@ timing = false
 address = localhost
 port = 4200
 impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_vem_proxy${CMAKE_SHARED_LIBRARY_SUFFIX}
+libs = ${BH_PROXY_LIBS}
 
 
 #############################
@@ -180,7 +181,7 @@ malloc_cache_limit = 90
 # Additionally, {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
 compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 --disable-warnings ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # List of extension methods
-libs = ${CUDA_LIBS}
+libs = ${BH_CUDA_LIBS}
 # The pre-fuser to use
 pre_fuser = pre_fuser_lossy
 # List of instruction fuser/transformers

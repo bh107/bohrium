@@ -182,9 +182,9 @@ void* mem_map(uint64_t nbytes) {
     if(addr == MAP_FAILED) {
         int errsv = errno; // mmap() sets the errno.
         fprintf(stderr,
-                "Fatal error: mem_map() could not mmap new memory of size %llu). "
+                "Fatal error: mem_map() could not mmap new memory of size %lu). "
                 "Returned error code by mmap: %s.\n",
-                nbytes,
+                (long unsigned int) nbytes,
                 strerror(errsv));
         assert(1 == 2);
         exit(-1);
