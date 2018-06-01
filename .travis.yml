@@ -38,7 +38,7 @@ jobs:
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_ALL"
     - env: BH_STACK=openmp EXEC="python3.6 $TEST_ALL"
     - env: BH_STACK=opencl EXEC="python3.6 $TEST_ALL"
-      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $TEST_ALL"
+      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $TEST_SMALL"
 
     # Test of older Python versions
     - env: BH_STACK=opencl EXEC="python3.4 $TEST_ALL"
