@@ -64,7 +64,7 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
     }
     vector<string> param_list;
     boost::split(param_list, param, boost::is_any_of(","));
-    if (param.empty() or param_list.empty()) {
+    if (param.empty() or param_list.empty() or param_list[0] == "none") {
         ret.resize(ary.base->nbytes());
         memcpy(&ret[0], ary.base->data, ary.base->nbytes());
     } else if (param_list[0] == "zlib") {
@@ -117,7 +117,7 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
 
     vector<string> param_list;
     boost::split(param_list, param, boost::is_any_of(","));
-    if (param.empty() or param_list.empty()) {
+    if (param.empty() or param_list.empty() or param_list[0] == "none") {
         assert(data.size() == ary.base->nbytes());
         memcpy(ary.base->data, &data[0], ary.base->nbytes());
     } else if (param_list[0] == "zlib") {

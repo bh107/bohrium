@@ -38,7 +38,11 @@ private:
     CommFrontend comm_front;
     std::set<bh_base *> known_base_arrays;
     string compress_param;
+
     bool stat_print_on_exit;
+    std::chrono::duration<double> time_mem_copy_total{0};
+    std::chrono::duration<double> time_mem_copy_unzip{0};
+    uint64_t nbytes_recv{0};
 
 public:
     Impl(int stack_level) : ComponentVE(stack_level, false),
@@ -50,7 +54,11 @@ public:
                             stat_print_on_exit(config.defaultGet("prof", false)) {}
     ~Impl() override {
         if (stat_print_on_exit) {
-            cout << compressor.pprintStats() << endl;
+            cout << compressor.pprintStats();
+            cout << "Frontend:\n";
+            cout << "  MemCopy: " << time_mem_copy_total.count() << "s" << endl;
+            cout << "    UnZip: " << time_mem_copy_unzip.count() << "s" << endl;
+            cout << "    Recv:  " << nbytes_recv / 1024.0 / 1024.0 << "MB" << endl;
         }
     }
 
@@ -154,6 +162,8 @@ public:
             throw runtime_error("PROXY - memCopy(): `dst` must be un-initiated");
         }
 
+        auto t1 = chrono::steady_clock::now();
+
         // Serialize message body
         vector<char> buf_body;
         msg::MemCopy body(src, param);
@@ -172,8 +182,12 @@ public:
         vector<unsigned char> data = comm_front.recv_data();
         if (not data.empty()) {
             bh_data_malloc(dst.base);
+            auto t2 = chrono::steady_clock::now();
             compressor.uncompress(data, dst, param);
+            time_mem_copy_unzip += chrono::steady_clock::now() - t2;
+            nbytes_recv += data.size();
         }
+        time_mem_copy_total += chrono::steady_clock::now() - t1;
     }
 
     // We have no context so returning NULL
