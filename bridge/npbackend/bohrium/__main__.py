@@ -24,11 +24,11 @@ def execfile_wrapper(path):
 
 
 if len(sys.argv) <= 1:
-    sys.stderr.write('ERR: the "-m bohrium" does not support interactive mode\n')
+    sys.stderr.write(
+        'ERR: the "-m bohrium" does not support interactive mode. Use `-m bohrium --info` for Bohrium info\n')
     sys.exit(-1)
 
-
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument(
     '--info',
     action="store_true",
@@ -54,7 +54,7 @@ else:
         cmd = "import bohrium as bh; import numpy as np; assert((bh.arange(10) == np.arange(10)).all())"
         sys.stdout.write('Sanity Check: "%s"' % cmd)
         try:
-            exec(cmd)
+            exec (cmd)
             sys.stdout.write(' - success!\n')
         except AssertionError as e:
             sys.stdout.write('\n')
