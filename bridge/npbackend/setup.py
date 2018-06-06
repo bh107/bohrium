@@ -190,6 +190,7 @@ if len(args_extra.openmp_flag) == 0:
 else:
     shutil.copy2(srcpath('bohrium', 'nobh', 'bincount_cython.pyx'), buildpath('nobh', 'bincount_cython.pyx'))
 
+cflags = ["-std=c99"]
 
 setup(
     name='Bohrium',
@@ -233,6 +234,7 @@ setup(
                 buildpath('..', 'c'),
                 buildpath('..', '..', 'core')
             ],
+            extra_compile_args=cflags,
         ),
         Extension(
             name='random123',
@@ -244,6 +246,7 @@ setup(
             ],
             libraries=[],
             library_dirs=[],
+            extra_compile_args=cflags,
         ),
         Extension(
             name='_util',
@@ -251,6 +254,7 @@ setup(
             include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
+            extra_compile_args=cflags,
         ),
         Extension(
             name='bhary',
@@ -258,6 +262,7 @@ setup(
             include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
+            extra_compile_args=cflags,
         ),
         Extension(
             name='ufuncs',
@@ -265,6 +270,7 @@ setup(
             include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
+            extra_compile_args=cflags,
         ),
         Extension(
             name='nobh.bincount_cython',
@@ -272,7 +278,7 @@ setup(
             include_dirs=[srcpath('.'), np.get_include()],
             libraries=[],
             library_dirs=[],
-            extra_compile_args=args_extra.openmp_flag,
+            extra_compile_args=cflags + args_extra.openmp_flag,
             extra_link_args=args_extra.openmp_flag
         )
     ]
