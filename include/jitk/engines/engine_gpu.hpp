@@ -94,7 +94,7 @@ public:
                 {"strides_as_var", comp.config.defaultGet<bool>("strides_as_var", true)},
                 {"index_as_var",   comp.config.defaultGet<bool>("index_as_var", true)},
                 {"const_as_var",   comp.config.defaultGet<bool>("const_as_var", true)},
-                {"use_volatile",   comp.config.defaultGet<bool>("use_volatile", false)}
+                {"use_volatile",   comp.config.defaultGet<bool>("volatile", false)}
         };
 
         // Some statistics
