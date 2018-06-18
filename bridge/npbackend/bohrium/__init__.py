@@ -27,6 +27,7 @@ from . import linalg
 from .linalg import matmul, dot, tensordot
 from .summations import *
 from .disk_io import *
+from .concatenate import *
 from .ufuncs import _handle__array_ufunc__
 from . import contexts
 from . import bh_info
