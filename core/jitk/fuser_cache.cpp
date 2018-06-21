@@ -69,6 +69,18 @@ void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
         // Sliding views has identical hashes across iterations
         if (view.slide.empty()) {
             ss << view.start;
+        } else {
+            // Check whether the shape of the sliding view is a single value
+            bool single_index = true;
+            for (int i = 0; i < view.ndim; i++) {
+                if (view.shape[i] != 1) {
+                    single_index = false;
+                    break;
+                }
+            }
+            if (!single_index) {
+                ss << view.start;
+            }
         }
 
         ss << view.ndim;
