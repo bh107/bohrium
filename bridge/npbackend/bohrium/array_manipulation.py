@@ -8,7 +8,7 @@ from . import bhary
 from . import _util
 from .bhary import fix_biclass_wrapper
 from . import numpy_backport
-
+from . import iterator
 
 @fix_biclass_wrapper
 def flatten(ary, order='C', always_copy=True):
@@ -486,11 +486,55 @@ def broadcast_arrays(*args):
             else:
                 raise
 
+        # The view/array that the broadcast is based upon
+        broadcast_array = args[0]
+        try:
+            broadcast_dvi = broadcast_array.bhc_dynamic_view_info.dynamic_changes
+        except:
+            broadcast_dvi = None
+
         for a, b in zip(args, bargs):
+            # If the broadcast view changes shape between iterations,
+            # force the same change to the views being broadcasted
+            a_dvi = a.bhc_dynamic_view_info
+            if broadcast_dvi and a_dvi:
+                # Dynamic changes to the view before broadcast
+                a_dc  = a_dvi.dynamic_changes
+
+                # Dynamic changes to the broadcasted array
+                b_dvi = a_dvi
+                b_dc  = b_dvi.dynamic_changes
+
+                # If the view contains a slide in a broadcasted dimension,
+                # the slide must be inherited
+                for (broadcast_dim, _, broadcast_shape, broadcast_step_delay) in broadcast_dvi:
+                    # Check whether the broadcast view changes shape in the given dimension
+                    if broadcast_shape != 0:
+                        found = False
+                        for i, (a_dim, a_slide, a_shape, _) in enumerate(a_dc):
+                            if a_dim == broadcast_dim:
+                                # The shape must change in the same manner as the view
+                                # that it broadcasted from
+                                if a_shape != 0 and a_shape != broadcast_shape:
+                                    raise Exception("Broadcast with dynamic shape:"
+                                                    "    View with shape " + str(a.shape) + \
+                                                    " changes shape in a dimension, which is being broadcasted.\n")
+                                b_dc[i] = (a_dim, a_slide, broadcast_shape, broadcast_step_delay)
+                                found = True
+                                break
+                        if not found:
+                            b_dc.append((broadcast_dim, 0, broadcast_shape, broadcast_step_delay))
+                b_dvi = iterator.dynamic_view_info(b_dc, a_dvi.shape, a_dvi.stride)
+                b.bhc_dynamic_view_info = b_dvi
+            else:
+                b.bhc_dynamic_view_info = a.bhc_dynamic_view_info
+
+            # What is going on here?
             if numpy.isscalar(a) or not isinstance(a, numpy.ndarray):
                 ret.append(b)
             else:
                 ret.append(b)
+
     except ValueError as msg:
         if str(msg).find("shape mismatch: objects cannot be broadcast to a single shape") != -1:
             shapes = [arg.shape for arg in args]
