@@ -10,6 +10,7 @@ import sys
 import os
 import warnings
 from . import _util
+from . import iterator
 from . import array_create
 import numpy_force as np
 from . import _info
@@ -219,7 +220,31 @@ class Ufunc(object):
 
         # Insert the output array
         if out is None or not dtype_equal(out_dtype, out.dtype):
-            args.insert(0, array_create.empty(out_shape, out_dtype))
+            # Inherit dynamic shapes from arrays involved in the ufunc
+            dynamic_out = array_create.empty(out_shape, out_dtype)
+            shape_change = {}
+            for a in args:
+                if bhary.check(a) and a.bhc_dynamic_view_info:
+                    for (dimension,_,shape,step_delay) in a.bhc_dynamic_view_info.dynamic_changes:
+                        # No reason to add a change of 0 in the dimension
+                        if shape == 0:
+                            continue
+                        # If the argument views have different shape change in the same dimension,
+                        # the dynamic shape of the temporary view can not be guessed
+                        elif shape_change.has_key(dimension):
+                            assert(shape_change[dimension][0] == shape)
+                            assert(shape_change[dimension][1] == step_delay)
+                            continue
+                        else:
+                            shape_change[dimension] = (shape, step_delay)
+            if shape_change.keys():
+                dynamic_changes = []
+                for dimension in shape_change.keys():
+                    shape, step_delay = shape_change[dimension]
+                    dynamic_changes.append((dimension, 0, shape, step_delay))
+                out_dvi = iterator.dynamic_view_info(dynamic_changes, dynamic_out.shape,dynamic_out.strides)
+                dynamic_out.bhc_dynamic_view_info = out_dvi
+            args.insert(0, dynamic_out)
         else:
             args.insert(0, out)
 
