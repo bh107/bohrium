@@ -28,9 +28,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 #include <bh_view.hpp>
+#include <bh_malloc_cache.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
-
 #include <jitk/engines/engine_gpu.hpp>
 
 #include "cl.hpp"
@@ -54,41 +54,50 @@ private:
     const cl_ulong work_group_size_3dx;
     const cl_ulong work_group_size_3dy;
     const cl_ulong work_group_size_3dz;
+
     // Returns the global and local work OpenCL ranges based on the 'thread_stack'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<uint64_t> &thread_stack) const;
+
     // A map of allocated buffers on the device
-    std::map<bh_base*, std::unique_ptr<cl::Buffer>> buffers;
+    std::map<bh_base *, cl::Buffer *> buffers;
+
     // Return a kernel function based on the given 'source'
     cl::Program getFunction(const std::string &source);
 
+    // We initialize the malloc cache with an alloc and free function
+    MallocCache::FuncAllocT func_alloc = [this](uint64_t nbytes) -> void * {
+        return (void *) new cl::Buffer(this->context, CL_MEM_READ_WRITE, (cl_ulong) nbytes);
+    };
+    MallocCache::FuncFreeT func_free = [](void *mem, uint64_t nbytes) { delete ((cl::Buffer *) mem); };
+    MallocCache malloc_cache{func_alloc, func_free, 0};
+
 public:
-    EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat);
-    ~EngineOpenCL();
+    EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat);
+    ~EngineOpenCL() override;
 
     // Execute the 'source'
-    void execute(const std::string &source,
+    void execute(const jitk::SymbolTable &symbols,
+                 const std::string &source,
                  uint64_t codegen_hash,
-                 const std::vector<bh_base*> &non_temps,
                  const std::vector<uint64_t> &thread_stack,
-                 const std::vector<const bh_view*> &offset_strides,
-                 const std::vector<const bh_instruction*> &constants) override;
+                 const std::vector<const bh_instruction *> &constants) override;
 
     // Copy 'bases' to the host (ignoring bases that isn't on the device)
-    void copyToHost(const std::set<bh_base*> &bases) override;
+    void copyToHost(const std::set<bh_base *> &bases) override;
 
     // Copy 'base_list' to the device (ignoring bases that is already on the device)
-    void copyToDevice(const std::set<bh_base*> &base_list) override;
+    void copyToDevice(const std::set<bh_base *> &base_list) override;
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
+    void setConstructorFlag(std::vector<bh_instruction *> &instr_list) override;
 
     // Copy all bases to the host (ignoring bases that isn't on the device)
     void copyAllBasesToHost() override;
 
     // Delete a buffer
-    void delBuffer(bh_base* &base) override;
+    void delBuffer(bh_base *base) override;
 
-    void writeKernel(const jitk::Block &block,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
                      const std::vector<uint64_t> &thread_stack,
                      uint64_t codegen_hash,
@@ -98,7 +107,6 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
 
@@ -109,33 +117,39 @@ public:
     const std::string writeType(bh_type dtype) override;
 
     cl::Buffer *createBuffer(bh_base *base) {
-        cl::Buffer *buf = new cl::Buffer(context, CL_MEM_READ_WRITE, (cl_ulong) bh_base_size(base));
-        buffers[base].reset(buf);
+        auto *buf = reinterpret_cast<cl::Buffer *>(malloc_cache.alloc(base->nbytes()));
+        bool inserted = buffers.insert(std::make_pair(base, buf)).second;
+        if (not inserted) {
+            throw std::runtime_error("OpenCL - createBuffer(): the base already has a buffer!");
+        }
         return buf;
     }
 
-    cl::Buffer *createBuffer(bh_base *base, void* opencl_mem_ptr) {
-        cl::Buffer *buf = new cl::Buffer();
-        cl_mem _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
+    cl::Buffer *createBuffer(bh_base *base, void *opencl_mem_ptr) {
+        auto *buf = new cl::Buffer();
+        auto _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
         cl_int err = clRetainMemObject(_mem); // Increments the memory object reference count
         if (err != CL_SUCCESS) {
             throw std::runtime_error("OpenCL - clRetainMemObject(): failed");
         }
         (*buf) = _mem;
-        buffers[base].reset(buf);
+        bool inserted = buffers.insert(std::make_pair(base, buf)).second;
+        if (not inserted) {
+            throw std::runtime_error("OpenCL - createBuffer(): the base already has a buffer!");
+        }
         return buf;
     }
 
     // Retrieve a single buffer
-    cl::Buffer* getBuffer(bh_base* base) {
-        if(buffers.find(base) == buffers.end()) {
-            copyToDevice({ base });
+    cl::Buffer *getBuffer(bh_base *base) {
+        if (not util::exist(buffers, base)) {
+            copyToDevice({base});
         }
-        return &(*buffers[base]);
+        return buffers.at(base);
     }
 
     // Get C buffer from wrapped C++ object
-    cl_mem getCBuffer(bh_base* base) {
+    cl_mem getCBuffer(bh_base *base) {
         return (*getBuffer(base))();
     }
 
@@ -145,13 +159,19 @@ public:
     }
 
     // Get the OpenCL command queue object
-    cl::CommandQueue* getQueue() {
+    cl::CommandQueue *getQueue() {
         return &queue;
     }
 
     // Get C command queue from wrapped C++ object
     cl_command_queue getCQueue() {
         return queue();
+    }
+
+    // Update statistics with final aggregated values of the engine
+    void updateFinalStatistics() override {
+        stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
+        stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }
 };
 

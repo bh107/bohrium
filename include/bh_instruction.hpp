@@ -29,47 +29,48 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_view.hpp>
 
 // Forward declaration of class boost::serialization::access
-namespace boost {namespace serialization {class access;}}
+namespace boost { namespace serialization { class access; }}
 
 // Maximum number of operands in a instruction.
 #define BH_MAX_NO_OPERANDS (3)
 
 //Memory layout of the Bohrium instruction
-struct bh_instruction
-{
+struct bh_instruction {
     // Opcode: Identifies the operation
-    bh_opcode  opcode;
+    bh_opcode opcode = -1;
     // Id of each operand
     std::vector<bh_view> operand;
     // Constant included in the instruction (Used if one of the operands == NULL)
     bh_constant constant;
     // Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
     // For now, this flag is only used by the code generators.
-    bool constructor;
+    bool constructor = false;
     // An identifier to track the original source of instruction transformations thus transformations such as
     // copy, transpose, and reshape does not change the 'origin_id'.
     // For now, this flag is only used by the code generators.
     int64_t origin_id = -1; // -1 indicates: unset
 
     // Constructors
-    bh_instruction(){}
+    bh_instruction() = default;
+
     bh_instruction(bh_opcode opcode, std::vector<bh_view> operands) : opcode(opcode), operand(std::move(operands)) {}
-    bh_instruction(const bh_instruction& instr)
-    {
-        opcode      = instr.opcode;
-        constant    = instr.constant;
+
+    bh_instruction(const bh_instruction &instr) {
+        opcode = instr.opcode;
+        constant = instr.constant;
         constructor = instr.constructor;
-        origin_id   = instr.origin_id;
-        operand     = instr.operand;
+        origin_id = instr.origin_id;
+        operand = instr.operand;
     }
 
     // Return a set of all bases used by the instruction
     std::set<const bh_base *> get_bases_const() const;
+
     std::set<bh_base *> get_bases();
 
     // Return a vector of views in this instruction.
     // The first element is the output and the rest are inputs (the constant is ignored)
-    std::vector<const bh_view*> get_views() const;
+    std::vector<const bh_view *> get_views() const;
 
     // Returns true when one of the operands of 'instr' is a constant
     bool has_constant() const {
@@ -91,7 +92,7 @@ struct bh_instruction
     bool reshapable() const;
 
     // Returns the principal shape of this instructions, which is the shape of the computation that constitute
-    // this instruction. E.g. in reduce, this function returns the shape of the reduced array
+    // this instruction. E.g. in reduce, this function returns the shape of the input array
     std::vector<int64_t> shape() const;
 
     // Returns the principal number of dimension of this instruction, which is the number of dimension of the
@@ -101,19 +102,22 @@ struct bh_instruction
     // Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
     int sweep_axis() const;
 
-    // Reshape the views of the instruction to 'shape'
+    // Reshape the views of the instruction to 'shape' with contiguous stride
     void reshape(const std::vector<int64_t> &shape);
 
-    // Reshape the views of the instruction to 'shape' (no checks!)
+    // Reshape the views of the instruction to 'shape' with contiguous stride (no checks!)
     void reshape_force(const std::vector<int64_t> &shape);
 
-    // Remove 'axis' from all views in this instruction.
-    // Notice that 'axis' is based on the 'dominating shape' thus remove_axis() will correct
+    // Remove `axis` from all views in this instruction.
+    // Notice that `axis` is based on the 'dominating shape' thus `remove_axis()` will correct
     // the axis value when handling reductions automatically
     void remove_axis(int64_t axis);
 
     // Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
+
+    // Transpose by reversing all axes in the principal shape
+    void transpose();
 
     // Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
@@ -122,7 +126,7 @@ struct bh_instruction
     std::string pprint(bool python_notation = true) const;
 
     // Equality
-    bool operator==(const bh_instruction& other) const {
+    bool operator==(const bh_instruction &other) const {
         if (opcode != other.opcode) {
             return false;
         }
@@ -141,15 +145,15 @@ struct bh_instruction
     }
 
     // Inequality
-    bool operator!=(const bh_instruction& other) const {
+    bool operator!=(const bh_instruction &other) const {
         return !(*this == other);
     }
 
     // Serialization using Boost
     friend class boost::serialization::access;
+
     template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
-    {
+    void serialize(Archive &ar, const unsigned int version) {
         ar & opcode;
         ar & operand;
         //We use make_array as a hack to make bh_constant BOOST_IS_BITWISE_SERIALIZABLE
@@ -158,15 +162,8 @@ struct bh_instruction
 };
 BOOST_IS_BITWISE_SERIALIZABLE(bh_constant)
 
-//Implements pprint of an instruction
-DLLEXPORT std::ostream& operator<<(std::ostream& out, const bh_instruction& instr);
-
-/* Retrive the operands of a instruction.
- *
- * @instruction  The instruction in question
- * @return The operand list
- */
-DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
+// Implements pprint of an instruction
+std::ostream &operator<<(std::ostream &out, const bh_instruction &instr);
 
 /* Determines whether instruction 'a' depends on instruction 'b',
  * which is true when:
@@ -178,4 +175,4 @@ DLLEXPORT bh_view *bh_inst_operands(bh_instruction *instruction);
  * @b The second instruction
  * @return The boolean answer
  */
-DLLEXPORT bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);
+bool bh_instr_dependency(const bh_instruction *a, const bh_instruction *b);

@@ -26,7 +26,7 @@ def main(args):
     doc = "\n// Create new flat array\n"
     impl += doc; head += doc
     decl = "void *bhc_new(bhc_dtype dtype, uint64_t size)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -39,7 +39,7 @@ def main(args):
     doc = "\n// Destroy array\n"
     impl += doc; head += doc
     decl = "void bhc_destroy(bhc_dtype dtype, void *ary)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -53,7 +53,7 @@ def main(args):
     impl += doc; head += doc
     decl = "void *bhc_view(bhc_dtype dtype, void *src, int64_t rank, int64_t start, " \
            "const int64_t *shape, const int64_t *stride)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -71,7 +71,7 @@ def main(args):
     impl += doc; head += doc
     decl = "void *bhc_data_get(bhc_dtype dtype, const void *ary, bhc_bool copy2host, "
     decl += "bhc_bool force_alloc, bhc_bool nullify)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -87,7 +87,7 @@ def main(args):
     doc += "//   if 'host_ptr', the pointer points to the host memory (main memory) as opposed to device memory\n"
     impl += doc; head += doc
     decl = "void bhc_data_set(bhc_dtype dtype, const void *ary, bhc_bool host_ptr, void *data)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -98,10 +98,25 @@ def main(args):
     }
 }\n"""
 
+    doc = "\n// Copy the memory of `src` to `dst`\n"
+    doc += "//   Use 'param' to set compression parameters or use the empty string\n"
+    impl += doc; head += doc
+    decl = "void bhc_data_copy(bhc_dtype dtype, const void *src, const void *dst, const char *param)"
+    head += "%s;\n" % decl
+    impl += """%s
+{
+    switch(dtype) {\n""" % decl
+    for key, t in type_map.items():
+        impl += "        case %s: return bhc_data_copy_A%s((%s)src, (%s)dst, param);\n" \
+                % (key, t['name'], t['bhc_ary'], t['bhc_ary'])
+    impl += """        default: fprintf(stderr, "bhc_data_copy(): unknown dtype\\n"); exit(-1);
+    }
+}\n"""
+
     doc = "\n// Informs the runtime system to make data synchronized and available after the next flush().\n"
     impl += doc; head += doc
     decl = "void bhc_sync(bhc_dtype dtype, const void *ary)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -114,7 +129,7 @@ def main(args):
     doc = "\n// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.\n"
     impl += doc; head += doc
     decl = "void bhc_slide_view(bhc_dtype dtype, const void *ary1, const void *ary2, size_t dim, int slide, int shape)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -127,7 +142,7 @@ def main(args):
     doc = "\n// Extension Method, returns 0 when the extension exist\n"
     impl += doc; head += doc
     decl = "int bhc_extmethod(bhc_dtype dtype, const char *name, const void *out, const void *in1, const void *in2)"
-    head += "DLLEXPORT %s;\n" % decl
+    head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
@@ -146,12 +161,6 @@ def main(args):
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifdef _WIN32
-#define DLLEXPORT __declspec( dllexport )
-#else
-#define DLLEXPORT
 #endif
 
 %s

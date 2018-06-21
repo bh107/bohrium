@@ -9,8 +9,8 @@ env:
     - BH_OPENMP_VOLATILE=true
     - BH_OPENCL_PROF=true
     - BH_OPENCL_VOLATILE=true
-    - TEST_RUN="/bh/test/python/run.py /bh/test/python/tests/test_*.py"
-    - BENCHMARK_RUN="/bh/test/python/numpytest.py --file test_benchmarks.py"
+    - TEST_ALL="/bh/test/python/run.py /bh/test/python/tests/test_*.py"
+    - TEST_SMALL="/bh/test/python/run.py /bh/test/python/tests/test_primitives.py /bh/test/python/tests/test_reduce.py"
 
 script:
   - env | grep -E "BH_|EXEC" | sort > .env-file
@@ -23,29 +23,26 @@ jobs:
     - stage: build docker image
       script:
         - docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
-        - docker build -t bohrium/wheel -f package/docker/create_wheel.dockerfile .
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then
+            docker build -t bohrium/wheel --build-arg BUILD_TYPE=Release -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
+          else
+            docker build -t bohrium/wheel --build-arg BUILD_TYPE=Debug -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
+          fi
         - docker push bohrium/wheel
 
     - stage: verify
     # Test suite
-      env: BH_STACK=openmp EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=opencl EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="python2.7 $TEST_RUN"
-    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_RUN"
-#    - env: BH_STACK=proxy_opencl EXEC="bh_proxy_backend -a localhost -p 4200 & python2.7 /bohrium/test/python/run.py /bohrium/test/python/tests/test_!(nobh).py"
-    - env: BH_STACK=openmp EXEC="python3.6 $TEST_RUN"
-    - env: BH_STACK=opencl EXEC="python3.6 $TEST_RUN"
-
-    # Benchmarks
-    - env: BH_STACK=openmp EXEC="python2.7 $BENCHMARK_RUN"
-    - env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $BENCHMARK_RUN"
-    - env: BH_STACK=opencl EXEC="python2.7 $BENCHMARK_RUN"
-    - env: BH_STACK=openmp EXEC="python3.6 $BENCHMARK_RUN"
-    - env: BH_STACK=opencl EXEC="python3.6 $BENCHMARK_RUN"
+      env: BH_STACK=openmp EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_ALL"
+    - env: BH_STACK=openmp EXEC="python3.6 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="python3.6 $TEST_ALL"
+      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $TEST_SMALL"
 
     # Test of older Python versions
-    - env: BH_STACK=opencl EXEC="python3.4 $TEST_RUN"
-    - env: BH_STACK=opencl EXEC="python3.5 $TEST_RUN"
+    - env: BH_STACK=opencl EXEC="python3.4 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="python3.5 $TEST_ALL"
 
 deploy:
   provider: script

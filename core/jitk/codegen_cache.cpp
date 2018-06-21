@@ -79,46 +79,41 @@ void hash_stream(const bh_instruction &instr, const SymbolTable &symbols, std::s
 /* The Block hash consists of the following fields:
  * <block_rank><instr_hash><SEP_BLOCK>
  */
-void hash_stream(const Block &block, const SymbolTable &symbols, std::stringstream &ss) {
-    if (block.isInstr()) {
-        if (block.getInstr()->opcode != BH_FREE) {
-            hash_stream(*block.getInstr(), symbols, ss);
+void hash_stream(const LoopB &block, const SymbolTable &symbols, std::stringstream &ss) {
+    ss << "rank: " << block.rank;
+    ss << "size: " << block.size;
+    {  // The order of BH_FREE within a block doesn't matter, thus we sort the freed base IDs here
+        ss << "freed: ";
+        set<uint64_t>sorted_freed_bases;
+        for (const bh_base *b: block._frees) {
+            sorted_freed_bases.insert(symbols.baseID(b));
         }
-    } else {
-        ss << "rank: " << block.rank();
-        ss << "size: " << block.getLoop().size;
-        {  // The order of BH_FREE within a block doesn't matter, thus we sort the freed base IDs here
-            ss << "freed: ";
-            set<uint64_t >sorted_freed_bases;
-            for (const bh_base *b: block.getLoop()._frees) {
-                sorted_freed_bases.insert(symbols.baseID(b));
-            }
-            for(uint64_t b_id: sorted_freed_bases) {
-                ss << b_id << ",";
-            }
+        for(uint64_t b_id: sorted_freed_bases) {
+            ss << b_id << ",";
         }
-        for (const Block &b: block.getLoop()._block_list) {
-            hash_stream(b, symbols, ss);
+    }
+    for (const Block &b: block._block_list) {
+        if (b.isInstr()) {
+            if (b.getInstr()->opcode != BH_FREE) {
+                hash_stream(*b.getInstr(), symbols, ss);
+            }
+        } else {
+            hash_stream(b.getLoop(), symbols, ss);
         }
     }
 }
 
-/* The Block list hash consists of the following fields:
- * <block_rank><SEP_BLOCK>
- */
-uint64_t block_list_hash(const std::vector<Block> &block_list, const SymbolTable &symbols) {
+/* The Block hash from above as an uint64_t */
+uint64_t hash_stream(const LoopB &block, const SymbolTable &symbols) {
     stringstream ss;
-    for (const Block &b: block_list) {
-        hash_stream(b, symbols, ss);
-        ss << "<block>";
-    }
+    hash_stream(block, symbols, ss);
     return util::hash(ss.str());
 }
 } // Anonymous Namespace
 
-std::pair<std::string, uint64_t> CodegenCache::get(const std::vector<Block> &block_list, const SymbolTable &symbols) {
+std::pair<std::string, uint64_t> CodegenCache::lookup(const LoopB &kernel, const SymbolTable &symbols) {
     ++stat.codegen_cache_lookups;
-    const uint64_t lookup_hash = block_list_hash(block_list, symbols);
+    const uint64_t lookup_hash = hash_stream(kernel, symbols);
     auto lookup = _cache.find(lookup_hash);
     if (lookup != _cache.end()) { // Cache hit!
         return make_pair(lookup->second, lookup_hash);
@@ -128,8 +123,8 @@ std::pair<std::string, uint64_t> CodegenCache::get(const std::vector<Block> &blo
     }
 }
 
-void CodegenCache::insert(std::string source, const std::vector<Block> &block_list, const SymbolTable &symbols) {
-    const uint64_t lookup_hash = block_list_hash(block_list, symbols);
+void CodegenCache::insert(std::string source, const LoopB &kernel, const SymbolTable &symbols) {
+    const uint64_t lookup_hash = hash_stream(kernel, symbols);
     assert(_cache.find(lookup_hash) == _cache.end()); // The source shouldn't exist in the cache already
     _cache[lookup_hash] = std::move(source);
 }

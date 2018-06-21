@@ -12,6 +12,10 @@ if(NOT ZLIB_FOUND)
     message(FATAL_ERROR " zlib not found! Set VEM_PROXY=OFF or install zlib.")
 endif()
 
+if(NOT OpenCV_FOUND)
+    message(FATAL_ERROR " OpenCV not found! Set VEM_PROXY=OFF or install OpenCV 3.")
+endif()
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
@@ -29,4 +33,8 @@ target_link_libraries(bh_proxy_backend bh_vem_proxy bh ${ZLIB_LIBRARIES})
 
 install(TARGETS bh_vem_proxy DESTINATION ${LIBDIR} COMPONENT bohrium)
 install(TARGETS bh_proxy_backend DESTINATION bin COMPONENT bohrium)
+
+include_directories(${OpenCV_INCLUDE_DIRS})
+target_link_libraries(bh_vem_proxy ${OpenCV_LIBS})
+target_link_libraries(bh_proxy_backend ${OpenCV_LIBS})
 

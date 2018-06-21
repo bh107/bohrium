@@ -38,6 +38,8 @@ PyObject *iterator       = NULL; // The iterator Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
+// The current Python thread state
+PyThreadState *py_thread_state = NULL;
 
 // Called when module exits
 static void module_exit(void) {
@@ -132,11 +134,6 @@ static PyObject* BhArray_finalize(PyObject *self, PyObject *args) {
 
     protected_malloc((BhArray *) self);
 
-    if(PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT)) {
-        PyErr_Format(PyExc_RuntimeError, "Array of objects not supported by Bohrium.");
-        return NULL;
-    }
-
     Py_RETURN_NONE;
 }
 
@@ -169,8 +166,6 @@ static void BhArray_dealloc(BhArray* self) {
         return; // The array doesn't own the array data
     }
 
-    assert(!PyDataType_FLAGCHK(PyArray_DESCR((PyArrayObject*) self), NPY_ITEM_REFCOUNT));
-
     if (self->mmap_allocated) {
         mem_unmap(PyArray_DATA((PyArrayObject*) self), ary_nbytes(self));
         bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) self));
@@ -197,6 +192,9 @@ static PyObject* BhArray_data_bhc2np(PyObject *self) {
 
     // We move the whole array (i.e. the base array) from Bohrium to NumPy
     BhArray *base = get_base(self);
+    if (base == NULL) {
+        return NULL;
+    }
 
     if(!PyArray_CHKFLAGS((PyArrayObject*) base, NPY_ARRAY_OWNDATA)) {
         PyErr_Format(PyExc_ValueError, "The base array doesn't own its data");
@@ -241,7 +239,11 @@ static PyObject* BhArray_copy2numpy(PyObject *self, PyObject *args) {
     if(ret == NULL) {
         return NULL;
     }
-    if(BhArray_data_bhc2np((PyObject*) get_base(self)) == NULL) {
+    PyObject *base = (PyObject*) get_base(self);
+    if (base == NULL) {
+        Py_DECREF(ret);
+        return NULL;
+    } else if(BhArray_data_bhc2np(base) == NULL) {
         Py_DECREF(ret);
         return NULL;
     }
@@ -910,6 +912,8 @@ static PyMethodDef _bhMethods[] = {
             "Return a pointer to the bhc data of `ary`\n"},
     {"set_data_pointer", (PyCFunction) PySetDataPointer, METH_VARARGS | METH_KEYWORDS,
             "Set the data pointer of `ary`\n"},
+    {"mem_copy", (PyCFunction) PyMemCopy, METH_VARARGS | METH_KEYWORDS,
+            "Copy the memory of `src` to `dst`\n"},
     {"get_device_context", PyGetDeviceContext,  METH_NOARGS,
             "Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack"},
     {"message", (PyCFunction) PyMessage, METH_VARARGS | METH_KEYWORDS,
@@ -985,6 +989,11 @@ PyMODINIT_FUNC init_bh(void)
     if (value != NULL) {
         bh_mem_warn = 1;
     }
+
+    // Let's save the current Python thread state
+    PyGILState_STATE gil = PyGILState_Ensure();
+    py_thread_state = PyGILState_GetThisThreadState();
+    PyGILState_Release(gil);
 
     // Initialize the signal handler
     bh_mem_signal_init();

@@ -29,17 +29,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <bh_type.hpp>
 #include <bh_instruction.hpp>
-#include <bh_component.hpp>
 #include <bh_extmethod.hpp>
 #include <bh_config_parser.hpp>
+
 #include <jitk/block.hpp>
-#include <jitk/base_db.hpp>
+
+#include <jitk/symbol_table.hpp>
+
 #include <jitk/instruction.hpp>
-#include <jitk/view.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_cache.hpp>
-#include <jitk/apply_fusion.hpp>
-#include <jitk/statistics.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -112,32 +109,6 @@ void create_directories(const boost::filesystem::path &path);
 // This makes the source of the kernels more identical, which improve the code and compile caches.
 std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
 
-// Calculate the work group sizes.
-// Return pair (global work size, local work size)
-std::pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size);
-
-// Sets the constructor flag of each instruction in 'instr_list'
-// 'remotely_allocated_bases' is a collection of array bases already remotely allocated
-template<typename T>
-void util_set_constructor_flag(std::vector<bh_instruction *> &instr_list, const T &remotely_allocated_bases) {
-    std::set<bh_base*> initiated; // Arrays initiated in 'instr_list'
-    for(bh_instruction *instr: instr_list) {
-        instr->constructor = false;
-        for (size_t o = 0; o < instr->operand.size(); ++o) {
-            const bh_view &v = instr->operand[o];
-            if (not bh_is_constant(&v)) {
-                assert(v.base != NULL);
-                if (v.base->data == NULL and not (util::exist_nconst(initiated, v.base)
-                                                  or util::exist_nconst(remotely_allocated_bases, v.base))) {
-                    if (o == 0) { // It is only the output that is initiated
-                        initiated.insert(v.base);
-                        instr->constructor = true;
-                    }
-                }
-            }
-        }
-    }
-}
 
 } // jitk
 } // bohrium

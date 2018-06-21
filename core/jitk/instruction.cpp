@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 #include <jitk/view.hpp>
 
 using namespace std;
@@ -721,18 +721,37 @@ void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &
     }
 }
 
-bool has_reduce_identity(bh_opcode opcode) {
+bh_constant sweep_identity(bh_opcode opcode, bh_type dtype) {
     switch (opcode) {
         case BH_ADD_REDUCE:
-        case BH_MULTIPLY_REDUCE:
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
+        case BH_ADD_ACCUMULATE:
+            return bh_constant(0, dtype);
+        case BH_MULTIPLY_REDUCE:
+        case BH_MULTIPLY_ACCUMULATE:
+            return bh_constant(1, dtype);
         case BH_BITWISE_AND_REDUCE:
-        case BH_MINIMUM_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
+            return bh_constant(~0u, dtype);
         case BH_MAXIMUM_REDUCE:
-            return true;
+            if (dtype == bh_type::BOOL) {
+                return bh_constant(bh_bool{1});
+            } else {
+                return bh_constant::get_min(dtype);
+            }
+        case BH_MINIMUM_REDUCE:
+            if (dtype == bh_type::BOOL) {
+                return bh_constant(bh_bool{1});
+            } else {
+                return bh_constant::get_max(dtype);
+            }
         default:
-            return false;
+            cout << "sweep_identity(): unsupported operation: " << bh_opcode_text(opcode) << endl;
+            assert(1 == 2);
+            throw runtime_error("sweep_identity(): unsupported operation");
     }
 }
 
@@ -741,12 +760,15 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
         case BH_ADD_REDUCE:
         case BH_BITWISE_OR_REDUCE:
         case BH_BITWISE_XOR_REDUCE:
+        case BH_LOGICAL_OR_REDUCE:
+        case BH_LOGICAL_XOR_REDUCE:
             out << "0";
             break;
         case BH_MULTIPLY_REDUCE:
             out << "1";
             break;
         case BH_BITWISE_AND_REDUCE:
+        case BH_LOGICAL_AND_REDUCE:
             out << "~0";
             break;
         case BH_MAXIMUM_REDUCE:
@@ -756,8 +778,8 @@ void write_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
             dtype_max(dtype, out);
             break;
         default:
-            cout << "openmp_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
-            throw runtime_error("openmp_reduce_identity: unsupported operation");
+            cout << "write_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
+            throw runtime_error("write_reduce_identity: unsupported operation");
     }
 }
 

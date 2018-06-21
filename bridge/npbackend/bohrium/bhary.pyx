@@ -38,7 +38,7 @@ def check(ary):
     except AttributeError:
         base = ary
     from . import _bh  #We import locally in order to avoid import cycle
-    return isinstance(base, _bh.ndarray)
+    return type(ary) is _bh.ndarray
 
 def check_biclass_np_over_bh(ary):
     """Returns True if 'ary' is a NumPy view with a Bohrium base array"""
@@ -51,13 +51,12 @@ def check_biclass_np_over_bh(ary):
     except AttributeError:
         return False
 
-    from . import _bh  #We import locally in order to avoid import cycle
-    return not isinstance(ary, _bh.ndarray)
+    return not check(ary)
 
 def check_biclass_bh_over_np(ary):
     """Returns True if 'ary' is a Bohrium view with a NumPy base array"""
 
-    return hasattr(ary, "bhc_ary") and not check(get_base(ary))
+    return check(ary) and not check(get_base(ary))
 
 def fix_biclass(ary):
     """

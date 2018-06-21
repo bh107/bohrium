@@ -47,9 +47,9 @@ int remove_none(vector<bh_instruction> &bh_instr_list, int from, int to, int dec
     return decrementer;
 }
 
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentImpl {
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level) {};
+    Impl(int stack_level) : ComponentImpl(stack_level) {};
     ~Impl() {}; // NB: a destructor implementation must exist
     void execute(BhIR *bhir) {
         // Remove BH_NONE from entire instruction list

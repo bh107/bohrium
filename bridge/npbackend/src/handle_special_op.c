@@ -310,6 +310,39 @@ PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
+PyObject* PyMemCopy(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *src;
+    const char *param = "";
+    static char *kwlist[] = {"src:bharray", "param", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|s", kwlist, &src, &param)) {
+        return NULL;
+    }
+    if (!BhArray_CheckExact((PyArrayObject*) src)) {
+        PyErr_Format(PyExc_TypeError, "The `src` must be a bharray.");
+        return NULL;
+    }
+
+    PyObject *dst = PyObject_CallMethod(array_create, "empty_like", "O", src);
+    if(dst == NULL) {
+        return NULL;
+    }
+
+    src = (PyObject *) PyArray_GETCONTIGUOUS((PyArrayObject*) src);
+    if(src == NULL) {
+        return NULL;
+    }
+    bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) src)->type_num);
+
+    if (PyArray_NBYTES((PyArrayObject*) src) > 0) {
+        void *src_ptr = bharray_bhc((BhArray *) src);
+        void *dst_ptr = bharray_bhc((BhArray *) dst);
+        bhc_flush();
+        bhc_data_copy(dtype, src_ptr, dst_ptr, param);
+    }
+    Py_DECREF(src);
+    return dst;
+}
+
 PyObject* PyGetDeviceContext(PyObject *self, PyObject *args) {
     assert(args == NULL);
     return PyLong_FromVoidPtr(bhc_getDeviceContext());

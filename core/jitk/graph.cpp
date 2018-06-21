@@ -143,7 +143,7 @@ uint64_t weight(const Block &b1, const Block &b2) {
 
     uint64_t totalsize = 0;
     for (const bh_base *base: new_temps) {
-        totalsize += bh_base_size(base);
+        totalsize += base->nbytes();
     }
     return totalsize;
 }
@@ -163,7 +163,7 @@ uint64_t block_cost(const Block &block) {
     }
     uint64_t totalsize = 0;
     for (const bh_base *base: non_temps) {
-        totalsize += bh_base_size(base);
+        totalsize += base->nbytes();
     }
     return totalsize;
 }
@@ -240,7 +240,7 @@ void merge_system_pendants(DAG &dag) {
     assert(validate(dag));
 }
 
-void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep) {
+void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep, int id) {
 
     //We define a graph and a kernel writer for graphviz
     struct graph_writer {
@@ -302,9 +302,12 @@ void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep) {
         }
     };
 
-    static int count=0;
+    static int dag_count=0;
+    if (id == -1) {
+        id = dag_count;
+    }
     stringstream ss;
-    ss << filename << "-" << count++ << ".dot";
+    ss << filename << "-" << id++ << ".dot";
     ofstream file;
     cout << ss.str() << endl;
     file.open(ss.str());

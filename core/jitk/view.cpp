@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 
-#include <jitk/base_db.hpp>
+#include <jitk/scope.hpp>
 
 
 using namespace std;
@@ -50,7 +50,7 @@ void write_array_index(const Scope &scope, const bh_view &view, stringstream &ou
                     ++t;
                 }
                 if (axis_offset.first == t) {
-                    out << " +(i" << t << "+(" << axis_offset.second << ")) ";
+                    out << " +(i" << t << "+(i" << t << "==0?0:" << axis_offset.second << ")) ";
                 } else {
                     out << " +i" << t;
                 }
@@ -70,7 +70,7 @@ void write_array_index(const Scope &scope, const bh_view &view, stringstream &ou
                     ++t;
                 if (view.stride[i] != 0) {
                     if (axis_offset.first == t) {
-                        out << " +(i" << t << "+(" << axis_offset.second << ")) ";
+                        out << " +(i" << t << "+(i" << t << "==0?0:" << axis_offset.second << ")) ";
                     } else {
                         out << " +i" << t;
                     }

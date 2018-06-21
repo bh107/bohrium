@@ -159,6 +159,21 @@ class BhArray {
     // Routines
     //
 
+    /** Return a `bh_view` of the array */
+    bh_view getBhView() const {
+        bh_view view;
+        assert(base.use_count() > 0);
+        view.base  = base.get();
+        view.start = static_cast<int64_t>(offset);
+        view.ndim  = static_cast<int64_t>(shape.size());
+        view.slide = slide;
+        view.slide_dim_stride = slide_dim_stride;
+        view.slide_dim_shape = slide_dim_shape;
+        std::copy(shape.begin(), shape.end(), &view.shape[0]);
+        std::copy(stride.begin(), stride.end(), &view.stride[0]);
+        return view;
+    }
+
     // Pretty printing the content of the array
     // TODO: for now it always print the flatten array
     void pprint(std::ostream& os) const;

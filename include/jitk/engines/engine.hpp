@@ -21,6 +21,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_config_parser.hpp>
 #include <jitk/statistics.hpp>
+#include <jitk/instruction.hpp>
+#include <jitk/view.hpp>
+#include <jitk/fuser_cache.hpp>
+#include <jitk/codegen_cache.hpp>
 
 #include <bh_view.hpp>
 #include <bh_component.hpp>
@@ -30,9 +34,12 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+/** The base class of a Engine, which is the component that transforms bytecode into machine code.
+ * All Vector Engines to inherent from this class
+ */
 class Engine {
 protected:
-    const ConfigParser &config;
+    component::ComponentVE &comp;
     Statistics &stat;
     FuseCache fcache;
     CodegenCache codegen_cache;
@@ -54,325 +61,118 @@ protected:
     const boost::filesystem::path cache_bin_dir;
 
     // The hash of the JIT compilation command
-    uint64_t compilation_hash;
+    uint64_t compilation_hash{0};
+
+    // The malloc cache limit in percent and bytes.
+    // NB: each backend should set and use these values with the malloc cache
+    int64_t malloc_cache_limit_in_percent{-1};
+    int64_t malloc_cache_limit_in_bytes{-1};
 
 public:
-    Engine(const ConfigParser &config, Statistics &stat) :
-      config(config),
-      stat(stat),
-      fcache(stat),
-      codegen_cache(stat),
-      verbose(config.defaultGet<bool>("verbose", false)),
-      cache_file_max(config.defaultGet<int64_t>("cache_file_max", 50000)),
-      tmp_dir(get_tmp_path(config)),
-      tmp_src_dir(tmp_dir / "src"),
-      tmp_bin_dir(tmp_dir / "obj"),
-      cache_bin_dir(config.defaultGet<boost::filesystem::path>("cache_dir", "")),
-      compilation_hash(0) {
+    /** The only constructor */
+    Engine(component::ComponentVE &comp, Statistics &stat) :
+            comp(comp),
+            stat(stat),
+            fcache(stat),
+            codegen_cache(stat),
+            verbose(comp.config.defaultGet<bool>("verbose", false)),
+            cache_file_max(comp.config.defaultGet<int64_t>("cache_file_max", 50000)),
+            tmp_dir(get_tmp_path(comp.config)),
+            tmp_src_dir(tmp_dir / "src"),
+            tmp_bin_dir(tmp_dir / "obj"),
+            cache_bin_dir(comp.config.defaultGet<boost::filesystem::path>("cache_dir", "")),
+            compilation_hash(0) {
         // Let's make sure that the directories exist
         jitk::create_directories(tmp_src_dir);
         jitk::create_directories(tmp_bin_dir);
-
         if (not cache_bin_dir.empty()) {
             jitk::create_directories(cache_bin_dir);
         }
     }
 
-    virtual ~Engine() {}
+    virtual ~Engine() = default;
 
+    /** Return general information of the engine (should be human readable) */
     virtual std::string info() const = 0;
+
+    /** Return the type of `dtype` as a string (e.g. uint64_t or cl_int64)
+     *
+     * @param dtype The data type
+     * @return The string with the written type
+     */
     virtual const std::string writeType(bh_type dtype) = 0;
-    virtual void setConstructorFlag(std::vector<bh_instruction*> &instr_list) = 0;
+
+    /** Set the `bh_instruction->constructor` flag of all instruction in `instr_list`
+     * The constructor flag indicates whether the instruction construct the output array
+     * (i.e. is the first operation on that array)
+     *
+     * @param instr_list         The list of instruction to update
+     * @param constructed_arrays Arrays already constructed. Will be updated with arrays constructed in `instr_list`
+     */
+    virtual void setConstructorFlag(std::vector<bh_instruction *> &instr_list, std::set<bh_base *> &constructed_arrays);
+
+    /** Set the `bh_instruction->constructor` flag of all instruction in `instr_list`
+     * The constructor flag indicates whether the instruction construct the output array
+     * (i.e. is the first operation on that array)
+     *
+     * @param instr_list  The list of instruction to update
+     */
+    virtual void setConstructorFlag(std::vector<bh_instruction *> &instr_list) {
+        std::set<bh_base *> constructed_arrays;
+        setConstructorFlag(instr_list, constructed_arrays);
+    };
+
+    /** Update statistics with final aggregated values of the engine */
+    virtual void updateFinalStatistics() {} // Default we do nothing
 
 protected:
-    void writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
-                                      std::stringstream &ss,
-                                      const char *array_type_prefix) {
-        // We create the comma separated list of args and saves it in `stmp`
-        std::stringstream stmp;
-        for (size_t i = 0; i < symbols.getParams().size(); ++i) {
-            bh_base *b = symbols.getParams()[i];
-            if (array_type_prefix != nullptr) {
-                stmp << array_type_prefix << " ";
-            }
-            stmp << writeType(b->type) << "* __restrict__ a" << symbols.baseID(b) << ", ";
-        }
 
-        for (const bh_view *view: symbols.offsetStrideViews()) {
-            stmp << writeType(bh_type::UINT64);
-            stmp << " vo" << symbols.offsetStridesID(*view) << ", ";
-            for (int i = 0; i < view->ndim; ++i) {
-                stmp << writeType(bh_type::UINT64) << " vs" << symbols.offsetStridesID(*view) << "_" << i << ", ";
-            }
-        }
+    /** Handle execution of the `bhir` */
+    virtual void handleExecution(BhIR *bhir) = 0;
 
-        if (not symbols.constIDs().empty()) {
-            for (auto it = symbols.constIDs().begin(); it != symbols.constIDs().end(); ++it) {
-                const InstrPtr &instr = *it;
-                stmp << "const " << writeType(instr->constant.type) << " c" << symbols.constID(*instr) << ", ";
-            }
-        }
+    /** Handle extension methods in the `bhir` */
+    virtual void handleExtmethod(BhIR *bhir) = 0;
 
-        // And then we write `stmp` into `ss` excluding the last comma
-        const std::string strtmp = stmp.str();
-        if (strtmp.empty()) {
-            ss << "()";
-        } else {
-            // Excluding the last comma
-            ss << "(" << strtmp.substr(0, strtmp.size()-2) << ")";
-        }
-    }
+    /** Write the argument list of the kernel function, which is basicly a comma seperated list of arguments.
+     *
+     * @param symbols           The symbol table
+     * @param ss                The stream output
+     * @param array_type_prefix If not null, a string to prepend each argument
+     */
+    virtual void writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
+                                              std::stringstream &ss,
+                                              const char *array_type_prefix);
 
-    // Writes a loop block, which corresponds to a parallel for-loop.
-    // The two functions 'type_writer' and 'head_writer' should write the
-    // backend specific data type names and for-loop headers respectively.
-    void writeLoopBlock(const jitk::SymbolTable &symbols,
-                        const jitk::Scope *parent_scope,
-                        const jitk::LoopB &block,
-                        const std::vector<uint64_t> &thread_stack,
-                        bool opencl,
-                        std::stringstream &out) {
-        using namespace std;
+    /** Writes a kernel, which corresponds to a set of for-loop nest.
+     *
+     * @param symbols       The symbol table
+     * @param parent_scope  The callers scope object or null when there is no parant
+     * @param kernel        The kernel (LoopB block with rank -1) to write
+     * @param thread_stack  A vector that specifies the amount of parallelism in each nest level (excl. rank -1)
+     * @param opencl        Is this a OpenCL/CUDA kernel?
+     * @param out           The stream output
+     */
+    virtual void writeBlock(const SymbolTable &symbols,
+                            const Scope *parent_scope,
+                            const LoopB &kernel,
+                            const std::vector<uint64_t> &thread_stack,
+                            bool opencl,
+                            std::stringstream &out);
 
-        if (block.isSystemOnly()) {
-            out << "// Removed loop with only system instructions\n";
-            return;
-        }
-
-        // Order all sweep instructions by the viewID of their first operand.
-        // This makes the source of the kernels more identical, which improve the code and compile caches.
-        const vector<jitk::InstrPtr> ordered_block_sweeps = order_sweep_set(block._sweeps, symbols);
-
-        // Let's find the local temporary arrays and the arrays to scalar replace
-        const set<bh_base *> &local_tmps = block.getLocalTemps();
-
-        // Let's scalar replace reduction outputs that reduces over the innermost axis
-        vector<const bh_view*> scalar_replaced_reduction_outputs;
-        for (const InstrPtr &instr: ordered_block_sweeps) {
-            if (bh_opcode_is_reduction(instr->opcode) and sweeping_innermost_axis(instr)) {
-                if (local_tmps.find(instr->operand[0].base) == local_tmps.end() and
-                        (parent_scope == nullptr or parent_scope->isArray(instr->operand[0]))) {
-                    scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
-                }
-            }
-        }
-
-        // Let's scalar replace input-only arrays that are used multiple times
-        vector<const bh_view*> srio = scalar_replaced_input_only(block, parent_scope, local_tmps);
-
-        // And then create the scope
-        jitk::Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, srio);
-
-        // When a reduction output is a scalar (e.g. because of array contraction or scalar replacement),
-        // it should be declared before the for-loop
-        for (const InstrPtr &instr: ordered_block_sweeps) {
-            if (bh_opcode_is_reduction(instr->opcode)) {
-                const bh_view &output = instr->operand[0];
-                if (not scope.isDeclared(output) and not scope.isArray(output)) {
-                    // Let's write the declaration of the scalar variable
-                    util::spaces(out, 4 + block.rank * 4);
-                    scope.writeDeclaration(output, writeType(output.base->type), out);
-                    out << "\n";
-                }
-            }
-        }
-
-        // Find indexes we will declare later. Notice, `indexes` might include the identical views
-        // hence please check `isIdxDeclared()` to avoid duplicates
-        std::vector<const bh_view*> indexes;
-        {
-            for (const InstrPtr &instr: block.getLocalInstr()) {
-                for (const bh_view* view: instr->get_views()) {
-                    if (symbols.existIdxID(*view) and scope.isArray(*view)) {
-                        indexes.push_back(view);
-                    }
-                }
-            }
-        }
-
-        // We might not have to loop "peel" if all reduction have an identity value and writes to a scalar
-        bool peel = needToPeel(ordered_block_sweeps, scope);
-
-        // When not peeling, we need a neutral initial reduction value
-        if (not peel) {
-            for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
-                const bh_view &view = instr->operand[0];
-                if (not scope.isArray(view) and not scope.isDeclared(view)) {
-                    util::spaces(out, 4 + block.rank * 4);
-                    scope.writeDeclaration(view, writeType(view.base->type), out);
-                    out << "\n";
-                }
-                util::spaces(out, 4 + block.rank * 4);
-                scope.getName(view, out);
-                out << " = ";
-                write_reduce_identity(instr->opcode, view.base->type, out);
-                out << ";\n";
-            }
-        }
-
-        // If this block is sweeped, we will "peel" the for-loop such that the
-        // sweep instruction is replaced with BH_IDENTITY in the first iteration
-        if (block._sweeps.size() > 0 and peel) {
-            jitk::Scope peeled_scope(scope);
-            jitk::LoopB peeled_block(block);
-            for (const InstrPtr instr: ordered_block_sweeps) {
-                // The input is the same as in the sweep
-                bh_instruction sweep_instr(BH_IDENTITY, {instr->operand[0], instr->operand[1]});
-
-                // But the output needs an extra dimension when we are reducing to a non-scalar
-                if (bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                    sweep_instr.operand[0].insert_axis(instr->constant.get_int64(), 1, 0);
-                }
-                peeled_block.replaceInstr(instr, sweep_instr);
-            }
-            string itername;
-            { stringstream t; t << "i" << block.rank; itername = t.str(); }
-            util::spaces(out, 4 + block.rank * 4);
-            out << "{ // Peeled loop, 1. sweep iteration\n";
-            util::spaces(out, 8 + block.rank*4);
-            out << writeType(bh_type::UINT64) << " " << itername << " = 0;\n";
-
-            // Write temporary and scalar replaced array declarations
-            for (const InstrPtr &instr: block.getLocalInstr()) {
-                for (const bh_view *view: instr->get_views()) {
-                    if (not peeled_scope.isDeclared(*view)) {
-                        if (peeled_scope.isTmp(view->base)) {
-                            util::spaces(out, 8 + block.rank * 4);
-                            peeled_scope.writeDeclaration(*view, writeType(view->base->type), out);
-                            out << "\n";
-                        } else if (peeled_scope.isScalarReplaced_R(*view)) {
-                            util::spaces(out, 8 + block.rank * 4);
-                            peeled_scope.writeDeclaration(*view, writeType(view->base->type), out);
-                            out << " " << peeled_scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                            write_array_subscription(peeled_scope, *view, out);
-                            out << ";";
-                            out << "\n";
-                        }
-                    }
-                }
-            }
-            // Write the indexes declarations
-            for (const bh_view *view: indexes) {
-                if (not peeled_scope.isIdxDeclared(*view)) {
-                    util::spaces(out, 8 + block.rank * 4);
-                    peeled_scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
-                    out << "\n";
-                }
-            }
-            out << "\n";
-            for (const Block &b: peeled_block._block_list) {
-                if (b.isInstr()) {
-                    if (b.getInstr() != nullptr and not bh_opcode_is_system(b.getInstr()->opcode)) {
-                        util::spaces(out, 4 + b.rank()*4);
-                        write_instr(peeled_scope, *b.getInstr(), out, opencl);
-                    }
-                } else {
-                    writeLoopBlock(symbols, &peeled_scope, b.getLoop(), thread_stack, opencl, out);
-                }
-            }
-            util::spaces(out, 4 + block.rank*4);
-            out << "}\n";
-        }
-
-        // Write the for-loop header
-        util::spaces(out, 4 + block.rank*4);
-        loopHeadWriter(symbols, scope, block, peel, thread_stack, out);
-
-        // Write temporary and scalar replaced array declarations
-        for (const InstrPtr &instr: block.getLocalInstr()) {
-            for (const bh_view *view: instr->get_views()) {
-                if (not scope.isDeclared(*view)) {
-                    if (scope.isTmp(view->base)) {
-                        util::spaces(out, 8 + block.rank * 4);
-                        scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << "\n";
-                    } else if (scope.isScalarReplaced_R(*view)) {
-                        util::spaces(out, 8 + block.rank * 4);
-                        scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                        write_array_subscription(scope, *view, out);
-                        out << ";";
-                        out << "\n";
-                    }
-                }
-            }
-        }
-        // Write the indexes declarations
-        for (const bh_view *view: indexes) {
-            if (not scope.isIdxDeclared(*view)) {
-                util::spaces(out, 8 + block.rank * 4);
-                scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
-                out << "\n";
-            }
-        }
-
-        // Write the for-loop body
-        // The body in OpenCL and OpenMP are very similar but OpenMP might need to insert "#pragma omp atomic/critical"
-        if (opencl) {
-            for (const Block &b: block._block_list) {
-                if (b.isInstr()) { // Finally, let's write the instruction
-                    if (b.getInstr() != NULL and not bh_opcode_is_system(b.getInstr()->opcode)) {
-                        util::spaces(out, 4 + b.rank()*4);
-                        write_instr(scope, *b.getInstr(), out, true);
-                    }
-                } else {
-                    writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-                }
-            }
-        } else {
-            for (const Block &b: block._block_list) {
-                if (b.isInstr()) { // Finally, let's write the instruction
-                    const InstrPtr instr = b.getInstr();
-                    if (not bh_opcode_is_system(instr->opcode)) {
-                        if (instr->operand.size() > 0) {
-                            if (scope.isOpenmpAtomic(instr->operand[0])) {
-                                util::spaces(out, 4 + b.rank()*4);
-                                out << "#pragma omp atomic\n";
-                            } else if (scope.isOpenmpCritical(instr->operand[0])) {
-                                util::spaces(out, 4 + b.rank()*4);
-                                out << "#pragma omp critical\n";
-                            }
-                        }
-                        util::spaces(out, 4 + b.rank()*4);
-                        write_instr(scope, *instr, out);
-                    }
-                } else {
-                    writeLoopBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-                }
-            }
-        }
-        util::spaces(out, 4 + block.rank*4);
-        out << "}\n";
-
-        // Let's copy the scalar replaced reduction outputs back to the original array
-        for (const bh_view *view: scalar_replaced_reduction_outputs) {
-            util::spaces(out, 4 + block.rank*4);
-            out << "a" << symbols.baseID(view->base);
-            write_array_subscription(scope, *view, out, true);
-            out << " = ";
-            scope.getName(*view, out);
-            out << ";\n";
-        }
-    }
-
+    /** Write a loop header
+     *
+     * @param symbols       The symbol table
+     * @param scope         The scope
+     * @param block         The block
+     * @param thread_stack  A vector that specifies the amount of parallelism in each nest level (excl. rank -1)
+     * @param out           The stream output
+     */
     virtual void loopHeadWriter(const SymbolTable &symbols,
                                 Scope &scope,
                                 const LoopB &block,
-                                bool loop_is_peeled,
                                 const std::vector<uint64_t> &thread_stack,
                                 std::stringstream &out) = 0;
-
-private:
-    bool needToPeel(const std::vector<InstrPtr> &ordered_block_sweeps, const Scope &scope) {
-        for (const InstrPtr &instr: ordered_block_sweeps) {
-            const bh_view &v = instr->operand[0];
-            if (not (has_reduce_identity(instr->opcode) and (scope.isScalarReplaced(v) or scope.isTmp(v.base)))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 };
 
-}} // namespace
+}
+} // namespace

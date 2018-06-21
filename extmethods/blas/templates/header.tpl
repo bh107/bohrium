@@ -3,6 +3,7 @@
  * ../core/codegen/gen_extmethod.py at @!timestamp!@.  *
  **********************************************************/
 #include <bh_extmethod.hpp>
+#include <bh_main_memory.hpp>
 
 extern "C" {
 #if defined(__APPLE__) || defined(__MACOSX)

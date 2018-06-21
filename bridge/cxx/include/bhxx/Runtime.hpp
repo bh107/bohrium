@@ -34,38 +34,42 @@ namespace bhxx {
  *  \note  Not thread-safe.
  */
 class Runtime {
-  public:
+public:
     Runtime();
-    Runtime(Runtime&&) = default;
-    Runtime& operator=(Runtime&&) = default;
-    Runtime(const Runtime&) = delete;
-    Runtime& operator=(const Runtime&) = delete;
+
+    Runtime(Runtime &&) = default;
+
+    Runtime &operator=(Runtime &&) = default;
+
+    Runtime(const Runtime &) = delete;
+
+    Runtime &operator=(const Runtime &) = delete;
 
     ~Runtime() {
         flush();
     }
 
     // Get the singleton instance of the Runtime class
-    static Runtime& instance() {
+    static Runtime &instance() {
         static Runtime instance;
         return instance;
     }
 
     // Create and enqueue a new bh_instruction based on `opcode` and a variadic
     // pack of BhArrays and at most one scalar value
-    template <typename T, typename... Ts>
-    void enqueue(bh_opcode opcode, T& op, Ts&... ops);
+    template<typename T, typename... Ts>
+    void enqueue(bh_opcode opcode, T &op, Ts &... ops);
 
     /** Enqueue any BhInstruction object */
     void enqueue(BhInstruction instr);
 
     // We have to handle random specially because of the `BH_R123` scalar type
-    void enqueueRandom(BhArray<uint64_t>& out, uint64_t seed, uint64_t key);
+    void enqueueRandom(BhArray<uint64_t> &out, uint64_t seed, uint64_t key);
 
     // Enqueue an extension method
-    template <typename T>
-    void enqueueExtmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
-                          BhArray<T>& in2);
+    template<typename T>
+    void enqueueExtmethod(const std::string &name, BhArray<T> &out, BhArray<T> &in1,
+                          BhArray<T> &in2);
 
     /** Schedule a base object for deletion
      *
@@ -88,16 +92,21 @@ class Runtime {
 
     // Change the offset of slide_view_ptr by slide for each iteration of a loop
     template <typename T>
-    void slide_view(BhArray<T>* orig_view_ptr, BhArray<T>* slide_view_ptr, size_t dim, int slide, int shape) {
-        if (not orig_view_ptr->slide.empty()) {
-            throw std::runtime_error("Nested views using iterators are not supported.");
-        }
+    void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int view_shape, int array_shape, int array_stride, int step_delay) {
+        view_ptr->slide.push_back(slide);
+        view_ptr->slide_dim.push_back(dim);
+        view_ptr->slide_dim_shape_change.push_back(view_shape);
+        view_ptr->slide_dim_stride.push_back(array_stride);
+        view_ptr->slide_dim_shape.push_back(array_shape);
+        view_ptr->slide_dim_step_delay.push_back(step_delay);
+        view_ptr->slide_dim_step_delay_counter.push_back(0);
+    }
 
-        slide_view_ptr->slide.push_back(slide);
-        slide_view_ptr->slide_dim.push_back(dim);
-        slide_view_ptr->slide_dim_shape_change.push_back(shape);
-        slide_view_ptr->slide_dim_stride.push_back(orig_view_ptr->stride[dim]);
-        slide_view_ptr->slide_dim_shape.push_back(orig_view_ptr->shape[dim]);
+    // Add a reset for an iterator. Used for nested internal loops
+    template <typename T>
+    void add_reset(BhArray<T>* view_ptr, size_t dim, size_t reset_max) {
+        view_ptr->resets.insert({dim, reset_max});
+        view_ptr->changes_since_reset.insert({dim, 0});
     }
 
     // Send and receive a message through the component stack
@@ -113,7 +122,7 @@ class Runtime {
      * @return       The data pointer (NB: might point to device memory)
      * Throws exceptions on error
      */
-    void* getMemoryPointer(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
+    void *getMemoryPointer(std::shared_ptr<BhBase> &base, bool copy2host, bool force_alloc, bool nullify);
 
     /** Set data pointer in the first VE in the runtime stack
      * NB: The component will deallocate the memory when encountering a BH_FREE.
@@ -126,6 +135,19 @@ class Runtime {
      */
     void setMemoryPointer(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
 
+    /** Copy the memory of `src` to `dst`
+     *
+     * @tparam T     The type of the arrays
+     * @param src    The source
+     * @param dst    The destination
+     * @param param  Parameters to compression (use the empty string for no compression)
+     */
+    template <typename T>
+    void memCopy(BhArray<T> &src, BhArray<T> &dst, const std::string &param) {
+        bh_view _src = src.getBhView();
+        bh_view _dst = dst.getBhView();
+        runtime.memCopy(_src, _dst, param);
+    }
 
     /** Get the device handle, such as OpenCL's cl_context, of the first VE in the runtime stack.
      * If the first VE isn't a device, NULL is returned.
@@ -133,7 +155,7 @@ class Runtime {
      * @return  The device handle
      * Throws exceptions on error
      */
-    void* getDeviceContext();
+    void *getDeviceContext();
 
     /** Set the device context, such as CUDA's context, of the first VE in the runtime stack.
      * If the first VE isn't a device, nothing happens
@@ -144,9 +166,9 @@ class Runtime {
     void setDeviceContext(void *device_context);
 
     // Get the number of calls to flush so far
-    uint64_t getFlushCount() {return _flush_count;}
+    uint64_t getFlushCount() { return _flush_count; }
 
-  private:
+private:
     //@{
     /** BH_FREE for arrays is special, since we deal with the deletion of the
      * base implictly via the BhBaseDeleter (which in turn calls
@@ -156,8 +178,8 @@ class Runtime {
      * might trigger the call of enqueueDeletion, but only if the
      * array is really no longer needed.
      * */
-    template <typename T>
-    void freeMemory(BhArray<T>& ary);
+    template<typename T>
+    void freeMemory(BhArray<T> &ary);
     //@}
 
     // The lazy evaluated instructions
@@ -190,8 +212,8 @@ class Runtime {
 // ----------------------------------------------------------
 //
 
-template <typename T, typename... Ts>
-void Runtime::enqueue(bh_opcode opcode, T& op, Ts&... ops) {
+template<typename T, typename... Ts>
+void Runtime::enqueue(bh_opcode opcode, T &op, Ts &... ops) {
     if (opcode == BH_FREE) {
         // BH_FREE is special, see the freeMemory function why.
         assert(sizeof...(Ts) == 0);
@@ -203,9 +225,9 @@ void Runtime::enqueue(bh_opcode opcode, T& op, Ts&... ops) {
     }
 }
 
-template <typename T>
-void Runtime::enqueueExtmethod(const std::string& name, BhArray<T>& out, BhArray<T>& in1,
-                               BhArray<T>& in2) {
+template<typename T>
+void Runtime::enqueueExtmethod(const std::string &name, BhArray<T> &out, BhArray<T> &in1,
+                               BhArray<T> &in2) {
     bh_opcode opcode;
 
     // Look for the extension opcode
@@ -223,14 +245,14 @@ void Runtime::enqueueExtmethod(const std::string& name, BhArray<T>& out, BhArray
     enqueue(opcode, out, in1, in2);
 }
 
-template <typename T>
-void Runtime::freeMemory(BhArray<T>& ary) {
+template<typename T>
+void Runtime::freeMemory(BhArray<T> &ary) {
     // Calling BH_FREE on an array with external
     // storage management is undefined behaviour
     if (!ary.base->ownMemory()) {
         throw std::runtime_error(
-              "Cannot call BH_FREE on a BhArray object, which uses external storage "
-              "in its BhBase.");
+                "Cannot call BH_FREE on a BhArray object, which uses external storage "
+                "in its BhBase.");
     }
 
     // BH_FREE is special because it is automatically invoked

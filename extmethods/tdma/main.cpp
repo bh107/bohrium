@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 
 #include <bh_extmethod.hpp>
+#include <bh_main_memory.hpp>
 
 using namespace bohrium;
 using namespace extmethod;

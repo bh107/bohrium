@@ -110,11 +110,18 @@ find_package(Boost REQUIRED COMPONENTS serialization filesystem system regex)   
 set_package_properties(Boost PROPERTIES DESCRIPTION "Boost C++ source libraries" URL "www.boost.org")
 set_package_properties(Boost PROPERTIES TYPE REQUIRED PURPOSE "Boost is required to build Bohrium")
 include_directories(${Boost_INCLUDE_DIRS})
+# For older versions of Boost, we need this macro defined:
+add_definitions(-DBOOST_NO_CXX11_SCOPED_ENUMS)
 
 find_package(LibSigSegv REQUIRED)              # Everything
 set_package_properties(LibSigSegv PROPERTIES DESCRIPTION "GNU libsigsegv" URL "www.gnu.org/software/libsigsegv/")
 set_package_properties(LibSigSegv PROPERTIES TYPE REQUIRED PURPOSE "libsigsegv is required to build Bohrium")
 include_directories(${LIBSIGSEGV_INCLUDE_DIR})
+
+find_package(OpenCV 3)
+set_package_properties(OpenCV PROPERTIES DESCRIPTION "Open Source Computer Vision" URL "opencv.org")
+set_package_properties(OpenCV PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the OpenCV extended method")
+
 
 #####################
 # Bohrium components

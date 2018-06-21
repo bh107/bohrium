@@ -29,13 +29,13 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentImpl {
   private:
     int count = 0;
   public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level) {};
-    ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(BhIR *bhir) {
+    Impl(int stack_level) : ComponentImpl(stack_level) {};
+    ~Impl() override = default;
+    void execute(BhIR *bhir) override {
         stringstream ss;
         ss << "trace-" << count << ".txt";
         cout << "pprint-filter: writing trace('" << ss.str() << "')." << endl;

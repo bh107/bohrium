@@ -82,6 +82,14 @@ PyObject* PyGetDataPointer(PyObject *self, PyObject *args, PyObject *kwds);
  */
 PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds);
 
+/** Copy the memory of `src` to `dst`
+ *
+ * @param src    The source array
+ * @param dst    The destination array
+ * @param param  the Parameters to compression (use the empty string for no compression)
+ */
+PyObject* PyMemCopy(PyObject *self, PyObject *args, PyObject *kwds);
+
 /** Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack */
 PyObject* PyGetDeviceContext(PyObject *self, PyObject *args);
 

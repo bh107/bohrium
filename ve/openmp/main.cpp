@@ -46,7 +46,7 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImpl {
+class Impl : public ComponentVE {
   private:
     //Allocated base arrays
     set<bh_base*> _allocated_bases;
@@ -56,26 +56,25 @@ class Impl : public ComponentImpl {
     Statistics stat;
     // The OpenMP engine
     EngineOpenMP engine;
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
 
-    Impl(int stack_level) : ComponentImpl(stack_level),
+    Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(config, stat) {}
-    ~Impl();
-    void execute(BhIR *bhir);
-    void extmethod(const string &name, bh_opcode opcode) {
+                            engine(*this, stat) {}
+    ~Impl() override;
+    void execute(BhIR *bhir) override;
+    void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
         extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
     }
 
     // Handle messages from parent
-    string message(const string &msg) {
+    string message(const string &msg) override {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
             stat = Statistics(true, config);
         } else if (msg == "statistic") {
+            engine.updateFinalStatistics();
             stat.write("OpenMP", "", ss);
             return ss.str();
         } else if (msg == "info") {
@@ -85,7 +84,7 @@ class Impl : public ComponentImpl {
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         if (not copy2host) {
             throw runtime_error("OpenMP - getMemoryPointer(): `copy2host` is not True");
         }
@@ -94,13 +93,13 @@ class Impl : public ComponentImpl {
         }
         void *ret = base.data;
         if (nullify) {
-            base.data = NULL;
+            base.data = nullptr;
         }
         return ret;
     }
 
     // Handle memory pointer obtainment
-    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) override {
         if (not host_ptr) {
             throw runtime_error("OpenMP - setMemoryPointer(): `host_ptr` is not True");
         }
@@ -111,12 +110,12 @@ class Impl : public ComponentImpl {
     }
 
     // We have no context so returning NULL
-    void* getDeviceContext() {
+    void* getDeviceContext() override {
         return nullptr;
     };
 
     // We have no context so doing nothing
-    void setDeviceContext(void* device_context) {};
+    void setDeviceContext(void* device_context) override {};
 };
 }
 
@@ -129,6 +128,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (stat.print_on_exit) {
+        engine.updateFinalStatistics();
         stat.write("OpenMP", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }
@@ -138,7 +138,7 @@ void Impl::execute(BhIR *bhir) {
 
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handleExtmethod(*this, bhir);
+        engine.handleExtmethod(bhir);
 
         // And then the regular instructions
         engine.handleExecution(bhir);

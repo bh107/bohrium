@@ -30,8 +30,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <colors.hpp>
 #include <bh_ir.hpp>
 #include <bh_instruction.hpp>
-#include <jitk/base_db.hpp>
 #include <bh_config_parser.hpp>
+#include <jitk/symbol_table.hpp>
+#include <jitk/codegen_util.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -83,6 +84,8 @@ class Statistics {
     uint64_t kernel_cache_misses       = 0;
     uint64_t num_instrs_into_fuser     = 0;
     uint64_t num_blocks_out_of_fuser   = 0;
+    uint64_t malloc_cache_lookups      = 0;
+    uint64_t malloc_cache_misses       = 0;
     std::chrono::duration<double> time_total_execution{0};
     std::chrono::duration<double> time_pre_fusion{0};
     std::chrono::duration<double> time_fusion{0};
@@ -128,6 +131,7 @@ class Statistics {
             out << "Compilation cache hits:          " << GRN << kernelCacheHits()                   << "\n" << RST;
             out << "Array contractions:              " << GRN << arrayContractions()                 << "\n" << RST;
             out << "Outer-fusion ratio:              " << GRN << outerFusionRatio()                  << "\n" << RST;
+            out << "Malloc cache hits:               " << GRN << MallocCacheHits()                   << "\n" << RST;
             out << "\n";
             out << "Max memory usage:                " << GRN << memoryUsage() << " MB"              << "\n" << RST;
             out << "Syncs to NumPy:                  " << GRN << num_syncs                           << "\n" << RST;
@@ -233,7 +237,7 @@ class Statistics {
         }
     }
 
-    // Record statistics based on the 'instr_list'
+    // Record statistics based on the 'bhir'
     void record(const BhIR &bhir) {
         if (enabled) {
             for (const bh_instruction &instr: bhir.instr_list) {
@@ -250,10 +254,6 @@ class Statistics {
     void record(const SymbolTable& symbols) {
       num_base_arrays += symbols.getNumBaseArrays();
       num_temp_arrays += symbols.getNumBaseArrays() - symbols.getParams().size();
-    }
-
-    void addKernel(const std::string& kernel_name) {
-      time_per_kernel.insert(std::make_pair(kernel_name, KernelStats()));
     }
 
   private:
@@ -277,8 +277,12 @@ class Statistics {
         return pprint_ratio(num_blocks_out_of_fuser, num_instrs_into_fuser);
     }
 
+    std::string MallocCacheHits() {
+        return pprint_ratio(malloc_cache_lookups - malloc_cache_misses, malloc_cache_lookups);
+    }
+
     double memoryUsage() {
-        return (double) max_memory_usage / 1024.0 / 1024.0;
+        return max_memory_usage / 1024 / 1024;
     }
 
     double throughput() {

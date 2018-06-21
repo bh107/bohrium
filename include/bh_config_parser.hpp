@@ -28,25 +28,25 @@ If not, see <http://www.gnu.org/licenses/>.
 // We need to specialize lexical_cast() in order to support booleans
 // other then the standard 0/1 to true/false conversion.
 namespace boost {
-    template<>
-    inline bool lexical_cast<bool, std::string>(const std::string& arg) {
-        switch(arg[0]) {
-            case 'y':
-            case 'Y':
-            case '1':
-            case 't':
-            case 'T':
-                return true;
-            case 'n':
-            case 'N':
-            case '0':
-            case 'f':
-            case 'F':
-                return false;
-            default:
-                throw boost::bad_lexical_cast();
-        }
+template<>
+inline bool lexical_cast<bool, std::string>(const std::string &arg) {
+    switch (arg[0]) {
+        case 'y':
+        case 'Y':
+        case '1':
+        case 't':
+        case 'T':
+            return true;
+        case 'n':
+        case 'N':
+        case '0':
+        case 'f':
+        case 'F':
+            return false;
+        default:
+            throw boost::bad_lexical_cast();
     }
+}
 }
 
 namespace bohrium {
@@ -55,33 +55,34 @@ namespace bohrium {
 class ConfigError : public std::exception {
     std::string _msg;
 public:
-    ConfigError(const std::string& msg) : _msg(msg) {}
-    virtual const char* what() const throw() { return _msg.c_str(); }
+    ConfigError(const std::string &msg) : _msg(msg) {}
+
+    virtual const char *what() const throw() { return _msg.c_str(); }
 };
 
 // Exception thrown when getChildLibraryPath() does not exist
 class ConfigNoChild : public ConfigError {
 public:
-    ConfigNoChild(const std::string& msg) : ConfigError(msg) {}
+    ConfigNoChild(const std::string &msg) : ConfigError(msg) {}
 };
 
 // Exception thrown when a config key is not found
 class ConfigKeyNotFound : public ConfigError {
     std::string _msg;
 public:
-    ConfigKeyNotFound(const std::string& msg) : ConfigError(msg) {}
+    ConfigKeyNotFound(const std::string &msg) : ConfigError(msg) {}
 };
 
 // Exception thrown when cast failed
 class ConfigBadCast : public ConfigError {
     std::string _msg;
 public:
-    ConfigBadCast(const std::string& msg) : ConfigError(msg) {}
+    ConfigBadCast(const std::string &msg) : ConfigError(msg) {}
 };
 
 //Representation of the Bohrium configuration file
 class ConfigParser {
-  public:
+public:
     // Path to the config file e.g. ~/.bohrium/config.ini
     const boost::filesystem::path file_path;
     // Path to the directory of the config file
@@ -89,7 +90,7 @@ class ConfigParser {
     // The stack level of the calling component (-1 is the bridge,
     // 0 is the first component in the stack list, 1 is the second component etc.)
     const int stack_level;
-  private:
+private:
     // The default section, which should be name of the component owning this class
     std::string _default_section;
     // The list of components in the user-specified stack starting
@@ -97,26 +98,28 @@ class ConfigParser {
     std::vector<std::string> _stack_list;
     // The config data
     boost::property_tree::ptree _config;
+
     // Return section/option first looking at the environment variable
     // and then the ini file.
     std::string lookup(const std::string &section,
                        const std::string &option) const;
-  public:
-    /* Uses 'stack_level' to find the default section to use with get()
+
+public:
+    /** Uses 'stack_level' to find the default section to use with get()
      * and when calculating the child in getChild()
      *
      * @stack_level  Is the level of the calling component
      */
     ConfigParser(int stack_level);
 
-    /* Expand `~` in `path` to the home dir of the user
+    /** Expand `~` in `path` to the home dir of the user
      *
      * @path    Path to expand.
      * @return  The expanded path.
      */
     boost::filesystem::path expand(boost::filesystem::path path) const;
 
-    /* Get the value of the 'option' within the 'section'
+    /** Get the value of the 'option' within the 'section'
      *
      * @section  The ini section e.g. [gpu]. If omitted, the default
      *           section is used.
@@ -133,7 +136,7 @@ class ConfigParser {
         string ret;
         try {
             ret = lookup(section, option);
-        } catch (const property_tree::ptree_bad_path&) {
+        } catch (const property_tree::ptree_bad_path &) {
             stringstream ss;
             ss << "Error parsing the config file '" << file_path << "': '" << section << "." << option
                << "' not found!\n Using an old config file? try removing it and re-install bohrium" << endl;
@@ -142,20 +145,21 @@ class ConfigParser {
         //Now let's try to convert the value to the requested type
         try {
             return lexical_cast<T>(ret);
-        } catch (const boost::bad_lexical_cast&) {
+        } catch (const boost::bad_lexical_cast &) {
             stringstream ss;
             ss << "ConfigParser cannot convert '" << section << "." << option
                << "=" << ret << "' to type <" << typeid(T).name() << ">" << endl;
             throw ConfigBadCast(ss.str());
         }
     }
+
     // Overload that use the default section
     template<typename T>
     T get(const std::string &option) const {
         return get<T>(_default_section, option);
     }
 
-    /* Get the value of the 'option' within the 'section' and if it
+    /** Get the value of the 'option' within the 'section' and if it
      * does not exist return 'default_value' instead
      *
      * @section        The ini section e.g. [gpu]. If omitted, the
@@ -170,16 +174,17 @@ class ConfigParser {
                  const T &default_value) const {
         try {
             return get<T>(section, option);
-        } catch (const ConfigKeyNotFound&) {
+        } catch (const ConfigKeyNotFound &) {
             return default_value;
         }
     }
+
     template<typename T>
     T defaultGet(const std::string &option, const T &default_value) const {
         return defaultGet(_default_section, option, default_value);
     }
 
-    /* Get the value of the 'option' within the 'section' and convert the value,
+    /** Get the value of the 'option' within the 'section' and convert the value,
      * which must be a comma separated list, into a vector of strings.
      *
      * @section        The ini section e.g. [gpu]. If omitted, the
@@ -190,11 +195,12 @@ class ConfigParser {
      */
     std::vector<std::string> getList(const std::string &section,
                                      const std::string &option) const;
+
     std::vector<std::string> getList(const std::string &option) const {
         return getList(_default_section, option);
     }
 
-    /* Get the value of the 'option' within the 'section' and convert the value,
+    /** Get the value of the 'option' within the 'section' and convert the value,
      * which must be a comma separated list, into a vector of paths.
      *
      * @section        The ini section e.g. [gpu]. If omitted, the
@@ -205,11 +211,12 @@ class ConfigParser {
      */
     std::vector<boost::filesystem::path> getListOfPaths(const std::string &section,
                                                         const std::string &option) const;
+
     std::vector<boost::filesystem::path> getListOfPaths(const std::string &option) const {
         return getListOfPaths(_default_section, option);
     }
 
-    /* Get the value of the 'option' within the 'section' and convert the value,
+    /** Get the value of the 'option' within the 'section' and convert the value,
      * which must be a comma separated list, into a vector of strings.
      * If it does not exist return 'default_value' instead.
      *
@@ -224,24 +231,24 @@ class ConfigParser {
                                             const std::vector<std::string> &default_value) const {
         try {
             return getList(section, option);
-        } catch (const ConfigKeyNotFound&) {
+        } catch (const ConfigKeyNotFound &) {
             return default_value;
         }
     }
+
     std::vector<std::string> defaultGetList(const std::string &option,
                                             const std::vector<std::string> &default_value) const {
         return defaultGetList(_default_section, option, default_value);
     }
 
-    /* Return the path to the library that implements
-     * the calling component's child.
+    /** Return the path to the library that implements the calling component's child or "" if the child doesn't exist.
      *
-     * @return File path to shared library (as a string)
+     * @return File path to shared library or the empty string
      * Throw ConfigNoChild exception if the calling component has not children
      */
     std::string getChildLibraryPath() const;
 
-    /* Retrieve the name of the calling component
+    /** Retrieve the name of the calling component
      *
      * @return Component name as given in the config file
      */
@@ -249,10 +256,10 @@ class ConfigParser {
 };
 
 // Path specialization of `ConfigParser::get()`, which makes sure that relative paths are converted to absolute paths
-template <>
+template<>
 inline boost::filesystem::path ConfigParser::get(const std::string &section, const std::string &option) const {
     boost::filesystem::path ret = expand(boost::filesystem::path(get<std::string>(section, option)));
-    if(ret.is_absolute() or ret.empty()) {
+    if (ret.is_absolute() or ret.empty()) {
         return ret;
     } else {
         return file_dir / ret;

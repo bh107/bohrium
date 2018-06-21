@@ -88,7 +88,7 @@ GetData::GetData(const std::vector<char> &buffer) {
 
     size_t b;
     ia >> b;
-    this->base = reinterpret_cast<bh_base*>(b);
+    this->base = reinterpret_cast<bh_base *>(b);
     ia >> this->nullify;
 }
 
@@ -100,6 +100,47 @@ void GetData::serialize(std::vector<char> &buffer) {
     size_t b = reinterpret_cast<size_t>(this->base);
     oa << b;
     oa << this->nullify;
+}
+
+MemCopy::MemCopy(const std::vector<char> &buffer) {
+    // Wrap 'buffer' in an input stream
+    iostreams::basic_array_source<char> source(&buffer[0], buffer.size());
+    iostreams::stream<iostreams::basic_array_source<char> > input_stream(source);
+    archive::binary_iarchive ia(input_stream);
+
+    ia >> this->src;
+    size_t b;
+    ia >> b;
+    this->src.base = reinterpret_cast<bh_base *>(b);
+    ia >> this->param;
+}
+
+void MemCopy::serialize(std::vector<char> &buffer) {
+    // Wrap 'buffer' in an output stream
+    iostreams::stream<iostreams::back_insert_device<vector<char> > > output_stream(buffer);
+    archive::binary_oarchive oa(output_stream);
+
+    oa << this->src;
+    size_t b = reinterpret_cast<size_t>(this->src.base);
+    oa << b;
+    oa << this->param;
+}
+
+Message::Message(const std::vector<char> &buffer) {
+    // Wrap 'buffer' in an input stream
+    iostreams::basic_array_source<char> source(&buffer[0], buffer.size());
+    iostreams::stream<iostreams::basic_array_source<char> > input_stream(source);
+    archive::binary_iarchive ia(input_stream);
+
+    ia >> msg;
+}
+
+void Message::serialize(std::vector<char> &buffer) {
+    // Wrap 'buffer' in an output stream
+    iostreams::stream<iostreams::back_insert_device<vector<char> > > output_stream(buffer);
+    archive::binary_oarchive oa(output_stream);
+
+    oa << msg;
 }
 
 }

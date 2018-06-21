@@ -28,11 +28,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
 #include <bh_view.hpp>
+#include <bh_malloc_cache.hpp>
 #include <jitk/statistics.hpp>
 #include <jitk/codegen_util.hpp>
-
 #include <jitk/engines/engine_gpu.hpp>
-
 #include <cuda.h>
 
 namespace {
@@ -85,28 +84,41 @@ private:
     // Return a kernel function based on the given 'source'
     CUfunction getFunction(const std::string &source, const std::string &func_name);
 
+    // We initialize the malloc cache with an alloc and free function
+    MallocCache::FuncAllocT func_alloc = [](uint64_t nbytes) -> void * {
+        CUdeviceptr new_buf;
+        check_cuda_errors(cuMemAlloc(&new_buf, nbytes));
+        return (void*) new_buf;
+    };
+    MallocCache::FuncFreeT func_free = [](void *mem, uint64_t nbytes) {
+        check_cuda_errors(cuMemFree((CUdeviceptr) mem));
+    };
+    MallocCache malloc_cache{func_alloc, func_free, 0};
+
 public:
-    EngineCUDA(const ConfigParser &config, jitk::Statistics &stat);
-    ~EngineCUDA();
+    EngineCUDA(component::ComponentVE &comp, jitk::Statistics &stat);
+    ~EngineCUDA() override;
 
     // Execute the 'source'
-    void execute(const std::string &source,
+    void execute(const jitk::SymbolTable &symbols,
+                 const std::string &source,
                  uint64_t codegen_hash,
-                 const std::vector<bh_base*> &non_temps,
                  const std::vector<uint64_t> &thread_stack,
-                 const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants);
 
-    void writeKernel(const jitk::Block &block,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
                      const std::vector<uint64_t> &thread_stack,
                      uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
     // Delete a buffer
-    void delBuffer(bh_base* &base) override {
-        check_cuda_errors(cuMemFree(buffers[base]));
-        buffers.erase(base);
+    void delBuffer(bh_base* base) override {
+        auto it = buffers.find(base);
+        if (it != buffers.end()) {
+            malloc_cache.free(base->nbytes(), (void*) it->second);
+            buffers.erase(it);
+        }
     }
 
     // Retrieve a single buffer
@@ -128,7 +140,7 @@ public:
                 if (verbose) {
                     std::cout << "Copy to host: " << *base << std::endl;
                 }
-                check_cuda_errors(cuMemcpyDtoH(base->data, buffers.at(base), bh_base_size(base)));
+                check_cuda_errors(cuMemcpyDtoH(base->data, buffers.at(base), base->nbytes()));
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
                 delBuffer(base);
@@ -144,7 +156,7 @@ public:
         if (prof) {
             uint64_t sum = 0;
             for (const auto &b: buffers) {
-                sum += bh_base_size(b.first);
+                sum += b.first->nbytes();
             }
             stat.max_memory_usage = sum > stat.max_memory_usage ? sum : stat.max_memory_usage;
         }
@@ -152,16 +164,15 @@ public:
         auto tcopy = std::chrono::steady_clock::now();
         for(bh_base *base: base_list) {
             if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
-                CUdeviceptr new_buf;
-                check_cuda_errors(cuMemAlloc(&new_buf, bh_base_size(base)));
+                auto new_buf = reinterpret_cast<CUdeviceptr>(malloc_cache.alloc(base->nbytes()));
                 buffers[base] = new_buf;
 
                 // If the host data is non-null we should copy it to the device
-                if (base->data != NULL) {
+                if (base->data != nullptr) {
                     if (verbose) {
                         std::cout << "Copy to device: " << *base << std::endl;
                     }
-                    check_cuda_errors(cuMemcpyHtoD(new_buf, base->data, bh_base_size(base)));
+                    check_cuda_errors(cuMemcpyHtoD(new_buf, base->data, base->nbytes()));
                 }
             }
         }
@@ -200,7 +211,7 @@ public:
     }
 
     // Sets the constructor flag of each instruction in 'instr_list'
-    void setConstructorFlag(std::vector<bh_instruction*> &instr_list);
+    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
 
     // Return a YAML string describing this component
     std::string info() const;
@@ -209,9 +220,8 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
-                        std::stringstream &out) {
+                        std::stringstream &out) override {
         // Write the for-loop header
         std::string itername;
         { std::stringstream t; t << "i" << block.rank; itername = t.str(); }
@@ -219,18 +229,14 @@ public:
             assert(block._sweeps.size() == 0);
             out << "{ // Threaded block (ID " << itername << ")";
         } else {
-            out << "for(" << writeType(bh_type::INT64) << " " << itername;
-            if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-                out << " = 1; ";
-            else
-                out << " = 0; ";
+            out << "for(" << writeType(bh_type::INT64) << " " << itername << " = 0; ";
             out << itername << " < " << block.size << "; ++" << itername << ") {";
         }
         out << "\n";
     }
 
     // Return CUDA types, which are used inside the JIT kernels
-    const std::string writeType(bh_type dtype) {
+    const std::string writeType(bh_type dtype) override {
         switch (dtype) {
             case bh_type::BOOL:       return "bool";
             case bh_type::INT8:       return "char";
@@ -263,6 +269,12 @@ public:
             default:
                 throw std::runtime_error("CUDA only support 3 dimensions");
         }
+    }
+
+    // Update statistics with final aggregated values of the engine
+    void updateFinalStatistics() override {
+        stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
+        stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }
 };
 

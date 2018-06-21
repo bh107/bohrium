@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <bh_opcode.h>
-#include <jitk/base_db.hpp>
+#include <jitk/symbol_table.hpp>
 
 // Return the OpenMP reduction symbol
 const char* openmp_reduce_symbol(bh_opcode opcode) {
@@ -72,10 +72,8 @@ bool simd_compatible(const bohrium::jitk::LoopB &block,
 
     // An OpenMP SIMD loop does not support ANY OpenMP pragmas
     for (bohrium::jitk::InstrPtr instr: block.getAllInstr()) {
-        for(const bh_view *view: instr->get_views()) {
-            if (scope.isOpenmpAtomic(*view) or scope.isOpenmpCritical(*view))
-                return false;
-        }
+        if (scope.isOpenmpAtomic(instr) or scope.isOpenmpCritical(instr))
+            return false;
     }
     return true;
 }

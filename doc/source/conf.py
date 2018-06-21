@@ -34,7 +34,7 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
-    'sphinx.ext.imgmath',
+#    'sphinx.ext.imgmath',
     # 'sphinxcontrib.spelling', # enable and out-comment the last option settings to use
     'numpydoc'
 ]

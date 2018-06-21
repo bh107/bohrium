@@ -51,21 +51,18 @@ private:
     KernelFunction getFunction(const std::string &source, const std::string &func_name);
 
 public:
-    EngineOpenMP(const ConfigParser &config, jitk::Statistics &stat);
+    EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat);
 
-    ~EngineOpenMP();
+    ~EngineOpenMP() override;
 
-    void execute(const std::string &source,
+    void execute(const jitk::SymbolTable &symbols,
+                 const std::string &source,
                  uint64_t codegen_hash,
-                 const std::vector<bh_base*> &non_temps,
-                 const std::vector<const bh_view*> &offset_strides,
                  const std::vector<const bh_instruction*> &constants) override;
 
-    void setConstructorFlag(std::vector<bh_instruction*> &instr_list) override;
-
-    void writeKernel(const std::vector<jitk::Block> &block_list,
+    void writeKernel(const jitk::LoopB &kernel,
                      const jitk::SymbolTable &symbols,
-                     const std::vector<bh_base*> &kernel_temps,
+                     const std::vector<bh_base *> &kernel_temps,
                      uint64_t codegen_hash,
                      std::stringstream &ss) override;
 
@@ -78,7 +75,6 @@ public:
     void loopHeadWriter(const jitk::SymbolTable &symbols,
                         jitk::Scope &scope,
                         const jitk::LoopB &block,
-                        bool loop_is_peeled,
                         const std::vector<uint64_t> &thread_stack,
                         std::stringstream &out) override;
 
@@ -87,6 +83,11 @@ public:
 
     // Return C99 types, which are used inside the C99 kernels
     const std::string writeType(bh_type dtype) override;
+
+    // Update statistics with final aggregated values of the engine
+    void updateFinalStatistics() override {
+        bh_get_malloc_cache_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
+    }
 
 private:
     // Writes the union of C99 types that can make up a constant

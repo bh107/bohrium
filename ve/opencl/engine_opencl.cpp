@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_component.hpp>
 
 #include <jitk/compiler.hpp>
+#include <jitk/symbol_table.hpp>
 
 #include "engine_opencl.hpp"
 
@@ -44,8 +45,9 @@ map<const string, cl_device_type> device_map = {
 };
 
 // Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
-cl::Device getDevice(const cl::Platform &platform, const string &default_device_type) {
+cl::Device getDevice(const cl::Platform &platform, const string &default_device_type, const int &device_number) {
     vector<cl::Device> device_list;
+    vector<cl::Device> valid_device_list;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
 
     if(device_list.empty()){
@@ -60,37 +62,47 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
     } else if (device_map[default_device_type] != CL_DEVICE_AUTO) {
         for (auto &device: device_list) {
             if ((device.getInfo<CL_DEVICE_TYPE>() & device_map[default_device_type]) == device_map[default_device_type]) {
-                return device;
+                valid_device_list.push_back(device);
             }
         }
-        stringstream ss;
-        ss << "Could not find selected OpenCL device type ('" \
-           << default_device_type << "') on default platform";
-        throw runtime_error(ss.str());
+
+        try {
+            return valid_device_list.at(device_number);
+        } catch(std::out_of_range &err) {
+            stringstream ss;
+            ss << "Could not find selected OpenCL device type ('" \
+               << default_device_type << "') on default platform";
+            throw runtime_error(ss.str());
+        }
     }
 
     // Type was 'auto'
     for (auto &device_type: device_map) {
         for (auto &device: device_list) {
             if ((device.getInfo<CL_DEVICE_TYPE>() & device_type.second) == device_type.second) {
-                return device;
+                valid_device_list.push_back(device);
             }
         }
     }
-    throw runtime_error("No OpenCL device of usable type found");
+
+    try {
+        return valid_device_list.at(device_number);
+    } catch(std::out_of_range &err) {
+        throw runtime_error("No OpenCL device of usable type found");
+    }
 }
 }
 
 namespace bohrium {
 
-EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
-    EngineGPU(config, stat),
-    work_group_size_1dx(config.defaultGet<cl_ulong>("work_group_size_1dx", 128)),
-    work_group_size_2dx(config.defaultGet<cl_ulong>("work_group_size_2dx", 32)),
-    work_group_size_2dy(config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
-    work_group_size_3dx(config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
-    work_group_size_3dy(config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
-    work_group_size_3dz(config.defaultGet<cl_ulong>("work_group_size_3dz", 2))
+EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat) :
+    EngineGPU(comp, stat),
+    work_group_size_1dx(comp.config.defaultGet<cl_ulong>("work_group_size_1dx", 128)),
+    work_group_size_2dx(comp.config.defaultGet<cl_ulong>("work_group_size_2dx", 32)),
+    work_group_size_2dy(comp.config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
+    work_group_size_3dx(comp.config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
+    work_group_size_3dy(comp.config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
+    work_group_size_3dz(comp.config.defaultGet<cl_ulong>("work_group_size_3dz", 2))
 {
     vector<cl::Platform> platforms;
     cl::Platform::get(&platforms);
@@ -105,7 +117,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
             try {
                 // Get the device of the platform
                 platform = pform;
-                device = getDevice(platform, default_device_type);
+                device = getDevice(platform, default_device_type, default_device_number);
                 found = true;
             } catch(const cl::Error &err) {
                 // We try next platform
@@ -121,7 +133,7 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
         }
 
         platform = platforms[platform_no];
-        device = getDevice(platform, default_device_type);
+        device = getDevice(platform, default_device_type, default_device_number);
         found = true;
     }
 
@@ -151,6 +163,15 @@ EngineOpenCL::EngineOpenCL(const ConfigParser &config, jitk::Statistics &stat) :
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
     compilation_hash = util::hash(ss.str());
+
+    // Initiate cache limits
+    const uint64_t gpu_mem = device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 90);
+    if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
+        throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
+    }
+    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent/100.0)));
+    malloc_cache.setLimit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
 EngineOpenCL::~EngineOpenCL() {
@@ -192,23 +213,39 @@ EngineOpenCL::~EngineOpenCL() {
     }
 }
 
+namespace {
+// Calculate the work group sizes.
+// Return pair (global work size, local work size)
+pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_size) {
+    if (numeric_limits<uint32_t>::max() <= work_group_size or
+        numeric_limits<uint32_t>::max() <= block_size or
+        block_size < 0) {
+        throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
+    }
+    const auto lsize = (uint32_t) work_group_size;
+    const auto rem   = (uint32_t) block_size % lsize;
+    const auto gsize = (uint32_t) block_size + (rem==0?0:(lsize-rem));
+    return make_pair(gsize, lsize);
+}
+}
+
 pair<cl::NDRange, cl::NDRange> EngineOpenCL::NDRanges(const vector<uint64_t> &thread_stack) const {
     const auto &b = thread_stack;
     switch (b.size()) {
         case 1: {
-            const auto gsize_and_lsize = jitk::work_ranges(work_group_size_1dx, b[0]);
+            const auto gsize_and_lsize = work_ranges(work_group_size_1dx, b[0]);
             return make_pair(cl::NDRange(gsize_and_lsize.first), cl::NDRange(gsize_and_lsize.second));
         }
         case 2: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_2dx, b[0]);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_2dy, b[1]);
+            const auto gsize_and_lsize_x = work_ranges(work_group_size_2dx, b[0]);
+            const auto gsize_and_lsize_y = work_ranges(work_group_size_2dy, b[1]);
             return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first),
                              cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second));
         }
         case 3: {
-            const auto gsize_and_lsize_x = jitk::work_ranges(work_group_size_3dx, b[0]);
-            const auto gsize_and_lsize_y = jitk::work_ranges(work_group_size_3dy, b[1]);
-            const auto gsize_and_lsize_z = jitk::work_ranges(work_group_size_3dz, b[2]);
+            const auto gsize_and_lsize_x = work_ranges(work_group_size_3dx, b[0]);
+            const auto gsize_and_lsize_y = work_ranges(work_group_size_3dy, b[1]);
+            const auto gsize_and_lsize_z = work_ranges(work_group_size_3dz, b[2]);
             return make_pair(cl::NDRange(gsize_and_lsize_x.first, gsize_and_lsize_y.first, gsize_and_lsize_z.first),
                              cl::NDRange(gsize_and_lsize_x.second, gsize_and_lsize_y.second, gsize_and_lsize_z.second));
         }
@@ -233,7 +270,6 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
         ++stat.kernel_cache_misses;
         std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
-        stat.addKernel(source_filename);
         program = cl::Program(context, source);
         if (verbose) {
             const string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
@@ -277,11 +313,10 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
     return program;
 }
 
-void EngineOpenCL::execute(const std::string &source,
+void EngineOpenCL::execute(const jitk::SymbolTable &symbols,
+                           const std::string &source,
                            uint64_t codegen_hash,
-                           const std::vector<bh_base*> &non_temps,
                            const vector<uint64_t> &thread_stack,
-                           const vector<const bh_view*> &offset_strides,
                            const vector<const bh_instruction*> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
@@ -297,11 +332,11 @@ void EngineOpenCL::execute(const std::string &source,
     cl::Kernel opencl_kernel = cl::Kernel(program, func_name.c_str());
 
     cl_uint i = 0;
-    for (bh_base *base: non_temps) { // NB: the iteration order matters!
+    for (bh_base *base: symbols.getParams()) { // NB: the iteration order matters!
         opencl_kernel.setArg(i++, *getBuffer(base));
     }
 
-    for (const bh_view *view: offset_strides) {
+    for (const bh_view *view: symbols.offsetStrideViews()) {
         uint64_t t1 = (uint64_t) view->start;
         opencl_kernel.setArg(i++, t1);
         for (int j=0; j<view->ndim; ++j) {
@@ -374,15 +409,15 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
     auto tcopy = std::chrono::steady_clock::now();
     // Let's copy sync'ed arrays back to the host
     for(bh_base *base: bases) {
-        if (buffers.find(base) != buffers.end()) {
+        if (util::exist(buffers, base)) {
             bh_data_malloc(base);
             if (verbose) {
                 std::cout << "Copy to host: " << *base << std::endl;
             }
-            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
             // When syncing we assume that the host writes to the data and invalidate the device data thus
             // we have to remove its data buffer
-            buffers.erase(base);
+            delBuffer(base);
         }
     }
     queue.finish();
@@ -395,22 +430,22 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
     if (prof) {
         uint64_t sum = 0;
         for (const auto &b: buffers) {
-            sum += bh_base_size(b.first);
+            sum += b.first->nbytes();
         }
         stat.max_memory_usage = sum > stat.max_memory_usage?sum:stat.max_memory_usage;
     }
 
     auto tcopy = std::chrono::steady_clock::now();
     for(bh_base *base: base_list) {
-        if (buffers.find(base) == buffers.end()) { // We shouldn't overwrite existing buffers
+        if (not util::exist(buffers, base)) { // We shouldn't overwrite existing buffers
             cl::Buffer *buf = createBuffer(base);
 
             // If the host data is non-null we should copy it to the device
-            if (base->data != NULL) {
+            if (base->data != nullptr) {
                 if (verbose) {
                     std::cout << "Copy to device: " << *base << std::endl;
                 }
-                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) bh_base_size(base), base->data);
+                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
             }
         }
     }
@@ -419,7 +454,11 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
 }
 
 void EngineOpenCL::setConstructorFlag(std::vector<bh_instruction*> &instr_list) {
-    jitk::util_set_constructor_flag(instr_list, buffers);
+    std::set<bh_base *> constructed_arrays;
+    for (auto it: buffers) {
+        constructed_arrays.insert(it.first);
+    }
+    Engine::setConstructorFlag(instr_list, constructed_arrays);
 }
 
 // Copy all bases to the host (ignoring bases that isn't on the device)
@@ -432,11 +471,15 @@ void EngineOpenCL::copyAllBasesToHost() {
 }
 
 // Delete a buffer
-void EngineOpenCL::delBuffer(bh_base* &base) {
-    buffers.erase(base);
+void EngineOpenCL::delBuffer(bh_base* base) {
+    auto it = buffers.find(base);
+    if (it != buffers.end()) {
+        malloc_cache.free(base->nbytes(), it->second);
+        buffers.erase(it);
+    }
 }
 
-void EngineOpenCL::writeKernel(const jitk::Block &block,
+void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
                                const jitk::SymbolTable &symbols,
                                const vector<uint64_t> &thread_stack,
                                uint64_t codegen_hash,
@@ -466,10 +509,7 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
         }
         ss << "\n";
     }
-
-    // Write the block that makes up the body of 'execute()'
-    writeLoopBlock(symbols, nullptr, block.getLoop(), thread_stack, true, ss);
-
+    writeBlock(symbols, nullptr, kernel, thread_stack, true, ss);
     ss << "}\n\n";
 }
 
@@ -477,7 +517,6 @@ void EngineOpenCL::writeKernel(const jitk::Block &block,
 void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
                                   jitk::Scope &scope,
                                   const jitk::LoopB &block,
-                                  bool loop_is_peeled,
                                   const std::vector<uint64_t> &thread_stack,
                                   std::stringstream &out) {
     // Write the for-loop header
@@ -502,11 +541,7 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
             out << "{const " << writeType(bh_type::UINT64) << " " << itername << " = g" << block.rank << ";";
         }
     } else {
-        out << "for (" << writeType(bh_type::UINT64) << " " << itername;
-        if (block._sweeps.size() > 0 and loop_is_peeled) // If the for-loop has been peeled, we should start at 1
-            out << " = 1; ";
-        else
-            out << " = 0; ";
+        out << "for (" << writeType(bh_type::UINT64) << " " << itername << " = 0; ";
         out << itername << " < " << block.size << "; ++" << itername << ") {";
     }
     out << "\n";
@@ -514,12 +549,25 @@ void EngineOpenCL::loopHeadWriter(const jitk::SymbolTable &symbols,
 
 std::string EngineOpenCL::info() const {
     stringstream ss;
-    ss << "----"                                                                        << "\n";
-    ss << "OpenCL:"                                                                     << "\n";
-    ss << "  Platform: \"" << platform.getInfo<CL_PLATFORM_NAME>()                      << "\"\n";
-    ss << "  Device:   \"" << device.getInfo<CL_DEVICE_NAME>() << " (" \
-                           << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()              << ")\"\n";
-    ss << "  Memory:   \"" << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024 << " MB\"\n";
+    ss << std::boolalpha; // Printing true/false instead of 1/0
+    ss << "----"                                                                               << "\n";
+    ss << "OpenCL:"                                                                            << "\n";
+    ss << "  Platform no:    "; if(platform_no == -1) ss << "auto"; else ss << platform_no; ss << "\n";
+    ss << "  Platform:       " << platform.getInfo<CL_PLATFORM_NAME>()                         << "\n";
+    ss << "  Device type:    " << default_device_type                                          << "\n";
+    ss << "  Device:         " << device.getInfo<CL_DEVICE_NAME>() << " (" \
+                               << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>()                 << ")\n";
+    ss << "  Memory:         " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\n";
+    ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
+       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
+    ss << "  Compiler flags: " << compile_flg << "\n";
+    ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "")  << "\n";
+    ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
+
+    ss << "  Codegen flags:\n";
+    ss << "    Index-as-var: " << comp.config.defaultGet<bool>("index_as_var", true)  << "\n";
+    ss << "    Strides-as-var: " << comp.config.defaultGet<bool>("strides_as_var", true)  << "\n";
+    ss << "    const-as-var: " << comp.config.defaultGet<bool>("const_as_var", true)  << "\n";
     return ss.str();
 }
 

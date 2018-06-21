@@ -38,27 +38,24 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentVE {
   public:
     // Some statistics
     Statistics stat;
     // The OpenCL engine
     EngineOpenCL engine;
-    // Known extension methods
-    map<bh_opcode, extmethod::ExtmethodFace> extmethods;
-    std::set<bh_opcode> child_extmethods;
 
-    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+    Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(config, stat) {}
-    ~Impl();
-    void execute(BhIR *bhir);
-    void extmethod(const string &name, bh_opcode opcode) {
+                            engine(*this, stat) {}
+    ~Impl() override;
+    void execute(BhIR *bhir) override;
+    void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
         try {
             extmethods.insert(make_pair(opcode, extmethod::ExtmethodFace(config, name)));
-        } catch(extmethod::ExtmethodNotFound e) {
+        } catch(extmethod::ExtmethodNotFound &e) {
             // I don't know this function, lets try my child
             child.extmethod(name, opcode);
             child_extmethods.insert(opcode);
@@ -66,11 +63,12 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle messages from parent
-    string message(const string &msg) {
+    string message(const string &msg) override {
         stringstream ss;
         if (msg == "statistic_enable_and_reset") {
             stat = Statistics(true, config);
         } else if (msg == "statistic") {
+            engine.updateFinalStatistics();
             stat.write("OpenCL", "", ss);
         } else if (msg == "GPU: disable") {
             engine.copyAllBasesToHost();
@@ -84,7 +82,7 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) {
+    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         bh_base *b = &base;
         if (copy2host) {
             std::set<bh_base*> t = { b };
@@ -95,7 +93,7 @@ class Impl : public ComponentImplWithChild {
             }
             void *ret = base.data;
             if (nullify) {
-                base.data = NULL;
+                base.data = nullptr;
             }
             return ret;
         } else {
@@ -104,7 +102,7 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle memory pointer obtainment
-    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) {
+    void setMemoryPointer(bh_base *base, bool host_ptr, void *mem) override {
         if (host_ptr) {
             std::set<bh_base*> t = { base };
             engine.copyToHost(t);
@@ -116,7 +114,7 @@ class Impl : public ComponentImplWithChild {
     }
 
     // Handle the OpenCL context retrieval
-    void* getDeviceContext() {
+    void* getDeviceContext() override {
         return engine.getCContext();
     };
 };
@@ -132,6 +130,7 @@ extern "C" void destroy(ComponentImpl* self) {
 
 Impl::~Impl() {
     if (stat.print_on_exit) {
+        engine.updateFinalStatistics();
         stat.write("OpenCL", config.defaultGet<std::string>("prof_filename", ""), cout);
     }
 }
@@ -145,10 +144,10 @@ void Impl::execute(BhIR *bhir) {
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i = 0; i < bhir->getNRepeats(); ++i) {
         // Let's handle extension methods
-        engine.handleExtmethod(*this, bhir, child_extmethods);
+        engine.handleExtmethod(bhir);
 
         // And then the regular instructions
-        engine.handleExecution(*this, bhir);
+        engine.handleExecution(bhir);
 
         // Check condition
         if (cond != nullptr) {

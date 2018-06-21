@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Creates a PIP wheel of Bohrium"""
 
 from setuptools import setup
 from distutils.dir_util import mkpath, copy_tree
@@ -12,6 +13,7 @@ import sys
 import shutil
 import glob
 import subprocess
+import platform
 from os.path import join
 
 # We overload the setup.py with some extra arguments
@@ -23,6 +25,12 @@ parser.add_argument(
 parser.add_argument(
     '--npbackend-dir',
     help='Path to the Python library of Bohrium'
+)
+parser.add_argument(
+    '--lib-dir-name',
+    type=str,
+    default='lib64',
+    help='Name of the shared library folder'
 )
 parser.add_argument(
     '--config',
@@ -59,17 +67,6 @@ def _script_path():
     return os.path.dirname(os.path.realpath(__file__))
 
 
-def _li1st_files(path, prefix=None, regex_include="\.so|\.ini|\.dylib"):
-    """Returns a list of filenames of the files in `path`"""
-    ret = []
-    for f in os.listdir(path):
-        if re.search(regex_include, f):
-            if prefix is not None:
-                f = prefix + f
-            ret.append(f)
-    return ret
-
-
 def _find_data_files(root_path, regex_exclude=None, regex_include=None):
     """Return a list of paths relative to `root_path` of all files rooted in `root_path`"""
     root_path = os.path.abspath(root_path)
@@ -88,7 +85,13 @@ def _copy_files(glob_str, dst_dir):
     mkpath(dst_dir)
     for fname in glob.glob(glob_str):
         if os.path.isfile(fname):
-            shutil.copy(fname, dst_dir)
+            if ".dylib" in fname:
+                # We need this HACK because osx might not preserve the write and exec permission
+                out_path = join(dst_dir, os.path.basename(fname))
+                shutil.copyfile(fname, out_path)
+                subprocess.check_call("chmod a+x %s" % out_path, shell=True)
+            else:
+                shutil.copy(fname, dst_dir)
             print("copy: %s => %s" % (fname, dst_dir))
 
 
@@ -103,6 +106,18 @@ def _regex_replace(pattern, repl, src):
     """Replacing matches in `src` with `repl` using regex `pattern`"""
     print ("config.ini: replacing: '%s' => '%s'" % (pattern, repl))
     return re.sub(pattern, repl, src)
+
+
+def _update_rpath(filename_list, rpath):
+    """Update the RPATH of the files in `filename_list`"""
+
+    if platform.system() == "Darwin":
+        return
+
+    for filename in filename_list:
+        cmd = "patchelf --set-rpath '%s' %s" % (rpath, filename)
+        print(cmd)
+        subprocess.check_call(cmd, shell=True)
 
 
 # Copy the include dir for the JIT compilation into the Python package
@@ -120,7 +135,8 @@ _copy_files(join(args_extra.bh_install_prefix, "share", "bohrium", "test", "pyth
 
 
 # Copy Bohrium's shared libraries into the Python package
-_copy_files(join(args_extra.bh_install_prefix, 'lib64', 'lib*'), join(args_extra.npbackend_dir, "lib64"))
+_copy_files(join(args_extra.bh_install_prefix, args_extra.lib_dir_name, 'lib*'),
+            join(args_extra.npbackend_dir, "lib64"))
 
 
 # Copy extra libraries specified by the user
@@ -135,26 +151,33 @@ if args_extra.bin is not None:
         _copy_files(bin, join(args_extra.npbackend_dir, "bin"))
 
 
-# Update the RPATH of the Python extensions to look in the the `lib64` dir
-for filename in glob.glob(join(args_extra.npbackend_dir, '*.so')):
-    cmd = "patchelf --set-rpath '$ORIGIN/lib64' %s" % filename
-    print(cmd)
-    subprocess.check_call(cmd, shell=True)
+py_sos = glob.glob(join(args_extra.npbackend_dir, '*.so'))
+lib64_files = glob.glob(join(args_extra.npbackend_dir, 'lib64', '*'))
+bin_files = glob.glob(join(args_extra.npbackend_dir, 'bin', '*'))
+if platform.system() == "Linux":
+    # Update the RPATH of the Python extensions to look in the the `lib64` dir
+    _update_rpath(py_sos, '$ORIGIN/lib64')
+    # Update the RPATH of Bohrium's shared libraries to look in the current dir
+    _update_rpath(lib64_files, '$ORIGIN')
+    # Update the RPATH of Bohrium's binaries to look in the current dir
+    _update_rpath(bin_files, '$ORIGIN/../lib64')
+elif platform.system() == "Darwin":
+    all_files = {}
+    for file_path in py_sos + lib64_files + bin_files:
+        file_name = os.path.basename(file_path)
+        assert(file_name not in all_files)
+        all_files[file_name] = file_path
 
-
-# Update the RPATH of Bohrium's shared libraries to look in the current dir
-for filename in glob.glob(join(args_extra.npbackend_dir, 'lib64', '*')):
-    cmd = "patchelf --set-rpath '$ORIGIN' %s" % filename
-    print(cmd)
-    subprocess.check_call(cmd, shell=True)
-
-
-# Update the RPATH of Bohrium's binaries to look in the current dir
-for filename in glob.glob(join(args_extra.npbackend_dir, 'bin', '*')):
-    cmd = "patchelf --set-rpath '$ORIGIN/../lib64' %s" % filename
-    print(cmd)
-    subprocess.check_call(cmd, shell=True)
-
+    for file_path in py_sos + lib64_files + bin_files:
+        cmd = "otool -L %s" % (file_path)
+        otool_res = subprocess.check_output(cmd, shell=True).decode('utf-8')
+        for line in otool_res.splitlines()[1:]:  # Each line in `otool_res` represents a linking path (except 1. line)
+            dylib_path = line.strip().split()[0]
+            dylib_name = os.path.basename(dylib_path)
+            if os.path.basename(dylib_path) in all_files:
+                load_path = " @loader_path%s" % all_files[dylib_name].replace(os.path.dirname(file_path), "")
+                cmd = "install_name_tool -change %s %s %s" % (dylib_path, load_path, file_path)
+                subprocess.check_output(cmd, shell=True)
 
 # Write a modified config file to the Python package dir
 _config_path = join(args_extra.npbackend_dir, "config.ini")
@@ -168,6 +191,16 @@ with open(_config_path, "w") as f:
     # Set the JIT compiler to gcc
     config_str = _regex_replace("compiler_cmd = \".* -x c", "compiler_cmd = \"gcc -x c", config_str)
 
+    # clang doesn't support some unneeded flags
+    config_str = _regex_replace("-Wno-expansion-to-defined", "", config_str)
+    config_str = _regex_replace("-Wno-pass-failed", "", config_str)
+
+    # Replace `lib` with `lib64` since we always includes shared libraries in `lib64`
+    config_str = _regex_replace("%s/lib/" % args_extra.bh_install_prefix,
+                                "%s/lib64/" % args_extra.bh_install_prefix, config_str)
+    config_str = _regex_replace("%s/lib " % args_extra.bh_install_prefix,
+                                "%s/lib64 " % args_extra.bh_install_prefix, config_str)
+
     # Compile command: replace absolute include path with a path relative to {CONF_PATH}.
     config_str = _regex_replace("-I%s/share/bohrium/" % args_extra.bh_install_prefix, "-I{CONF_PATH}/", config_str)
 
@@ -176,6 +209,7 @@ with open(_config_path, "w") as f:
 
     # Replace absolute library paths with a relative path.
     config_str = _regex_replace("%s/" % args_extra.bh_install_prefix, "./", config_str)
+
     f.write(config_str)
     print("writing config file: %s" % f.name)
 
@@ -185,7 +219,7 @@ cmd = "git describe --tags --long --match v[0-9]*"
 print(cmd)
 try:
     # Let's get the Bohrium version without the 'v' and hash (e.g. v0.8.9-47-g6464 => v0.8.9-47)
-    _version = subprocess.check_output(cmd, shell=True, cwd=join(_script_path(), '..', '..'))
+    _version = subprocess.check_output(cmd, shell=True, cwd=join(_script_path(), '..', '..')).decode('utf-8')
     print("_version: '%s'" % str(_version))
     _version = re.match(".*v(.+-\d+)-", str(_version)).group(1)
 except subprocess.CalledProcessError as e:
@@ -198,7 +232,7 @@ print("Bohrium version: %s" % _version)
 
 
 # Get the long description from the README file
-with open(os.path.join(_script_path(), '../../README.md'), encoding='utf-8') as f:
+with open(os.path.join(_script_path(), '../../README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 
@@ -212,7 +246,17 @@ class taged_bdist_wheel(bdist_wheel):
         impl_name = pep425tags.get_abbr_impl()
         impl_ver = pep425tags.get_impl_ver()
         abi_tag = str(pep425tags.get_abi_tag()).lower()
-        return (impl_name + impl_ver, abi_tag, "manylinux1_x86_64")
+        if platform.system() == "Linux":  # Building on Linux, we assume `manylinux1_x86_64`
+            plat_name = "manylinux1_x86_64"
+        else:
+            plat_name = pep425tags.get_platform()
+        return (impl_name + impl_ver, abi_tag, plat_name)
+
+
+# For now, only the osx packages requires 'gcc7'
+install_requires = ['numpy>=1.13']
+if platform.system() == "Darwin":
+    install_requires.append('gcc7')
 
 
 # Finally, we call the setup
@@ -273,7 +317,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy>=1.13'],
+    install_requires=install_requires,
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

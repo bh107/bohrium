@@ -3,6 +3,7 @@
  * ../core/codegen/gen_extmethod.py at @!timestamp!@.  *
  **********************************************************/
 #include <bh_extmethod.hpp>
+#include <bh_main_memory.hpp>
 
 #if defined(__APPLE__) || defined(__MACOSX)
     #include <Accelerate/Accelerate.h>

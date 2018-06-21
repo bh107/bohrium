@@ -43,7 +43,7 @@ vector<Block> apply_pre_fusion(const ConfigParser &config, const vector<bh_instr
     }
 }
 
-// Apply the list of tranformers specified by the names in 'transformer_names'
+// Apply the list of transformer specified by the names in 'transformer_names'
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 void apply_transformers(const ConfigParser &config, vector<Block> &block_list, const vector<string> &transformer_names,
                         bool avoid_rank0_sweep) {
@@ -69,19 +69,116 @@ void apply_transformers(const ConfigParser &config, vector<Block> &block_list, c
         }
     }
 }
+
+// For better codegen cache utilization, we make sure that sweep instructions comes in a consisten order
+std::vector<InstrPtr> order_sweep_by_origin_id(const std::set<InstrPtr> &sweep_set) {
+    vector<InstrPtr> ret;
+    ret.reserve(sweep_set.size());
+    std::copy(sweep_set.begin(),  sweep_set.end(), std::back_inserter(ret));
+    std::sort(ret.begin(), ret.end(),
+              [](const InstrPtr & a, const InstrPtr & b) -> bool
+              {
+                  return a->origin_id > b->origin_id;
+              });
+    return ret;
 }
 
+
+// Help function that adds identity blocks before sweeping blocks.
+// This version update a block rather then return a kernel list (see the function belove)
+void add_identity_block(LoopB &loop, int64_t &origin_count) {
+    vector<Block> ret;
+    for (Block &block: loop._block_list) {
+        if (block.isInstr()) {
+            ret.push_back(block);
+            continue;
+        }
+        add_identity_block(block.getLoop(), origin_count);
+
+        const auto ordered_sweeps = order_sweep_by_origin_id(block.getLoop().getSweeps());
+        for (const InstrPtr &sweep_instr: ordered_sweeps) {
+            bh_instruction identity_instr(BH_IDENTITY, {sweep_instr->operand[0]});
+            identity_instr.operand.resize(2);
+            identity_instr.operand[1].base = nullptr;
+            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->type);
+            identity_instr.origin_id = origin_count++;
+            identity_instr.constructor = sweep_instr->constructor;
+            // We have to manually set the sweep axis of an accumulate output to 1. The backend will execute
+            // the for-loop in serial thus only the first element should be the identity.
+            if (bh_opcode_is_accumulate(sweep_instr->opcode)) {
+                identity_instr.operand[0].shape[sweep_instr->sweep_axis()] = 1;
+            }
+
+            if (loop.rank == -1 and bh_is_scalar(&sweep_instr->operand[0])) {
+                ret.emplace_back(identity_instr, 0);
+            } else if (loop.rank == sweep_instr->operand[0].ndim - 1) {
+                ret.emplace_back(identity_instr, sweep_instr->operand[0].ndim);
+            } else {
+                // Let's create and add the identity loop to `ret`
+                vector<InstrPtr> single_instr = {std::make_shared<const bh_instruction>(identity_instr)};
+                ret.push_back(create_nested_block(single_instr, loop.rank+1));
+            }
+
+            bh_instruction sweep_instr_updated{*sweep_instr};
+            sweep_instr_updated.constructor = false;
+            block.getLoop().replaceInstr(sweep_instr, sweep_instr_updated);
+            block.getLoop().metadataUpdate();
+        }
+        ret.push_back(block);
+    }
+    loop._block_list = ret;
+    loop.metadataUpdate();
+}
+
+// Help function that adds identity blocks before sweeping blocks.
+// This version creates kernels for each identity+sweep block set
+vector<LoopB> add_identity_block(vector<Block> &block_list, int64_t &origin_count) {
+    vector<LoopB> ret;
+    for (Block &block: block_list) {
+        assert(not block.isInstr());
+        add_identity_block(block.getLoop(), origin_count);
+
+        LoopB kernel{-1, 1};
+
+        const auto ordered_sweeps = order_sweep_by_origin_id(block.getLoop().getSweeps());
+        for (const InstrPtr &sweep_instr: ordered_sweeps) {
+            bh_instruction identity_instr(BH_IDENTITY, {sweep_instr->operand[0]});
+            identity_instr.operand.resize(2);
+            identity_instr.operand[1].base = nullptr;
+            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->type);
+            identity_instr.origin_id = origin_count++;
+            identity_instr.constructor = sweep_instr->constructor;
+            // We have to manually set the sweep axis of an accumulate output to 1. The backend will execute
+            // the for-loop in serial thus only the first element should be the identity.
+            if (bh_opcode_is_accumulate(sweep_instr->opcode)) {
+                identity_instr.operand[0].shape[sweep_instr->sweep_axis()] = 1;
+            }
+
+            if (bh_is_scalar(&sweep_instr->operand[0])) {
+                kernel._block_list.emplace_back(identity_instr, 0);
+            } else {
+                // Let's create and add the identity loop to `ret`
+                vector<InstrPtr> single_instr = {std::make_shared<const bh_instruction>(identity_instr)};
+                kernel._block_list.emplace_back(create_nested_block(single_instr, 0));
+            }
+
+            bh_instruction sweep_instr_updated{*sweep_instr};
+            sweep_instr_updated.constructor = false;
+            block.getLoop().replaceInstr(sweep_instr, sweep_instr_updated);
+            block.getLoop().metadataUpdate();
+        }
+        kernel._block_list.push_back(block);
+        kernel.metadataUpdate();
+        ret.emplace_back(std::move(kernel));
+    }
+    return ret;
+}
+
+// Help functions that create a list of block nest (each nest starting a rank 0) based on `instr_list`
+// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
 vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
                              FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep) {
-
     vector<Block> block_list;
-
-    // Assign origin ids to all instructions starting at zero.
-    int64_t count = 0;
-    for (bh_instruction *instr: instr_list) {
-        instr->origin_id = count++;
-    }
-
     bool hit;
     tie(block_list, hit) = fcache.get(instr_list);
     if (not hit) {
@@ -101,8 +198,20 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
 
     // Pretty printing the block
     if (config.defaultGet<bool>("graph", false)) {
-        graph::DAG dag = graph::from_block_list(block_list);
-        graph::pprint(dag, "dag", avoid_rank0_sweep);
+        static int dcount = 0;
+        {
+            graph::DAG dag = graph::from_block_list(block_list);
+            graph::pprint(dag, "dag", avoid_rank0_sweep, dcount);
+        }
+        {
+            graph::DAG dag = graph::from_block_list(apply_pre_fusion(config, instr_list, "singleton"));
+            graph::pprint(dag, "dag_singleton", avoid_rank0_sweep, dcount);
+        }
+        {
+            graph::DAG dag = graph::from_block_list(apply_pre_fusion(config, instr_list, "lossy"));
+            graph::pprint(dag, "dag_lossy", avoid_rank0_sweep, dcount);
+        }
+        ++dcount;
     }
 
     // Full block validation
@@ -115,6 +224,39 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
         }
     #endif
     return block_list;
+}
+}
+
+
+vector<LoopB> get_kernel_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
+                              FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep, bool monolithic) {
+    // Assign origin ids to all instructions starting at zero.
+    int64_t origin_count = 0;
+    for (bh_instruction *instr: instr_list) {
+        instr->origin_id = origin_count++;
+    }
+
+    vector<Block> block_list = get_block_list(instr_list, config, fcache, stat, avoid_rank0_sweep);
+
+    vector<LoopB> ret;
+    if (avoid_rank0_sweep) {
+        for (Block &b: block_list) {
+            if (b.isInstr() or not b.getLoop()._sweeps.empty()) {
+                ret.emplace_back(LoopB{-1, 1, {std::move(b)}});
+            } else {
+                LoopB kernel{-1, 1, {std::move(b)}};
+                add_identity_block(kernel, origin_count);
+                ret.emplace_back(std::move(kernel));
+            }
+        }
+    } else if (monolithic) {
+        LoopB kernel{-1, 1, {std::move(block_list)}};
+        add_identity_block(kernel, origin_count);
+        ret = {std::move(kernel)};
+    } else {
+        ret = add_identity_block(block_list, origin_count);
+    }
+    return ret;
 }
 
 } // jitk

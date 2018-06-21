@@ -68,7 +68,7 @@ void normalize_operand_cleanup(normalize_cleanup_handle *cleanup);
  */
 int64_t ary_nbytes(const BhArray *ary);
 
-/** Return the final base of `ary`
+/** Return the final base of `ary`. Return NULL and sets a Python exception on error.
  *  Notice, this function will only invoke Python when `ary` or one of it bases are not ndarray or bharrays.
  *
  * @param ary  The array in question

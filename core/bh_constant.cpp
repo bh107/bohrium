@@ -21,12 +21,87 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <stdexcept>
 #include <limits>
 #include <iostream>
+#include <complex>
 
 #include <bh_constant.hpp>
 #include <bh_type.hpp>
 #include <cmath>
 
 using namespace std;
+
+bh_constant bh_constant::get_min(bh_type type) {
+    switch (type) {
+        case bh_type::BOOL:
+            return bh_constant(bh_bool{0});
+        case bh_type::INT8:
+            return bh_constant(std::numeric_limits<int8_t>::min() + 1); // Notice, +1 is to make sure no overflow
+        case bh_type::INT16:
+            return bh_constant(std::numeric_limits<int16_t>::min() + 1);
+        case bh_type::INT32:
+            return bh_constant(std::numeric_limits<int32_t>::min() + 1);
+        case bh_type::INT64:
+            return bh_constant(std::numeric_limits<int64_t>::min() + 1);
+        case bh_type::UINT8:
+            return bh_constant(bh_uint8{0});
+        case bh_type::UINT16:
+            return bh_constant(bh_uint16{0});
+        case bh_type::UINT32:
+            return bh_constant(bh_uint32{0});
+        case bh_type::UINT64:
+            return bh_constant(bh_uint64{0});
+        case bh_type::FLOAT32:
+            return bh_constant(std::numeric_limits<float>::min());
+        case bh_type::FLOAT64:
+            return bh_constant(std::numeric_limits<double>::min());
+        case bh_type::COMPLEX64:
+            return bh_constant(std::complex<float>(std::numeric_limits<float>::min(),
+                                                   std::numeric_limits<float>::min()));
+        case bh_type::COMPLEX128:
+            return bh_constant(std::complex<double>(std::numeric_limits<double>::min(),
+                                                    std::numeric_limits<double>::min()));
+        case bh_type::R123:
+            return bh_constant(bh_r123{0, 0});
+        default:
+            throw runtime_error("bh_constant::get_min(): unknown type");
+    }
+}
+
+bh_constant bh_constant::get_max(bh_type type) {
+    switch (type) {
+        case bh_type::BOOL:
+            return bh_constant(bh_bool{1});
+        case bh_type::INT8:
+            return bh_constant(std::numeric_limits<int8_t>::max());
+        case bh_type::INT16:
+            return bh_constant(std::numeric_limits<int16_t>::max());
+        case bh_type::INT32:
+            return bh_constant(std::numeric_limits<int32_t>::max());
+        case bh_type::INT64:
+            return bh_constant(std::numeric_limits<int64_t>::max());
+        case bh_type::UINT8:
+            return bh_constant(std::numeric_limits<uint8_t>::max());
+        case bh_type::UINT16:
+            return bh_constant(std::numeric_limits<uint16_t>::max());
+        case bh_type::UINT32:
+            return bh_constant(std::numeric_limits<uint32_t>::max());
+        case bh_type::UINT64:
+            return bh_constant(std::numeric_limits<uint64_t>::max());
+        case bh_type::FLOAT32:
+            return bh_constant(std::numeric_limits<float>::max());
+        case bh_type::FLOAT64:
+            return bh_constant(std::numeric_limits<double>::max());
+        case bh_type::COMPLEX64:
+            return bh_constant(std::complex<float>(std::numeric_limits<float>::max(),
+                                                   std::numeric_limits<float>::max()));
+        case bh_type::COMPLEX128:
+            return bh_constant(std::complex<double>(std::numeric_limits<double>::max(),
+                                                    std::numeric_limits<double>::max()));
+        case bh_type::R123:
+            return bh_constant(bh_r123{std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max()});
+        default:
+            throw runtime_error("bh_constant::get_min(): unknown type");
+    }
+}
 
 
 int64_t bh_constant::get_int64() const

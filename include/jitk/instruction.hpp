@@ -20,24 +20,21 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <iostream>
-
 #include <bh_instruction.hpp>
 #include <jitk/block.hpp>
-
-#include "base_db.hpp"
+#include <jitk/scope.hpp>
 
 namespace bohrium {
 namespace jitk {
 
-
 // Write the source code of an instruction (set 'opencl' for OpenCL specific output)
 void write_instr(const Scope &scope, const bh_instruction &instr, std::stringstream &out, bool opencl = false);
 
-// Return true when 'opcode' has a neutral initial reduction value
-bool has_reduce_identity(bh_opcode opcode);
-
 // Write the neutral value of a reduction
 void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &out);
+
+// Return the identity value of an sweep operation
+bh_constant sweep_identity(bh_opcode opcode, bh_type dtype);
 
 // Removes syncs and frees from 'instr_list' that are never used in a computation.
 // 'syncs' and 'frees' are the sets of arrays that were removed.

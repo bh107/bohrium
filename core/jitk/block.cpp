@@ -358,9 +358,7 @@ void LoopB::metadataUpdate() {
     _sweeps.clear();
     for (const InstrPtr &instr: getLocalInstr()) {
         if (instr->constructor) {
-            if (not bh_opcode_is_accumulate(instr->opcode)) { // TODO: Support array contraction of accumulated output
-                _news.insert(instr->operand[0].base);
-            }
+            _news.insert(instr->operand[0].base);
         }
     }
     const vector<InstrPtr> allInstr = getAllInstr();
@@ -442,8 +440,8 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_b
     if (instr_list[0]->opcode == BH_NONE) {
         throw runtime_error("create_nested_block: first instruction is BH_NONE!");
     }
-    const int ndim = (int) instr_list[0]->ndim();
     const vector<int64_t> shape = instr_list[0]->shape();
+    const int ndim = (int) shape.size();
     assert(ndim > rank);
 
     LoopB ret_loop;
@@ -476,9 +474,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
     }
 
     // Let's build the nested block from the 'rank' level to the instruction block
-    LoopB ret;
-    ret.rank = rank;
-    ret.size = size_of_rank_dim;
+    LoopB ret{rank, size_of_rank_dim};
     for (const InstrPtr &instr: instr_list) {
         add_instr_to_block(ret, instr, rank, size_of_rank_dim);
     }

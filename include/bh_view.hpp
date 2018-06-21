@@ -30,9 +30,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bh_type.hpp"
 #include "bh_base.hpp"
 #include <bh_constant.hpp>
-#include "bh_win.h"
-
 #include <boost/serialization/split_member.hpp>
+#include <unordered_map>
 
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
@@ -40,32 +39,16 @@ namespace boost { namespace serialization { class access; }}
 constexpr int64_t BH_MAXDIM = 16;
 
 //Implements pprint of base arrays
-DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_base &b);
+std::ostream &operator<<(std::ostream &out, const bh_base &b);
 
 struct bh_view {
-    bh_view() {}
+    bh_view() = default;
 
-    bh_view(const bh_view &view) {
-        base = view.base;
-        if (base == nullptr) {
-            return; //'view' is a constant thus the rest are garbage
-        }
+    /// Copy Constructor
+    bh_view(const bh_view &view);
 
-        start = view.start;
-        ndim = view.ndim;
-        assert(ndim < BH_MAXDIM);
-        assert(view.slide.size() == view.slide_dim_shape.size());
-        assert(view.slide_dim_stride.size() == view.slide_dim_shape.size());
-
-        slide = view.slide;
-        slide_dim = view.slide_dim;
-        slide_dim_shape_change = view.slide_dim_shape_change;
-        slide_dim_stride = view.slide_dim_stride;
-        slide_dim_shape = view.slide_dim_shape;
-
-        std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
-        std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
-    }
+    /// Create a view that represents the whole of `base`
+    explicit bh_view(bh_base &base);
 
     /// Pointer to the base array.
     bh_base *base;
@@ -88,6 +71,12 @@ struct bh_view {
     /// The relevant dimension
     std::vector<int64_t> slide_dim;
 
+    // The step delay in the dimension
+    std::vector<int64_t> slide_dim_step_delay;
+    std::vector<int64_t> slide_dim_step_delay_counter;
+
+    int64_t iteration_counter = 0;
+
     /// The change to the shape
     std::vector<int64_t> slide_dim_shape_change;
 
@@ -96,6 +85,17 @@ struct bh_view {
 
     /// The shape of the given dimension (used for negative indices)
     std::vector<int64_t> slide_dim_shape;
+
+    // The amount the iterator can reach, before resetting it
+    std::unordered_map<int64_t, int64_t> resets;
+    std::unordered_map<int64_t, int64_t> changes_since_reset;
+    //    std::vector<int64_t> reset_max;
+
+    // The dimension to reset
+    std::vector<int64_t> reset_dim;
+
+    // The dimension to reset
+    int64_t reset_counter = 0;
 
 
     // Returns a vector of tuples that describe the view using (almost)
@@ -173,6 +173,9 @@ struct bh_view {
                 ar << shape[i];
                 ar << stride[i];
             }
+            ar << slide;
+            ar << slide_dim_stride;
+            ar << slide_dim_shape;
         }
     }
 
@@ -188,6 +191,9 @@ struct bh_view {
                 ar >> shape[i];
                 ar >> stride[i];
             }
+            ar >> slide;
+            ar >> slide_dim_stride;
+            ar >> slide_dim_shape;
         }
     }
 
@@ -195,15 +201,7 @@ struct bh_view {
 };
 
 //Implements pprint of views
-DLLEXPORT std::ostream &operator<<(std::ostream &out, const bh_view &v);
-
-/** Create a new base array.
- *
- * @param type The type of data in the array
- * @param nelements The number of elements
- * @param new_base The handler for the newly created base
- */
-DLLEXPORT void bh_create_base(bh_type type, int64_t nelements, bh_base **new_base);
+std::ostream &operator<<(std::ostream &out, const bh_view &v);
 
 /* Returns the simplest view (fewest dimensions) that access
  * the same elements in the same pattern
@@ -211,7 +209,7 @@ DLLEXPORT void bh_create_base(bh_type type, int64_t nelements, bh_base **new_bas
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
+bh_view bh_view_simplify(const bh_view &view);
 
 /* Simplifies the given view down to the given shape.
  * If that is not possible an std::invalid_argument exception is thrown
@@ -219,7 +217,7 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view);
  * @view The view
  * @return The simplified view
  */
-DLLEXPORT bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape);
+bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape);
 
 /* Find the base array for a given view
  *
@@ -228,29 +226,22 @@ DLLEXPORT bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_
  */
 #define bh_base_array(view) ((view)->base)
 
-/* Number of non-broadcasted elements in a given view
- *
- * @view    The view in question.
- * @return  Number of elements.
- */
-int64_t bh_nelements_nbcast(const bh_view *view);
-
 /* Number of element in a given shape
  *
  * @ndim     Number of dimentions
  * @shape[]  Number of elements in each dimention.
  * @return   Number of element operations
  */
-DLLEXPORT int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
+int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
 
-DLLEXPORT int64_t bh_nelements(const bh_view &view);
+int64_t bh_nelements(const bh_view &view);
 
 /* Set the view stride to contiguous row-major
  *
  * @view    The view in question
  * @return  The total number of elements in view
  */
-DLLEXPORT int64_t bh_set_contiguous_stride(bh_view *view);
+int64_t bh_set_contiguous_stride(bh_view *view);
 
 /* Updates the view with the complete base
  *
@@ -258,27 +249,27 @@ DLLEXPORT int64_t bh_set_contiguous_stride(bh_view *view);
  * @base    The base assign to the view
  * @return  The total number of elements in view
  */
-DLLEXPORT void bh_assign_complete_base(bh_view *view, bh_base *base);
+void bh_assign_complete_base(bh_view *view, bh_base *base);
 
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *
  * @view The view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_scalar(const bh_view *view);
+bool bh_is_scalar(const bh_view *view);
 
 /* Determines whether the operand is a constant
  *
  * @o The operand
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_constant(const bh_view *o);
+bool bh_is_constant(const bh_view *o);
 
 /* Flag operand as a constant
  *
  * @o The operand
  */
-DLLEXPORT void bh_flag_constant(bh_view *o);
+void bh_flag_constant(bh_view *o);
 
 /* Determines whether two views have same shape.
  *
@@ -286,41 +277,15 @@ DLLEXPORT void bh_flag_constant(bh_view *o);
  * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_view_same_shape(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views are identical and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_same(const bh_view *a, const bh_view *b);
+bool bh_view_same_shape(const bh_view *a, const bh_view *b);
 
 /* Determines whether a view is contiguous
  *
  * @a The view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_is_contiguous(const bh_view *a);
+bool bh_is_contiguous(const bh_view *a);
 
-/* Determines whether two views are aligned and points
- * to the same base array.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_aligned(const bh_view *a, const bh_view *b);
-
-/* Determines whether two views are aligned, points
- * to the same base array, and have same shape.
- *
- * @a The first view
- * @b The second view
- * @return The boolean answer
- */
-DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b);
 
 /* Determines whether two views access some of the same data points
  * NB: This functions may return True on non-overlapping views.
@@ -330,4 +295,4 @@ DLLEXPORT bool bh_view_aligned_and_same_shape(const bh_view *a, const bh_view *b
  * @b The second view
  * @return The boolean answer
  */
-DLLEXPORT bool bh_view_disjoint(const bh_view *a, const bh_view *b);
+bool bh_view_disjoint(const bh_view *a, const bh_view *b);

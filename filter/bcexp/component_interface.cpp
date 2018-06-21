@@ -26,19 +26,19 @@ using namespace component;
 using namespace std;
 
 namespace {
-class Impl : public ComponentImplWithChild {
+class Impl : public ComponentImpl {
 private:
     filter::bcexp::Expander expander;
 public:
-    Impl(int stack_level) : ComponentImplWithChild(stack_level),
+    Impl(int stack_level) : ComponentImpl(stack_level),
                             expander(config.defaultGet<bool>("verbose", false),
                                      config.defaultGet<int>("gc_threshold", 400),
                                      config.defaultGet<bool>("sign", true),
                                      config.defaultGet<bool>("powk", true),
                                      config.defaultGet<int>("reduce1d", 32000)) {};
 
-    ~Impl() {}; // NB: a destructor implementation must exist
-    void execute(BhIR *bhir) {
+    ~Impl() override {}; // NB: a destructor implementation must exist
+    void execute(BhIR *bhir) override {
         expander.expand(*bhir);
         child.execute(bhir);
     };

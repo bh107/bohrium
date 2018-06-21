@@ -5,10 +5,26 @@ Visualization
 Common functions for visualization.
 """
 import bohrium as np
-from . import ufuncs, bhary, array_create
+from . import ufuncs, array_create
+from bohrium import _bh
 
 
-def plot_surface(ary, mode, colormap, lowerbound, upperbound):
+def compressed_copy(ary, param):
+    a_min = ary.min()
+    a_range = ary.max() - ary.min() + 1
+    # Normalize `ary` into uint8
+    a = (ary - a_min) * 256 / a_range
+    assert (a.min() >= 0)
+    assert (a.max() < 256)
+    a = np.array(a, dtype=np.uint8)
+    # Copy `a` using `param`
+    a = _bh.mem_copy(a, param=param)
+    # un-normalize and convert back to the original dtype of `ary`
+    a = array_create.array(a, dtype=ary.dtype)
+    return (a * a_range + a_min) / 256.0
+
+
+def plot_surface(ary, mode, colormap, lowerbound, upperbound, param=None):
     mode = mode.lower()
 
     ranks = [2, 3]
@@ -36,9 +52,6 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
     else:
         raise ValueError("Unsupported mode '%s' " % mode)
 
-    if bhary.check(ary):  # Must be a Bohrium array
-        ary = array_create.array(ary)
-
     args = array_create.array([  # Construct arguments
         np.float32(colormap),
         np.float32(flat),
@@ -46,6 +59,11 @@ def plot_surface(ary, mode, colormap, lowerbound, upperbound):
         np.float32(lowerbound),
         np.float32(upperbound)
     ],
-        bohrium=True
+        bohrium=True,
+        dtype=np.float32
     )
+
+    if param is not None:
+        ary = compressed_copy(ary, param)
+
     ufuncs.extmethod("visualizer", ary, args, ary)  # Send to extension

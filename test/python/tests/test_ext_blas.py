@@ -101,7 +101,7 @@ class test_ext_blas_only_a:
         if not has_ext():
             return
 
-        for t in float_types + complex_types:
+        for t in complex_types:
             for r in range(2, 10):
                 cmd  = "a = M.arange(%d, dtype=%s).reshape(%s);" % (r*r, t, (r, r))
                 yield cmd, t
@@ -109,7 +109,7 @@ class test_ext_blas_only_a:
     def test_syrk(self, args):
         cmd, _ = args
         cmd_np = cmd + "res = np.triu(np.dot(a, a.transpose()));"
-        cmd_bh = cmd + "res = bh.blas.syrk(a);"
+        cmd_bh = cmd + "res = bh.zeros_like(a); bh.blas.syrk(a, c=res);"
         return cmd_np, cmd_bh
 
     def test_herk(self, args):
@@ -119,7 +119,7 @@ class test_ext_blas_only_a:
             return "res = 0;"
 
         cmd_np = cmd + "res = np.triu(np.dot(a, a.transpose()));"
-        cmd_bh = cmd + "res = bh.blas.herk(a);"
+        cmd_bh = cmd + "res = bh.zeros_like(a); bh.blas.herk(a, c=res);"
         return cmd_np, cmd_bh
 
 
