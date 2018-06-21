@@ -247,74 +247,75 @@ if not failure:
         return (cmd1 + "do_while_i(kernel, %s, res)" % (niter), cmd2 % (niter))
 
 
-class test_loop_sliding_change_shape:
-    """Test detecting the view changing shape between iterations"""
+class test_3d_grid:
+    """Test a of error checks when sliding out of bounds"""
     def init(self):
         cmd1 = np_dw_loop_slide_src + \
 """
-def kernel(a,i):
-    a[i] += 1
+iter = (%s, %s, %s)
 
-res = M.zeros(5)
+res = np.zeros(iter)
+counter = np.zeros(1)
+for i in range(iter[0]):
+    for j in range(iter[1]):
+        for k in range(iter[2]):
+            counter += 1
+            res[i,j,k] += counter
 """
+
         cmd2 = np_dw_loop_src + \
 """
-iter = %s
+iter = (%s, %s, %s)
+def kernel(res, counter):
+    i, j, k = get_grid(*iter)
+    counter += 1
+    res[i,j,k] += counter
 
-def kernel_excp1(a):
-    i = get_iterator()
-    a[i:2*i] += 1
+res = bh.zeros(iter)
+counter = bh.zeros(1)
 
-def kernel_excp2(a):
-    i = get_iterator()
-    a[0:i] += 1
-
-def kernel_excp3(a):
-    i = get_iterator()
-    a[i:iter] += 1
-
-def kernel_excp4(a):
-    i = get_iterator()
-    a[i*2:i] += 1
-
-def kernel(a):
-    i = get_iterator()
-    a[i] += 1
-
-dummy = M.zeros(iter)
-res   = M.zeros(iter)
-failure = False
-
-try:
-    M.do_while(kernel_excp1, iter, dummy)
-    failure = True
-except M.iterator.ViewShape:
-    pass
-
-try:
-    M.do_while(kernel_excp2, iter, dummy)
-    failure = True
-except M.iterator.ViewShape:
-    pass
-
-try:
-    M.do_while(kernel_excp3, iter, dummy)
-    failure = True
-except M.iterator.ViewShape:
-    pass
-
-try:
-    M.do_while(kernel_excp4, iter, dummy)
-    failure = True
-except M.iterator.ViewShape:
-    pass
-
-if not failure:
-    M.do_while(kernel, iter, res)
+M.do_while(kernel, iter[0]*iter[1]*iter[2], res, counter)
 """
-        yield (cmd1, cmd2, 5)
+        yield (cmd1, cmd2, (4,4,4))
 
     def test_func(self, args):
-        """Test exceptions of views changing shape between iterations"""
+        """Test exceptions of underflow and overflow"""
         (cmd1, cmd2, niter) = args
-        return (cmd1 + "do_while_i(kernel, %s, res)" % (niter), cmd2 % (niter))
+        return (cmd1 % niter, cmd2 % niter)
+
+
+class test_3d_grid:
+    """Test a of error checks when sliding out of bounds"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+iter = (%s, %s, %s)
+
+res = np.zeros(iter)
+counter = np.zeros(1)
+for i in range(iter[0]):
+    for j in range(iter[1]):
+        for k in range(iter[2]):
+            counter += 1
+            res[i,j,k] += counter
+"""
+
+        cmd2 = np_dw_loop_src + \
+"""
+iter = (%s, %s, %s)
+def kernel(res, counter):
+    i, j, k = get_grid(*iter)
+    counter += 1
+    res[i,j,k] += counter
+
+res = bh.zeros(iter)
+counter = bh.zeros(1)
+
+M.do_while(kernel, iter[0]*iter[1]*iter[2], res, counter)
+"""
+        yield (cmd1, cmd2, (4,4,4))
+
+    def test_func(self, args):
+        """Test exceptions of underflow and overflow"""
+        (cmd1, cmd2, niter) = args
+        return (cmd1 % niter, cmd2 % niter)
