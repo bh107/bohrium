@@ -44,8 +44,17 @@ bh_view::bh_view(const bh_view &view) {
     assert(view.slide_dim_stride.size() == view.slide_dim_shape.size());
 
     slide = view.slide;
+    slide_dim = view.slide_dim;
     slide_dim_stride = view.slide_dim_stride;
     slide_dim_shape = view.slide_dim_shape;
+    slide_dim_shape_change = view.slide_dim_shape_change;
+
+    slide_dim_step_delay = view.slide_dim_step_delay;
+    resets = view.resets;
+    changes_since_reset = view.changes_since_reset;
+
+    reset_counter = view.reset_counter;
+    iteration_counter = view.iteration_counter;
 
     std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
     std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
