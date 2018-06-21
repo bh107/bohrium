@@ -66,6 +66,7 @@ PyObject* simply_new_array(PyTypeObject *type, PyArray_Descr *descr, uint64_t nb
     ((BhArray*) ret)->base.flags |= NPY_ARRAY_CARRAY;
     ((BhArray*) ret)->mmap_allocated = 1;
     ((BhArray*) ret)->data_in_bhc = 1;
+    ((BhArray*) ret)->dynamic_view_info = NULL;
 
     PyArray_UpdateFlags((PyArrayObject*) ret, NPY_ARRAY_UPDATE_ALL);
     mem_signal_attach(ret, ((BhArray*) ret)->base.data, nbytes);
@@ -149,6 +150,7 @@ static PyObject* BhArray_alloc(PyTypeObject *type, Py_ssize_t nitems) {
     ((BhArray*) obj)->bhc_array = NULL;
     ((BhArray*) obj)->view.initiated = 0;
     ((BhArray*) obj)->data_in_bhc = 0;
+    ((BhArray*) obj)->dynamic_view_info = NULL;
 
     return obj;
 }
@@ -421,6 +423,7 @@ static PyMethodDef BhArrayMethods[] = {
 
 static PyMemberDef BhArrayMembers[] = {
     {"bhc_mmap_allocated", T_BOOL, offsetof(BhArray, mmap_allocated), 0, "Is the base data allocated with mmap?"},
+    {"bhc_dynamic_view_info", T_OBJECT, offsetof(BhArray, dynamic_view_info), 0, "The information regarding dynamic changes to a view within a do_while loop"},
     {NULL}  /* Sentinel */
 };
 
@@ -630,6 +633,10 @@ static PyObject* BhArray_GetItem(PyObject *o, PyObject *k) {
         return PyObject_CallMethod(iterator, "slide_from_view", "OO", o, k);
     }
 
+    if(((BhArray*) o)->dynamic_view_info && ((BhArray*) o)->dynamic_view_info != Py_None) {
+        return PyObject_CallMethod(iterator, "inherit_dynamic_changes", "OO", o, k);
+    }
+
     if (obj_is_a_bool_mask(o, k)) {
         return PyObject_CallMethod(masking, "masked_get", "OO", o, k);
     }
@@ -747,7 +754,8 @@ static PySequenceMethods array_as_sequence = {
     (ssizeargfunc) BhArray_GetSeqItem,        // sq_item
     (ssizessizeargfunc) 0,                    // sq_slice (Not in the Python doc)
     (ssizeobjargproc) BhArray_SetItem,        // sq_ass_item
-    (ssizessizeobjargproc) BhArray_SetSlice,  // sq_ass_slice (Not in the Python doc)
+    //    (ssizessizeobjargproc) BhArray_SetSlice,  // sq_ass_slice (Not in the Python doc)
+    (ssizessizeobjargproc) NULL,  // sq_ass_slice Uses setitem instead
     (objobjproc) 0,                           // sq_contains
     (binaryfunc) NULL,                        // sg_inplace_concat
     (ssizeargfunc) NULL,                      // sg_inplace_repeat
@@ -905,6 +913,8 @@ static PyMethodDef _bhMethods[] = {
             "Sync `ary` to host memory."},
     {"slide_view", (PyCFunction) PySlideView, METH_VARARGS | METH_KEYWORDS,
             "Increase `ary`s offset by one."},
+    {"add_reset", (PyCFunction) PyAddReset, METH_VARARGS | METH_KEYWORDS,
+            "Add a reset for a given dimension."},
     {"random123", (PyCFunction) PyRandom123, METH_VARARGS | METH_KEYWORDS,
             "Create a new random array using the random123 algorithm.\n" \
             "The dtype is uint64 always."},
@@ -974,7 +984,7 @@ PyMODINIT_FUNC init_bh(void)
        array_create   == NULL ||
        reorganization == NULL ||
        masking        == NULL ||
-       iterator        == NULL) {
+       iterator       == NULL) {
         return RETVAL;
     }
 

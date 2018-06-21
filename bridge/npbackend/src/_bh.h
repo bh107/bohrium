@@ -57,6 +57,8 @@ typedef struct {
     BhView view; // View information, which might be obsolete
     void *bhc_array; // bhc handle to the array
     int data_in_bhc; // Is the data in bhc?
+    PyObject* dynamic_view_info; // Information regarding dynamic changes
+                                 // to the view within a do_while loop
 } BhArray;
 
 // Exposing some global variables implemented in `_bh.c`
