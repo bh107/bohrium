@@ -227,7 +227,7 @@ def slide_from_view(a, sliced):
         if s.reset and s.max_iter / s.step_delay >= s.reset:
             last_index = s.offset + (s.reset-1) * s.step
         else:
-            last_index = s.offset + s.step * ((s.max_iter-1) / s.step_delay)
+            last_index = s.offset + s.step / s.step_delay * (s.max_iter-1)
 
         # Check that the starting index and the last index is within bounds
         if -shape[dim] <= s.offset   < shape[dim] and \
@@ -288,9 +288,9 @@ def slide_from_view(a, sliced):
                     step_delay = 1
 
                 if stop_is_iterator:
-                    check_bounds(a.shape, i, s.stop-1)
                     stop = s.stop.offset
-                    reset = s.start.reset
+                    reset = s.stop.reset
+                    check_bounds(a.shape, i, s.stop)
                 else:
                     stop = s.stop
 
