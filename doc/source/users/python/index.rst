@@ -176,6 +176,34 @@ Example 2. Increasing every second element by one, starting at both ends, in the
         >>> a
         array([1 5 2 4 3 3 4 2 5 1])
 
+Nested loops is also available in ``do_while`` by using grids. A grid is a set of iterators that depend on each other, just as with nested loops. A grid can have arbitrary size and is available via. the function ``get_grid()``, which is only usable within a ``do_while`` loop body. The function takes an amount of integers as parameters, corresponding to the range of the loops (from outer to inner). It returns the same amount of iterators, which functions as a grid. An example of this can be seen in Example 3 below.
+Example 3. Creating a range in an array with multiple dimensions. In Numpy it can be written as::
+
+        >>> a = bh.zeros((3,3))
+        >>> counter = bh.zeros(1)
+        >>> for i in range(3):
+        ...    for j in range(3):
+        ...        counter += 1
+        ...        a[i,j] += counter
+        >>> a
+        [[1. 2. 3.]
+         [4. 5. 6.]
+         [7. 8. 9.]]
+
+The same can done within a ``do_while`` loop by using a grid::
+
+        >>> def kernel(a, counter):
+        ...    i, j = get_grid(3,3)
+        ...    counter += 1
+        ...    a[i,j] += counter
+        >>> a = bh.zeros((3,3))
+        >>> counter = bh.zeros(1)
+        >>> bh.do_while(kernel, 3*3, a, counter)
+        >>> a
+        [[1. 2. 3.]
+         [4. 5. 6.]
+         [7. 8. 9.]]
+
 .. _interop:
 
 Interoperability
