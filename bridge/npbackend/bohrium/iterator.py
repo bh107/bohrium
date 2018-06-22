@@ -220,7 +220,7 @@ def get_grid(max_iter, *args):
     step_delay = 1
 
     for dim, iterations in enumerate(grid):
-        i = get_iterator(max_iter, 0, step_delay, iterations)
+        i = iterator(max_iter, 0, step_delay, iterations)
         step_delay *= iterations
         iterators = (i,) + iterators
     return iterators
