@@ -353,3 +353,37 @@ M.do_while(loop_body, iter, res, b)
         """Test exceptions of underflow and overflow"""
         (cmd1, cmd2, niter) = args
         return (cmd1 % niter, cmd2 % niter)
+
+
+class test_dynamic_tensor_broadcast:
+    """Test a of error checks when sliding out of bounds"""
+    def init(self):
+        cmd1 = np_dw_loop_slide_src + \
+"""
+iter = %s
+
+res = M.zeros((iter,iter,iter))
+b = M.arange(iter)+1
+
+for i in range(1,iter+1):
+    res[:-i] += b[i-1]
+"""
+
+        cmd2 = np_dw_loop_src + \
+"""
+iter = %s
+
+def loop_body(res, b):
+    i = get_iterator(1)
+    res[:-i] += b[i-1]
+
+res = M.zeros((iter,iter,iter))
+b = M.arange(iter)+1
+M.do_while(loop_body, iter, res, b)
+"""
+        yield (cmd1, cmd2, 15)
+
+    def test_func(self, args):
+        """Test exceptions of underflow and overflow"""
+        (cmd1, cmd2, niter) = args
+        return (cmd1 % niter, cmd2 % niter)
