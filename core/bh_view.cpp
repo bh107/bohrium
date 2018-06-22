@@ -40,8 +40,6 @@ bh_view::bh_view(const bh_view &view) {
     start = view.start;
     ndim = view.ndim;
     assert(ndim < BH_MAXDIM);
-    assert(view.slide.size() == view.slide_dim_shape.size());
-    assert(view.slide_dim_stride.size() == view.slide_dim_shape.size());
 
     slides = view.slides;
 
