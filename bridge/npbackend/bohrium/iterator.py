@@ -288,9 +288,9 @@ def slide_from_view(a, sliced):
                     step_delay = 1
 
                 if stop_is_iterator:
+                    check_bounds(a.shape, i, s.stop)
                     stop = s.stop.offset
                     reset = s.stop.reset
-                    check_bounds(a.shape, i, s.stop)
                 else:
                     stop = s.stop
 
@@ -366,9 +366,12 @@ def add_slide_info(a):
         # Set the relevant update conditions for the new view
         for (dim, slide, shape_change, step_delay) in dvi.dynamic_changes:
             # Stride is bytes, so it has to be diveded by 8
-            stride = dvi.stride[dim]/8
-            shape = dvi.shape[dim]
-
+            try:
+                stride = dvi.stride[dim]/8
+                shape = dvi.shape[dim]
+            except:
+                stride = 0
+                shape = 0
             # Add dynamic information to the view within the cxx bridge
             _bh.slide_view(a, dim, slide, shape_change, shape, stride, step_delay)
 
