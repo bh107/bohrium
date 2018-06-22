@@ -29,9 +29,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <tuple>
 #include "bh_type.hpp"
 #include "bh_base.hpp"
+#include "bh_slide.hpp"
 #include <bh_constant.hpp>
 #include <boost/serialization/split_member.hpp>
-#include <unordered_map>
+
 
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
@@ -65,36 +66,8 @@ struct bh_view {
     /// The stride for each dimensions
     int64_t stride[BH_MAXDIM];
 
-    /// Dimensions to be slided each loop iterations
-    std::vector<int64_t> slide;
-
-    /// The relevant dimension
-    std::vector<int64_t> slide_dim;
-
-    // The step delay in the dimension
-    std::vector<int64_t> slide_dim_step_delay;
-
-    int64_t iteration_counter = 0;
-
-    /// The change to the shape
-    std::vector<int64_t> slide_dim_shape_change;
-
-    /// The strides these dimensions is slided each dynamically
-    std::vector<int64_t> slide_dim_stride;
-
-    /// The shape of the given dimension (used for negative indices)
-    std::vector<int64_t> slide_dim_shape;
-
-    // The amount the iterator can reach, before resetting it
-    std::unordered_map<int64_t, int64_t> resets;
-    std::unordered_map<int64_t, int64_t> changes_since_reset;
-
-    // The dimension to reset
-    std::vector<int64_t> reset_dim;
-
-    // The dimension to reset
-    int64_t reset_counter = 0;
-
+    /// Slide information
+    bh_slide slides;
 
     // Returns a vector of tuples that describe the view using (almost)
     // Python Notation.
@@ -171,9 +144,7 @@ struct bh_view {
                 ar << shape[i];
                 ar << stride[i];
             }
-            ar << slide;
-            ar << slide_dim_stride;
-            ar << slide_dim_shape;
+            ar << slides;
         }
     }
 
@@ -189,9 +160,7 @@ struct bh_view {
                 ar >> shape[i];
                 ar >> stride[i];
             }
-            ar >> slide;
-            ar >> slide_dim_stride;
-            ar >> slide_dim_shape;
+            ar >> slides;
         }
     }
 
@@ -294,3 +263,6 @@ bool bh_is_contiguous(const bh_view *a);
  * @return The boolean answer
  */
 bool bh_view_disjoint(const bh_view *a, const bh_view *b);
+
+
+bool has_slides(const bh_view a);

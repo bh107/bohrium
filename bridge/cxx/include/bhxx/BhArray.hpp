@@ -20,9 +20,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "BhBase.hpp"
+#include "BhSlide.hpp"
 #include "SVector.hpp"
 #include <ostream>
-#include <unordered_map>
 
 namespace bhxx {
 
@@ -60,30 +60,7 @@ class BhArray {
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
 
-    // The slide the offset should be changed by (can be both positive and negative)
-    std::vector<int64_t> slide;
-
-    /// The relevant dimension
-    std::vector<int64_t> slide_dim;
-
-    // The step delay in the dimension
-    std::vector<int64_t> slide_dim_step_delay;
-
-    /// The change to the shape
-    std::vector<int64_t> slide_dim_shape_change;
-
-    // The strides of the orignal view
-    std::vector<int64_t> slide_dim_stride;
-
-    // The relevant dimensions
-    std::vector<int64_t> slide_dim_shape;
-
-    // The amount the iterator can reach, before resetting it
-    std::unordered_map<int64_t, int64_t> resets;
-    std::unordered_map<int64_t, int64_t> changes_since_reset;
-
-    // The dimension to reset
-    std::vector<int64_t> reset_dim;
+    BhSlide slides;
 
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)
@@ -178,15 +155,15 @@ class BhArray {
         view.start = static_cast<int64_t>(offset);
         view.ndim  = static_cast<int64_t>(shape.size());
 
-        view.slide = slide;
-        view.slide_dim = slide_dim;
-        view.slide_dim_stride = slide_dim_stride;
-        view.slide_dim_shape = slide_dim_shape;
-        view.slide_dim_shape_change = slide_dim_shape_change;
+        view.slides.offset_change = slides.offset_change;
+        view.slides.shape_change = slides.shape_change;
+        view.slides.dim = slides.dim;
+        view.slides.step_delay = slides.step_delay;
+        view.slides.dim_stride = slides.dim_stride;
+        view.slides.dim_shape = slides.dim_shape;
 
-        view.slide_dim_step_delay = slide_dim_step_delay;
-        view.resets = resets;
-        view.changes_since_reset = changes_since_reset;
+        view.slides.resets = slides.resets;
+        view.slides.changes_since_reset = slides.changes_since_reset;
 
         std::copy(shape.begin(), shape.end(), &view.shape[0]);
         std::copy(stride.begin(), stride.end(), &view.stride[0]);

@@ -104,12 +104,12 @@ public:
     template <typename T>
     void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int shape_change,
                     int view_shape, int view_stride, int step_delay) {
-        view_ptr->slide.push_back(slide);
-        view_ptr->slide_dim.push_back(dim);
-        view_ptr->slide_dim_shape_change.push_back(shape_change);
-        view_ptr->slide_dim_stride.push_back(view_stride);
-        view_ptr->slide_dim_shape.push_back(view_shape);
-        view_ptr->slide_dim_step_delay.push_back(step_delay);
+        view_ptr->slides.offset_change.push_back(slide);
+        view_ptr->slides.shape_change.push_back(shape_change);
+        view_ptr->slides.dim.push_back(dim);
+        view_ptr->slides.dim_stride.push_back(view_stride);
+        view_ptr->slides.dim_shape.push_back(view_shape);
+        view_ptr->slides.step_delay.push_back(step_delay);
     }
 
     /** Resets the changes made to the offset/shape of a dimension.
@@ -122,8 +122,8 @@ public:
      */
     template <typename T>
     void add_reset(BhArray<T>* view_ptr, size_t dim, size_t reset_it) {
-        view_ptr->resets.insert({dim, reset_it});
-        view_ptr->changes_since_reset.insert({dim, 0});
+        view_ptr->slides.resets.insert({dim, reset_it});
+        view_ptr->slides.changes_since_reset.insert({dim, 0});
     }
 
     // Send and receive a message through the component stack
