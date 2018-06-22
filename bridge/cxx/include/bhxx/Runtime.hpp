@@ -92,7 +92,8 @@ public:
 
     // Change the offset of slide_view_ptr by slide for each iteration of a loop
     template <typename T>
-    void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int view_shape, int array_shape, int array_stride, int step_delay) {
+    void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int view_shape,
+                    sint array_shape, int array_stride, int step_delay) {
         view_ptr->slide.push_back(slide);
         view_ptr->slide_dim.push_back(dim);
         view_ptr->slide_dim_shape_change.push_back(view_shape);

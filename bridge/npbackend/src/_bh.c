@@ -754,8 +754,7 @@ static PySequenceMethods array_as_sequence = {
     (ssizeargfunc) BhArray_GetSeqItem,        // sq_item
     (ssizessizeargfunc) 0,                    // sq_slice (Not in the Python doc)
     (ssizeobjargproc) BhArray_SetItem,        // sq_ass_item
-    //    (ssizessizeobjargproc) BhArray_SetSlice,  // sq_ass_slice (Not in the Python doc)
-    (ssizessizeobjargproc) NULL,  // sq_ass_slice Uses setitem instead
+    (ssizessizeobjargproc) NULL,              // sq_ass_slice Uses setitem instead
     (objobjproc) 0,                           // sq_contains
     (binaryfunc) NULL,                        // sg_inplace_concat
     (ssizeargfunc) NULL,                      // sg_inplace_repeat

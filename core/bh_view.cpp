@@ -48,11 +48,9 @@ bh_view::bh_view(const bh_view &view) {
     slide_dim_stride = view.slide_dim_stride;
     slide_dim_shape = view.slide_dim_shape;
     slide_dim_shape_change = view.slide_dim_shape_change;
-
     slide_dim_step_delay = view.slide_dim_step_delay;
     resets = view.resets;
     changes_since_reset = view.changes_since_reset;
-
     reset_counter = view.reset_counter;
     iteration_counter = view.iteration_counter;
 

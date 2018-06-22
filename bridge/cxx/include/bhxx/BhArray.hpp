@@ -85,7 +85,6 @@ class BhArray {
     // The dimension to reset
     std::vector<int64_t> reset_dim;
 
-
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)
           : offset(offset_),
