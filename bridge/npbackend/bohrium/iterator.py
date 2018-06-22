@@ -11,12 +11,34 @@ class iterator(object):
     Supports addition, subtraction and multiplication.
     '''
 
-    def __init__(self, value, step_delay=1, reset=None):
-        self.step = 1
+    def __init__(self, max_iter, value, step_delay=1, reset=None):
+        '''The initial state of the iterator.
+
+        Parameters
+        ----------
+        max_iter : int
+            The maximum amount of iterations the loop can go on for
+        value : int
+            The beginning offset of the iterator
+        step_delay : int
+            The amount of iterations needed before a change is made
+        reset : int
+            The amount of iterations before the changes are reset
+
+        Notes
+        -----
+        step : int
+            The amount the offset is slided when performing a step
+
+        The step can be changed by using multiplication
+        '''
+
+        self.max_iter = max_iter
         self.offset = value
-        self.max_iter = 0
-        self.step_delay=step_delay
+        self.step_delay = step_delay
         self.reset = reset
+
+        self.step = 1
 
     def __add__(self, other):
         new_it = copy.copy(self)
@@ -72,19 +94,41 @@ class IteratorOutOfBounds(Exception):
 class dynamic_view_info(object):
     '''Object for storing information about dynamic changes to the view'''
     def __init__(self, dynamic_changes, shape, stride, reset=[]):
+        '''The initial state of the dynamic view information.
+
+        Parameters
+        ----------
+        dynamic_changes : [(int,int,int)] or [(int,int,int,int)]
+            A list of tuples corresponding to the dynamic changes the view.
+            The tuple is (dimension, slide, shape_change, step_delay).
+            If the step delay is not explicitly stated, it is set to 1.
+        shape : int
+            The shape of the view that the dynamic view is based upon.
+            Used when using negative indices to wrap around.
+        stride : int
+            The stride of the view that the dynamic view is based upon.
+            Used for making slides to the offset.
+        reset : [(int, int)]
+            A list of tuples corresponding to the dimension and
+            amount of iterations before the changes are reset.
+            Used for nested loops.
+        '''
+
         # Shape and stride of the view that the dynamic view is based upon
         self.shape = shape
         self.stride = stride
 
         assert(len(dynamic_changes[0]) == 3 or len(dynamic_changes[0]) == 4)
         if len(dynamic_changes[0]) == 3:
+            # Dynamic changes without explicit step delay
+            # Format: [(dimension, slide, shape)]
             self.dynamic_changes = []
             for (dim, slide, shape_change) in dynamic_changes:
                 self.dynamic_changes.append((dim, slide, shape_change, 1))
         else:
-            # The dynamic changes. Type: [(dimension, slide, shape)]
+            # Dynamic changes with explicit step delay
+            # Format: [(dimension, slide, shape, step_delay)]
             self.dynamic_changes = dynamic_changes
-
         self.resets = reset
 
 
@@ -131,9 +175,7 @@ def get_iterator(max_iter, val, step_delay=1):
     >>> bh.do_while(kernel, 4, a)
     array([1, 2, 6, 24, 120])'''
 
-    it = iterator(val)
-    it.max_iter = max_iter
-    it.step_delay = step_delay
+    it = iterator(max_iter, val, step_delay)
     return it
 
 
@@ -178,8 +220,7 @@ def get_grid(max_iter, *args):
     step_delay = 1
 
     for dim, iterations in enumerate(grid):
-        i = get_iterator(max_iter, 0, step_delay)
-        i.reset = iterations
+        i = get_iterator(max_iter, 0, step_delay, iterations)
         step_delay *= iterations
         iterators = (i,) + iterators
     return iterators
@@ -195,7 +236,7 @@ def has_iterator(*s):
 
     Notes
     -----
-    Only called from __getitem__ in bohrium arrays (see _bh.c) and .'''
+    Only called from __getitem__ and __setitem__ in bohrium arrays (see _bh.c).'''
 
     # Helper function for one-dimensional slices
     def check_simple_type(ss):

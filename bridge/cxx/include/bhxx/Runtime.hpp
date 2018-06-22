@@ -90,22 +90,39 @@ public:
     // Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);
 
-    // Change the offset of slide_view_ptr by slide for each iteration of a loop
+    /** Changes the offset and shape of a view between the iterations of a `do_while` loop.
+     * This is the underlying functionality behind using iterators.
+     *
+     * @view_ptr     A pointer to the view on which the changes are applied
+     * @dim          The dimension of the changes
+     * @slide        The change to the offset (can be both positive and negative)
+     * @shape_change The change to the shape (can be both positive and negative)
+     * @view_shape   The shape of the view (necessary when using negative indexing)
+     * @view_stride  The stride used for changes to the offset
+     * @step_delay   The delay of the changes (used for nested loops)
+     */
     template <typename T>
-    void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int view_shape,
-                    sint array_shape, int array_stride, int step_delay) {
+    void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int shape_change,
+                    int view_shape, int view_stride, int step_delay) {
         view_ptr->slide.push_back(slide);
         view_ptr->slide_dim.push_back(dim);
-        view_ptr->slide_dim_shape_change.push_back(view_shape);
-        view_ptr->slide_dim_stride.push_back(array_stride);
-        view_ptr->slide_dim_shape.push_back(array_shape);
+        view_ptr->slide_dim_shape_change.push_back(shape_change);
+        view_ptr->slide_dim_stride.push_back(view_stride);
+        view_ptr->slide_dim_shape.push_back(view_shape);
         view_ptr->slide_dim_step_delay.push_back(step_delay);
     }
 
-    // Add a reset for an iterator. Used for nested internal loops
+    /** Resets the changes made to the offset/shape of a dimension.
+     * This is the underlying functionality behind iterator grid (nested loops).
+     * Used within `do_while` to emulate nested loops.
+     *
+     * @view_ptr A pointer to the view which is reset
+     * @dim      The dimension of the reset
+     * @reset_it The amount of iterations before a reset
+     */
     template <typename T>
-    void add_reset(BhArray<T>* view_ptr, size_t dim, size_t reset_max) {
-        view_ptr->resets.insert({dim, reset_max});
+    void add_reset(BhArray<T>* view_ptr, size_t dim, size_t reset_it) {
+        view_ptr->resets.insert({dim, reset_it});
         view_ptr->changes_since_reset.insert({dim, 0});
     }
 
