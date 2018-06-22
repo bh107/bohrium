@@ -487,6 +487,7 @@ def broadcast_arrays(*args):
                 raise
 
         # The view/array that the broadcast is based upon
+        # Used for broadcasting dynamic views within a do_while loop
         broadcast_array = args[0]
         try:
             broadcast_dvi = broadcast_array.bhc_dynamic_view_info.dynamic_changes
@@ -529,11 +530,7 @@ def broadcast_arrays(*args):
             else:
                 b.bhc_dynamic_view_info = a.bhc_dynamic_view_info
 
-            # What is going on here?
-            if numpy.isscalar(a) or not isinstance(a, numpy.ndarray):
-                ret.append(b)
-            else:
-                ret.append(b)
+            ret.append(b)
 
     except ValueError as msg:
         if str(msg).find("shape mismatch: objects cannot be broadcast to a single shape") != -1:
