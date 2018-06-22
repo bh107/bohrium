@@ -30,7 +30,6 @@ void slide_views(BhIR *bhir) {
                     int dim = view.slide_dim.at(i);
                     int dim_stride = view.slide_dim_stride.at(i);
                     int dim_step_delay = view.slide_dim_step_delay.at(i);
-                    int dim_step_delay_counter = view.slide_dim_step_delay.at(i);
 
                     if (dim_step_delay == 1 ||
                         (view.iteration_counter % dim_step_delay == dim_step_delay-1)) {

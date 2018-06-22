@@ -68,7 +68,6 @@ class BhArray {
 
     // The step delay in the dimension
     std::vector<int64_t> slide_dim_step_delay;
-    std::vector<int64_t> slide_dim_step_delay_counter;
 
     /// The change to the shape
     std::vector<int64_t> slide_dim_shape_change;

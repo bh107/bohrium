@@ -99,7 +99,6 @@ public:
         view_ptr->slide_dim_stride.push_back(array_stride);
         view_ptr->slide_dim_shape.push_back(array_shape);
         view_ptr->slide_dim_step_delay.push_back(step_delay);
-        view_ptr->slide_dim_step_delay_counter.push_back(0);
     }
 
     // Add a reset for an iterator. Used for nested internal loops

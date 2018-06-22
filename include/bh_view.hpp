@@ -73,7 +73,6 @@ struct bh_view {
 
     // The step delay in the dimension
     std::vector<int64_t> slide_dim_step_delay;
-    std::vector<int64_t> slide_dim_step_delay_counter;
 
     int64_t iteration_counter = 0;
 
