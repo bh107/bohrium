@@ -2,6 +2,7 @@ import copy
 
 from .bhary import fix_biclass_wrapper
 from . import array_create
+from functools import reduce
 
 class iterator(object):
     '''Iterator used for sliding views within loops.
