@@ -366,7 +366,7 @@ res = M.zeros((iter,iter,iter))
 b = M.arange(iter)+1
 
 for i in range(1,iter+1):
-    res[:-i] += b[i-1]
+    res[:-i,:-i,:-i] += b[i-1]
 """
 
         cmd2 = np_dw_loop_src + \
@@ -375,7 +375,7 @@ iter = %s
 
 def loop_body(res, b):
     i = get_iterator(1)
-    res[:-i] += b[i-1]
+    res[:-i,:-i,:-i] += b[i-1]
 
 res = M.zeros((iter,iter,iter))
 b = M.arange(iter)+1
