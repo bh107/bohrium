@@ -409,7 +409,7 @@ def add_slide_info(a):
         for (dim, slide, shape_change, step_delay) in dvi.dynamic_changes:
             # Stride is bytes, so it has to be diveded by 8
             try:
-                stride = dvi.stride[dim]/8
+                stride = int(dvi.stride[dim]/8)
                 shape = dvi.shape[dim]
             except:
                 stride = 0
@@ -418,5 +418,5 @@ def add_slide_info(a):
             _bh.slide_view(a, dim, slide, shape_change, shape, stride, step_delay)
 
         # Add resets to the relevant dimensions within the cxx bridge (used for nested loops)
-        for (dim,reset_max) in dvi.resets:
-            _bh.add_reset(a, dim, reset_max)
+        for (dim,reset_it) in dvi.resets:
+            _bh.add_reset(a, dim, reset_it)
