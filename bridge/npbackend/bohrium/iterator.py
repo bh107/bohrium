@@ -92,6 +92,15 @@ class IteratorOutOfBounds(Exception):
         super(IteratorOutOfBounds, self).__init__(error_msg)
 
 
+class IteratorIllegalDepth(Exception):
+    '''Exception thrown when a view consists of a mix of iterator depths.'''
+    def __init__(self):
+        error_msg = \
+            "\n    Illegal mix of iterators with different depth:\n" \
+            "     A view cannot use iterators from different depths of the grid in the same dimension."
+        super(IteratorIllegalDepth, self).__init__(error_msg)
+
+
 class dynamic_view_info(object):
     '''Object for storing information about dynamic changes to the view'''
     def __init__(self, dynamic_changes, shape, stride, reset=[]):
@@ -314,8 +323,8 @@ def slide_from_view(a, sliced):
 
                 # Cannot contain iterators with different reset in same slice
                 if start_is_iterator and stop_is_iterator \
-                   and not s.start.reset == s.stop.reset:
-                    raise("The iterators within a single slice must be at the same depth of the grid")
+                   and (s.start.step_delay != s.stop.step_delay or s.start.reset != s.stop.reset):
+                    raise IteratorIllegalDepth()
 
                 # Check whether the start/end iterator stays within the array
                 if start_is_iterator:
@@ -357,7 +366,7 @@ def slide_from_view(a, sliced):
 
             # Add information about dimension being reset
             if reset:
-                resets.append((i,s.reset))
+                resets.append((i,reset))
         else:
             # Does not contain an iterator, just pass it through
             new_slices += (s,)
@@ -377,7 +386,7 @@ def slide_from_view(a, sliced):
         for (b_dim, b_slide, b_shape_change, b_step_delay) in slides:
             for (a_dim, a_slide, _, a_step_delay) in o_dynamic_changes:
                 if a_step_delay != b_step_delay:
-                    raise("A view cannot use iterators from other depths of the grid, than the view it is based upon.")
+                    raise IteratorIllegalDepth()
                 if a_dim == b_dim:
                     parent_stride = a.strides[a_dim] / o_stride[a_dim]
                     b_slide = a_slide + b_slide * parent_stride
