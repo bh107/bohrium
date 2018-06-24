@@ -1,3 +1,4 @@
+#from future.utils import iteritems
 import copy
 
 from .bhary import fix_biclass_wrapper
@@ -127,19 +128,38 @@ class dynamic_view_info(object):
         # Shape and stride of the view that the dynamic view is based upon
         self.shape = shape
         self.stride = stride
-
-        assert(len(dynamic_changes[0]) == 3 or len(dynamic_changes[0]) == 4)
-        if len(dynamic_changes[0]) == 3:
-            # Dynamic changes without explicit step delay
-            # Format: [(dimension, slide, shape)]
-            self.dynamic_changes = []
-            for (dim, slide, shape_change) in dynamic_changes:
-                self.dynamic_changes.append((dim, slide, shape_change, 1))
-        else:
-            # Dynamic changes with explicit step delay
-            # Format: [(dimension, slide, shape, step_delay)]
-            self.dynamic_changes = dynamic_changes
+        self.dynamic_changes = dynamic_changes
         self.resets = reset
+
+    def add_dynamic_change(self, dim, slide, shape_change, step_delay, shape=None, stride=None):
+        if not shape:
+            shape = self.shape[dim]
+        if not stride:
+            stride = self.stride[dim]
+
+        if self.has_changes_in_dim(dim):
+            self.dynamic_changes[dim].append((slide, shape_change, step_delay, shape, stride))
+        else:
+            self.dynamic_changes[dim] = [(slide, shape_change, step_delay, shape, stride)]
+
+    def has_changes_in_dim(self, dim):
+        return dim in self.dynamic_changes
+
+    def index_into(self, dvi):
+        a_shape = dvi.shape
+        a_stride = dvi.stride
+        a_dc = dvi.dynamic_changes
+        for dim in a_dc.keys():
+            for change in a_dc[dim]:
+                self.add_dynamic_change(dim, *change)
+
+    def get_shape_changes(self):
+        shape_changes = {}
+        for dim in self.dynamic_changes.keys():
+            shape_changes[dim] = 0
+            for (_, shape_change, _, _, _) in self.dynamic_changes[dim]:
+                shape_changes[dim] += shape_change
+        return shape_changes
 
 
 def inherit_dynamic_changes(a, sliced):
@@ -217,12 +237,10 @@ def get_grid(max_iter, *args):
     ...         for k in range(3):
     ...             a[i,j,k] += 1'''
 
-    # Maximum iterations of the loop
-#    max_iter = args[0]
-
     # Remove maximum iterations and reverse the grid to
     # loop over the grid from inner to outer
     grid = args[::-1]
+
     # Tuple of resulting iterators
     iterators = ()
 
@@ -339,7 +357,10 @@ def slide_from_view(a, sliced):
                     step_delay = 1
 
                 if stop_is_iterator:
-                    check_bounds(a.shape, i, s.stop)
+                    if s.stop.offset > 0:
+                        check_bounds(a.shape, i, s.stop-1)
+                    else:
+                        check_bounds(a.shape, i, s.stop)
                     stop = s.stop.offset
                     reset = s.stop.reset
                 else:
@@ -361,7 +382,6 @@ def slide_from_view(a, sliced):
                 else:
                     new_slices += (s.offset,)
                 slides.append((i, s.step, 0, s.step_delay))
-
                 reset = s.reset
 
             # Add information about dimension being reset
@@ -374,29 +394,20 @@ def slide_from_view(a, sliced):
     # Use the indices to create a new view
     b = a[new_slices]
 
+    b_dvi = dynamic_view_info({}, a.shape, a.strides, resets)
+
+    for slide in slides:
+        b_dvi.add_dynamic_change(*slide)
+
     # If the view, which is indexed into, contains dynamic changes,
     # pass them on to the new view
     a_dvi = a.bhc_dynamic_view_info
     if a_dvi:
-        o_shape = a_dvi.shape
-        o_stride = a_dvi.stride
-        o_dynamic_changes = a_dvi.dynamic_changes
-        new_stride = [(b.strides[i] / a.strides[i]) for i in range(b.ndim)]
-        new_slides = []
-        for (b_dim, b_slide, b_shape_change, b_step_delay) in slides:
-            for (a_dim, a_slide, _, a_step_delay) in o_dynamic_changes:
-                if a_step_delay != b_step_delay:
-                    raise IteratorIllegalDepth()
-                if a_dim == b_dim:
-                    parent_stride = a.strides[a_dim] / o_stride[a_dim]
-                    b_slide = a_slide + b_slide * parent_stride
-            new_slides.append((b_dim, b_slide, b_shape_change, b_step_delay))
-        dvi = dynamic_view_info(new_slides, o_shape, o_stride)
-    else:
-        dvi = dynamic_view_info(slides, a.shape, a.strides)
+        b_dvi.index_into(a_dvi)
 
-    dvi.resets = resets
-    b.bhc_dynamic_view_info = dvi
+    # Reset er ikke god
+#    b_dvi.resets = resets
+    b.bhc_dynamic_view_info = b_dvi
     return b
 
 def add_slide_info(a):
@@ -415,17 +426,17 @@ def add_slide_info(a):
 
     if dvi:
         # Set the relevant update conditions for the new view
-        for (dim, slide, shape_change, step_delay) in dvi.dynamic_changes:
-            # Stride is bytes, so it has to be diveded by 8
-            try:
-                stride = int(dvi.stride[dim]/8)
-                shape = dvi.shape[dim]
-            except:
-                stride = 0
-                shape = 0
-            # Add dynamic information to the view within the cxx bridge
-            _bh.slide_view(a, dim, slide, shape_change, shape, stride, step_delay)
+        for dim in dvi.dynamic_changes.keys():
+            for (slide, shape_change, step_delay, shape, stride) in dvi.dynamic_changes[dim]:
+                try:
+                    stride = int(stride/8)
+                    shape = shape
+                except:
+                    stride = 0
+                    shape = 0
 
+                # Add dynamic information to the view within the cxx bridge
+                _bh.slide_view(a, dim, slide, shape_change, shape, stride, step_delay)
         # Add resets to the relevant dimensions within the cxx bridge (used for nested loops)
         for (dim,reset_it) in dvi.resets:
             _bh.add_reset(a, dim, reset_it)

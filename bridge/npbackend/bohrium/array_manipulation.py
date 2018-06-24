@@ -2,6 +2,7 @@
 Array manipulation routines
 ===========================
 """
+from copy import deepcopy
 from . import array_create
 import numpy_force as numpy
 from . import bhary
@@ -489,10 +490,7 @@ def broadcast_arrays(*args):
         # The view/array that the broadcast is based upon
         # Used for broadcasting dynamic views within a do_while loop
         broadcast_array = args[0]
-        try:
-            broadcast_dvi = broadcast_array.bhc_dynamic_view_info.dynamic_changes
-        except:
-            broadcast_dvi = None
+        broadcast_dvi = broadcast_array.bhc_dynamic_view_info
 
         for a, b in zip(args, bargs):
             # If the broadcast view changes shape between iterations,
@@ -500,35 +498,29 @@ def broadcast_arrays(*args):
             a_dvi = a.bhc_dynamic_view_info
             if broadcast_dvi and a_dvi:
                 # Dynamic changes to the view before broadcast
-                a_dc  = a_dvi.dynamic_changes
+                a_dc = a_dvi.dynamic_changes
+                broadcast_dc = broadcast_dvi.dynamic_changes
 
                 # Dynamic changes to the broadcasted array
-                b_dvi = a_dvi
+                b_dvi = deepcopy(a_dvi)
                 b_dc  = b_dvi.dynamic_changes
 
                 # If the view contains a slide in a broadcasted dimension,
                 # the slide must be inherited
-                for (broadcast_dim, _, broadcast_shape, broadcast_step_delay) in broadcast_dvi:
-                    # Check whether the broadcast view changes shape in the given dimension
-                    if broadcast_shape != 0:
-                        found = False
-                        for i, (a_dim, a_slide, a_shape, _) in enumerate(a_dc):
-                            if a_dim == broadcast_dim:
-                                # The shape must change in the same manner as the view
-                                # that it broadcasted from
-                                if a_shape != 0 and a_shape != broadcast_shape:
-                                    raise Exception("Broadcast with dynamic shape:"
-                                                    "    View with shape " + str(a.shape) + \
-                                                    " changes shape in a dimension, which is being broadcasted.\n")
-                                b_dc[i] = (a_dim, a_slide, broadcast_shape, broadcast_step_delay)
-                                found = True
-                                break
-                        if not found:
-                            b_dc.append((broadcast_dim, 0, broadcast_shape, broadcast_step_delay))
-                b_dvi = iterator.dynamic_view_info(b_dc, a_dvi.shape, a_dvi.stride)
+                broadcast_sc = broadcast_dvi.get_shape_changes()
+                a_sc = a_dvi.get_shape_changes()
+
+                for dim in broadcast_sc.keys():
+                    if (not a_dvi.has_changes_in_dim(dim)) or a_sc[dim] == 0:
+                        for (_, shape_change, step_delay, shape, stride) in broadcast_dvi.dynamic_changes[dim]:
+                            b_dvi.add_dynamic_change(dim, 0, shape_change, step_delay, shape, stride)
+                    elif broadcast_sc[dim] != a_sc[dim]:
+                        raise Exception("Broadcast with dynamic shape:"
+                                        "    View with shape " + str(a.shape) + \
+                                        " changes shape in a dimension, which is being broadcasted.\n")
                 b.bhc_dynamic_view_info = b_dvi
             else:
-                b.bhc_dynamic_view_info = a.bhc_dynamic_view_info
+                b.bhc_dynamic_view_info = deepcopy(a.bhc_dynamic_view_info)
 
             ret.append(b)
 
