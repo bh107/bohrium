@@ -102,36 +102,73 @@ class IteratorIllegalDepth(Exception):
         super(IteratorIllegalDepth, self).__init__(error_msg)
 
 
+class IteratorIllegalBroadcast(Exception):
+    '''Exception thrown when a view consists of a mix of iterator depths.'''
+    def __init__(self, dim, a_shape, a_shape_change,
+                 bcast_shape, bcast_shape_change):
+        error_msg = \
+            "Broadcast with dynamic shape:\n" \
+            "    View with shape " + str(a_shape) + \
+            " changes shape by " + str(a_shape_change) + \
+            " in dimension " + str(dim) + \
+            ".\n    It is differet from the view it is broadcasted from with shape " + \
+            str(bcast_shape) + \
+            " which changes shape by " + str(bcast_shape_change) + ".\n"
+        super(IteratorIllegalBroadcast, self).__init__(error_msg)
+
+
 class dynamic_view_info(object):
     '''Object for storing information about dynamic changes to the view'''
-    def __init__(self, dynamic_changes, shape, stride, reset=[]):
+    def __init__(self, dynamic_changes, shape, stride, resets={}):
         '''The initial state of the dynamic view information.
 
         Parameters
         ----------
-        dynamic_changes : [(int,int,int)] or [(int,int,int,int)]
-            A list of tuples corresponding to the dynamic changes the view.
-            The tuple is (dimension, slide, shape_change, step_delay).
-            If the step delay is not explicitly stated, it is set to 1.
-        shape : int
+        dynamic_changes : {int : [(int, int, int, int, int)]}
+            A dictionary of lists of tuples corresponding to the dynamic
+            changes the view.
+            The tuple is (slide, shape_change, step_delay, shape, stride)
+            and is explained further in the parameters to `add_dynamic_change`.
+        shape : int tuple (variable length)
             The shape of the view that the dynamic view is based upon.
             Used when using negative indices to wrap around.
-        stride : int
+        stride : int tuple (variable length)
             The stride of the view that the dynamic view is based upon.
             Used for making slides to the offset.
-        reset : [(int, int)]
-            A list of tuples corresponding to the dimension and
-            amount of iterations before the changes are reset.
+        resets : {int : int}
+            A dictionary of ints. The key corresponds to the dimension and
+            the value to iterations before the changes are reset.
             Used for nested loops.
         '''
-
-        # Shape and stride of the view that the dynamic view is based upon
         self.shape = shape
         self.stride = stride
         self.dynamic_changes = dynamic_changes
-        self.resets = reset
+        self.resets = resets
 
     def add_dynamic_change(self, dim, slide, shape_change, step_delay, shape=None, stride=None):
+        '''Add dynamic changes to the dynamic changes information of the view.
+
+        Parameters
+        ----------
+        dim : int
+            The relevant dimension
+        slide : int
+            The change to the offset in the given dimension
+            (can be both positive and negative)
+        shape_change : int
+            The amount the shape changes in the given dimension
+            (can also be both positive and negative)
+        step_delay : int
+            If the change is based on an iterator in a grid, it is
+            the changes can be delayed until the inner iterators
+            have been updated `step_delay` times.
+        shape : int
+            The shape that the view can slide within. If not given,
+            self.shape[dim] is used instead
+        stride : int
+            The stride that the view can slide within. If not given,
+            self.stride[dim] is used instead
+        '''
         if not shape:
             shape = self.shape[dim]
         if not stride:
@@ -143,23 +180,87 @@ class dynamic_view_info(object):
             self.dynamic_changes[dim] = [(slide, shape_change, step_delay, shape, stride)]
 
     def has_changes_in_dim(self, dim):
+        '''Check whether there are any dynamic changes in the given dimension.
+
+        Parameters
+        ----------
+        dim : int
+            The relevant dimension
+        '''
         return dim in self.dynamic_changes
 
+    def dims_with_changes(self):
+        '''Returns a list of all dimensions with dynamic changes.'''
+        return self.dynamic_changes.keys()
+
+    def changes_in_dim(self, dim):
+        '''Returns a list of all dynamic changes in a dimension.
+        If the dimension does not contain any dynamic changes,
+        an empty list is returned.
+
+        Parameters
+        ----------
+        dim : int
+            The relevant dimension
+        '''
+        changes = []
+        if self.has_changes_in_dim(dim):
+            changes += self.dynamic_changes[dim]
+        return changes
+
     def index_into(self, dvi):
+        '''Modifies the dynamic change such that is reflects
+        being indexed into another view with dynamic changes.
+
+        Parameters
+        ----------
+        dim : dynamic_view_info
+            The infomation about dynamic changes within the
+            view which is indexed into
+        '''
         a_shape = dvi.shape
         a_stride = dvi.stride
         a_dc = dvi.dynamic_changes
-        for dim in a_dc.keys():
-            for change in a_dc[dim]:
+        for dim in dvi.dims_with_changes():
+            if (dim in self.resets) or (dim in dvi.resets):
+                if not (dim in dvi.resets) or \
+                   not (dim in self.resets) or \
+                   self.resets[dim] != dvi.resets[dim] or \
+                   self.changes_in_dim(dim) != dvi.changes_in_dim(dim):
+                    raise IteratorIllegalDepth()
+            for change in dvi.changes_in_dim(dim):
                 self.add_dynamic_change(dim, *change)
 
+
+    def dim_shape_change(self, dim):
+        '''Returns the summed shape change in the given dimension.
+
+        Parameters
+        ----------
+        dim : int
+            The relevant dimension
+        '''
+        shape_change_sum = 0
+        if self.has_changes_in_dim(dim):
+            for (_, shape_change, _, _, _) in self.dynamic_changes[dim]:
+                shape_change_sum += shape_change
+        return shape_change_sum
+
     def get_shape_changes(self):
+        '''Returns a dictionary of all changes to the shape.
+        The dimension is the key and the shape change in the
+        dimension is the value.
+        '''
         shape_changes = {}
         for dim in self.dynamic_changes.keys():
             shape_changes[dim] = 0
             for (_, shape_change, _, _, _) in self.dynamic_changes[dim]:
                 shape_changes[dim] += shape_change
         return shape_changes
+
+    def has_changes(self):
+        '''Returns whether the object contains any dynamic changes.'''
+        return self.dynamic_changes != {}
 
 
 def inherit_dynamic_changes(a, sliced):
@@ -330,7 +431,7 @@ def slide_from_view(a, sliced):
     # The dynamic changes
     slides = []
     # The resets (used for resetting an iterator in nested loops)
-    resets = []
+    resets = {}
 
     for i, s in enumerate(sliced):
         if len(sliced) == 1 or has_iterator(s):
@@ -386,7 +487,7 @@ def slide_from_view(a, sliced):
 
             # Add information about dimension being reset
             if reset:
-                resets.append((i,reset))
+                resets[i] = reset
         else:
             # Does not contain an iterator, just pass it through
             new_slices += (s,)
@@ -394,21 +495,28 @@ def slide_from_view(a, sliced):
     # Use the indices to create a new view
     b = a[new_slices]
 
-    b_dvi = dynamic_view_info({}, a.shape, a.strides, resets)
+    a_dvi = a.bhc_dynamic_view_info
+
+    if a_dvi:
+        b_dvi = dynamic_view_info({}, a_dvi.shape, a.strides, resets)
+    else:
+        b_dvi = dynamic_view_info({}, a.shape, a.strides, resets)
 
     for slide in slides:
         b_dvi.add_dynamic_change(*slide)
 
     # If the view, which is indexed into, contains dynamic changes,
     # pass them on to the new view
-    a_dvi = a.bhc_dynamic_view_info
+
     if a_dvi:
         b_dvi.index_into(a_dvi)
 
     # Reset er ikke god
 #    b_dvi.resets = resets
-    b.bhc_dynamic_view_info = b_dvi
+    if b_dvi.has_changes():
+        b.bhc_dynamic_view_info = b_dvi
     return b
+
 
 def add_slide_info(a):
     """Checks whether a view is dynamic and adds the relevant
@@ -438,5 +546,5 @@ def add_slide_info(a):
                 # Add dynamic information to the view within the cxx bridge
                 _bh.slide_view(a, dim, slide, shape_change, shape, stride, step_delay)
         # Add resets to the relevant dimensions within the cxx bridge (used for nested loops)
-        for (dim,reset_it) in dvi.resets:
-            _bh.add_reset(a, dim, reset_it)
+        for dim in dvi.resets.keys():
+            _bh.add_reset(a, dim, dvi.resets[dim])
