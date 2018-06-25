@@ -220,35 +220,44 @@ class Ufunc(object):
 
         # Insert the output array
         if out is None or not dtype_equal(out_dtype, out.dtype):
-            # Inherit dynamic shapes from arrays involved in the ufunc
+            # Create a new empty array
             dynamic_out = array_create.empty(out_shape, out_dtype)
-            shape_change = {}
+
+            # If the views within the ufunc has dynamic changes, then the output array must
+            # also be dynamic. Used in regard to iterators within do_while loops.
+            out_dvi = iterator.dynamic_view_info({}, dynamic_out.shape, dynamic_out.strides)
             for a in args:
                 if bhary.check(a) and a.bhc_dynamic_view_info:
-#                    for (dimension,_,shape,step_delay) in a.bhc_dynamic_view_info.dynamic_changes:
-                    a_dc = a.bhc_dynamic_view_info.dynamic_changes
-                    for dim in a_dc.keys():
-                        (_,shape,step_delay) = a_dc[dim]
-                        # No reason to add a change of 0 in the dimension
-                        if shape == 0:
+                    a_dvi = a.bhc_dynamic_view_info
+                    for dim in a_dvi.dims_with_changes():
+                        if a_dvi.dim_shape_change(dim) == 0:
                             continue
-                        # If the argument views have different shape change in the same dimension,
-                        # the dynamic shape of the temporary view can not be guessed
-                        elif shape_change.has_key(dim):
-                            assert(shape_change[dim][0] == shape)
-                            assert(shape_change[dim][1] == step_delay)
-                            continue
+                        if out_dvi.has_changes_in_dim(dim):
+                            # If the argument views have different shape change  in the same dimension,
+                            # the dynamic shape of the temporary view can not be guessed and therefore
+                            # results in an error
+                            assert(out_dvi.dim_shape_change(dim) == \
+                                   a_dvi.dim_shape_change(dim))
+                            a_reset = dim in a_dvi.resets
+                            out_reset = dim in out_dvi.resets
+                            assert((a_reset and out_reset) or \
+                                   ((not a_reset) and (not out_reset)))
+                            if a_reset and out_reset:
+                                assert(out_dvi.resets[dim] == \
+                                       a_dvi.resets[dim])
                         else:
-                            shape_change[dim] = (shape, step_delay)
+                            for (_,shape_change, step_delay, _, _) \
+                                in a_dvi.changes_in_dim(dim):
+                                # No reason to add a change of 0 in the dimension
+                                if shape_change == 0:
+                                    continue
+                                else:
+                                    out_dvi.add_dynamic_change(dim, 0,shape_change, step_delay)
 
-            if shape_change.keys():
-                dynamic_changes = []
-                out_dvi = iterator.dynamic_view_info({}, dynamic_out.shape,dynamic_out.strides)
-                for dimension in shape_change.keys():
-                    shape, step_delay = shape_change[dimension]
-                    out_dvi.add_dynamic_change(dimension, 0, shape, step_delay)
-#                    dynamic_changes.append(())
+            # Only add dynamic view info if it actually contains changes
+            if out_dvi.has_changes():
                 dynamic_out.bhc_dynamic_view_info = out_dvi
+
             args.insert(0, dynamic_out)
         else:
             args.insert(0, out)
