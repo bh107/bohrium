@@ -487,41 +487,59 @@ def broadcast_arrays(*args):
             else:
                 raise
 
-        # The view/array that the broadcast is based upon
+        # The broadcasted view inherits dynamic changes if there are any.
         # Used for broadcasting dynamic views within a do_while loop
-        broadcast_array = args[0]
-        broadcast_dvi = broadcast_array.bhc_dynamic_view_info
-
+        bcast_array = args[0]
+        bcast_dvi = bcast_array.bhc_dynamic_view_info
         for a, b in zip(args, bargs):
             # If the broadcast view changes shape between iterations,
-            # force the same change to the views being broadcasted
+            # force the same change to the views being broadcasted.
+            # Used in regard to iterators within do_while loops.
             a_dvi = a.bhc_dynamic_view_info
-            if broadcast_dvi and a_dvi:
-                # Dynamic changes to the view before broadcast
-                a_dc = a_dvi.dynamic_changes
-                broadcast_dc = broadcast_dvi.dynamic_changes
 
-                # Dynamic changes to the broadcasted array
+            # If array that is broadcasted has dynamic changes, the
+            # broadcasted array must inherit these
+            if a_dvi:
                 b_dvi = deepcopy(a_dvi)
-                b_dc  = b_dvi.dynamic_changes
+            else:
+                b_dvi = iterator.dynamic_view_info({}, a.shape, a.strides)
 
+            # If the array that is broadcasted from has changes in shape
+            # must these changes also be inherited by the broadcasted array
+            if bcast_dvi:
                 # If the view contains a slide in a broadcasted dimension,
                 # the slide must be inherited
-                broadcast_sc = broadcast_dvi.get_shape_changes()
-                a_sc = a_dvi.get_shape_changes()
+                for dim in bcast_dvi.dims_with_changes():
+                    # If the array, which is broadcasted from, does not have
+                    # dynamic changes, there are no changes to add
+                    if bcast_dvi.dim_shape_change(dim) == 0:
+                        continue
 
-                for dim in broadcast_sc.keys():
-                    if (not a_dvi.has_changes_in_dim(dim)) or a_sc[dim] == 0:
-                        for (_, shape_change, step_delay, shape, stride) in broadcast_dvi.dynamic_changes[dim]:
+                    # The array, which is broadcasted from, has dynamic changes
+                    # while the broadcasted array does not. Add the changes to the
+                    # broadcasted array
+                    elif b_dvi.dim_shape_change(dim) == 0:
+                        for (_, shape_change, step_delay, shape, stride) in \
+                            bcast_dvi.changes_in_dim(dim):
+                            # No reason to add a change of 0 in the dimension
+                            if shape_change == 0:
+                                continue
                             b_dvi.add_dynamic_change(dim, 0, shape_change, step_delay, shape, stride)
-                    elif broadcast_sc[dim] != a_sc[dim]:
-                        raise Exception("Broadcast with dynamic shape:"
-                                        "    View with shape " + str(a.shape) + \
-                                        " changes shape in a dimension, which is being broadcasted.\n")
-                b.bhc_dynamic_view_info = b_dvi
-            else:
-                b.bhc_dynamic_view_info = deepcopy(a.bhc_dynamic_view_info)
 
+                    # Both array, which is broadcasted from, and the broadcasted array has
+                    # dynamic changes. Make sure they are the same. If not the change cannot
+                    # be guessed, which results in an error.
+                    elif b_dvi.dim_shape_change(dim) != 0 and \
+                         b_dvi.dim_shape_change(dim) != bcast_dvi.dim_shape_change(dim):
+                        raise iterator.IteratorIllegalBroadcast(\
+                                dim, a.shape, a_dvi.dim_shape_change(dim),
+                                bcast_array.shape, bcast_dvi.dim_shape_change(dim))
+
+            # Add the dynamic changes, if any
+            if b_dvi.has_changes():
+                b.bhc_dynamic_view_info = b_dvi
+
+            # Append the broadcasted array
             ret.append(b)
 
     except ValueError as msg:
