@@ -25,10 +25,8 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
 
-
 struct bh_slide {
     bh_slide() = default;
-    bh_slide(const bh_slide &slide);
 
     /// Dimensions to be slided each loop iterations
     std::vector<int64_t> offset_change;

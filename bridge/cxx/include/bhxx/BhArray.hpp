@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "BhBase.hpp"
-#include "BhSlide.hpp"
 #include "SVector.hpp"
 #include <ostream>
 
@@ -60,7 +59,7 @@ class BhArray {
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
 
-    BhSlide slides;
+    bh_slide slides;
 
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)
@@ -155,15 +154,7 @@ class BhArray {
         view.start = static_cast<int64_t>(offset);
         view.ndim  = static_cast<int64_t>(shape.size());
 
-        view.slides.offset_change = slides.offset_change;
-        view.slides.shape_change = slides.shape_change;
-        view.slides.dim = slides.dim;
-        view.slides.step_delay = slides.step_delay;
-        view.slides.dim_stride = slides.dim_stride;
-        view.slides.dim_shape = slides.dim_shape;
-
-        view.slides.resets = slides.resets;
-        view.slides.changes_since_reset = slides.changes_since_reset;
+        view.slides = slides;
 
         std::copy(shape.begin(), shape.end(), &view.shape[0]);
         std::copy(stride.begin(), stride.end(), &view.stride[0]);
