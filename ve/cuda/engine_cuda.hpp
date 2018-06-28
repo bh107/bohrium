@@ -137,9 +137,6 @@ public:
         for(bh_base *base: bases) {
             if (buffers.find(base) != buffers.end()) {
                 bh_data_malloc(base);
-                if (verbose) {
-                    std::cout << "Copy to host: " << *base << std::endl;
-                }
                 check_cuda_errors(cuMemcpyDtoH(base->data, buffers.at(base), base->nbytes()));
                 // When syncing we assume that the host writes to the data and invalidate the device data thus
                 // we have to remove its data buffer
@@ -169,9 +166,6 @@ public:
 
                 // If the host data is non-null we should copy it to the device
                 if (base->data != nullptr) {
-                    if (verbose) {
-                        std::cout << "Copy to device: " << *base << std::endl;
-                    }
                     check_cuda_errors(cuMemcpyHtoD(new_buf, base->data, base->nbytes()));
                 }
             }
