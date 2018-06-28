@@ -19,6 +19,7 @@ from .bhary import fix_biclass_wrapper
 from . import bhary
 from .array_manipulation import broadcast_arrays
 
+
 @fix_biclass_wrapper
 def extmethod(name, out, in1, in2):
     from . import _bh
@@ -312,6 +313,7 @@ class Ufunc(object):
                [ 9, 13]])
         """
         from . import _bh
+        from . import bh_info
 
         if out is not None:
             if bhary.check(out):
@@ -350,9 +352,6 @@ class Ufunc(object):
         if len(axis) != len(set(axis)):
             raise ValueError("duplicate value in 'axis'")
 
-        # TODO: is this a good idea?
-        axis = sorted(axis, reverse=True)
-
         # When reducing booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and dtype_equal(ary, np.bool):
             ary = array_create.array(ary, dtype=np.uint64)
@@ -385,10 +384,19 @@ class Ufunc(object):
 
             return out
         else:
+            # Let's sort the axis indexes by their stride
+            # We use column major when a GPU is in the stack
+            column_major = bh_info.is_opencl_in_stack() or bh_info.is_cuda_in_stack()
+            strides = []
+            for i, s in enumerate(ary.strides):
+                if i in axis:
+                    strides.append((i, abs(s)))
+            axis = [i[0] for i in sorted(strides, key=lambda x: x[1], reverse=column_major)]
+
             # Let's reduce the first axis
             ary = self.reduce(ary, axis[0])
-            # Then we reduce the rest of the axes
-            axis = axis[1:]
+            # Then we reduce the rest of the axes and remember to correct the axis values
+            axis = [i if i < axis[0] else i-1 for i in axis[1:]]
             ary = self.reduce(ary, axis)
             # Finally, we may have to copy the result to 'out'
             if out is not None:
@@ -584,7 +592,6 @@ for name, ufunc in UFUNCS.items():
 
 # We do not want to expose a function named "ufunc"
 del ufunc
-
 
 def _handle__array_ufunc__(self, ufunc, method, *inputs, **kwargs):
     """
