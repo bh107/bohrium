@@ -37,6 +37,11 @@ class test_array_create:
     def test_copy(self, dtype):
         return self.test_random(dtype) + "; res = res.copy()"
 
+
+    def test_identity(self, dtype):
+        cmd = "res = M.identity(%d, dtype=%s)" % (100, dtype)
+        return cmd
+
 class test_arange:
     def init(self):
         for start in range(-3, 3):

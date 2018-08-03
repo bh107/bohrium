@@ -89,7 +89,8 @@ def replace_numpy(function):
 
 # Expose all ufuncs
 for _name, _f in UFUNCS.items():
-    exec ("%s = _f" % _name)
+    if _name != "identity":  # NumPy has a function named `identity`, which we shouldn't overwrite
+        exec ("%s = _f" % _name)
 
 # Aliases
 _aliases = [

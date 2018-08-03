@@ -799,3 +799,37 @@ def copy(a, order='K'):
 
     """
     return array(a, order=order, copy=True)
+
+
+def identity(n, dtype=float, bohrium=True):
+    """
+    Return the identity array.
+    The identity array is a square array with ones on
+    the main diagonal.
+
+    Parameters
+    ----------
+    n : int
+        Number of rows (and columns) in `n` x `n` output.
+    dtype : data-type, optional
+        Data-type of the output.  Defaults to ``float``.
+    bohrium : boolean, optional
+        Determines whether it is a Bohrium-enabled array or a regular NumPy array
+
+    Returns
+    -------
+    out : ndarray
+        `n` x `n` array with its main diagonal set to one,
+        and all other elements 0.
+    Examples
+    --------
+    >>> np.identity(3)
+    array([[ 1.,  0.,  0.],
+           [ 0.,  1.,  0.],
+           [ 0.,  0.,  1.]])
+    """
+    from .array_manipulation import diagonal
+
+    ret = zeros((n, n), dtype=dtype, bohrium=bohrium)
+    diagonal(ret)[:] = 1
+    return ret
