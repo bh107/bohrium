@@ -22,22 +22,44 @@ void slide_views(BhIR *bhir) {
     // Iterate through all instructions and slide the relevant views
     for (bh_instruction &instr : bhir->instr_list) {
         for (bh_view &view : instr.operand) {
-            if (not view.slide.empty()) {
+            if (has_slides(view)) {
+                bool first_iter = view.slides.iteration_counter == 0;
+
                 // The relevant dimension in the view is updated by the given stride
-                for (size_t i = 0; i < view.slide.size(); i++) {
-                    int change = view.slide.at(i)*view.slide_dim_stride.at(i);
-                    int max_rel_idx = view.slide_dim_stride.at(i)*view.slide_dim_shape.at(i);
-                    int rel_idx = view.start%(view.slide_dim_stride.at(i)*view.slide_dim_shape.at(i));
-                    rel_idx += change;
+                for (size_t i = 0; i < view.slides.offset_change.size(); i++) {
+                    int dim = view.slides.dim.at(i);
+                    int dim_stride = view.slides.dim_stride.at(i);
+                    int step_delay = view.slides.step_delay.at(i);
+                    if (step_delay == 1 ||
+                        (view.slides.iteration_counter % step_delay == step_delay-1)) {
+                        if (dim_stride) {
+                            int change = view.slides.offset_change.at(i)*dim_stride;
+                            int max_rel_idx = dim_stride*view.slides.dim_shape.at(i);
+                            int rel_idx = view.start % (dim_stride*view.slides.dim_shape.at(i));
 
-                    if (rel_idx < 0) {
-                        change += max_rel_idx;
-                    } else if (rel_idx >= max_rel_idx) {
-                        change -= max_rel_idx;
+                            rel_idx += change;
+                            if (rel_idx < 0) {
+                                change += max_rel_idx;
+                            } else if (rel_idx >= max_rel_idx) {
+                                change -= max_rel_idx;
+                            }
+
+                            view.slides.changes_since_reset[dim] += change;
+                            view.start += (int64_t) change;
+
+                            auto search = view.slides.resets.find(dim);
+                            if (!first_iter && search != view.slides.resets.end() &&
+                                (view.slides.iteration_counter / step_delay) % search->second == search->second-1) {
+                                int64_t reset = search->second;
+                                view.start -= view.slides.changes_since_reset[dim];
+                                view.slides.changes_since_reset[dim] = 0;
+                                view.shape[dim] -= (int64_t) reset*view.slides.shape_change.at(i);
+                            }
+                        }
+                        view.shape[dim] += (int64_t) view.slides.shape_change.at(i);
                     }
-
-                    view.start += change;
                 }
+                view.slides.iteration_counter += 1;
             }
         }
     }

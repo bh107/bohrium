@@ -199,7 +199,7 @@ def main(args):
         impl += "%s" % decl
         impl += """\
 {
-    bhxx::Runtime::instance().memCopy(*((bhxx::BhArray<%(cpp)s>*) src), *((bhxx::BhArray<%(cpp)s>*) dst), 
+    bhxx::Runtime::instance().memCopy(*((bhxx::BhArray<%(cpp)s>*) src), *((bhxx::BhArray<%(cpp)s>*) dst),
                                       std::string{param});
 }
 
@@ -223,17 +223,39 @@ def main(args):
     impl += doc; head += doc
     for key, t in type_map.items():
         decl = "void bhc_slide_view"
-        decl += "_A%(name)s_A%(name)s" % t
-        decl += "(const %(bhc_ary)s ary1, const %(bhc_ary)s ary2, size_t dim, int slide)" % t
+        decl += "_A%(name)s" % t
+        decl += "(const %(bhc_ary)s ary1, size_t dim, int slide, int view_shape, \
+                 int array_shape, int array_stride, int step_delay)" % t
         head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
 {
     bhxx::Runtime::instance().slide_view(
         (bhxx::BhArray<%(cpp)s>*) ary1,
-        (bhxx::BhArray<%(cpp)s>*) ary2,
         dim,
-        slide);
+        slide,
+        view_shape,
+        array_shape,
+        array_stride,
+        step_delay);
+}
+
+""" % t
+
+    doc = "\n// Set a reset for an iterator in a dynamic view within a loop.\n"
+    impl += doc; head += doc
+    for key, t in type_map.items():
+        decl = "void bhc_add_reset"
+        decl += "_A%(name)s" % t
+        decl += "(const %(bhc_ary)s ary1, size_t dim, size_t reset_max)" % t
+        head += "%s;\n" % decl
+        impl += "%s" % decl
+        impl += """\
+{
+   bhxx::Runtime::instance().add_reset(
+        (bhxx::BhArray<%(cpp)s>*) ary1,
+        dim,
+        reset_max);
 }
 
 """ % t

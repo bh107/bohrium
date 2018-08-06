@@ -128,14 +128,30 @@ def main(args):
 
     doc = "\n// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.\n"
     impl += doc; head += doc
-    decl = "void bhc_slide_view(bhc_dtype dtype, const void *ary1, const void *ary2, size_t dim, int slide)"
+    decl = "void bhc_slide_view(bhc_dtype dtype, const void *ary1, size_t dim, int slide, int view_shape, \
+            int array_shape, int array_stride, int step_delay)"
     head += "%s;\n" % decl
     impl += """%s
 {
     switch(dtype) {\n""" % decl
     for key, t in type_map.items():
-        impl += "        case %s: bhc_slide_view_A%s_A%s((%s)ary1, (%s)ary2, dim, slide); break;\n" % (key, t['name'], t['name'], t['bhc_ary'], t['bhc_ary'])
+        impl += "        case %s: bhc_slide_view_A%s((%s)ary1, dim, slide, view_shape, \
+                 array_shape, array_stride, step_delay); break;\n" % (key, t['name'], t['bhc_ary'])
     impl += """        default: fprintf(stderr, "bhc_slide_view(): unknown dtype\\n"); exit(-1);
+    }
+}\n"""
+
+    doc = "\n// Set a reset for an iterator in a dynamic view within a loop..\n"
+    impl += doc; head += doc
+    decl = "void bhc_add_reset(bhc_dtype dtype, const void *ary1, size_t dim, size_t reset_max)"
+    head += "%s;\n" % decl
+    impl += """%s
+{
+    switch(dtype) {\n""" % decl
+    for key, t in type_map.items():
+        impl += "        case %s: bhc_add_reset_A%s((%s)ary1, dim, reset_max); break;\n" \
+                % (key, t['name'], t['bhc_ary'])
+    impl += """        default: fprintf(stderr, "bhc_add_reset(): unknown dtype\\n"); exit(-1);
     }
 }\n"""
 

@@ -10,6 +10,7 @@ import sys
 import os
 import warnings
 from . import _util
+from . import iterator
 from . import array_create
 import numpy_force as np
 from . import _info
@@ -219,7 +220,45 @@ class Ufunc(object):
 
         # Insert the output array
         if out is None or not dtype_equal(out_dtype, out.dtype):
-            args.insert(0, array_create.empty(out_shape, out_dtype))
+            # Create a new empty array
+            dynamic_out = array_create.empty(out_shape, out_dtype)
+
+            # If the views within the ufunc has dynamic changes, then the output array must
+            # also be dynamic. Used in regard to iterators within do_while loops.
+            out_dvi = iterator.dynamic_view_info({}, dynamic_out.shape, dynamic_out.strides)
+            for a in args:
+                if bhary.check(a) and a.bhc_dynamic_view_info:
+                    a_dvi = a.bhc_dynamic_view_info
+                    for dim in a_dvi.dims_with_changes():
+                        if a_dvi.dim_shape_change(dim) == 0:
+                            continue
+                        if out_dvi.has_changes_in_dim(dim):
+                            # If the argument views have different shape change  in the same dimension,
+                            # the dynamic shape of the temporary view can not be guessed and therefore
+                            # results in an error
+                            assert(out_dvi.dim_shape_change(dim) == \
+                                   a_dvi.dim_shape_change(dim))
+                            a_reset = dim in a_dvi.resets
+                            out_reset = dim in out_dvi.resets
+                            assert((a_reset and out_reset) or \
+                                   ((not a_reset) and (not out_reset)))
+                            if a_reset and out_reset:
+                                assert(out_dvi.resets[dim] == \
+                                       a_dvi.resets[dim])
+                        else:
+                            for (_,shape_change, step_delay, _, _) \
+                                in a_dvi.changes_in_dim(dim):
+                                # No reason to add a change of 0 in the dimension
+                                if shape_change == 0:
+                                    continue
+                                else:
+                                    out_dvi.add_dynamic_change(dim, 0,shape_change, step_delay)
+
+            # Only add dynamic view info if it actually contains changes
+            if out_dvi.has_changes():
+                dynamic_out.bhc_dynamic_view_info = out_dvi
+
+            args.insert(0, dynamic_out)
         else:
             args.insert(0, out)
 

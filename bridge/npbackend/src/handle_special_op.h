@@ -49,6 +49,9 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds);
 /** Increases `ary`s offset by one */
 PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds);
 
+/** Add a reset for a given dimension. */
+PyObject* PyAddReset(PyObject *self, PyObject *args, PyObject *kwds);
+
 /** Create a new flat random array using the random123 algorithm.
     The dtype is uint64 always.
 

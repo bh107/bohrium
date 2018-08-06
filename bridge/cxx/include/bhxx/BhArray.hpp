@@ -59,14 +59,7 @@ class BhArray {
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
 
-    // The slide the offset should be changed by (can be both positive and negative)
-    std::vector<int64_t> slide;
-
-    // The strides of the orignal view
-    std::vector<int64_t> slide_dim_stride;
-
-    // The relevant dimensions
-    std::vector<int64_t> slide_dim_shape;
+    bh_slide slides;
 
     /** Create a new view */
     BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)
@@ -160,9 +153,9 @@ class BhArray {
         view.base  = base.get();
         view.start = static_cast<int64_t>(offset);
         view.ndim  = static_cast<int64_t>(shape.size());
-        view.slide = slide;
-        view.slide_dim_stride = slide_dim_stride;
-        view.slide_dim_shape = slide_dim_shape;
+
+        view.slides = slides;
+
         std::copy(shape.begin(), shape.end(), &view.shape[0]);
         std::copy(stride.begin(), stride.end(), &view.stride[0]);
         return view;
