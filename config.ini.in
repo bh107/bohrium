@@ -159,6 +159,8 @@ work_group_size_3dz = 2
 num_threads = 0
 # Use round robin instead of block parallelization when limiting number of threads.
 num_threads_round_robin = false
+# Optimize instructions for GPU access (column-major)
+to_col_major = false
 
 [cuda]
 impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_cuda${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -199,3 +201,5 @@ work_group_size_2dy = 4
 work_group_size_3dx = 32
 work_group_size_3dy = 2
 work_group_size_3dz = 2
+# Optimize instructions for GPU access (column-major)
+to_col_major = false

@@ -114,5 +114,34 @@ pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_siz
     return make_pair(gsize, lsize);
 }
 
+bool row_major_access(const bh_view &view) {
+    if(not bh_is_constant(&view)) {
+        assert(view.ndim > 0);
+        for(int64_t i = 1; i < view.ndim; ++ i) {
+            if (view.stride[i] > view.stride[i-1]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool row_major_access(const bh_instruction &instr) {
+    for (const bh_view &view: instr.operand) {
+        if (not row_major_access(view)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void to_column_major(std::vector<bh_instruction> &instr_list) {
+    for(bh_instruction &instr: instr_list) {
+        if (instr.opcode < BH_MAX_OPCODE_ID and row_major_access(instr)) {
+            instr.transpose();
+        }
+    }
+}
+
 } // jitk
 } // bohrium

@@ -45,10 +45,13 @@ class Impl : public ComponentVE {
     Statistics stat;
     // The CUDA engine
     EngineCUDA engine;
+    // Optimize instruction to access column major
+    const bool to_col_major;
 
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
-                            engine(*this, stat) {}
+                            engine(*this, stat),
+                            to_col_major(config.defaultGet<bool>("to_col_major", true)) {}
     ~Impl() override;
     void execute(BhIR *bhir) override;
     void extmethod(const string &name, bh_opcode opcode) override {
@@ -125,6 +128,10 @@ void Impl::execute(BhIR *bhir) {
         child.execute(bhir);
         return;
     }
+    if (to_col_major) {
+        to_column_major(bhir->instr_list);
+    }
+
 
     bh_base *cond = bhir->getRepeatCondition();
     for (uint64_t i=0; i < bhir->getNRepeats(); ++i) {

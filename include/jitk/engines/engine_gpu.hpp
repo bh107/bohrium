@@ -217,10 +217,6 @@ private:
                     const SymbolTable &symbols) {
         using namespace std;
 
-        if (comp.config.defaultGet<bool>("verbose", false)) {
-            cout << "Offloading to CPU\n";
-        }
-
         if (&(comp.child) == nullptr) {
             throw runtime_error("handleExecution(): thread_stack cannot be empty when child == NULL!");
         }
