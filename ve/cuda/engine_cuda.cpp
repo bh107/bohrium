@@ -142,7 +142,10 @@ pair<uint32_t, uint32_t> work_ranges(uint64_t work_group_size, int64_t block_siz
     if (numeric_limits<uint32_t>::max() <= work_group_size or
         numeric_limits<uint32_t>::max() <= block_size or
         block_size < 0) {
-        throw runtime_error("work_ranges(): sizes cannot fit in a uint32_t!");
+        stringstream ss;
+        ss << "work_ranges(): sizes cannot fit in a uint32_t. work_group_size: " << work_group_size
+           << ", block_size: " << block_size << ".";
+        throw runtime_error(ss.str());
     }
     const auto lsize = (uint32_t) work_group_size;
     const auto rem   = (uint32_t) block_size % lsize;
