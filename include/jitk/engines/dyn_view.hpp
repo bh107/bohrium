@@ -27,16 +27,18 @@ void slide_views(BhIR *bhir) {
 
                 // The relevant dimension in the view is updated by the given stride
                 for (size_t i = 0; i < view.slides.offset_change.size(); i++) {
-                    int dim = view.slides.dim.at(i);
-                    int dim_stride = view.slides.dim_stride.at(i);
-                    int step_delay = view.slides.step_delay.at(i);
+                    int64_t dim = view.slides.dim.at(i);
+                    int64_t dim_stride = view.slides.dim_stride.at(i);
+                    int64_t step_delay = view.slides.step_delay.at(i);
+                    int64_t offset_change = view.slides.offset_change.at(i);
+                    int64_t dim_shape = view.slides.dim_shape.at(i);
+                    int64_t shape_change = view.slides.shape_change.at(i);
                     if (step_delay == 1 ||
                         (view.slides.iteration_counter % step_delay == step_delay-1)) {
                         if (dim_stride) {
-                            int change = view.slides.offset_change.at(i)*dim_stride;
-                            int max_rel_idx = dim_stride*view.slides.dim_shape.at(i);
-                            int rel_idx = view.start % (dim_stride*view.slides.dim_shape.at(i));
-
+                            int64_t change = offset_change*dim_stride;
+                            int64_t max_rel_idx = dim_stride*dim_shape;
+                            int64_t rel_idx = view.start % (dim_stride*dim_shape);
                             rel_idx += change;
                             if (rel_idx < 0) {
                                 change += max_rel_idx;
@@ -45,7 +47,7 @@ void slide_views(BhIR *bhir) {
                             }
 
                             view.slides.changes_since_reset[dim] += change;
-                            view.start += (int64_t) change;
+                            view.start += change;
 
                             auto search = view.slides.resets.find(dim);
                             if (!first_iter && search != view.slides.resets.end() &&
@@ -53,10 +55,10 @@ void slide_views(BhIR *bhir) {
                                 int64_t reset = search->second;
                                 view.start -= view.slides.changes_since_reset[dim];
                                 view.slides.changes_since_reset[dim] = 0;
-                                view.shape[dim] -= (int64_t) reset*view.slides.shape_change.at(i);
+                                view.shape[dim] -= reset*shape_change;
                             }
                         }
-                        view.shape[dim] += (int64_t) view.slides.shape_change.at(i);
+                        view.shape[dim] += shape_change;
                     }
                 }
                 view.slides.iteration_counter += 1;
