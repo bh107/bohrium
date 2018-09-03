@@ -52,9 +52,6 @@ struct bh_slide {
     std::map<int64_t, int64_t> resets;
     std::map<int64_t, int64_t> changes_since_reset;
 
-    // The dimension to reset
-    int64_t reset_counter = 0;
-
     template<class Archive>
     void save(Archive &ar, const unsigned int version) const {
         ar << offset_change;
@@ -66,7 +63,6 @@ struct bh_slide {
         ar << iteration_counter;
         ar << resets;
         ar << changes_since_reset;
-        ar << reset_counter;
     }
 
     template<class Archive>
@@ -80,7 +76,6 @@ struct bh_slide {
         ar >> iteration_counter;
         ar >> resets;
         ar >> changes_since_reset;
-        ar >> reset_counter;
     }
 
 
