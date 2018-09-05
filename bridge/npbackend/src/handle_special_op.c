@@ -160,15 +160,16 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
 
 PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *ary1;
-    unsigned int dim;
-    int slide;
-    int view_shape;
-    int array_shape;
-    int array_stride;
-    int step_delay;
-
-    static char *kwlist[] = {"ary1", "dim:int", "slide:int", "view_shape:int", "array_shape:int", "array_stride:int", "step_delay:int", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OKKKKKK", kwlist, &ary1, &dim, &slide, &view_shape, &array_shape, &array_stride, &step_delay)) {
+    long long dim;
+    long long slide;
+    long long view_shape;
+    long long array_shape;
+    long long array_stride;
+    long long step_delay;
+    static char *kwlist[] = {"ary1", "dim", "slide", "view_shape", "array_shape",
+                             "array_stride", "step_delay", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OLLLLLL", kwlist, &ary1, &dim, &slide,
+                                     &view_shape, &array_shape, &array_stride, &step_delay)) {
         return NULL;
     }
 
@@ -195,11 +196,10 @@ PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
 
 PyObject* PyAddReset(PyObject *self, PyObject *args, PyObject *kwds) {
     PyObject *ary1;
-    unsigned int dim;
-    int reset_max;
-
-    static char *kwlist[] = {"ary1", "dim:int", "reset_max:int", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OKK", kwlist, &ary1, &dim, &reset_max)) {
+    long long dim;
+    long long reset_max;
+    static char *kwlist[] = {"ary1", "dim", "reset_max", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OLL", kwlist, &ary1, &dim, &reset_max)) {
         return NULL;
     }
 

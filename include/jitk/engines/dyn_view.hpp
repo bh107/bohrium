@@ -23,40 +23,41 @@ void slide_views(BhIR *bhir) {
     for (bh_instruction &instr : bhir->instr_list) {
         for (bh_view &view : instr.operand) {
             if (has_slides(view)) {
-                bool first_iter = view.slides.iteration_counter == 0;
-
                 // The relevant dimension in the view is updated by the given stride
-                for (size_t i = 0; i < view.slides.offset_change.size(); i++) {
-                    int dim = view.slides.dim.at(i);
-                    int dim_stride = view.slides.dim_stride.at(i);
-                    int step_delay = view.slides.step_delay.at(i);
-                    if (step_delay == 1 ||
-                        (view.slides.iteration_counter % step_delay == step_delay-1)) {
-                        if (dim_stride) {
-                            int change = view.slides.offset_change.at(i)*dim_stride;
-                            int max_rel_idx = dim_stride*view.slides.dim_shape.at(i);
-                            int rel_idx = view.start % (dim_stride*view.slides.dim_shape.at(i));
-
+                for (const bh_slide_dim &dim: view.slides.dims) {
+                    if (dim.step_delay == 1 || (view.slides.iteration_counter % dim.step_delay == dim.step_delay-1)) {
+                        if (dim.stride) {
+                            int64_t change = dim.offset_change*dim.stride;
+                            int64_t max_rel_idx = dim.stride*dim.shape;
+                            int64_t rel_idx = view.start % (dim.stride*dim.shape);
                             rel_idx += change;
                             if (rel_idx < 0) {
                                 change += max_rel_idx;
                             } else if (rel_idx >= max_rel_idx) {
                                 change -= max_rel_idx;
                             }
+                            view.start += change;
 
-                            view.slides.changes_since_reset[dim] += change;
-                            view.start += (int64_t) change;
-
-                            auto search = view.slides.resets.find(dim);
-                            if (!first_iter && search != view.slides.resets.end() &&
-                                (view.slides.iteration_counter / step_delay) % search->second == search->second-1) {
-                                int64_t reset = search->second;
-                                view.start -= view.slides.changes_since_reset[dim];
-                                view.slides.changes_since_reset[dim] = 0;
-                                view.shape[dim] -= (int64_t) reset*view.slides.shape_change.at(i);
+                            // We may have to reset the iteration
+                            auto it = view.slides.resets.find(dim.rank);
+                            if (it != view.slides.resets.end()) {
+                                const int64_t reset_at = it->second.first;
+                                int64_t &changes_since_reset = it->second.second;
+                                changes_since_reset += change;
+                                if (view.slides.iteration_counter > 0) {
+                                    if ((view.slides.iteration_counter / dim.step_delay) % reset_at == reset_at - 1) {
+                                        view.start -= changes_since_reset;
+                                        changes_since_reset = 0;
+                                        view.shape[dim.rank] -= reset_at * dim.shape_change;
+                                    }
+                                }
                             }
                         }
-                        view.shape[dim] += (int64_t) view.slides.shape_change.at(i);
+                        view.shape[dim.rank] += dim.shape_change;
+                        // We allow the user to make the shape negative, but we set it to zero here to prevent confusion
+                        if(view.shape[dim.rank] < 0) {
+                            view.shape[dim.rank] = 0;
+                        }
                     }
                 }
                 view.slides.iteration_counter += 1;

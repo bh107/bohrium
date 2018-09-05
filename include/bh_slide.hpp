@@ -25,64 +25,79 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
 
+
+struct bh_slide_dim {
+    /// The relevant dimension
+    int64_t rank;
+
+    /// Dimensions to be slided each loop iterations
+    int64_t offset_change;
+
+    /// The change to the shape
+    int64_t shape_change;
+
+    /// The strides these dimensions is slided each dynamically
+    int64_t stride;
+
+    /// The shape of the given dimension (used for negative indices)
+    int64_t shape;
+
+    /// The step delay in the dimension
+    int64_t step_delay;
+
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & rank;
+        ar & offset_change;
+        ar & shape_change;
+        ar & stride;
+        ar & shape;
+        ar & step_delay;
+    }
+};
+
+
 struct bh_slide {
     bh_slide() = default;
 
-    /// Dimensions to be slided each loop iterations
-    std::vector<int64_t> offset_change;
+    /// The slide in each dimension
+    std::vector<bh_slide_dim> dims;
 
-    /// The change to the shape
-    std::vector<int64_t> shape_change;
-
-    /// The relevant dimension
-    std::vector<int64_t> dim;
-
-    /// The strides these dimensions is slided each dynamically
-    std::vector<int64_t> dim_stride;
-
-    /// The shape of the given dimension (used for negative indices)
-    std::vector<int64_t> dim_shape;
-
-    // The step delay in the dimension
-    std::vector<int64_t> step_delay;
-
+    /// Global iteration counter
     int64_t iteration_counter = 0;
 
-    // The amount the iterator can reach, before resetting it
-    std::map<int64_t, int64_t> resets;
-    std::map<int64_t, int64_t> changes_since_reset;
+    /// The amount the iterator can reach, before resetting it
+    /// It maps a dimension to a pair of when to reset and a counter since last reset.
+    std::map<int64_t, std::pair<int64_t, int64_t> > resets;
 
-    // The dimension to reset
-    int64_t reset_counter = 0;
-
-    template<class Archive>
-    void save(Archive &ar, const unsigned int version) const {
-        ar << offset_change;
-        ar << shape_change;
-        ar << dim;
-        ar << dim_stride;
-        ar << dim_shape;
-        ar << step_delay;
-        ar << iteration_counter;
-        ar << resets;
-        ar << changes_since_reset;
-        ar << reset_counter;
+    /// Transposes by swapping the two axes 'axis1' and 'axis2'
+    void transpose(int64_t axis1, int64_t axis2) {
+        for (bh_slide_dim &dim: dims) {
+            if (dim.rank == axis1) {
+                dim.rank = axis2;
+            } else if (dim.rank == axis2) {
+                dim.rank = axis1;
+            }
+        }
+        auto a1 = resets.find(axis1);
+        auto a2 = resets.find(axis2);
+        if (a1 != resets.end() and a2 != resets.end()) {
+            auto tmp = a1->second;
+            a1->second = a2->second;
+            a2->second = tmp;
+        } else if (a1 != resets.end()) {
+            resets[axis2] = a1->second;
+            resets.erase(a1);
+        } else if (a2 != resets.end()) {
+            resets[axis1] = a2->second;
+            resets.erase(a2);
+        }
     }
 
     template<class Archive>
-    void load(Archive &ar, const unsigned int version) {
-        ar >> offset_change;
-        ar >> shape_change;
-        ar >> dim;
-        ar >> dim_stride;
-        ar >> dim_shape;
-        ar >> step_delay;
-        ar >> iteration_counter;
-        ar >> resets;
-        ar >> changes_since_reset;
-        ar >> reset_counter;
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & dims;
+        ar & iteration_counter;
+        ar & resets;
     }
-
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };

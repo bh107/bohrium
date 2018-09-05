@@ -68,7 +68,7 @@ extern PyObject *bohrium;        // The Bohrium Python module
 extern PyObject *array_create;   // The array_create Python module
 extern PyObject *reorganization; // The reorganization Python module
 extern PyObject *masking;        // The masking Python module
-extern PyObject *iterator;       // The iterator Python module
+extern PyObject *loop;           // The loop Python module
 extern int bh_sync_warn;         // Boolean flag: should we warn when copying from Bohrium to NumPy
 extern int bh_mem_warn;          // Boolean flag: should we warn when about memory problems
 extern PyThreadState *py_thread_state; // The current Python thread state

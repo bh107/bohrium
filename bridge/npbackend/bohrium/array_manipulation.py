@@ -9,7 +9,8 @@ from . import bhary
 from . import _util
 from .bhary import fix_biclass_wrapper
 from . import numpy_backport
-from . import iterator
+from . import loop
+
 
 @fix_biclass_wrapper
 def flatten(ary, order='C', always_copy=True):
@@ -502,7 +503,7 @@ def broadcast_arrays(*args):
             if a_dvi:
                 b_dvi = deepcopy(a_dvi)
             else:
-                b_dvi = iterator.dynamic_view_info({}, a.shape, a.strides)
+                b_dvi = loop.DynamicViewInfo({}, a.shape, a.strides)
 
             # If the array that is broadcasted from has changes in shape
             # must these changes also be inherited by the broadcasted array
@@ -519,8 +520,7 @@ def broadcast_arrays(*args):
                     # while the broadcasted array does not. Add the changes to the
                     # broadcasted array
                     elif b_dvi.dim_shape_change(dim) == 0:
-                        for (_, shape_change, step_delay, shape, stride) in \
-                            bcast_dvi.changes_in_dim(dim):
+                        for (_, shape_change, step_delay, shape, stride) in bcast_dvi.changes_in_dim(dim):
                             # No reason to add a change of 0 in the dimension
                             if shape_change == 0:
                                 continue
@@ -530,10 +530,10 @@ def broadcast_arrays(*args):
                     # dynamic changes. Make sure they are the same. If not the change cannot
                     # be guessed, which results in an error.
                     elif b_dvi.dim_shape_change(dim) != 0 and \
-                         b_dvi.dim_shape_change(dim) != bcast_dvi.dim_shape_change(dim):
-                        raise iterator.IteratorIllegalBroadcast(\
-                                dim, a.shape, a_dvi.dim_shape_change(dim),
-                                bcast_array.shape, bcast_dvi.dim_shape_change(dim))
+                            b_dvi.dim_shape_change(dim) != bcast_dvi.dim_shape_change(dim):
+                        raise loop.IteratorIllegalBroadcast(
+                            dim, a.shape, a_dvi.dim_shape_change(dim),
+                            bcast_array.shape, bcast_dvi.dim_shape_change(dim))
 
             # Add the dynamic changes, if any
             if b_dvi.has_changes():
