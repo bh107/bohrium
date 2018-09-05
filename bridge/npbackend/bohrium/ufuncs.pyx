@@ -184,8 +184,7 @@ class Ufunc(object):
 
         if any([bhary.check(a) for a in args]):
             if out is not None and not bhary.check(out):
-                raise NotImplementedError("For now, the output must be a Bohrium " \
-                                          "array when the input arrays are")
+                raise NotImplementedError("For now, the output must be a Bohrium array when the input arrays are")
         elif not bhary.check(out):
             # All operands are regular NumPy arrays
             func = eval("np.%s" % self.info['name'])
@@ -237,18 +236,14 @@ class Ufunc(object):
                             # If the argument views have different shape change  in the same dimension,
                             # the dynamic shape of the temporary view can not be guessed and therefore
                             # results in an error
-                            assert(out_dvi.dim_shape_change(dim) == \
-                                   a_dvi.dim_shape_change(dim))
+                            assert(out_dvi.dim_shape_change(dim) == a_dvi.dim_shape_change(dim))
                             a_reset = dim in a_dvi.resets
                             out_reset = dim in out_dvi.resets
-                            assert((a_reset and out_reset) or \
-                                   ((not a_reset) and (not out_reset)))
+                            assert((a_reset and out_reset) or ((not a_reset) and (not out_reset)))
                             if a_reset and out_reset:
-                                assert(out_dvi.resets[dim] == \
-                                       a_dvi.resets[dim])
+                                assert(out_dvi.resets[dim] == a_dvi.resets[dim])
                         else:
-                            for (_,shape_change, step_delay, _, _) \
-                                in a_dvi.changes_in_dim(dim):
+                            for (_,shape_change, step_delay, _, _) in a_dvi.changes_in_dim(dim):
                                 # No reason to add a change of 0 in the dimension
                                 if shape_change == 0:
                                     continue

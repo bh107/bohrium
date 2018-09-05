@@ -25,26 +25,42 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
 
+
+struct bh_slide_dim {
+    /// The relevant dimension
+    int64_t dim;
+
+    /// Dimensions to be slided each loop iterations
+    int64_t offset_change;
+
+    /// The change to the shape
+    int64_t shape_change;
+
+    /// The strides these dimensions is slided each dynamically
+    int64_t stride;
+
+    /// The shape of the given dimension (used for negative indices)
+    int64_t shape;
+
+    /// The step delay in the dimension
+    int64_t step_delay;
+
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & dim;
+        ar & offset_change;
+        ar & shape_change;
+        ar & stride;
+        ar & shape;
+        ar & step_delay;
+    }
+};
+
+
 struct bh_slide {
     bh_slide() = default;
 
-    /// Dimensions to be slided each loop iterations
-    std::vector<int64_t> offset_change;
-
-    /// The change to the shape
-    std::vector<int64_t> shape_change;
-
-    /// The relevant dimension
-    std::vector<int64_t> dim;
-
-    /// The strides these dimensions is slided each dynamically
-    std::vector<int64_t> dim_stride;
-
-    /// The shape of the given dimension (used for negative indices)
-    std::vector<int64_t> dim_shape;
-
-    // The step delay in the dimension
-    std::vector<int64_t> step_delay;
+    std::vector<bh_slide_dim> dims;
 
     int64_t iteration_counter = 0;
 
@@ -53,31 +69,10 @@ struct bh_slide {
     std::map<int64_t, int64_t> changes_since_reset;
 
     template<class Archive>
-    void save(Archive &ar, const unsigned int version) const {
-        ar << offset_change;
-        ar << shape_change;
-        ar << dim;
-        ar << dim_stride;
-        ar << dim_shape;
-        ar << step_delay;
-        ar << iteration_counter;
-        ar << resets;
-        ar << changes_since_reset;
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & dims;
+        ar & iteration_counter;
+        ar & resets;
+        ar & changes_since_reset;
     }
-
-    template<class Archive>
-    void load(Archive &ar, const unsigned int version) {
-        ar >> offset_change;
-        ar >> shape_change;
-        ar >> dim;
-        ar >> dim_stride;
-        ar >> dim_shape;
-        ar >> step_delay;
-        ar >> iteration_counter;
-        ar >> resets;
-        ar >> changes_since_reset;
-    }
-
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };

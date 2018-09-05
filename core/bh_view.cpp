@@ -380,7 +380,7 @@ bool bh_is_contiguous(const bh_view *a) {
 }
 
 bool has_slides(const bh_view a) {
-    return (not a.slides.offset_change.empty());
+    return (not a.slides.dims.empty());
 }
 
 

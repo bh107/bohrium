@@ -511,8 +511,6 @@ def slide_from_view(a, sliced):
     if a_dvi:
         b_dvi.index_into(a_dvi)
 
-    # Reset er ikke god
-#    b_dvi.resets = resets
     if b_dvi.has_changes():
         b.bhc_dynamic_view_info = b_dvi
     return b

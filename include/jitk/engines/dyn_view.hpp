@@ -26,19 +26,12 @@ void slide_views(BhIR *bhir) {
                 bool first_iter = view.slides.iteration_counter == 0;
 
                 // The relevant dimension in the view is updated by the given stride
-                for (size_t i = 0; i < view.slides.offset_change.size(); i++) {
-                    int64_t dim = view.slides.dim.at(i);
-                    int64_t dim_stride = view.slides.dim_stride.at(i);
-                    int64_t step_delay = view.slides.step_delay.at(i);
-                    int64_t offset_change = view.slides.offset_change.at(i);
-                    int64_t dim_shape = view.slides.dim_shape.at(i);
-                    int64_t shape_change = view.slides.shape_change.at(i);
-                    if (step_delay == 1 ||
-                        (view.slides.iteration_counter % step_delay == step_delay-1)) {
-                        if (dim_stride) {
-                            int64_t change = offset_change*dim_stride;
-                            int64_t max_rel_idx = dim_stride*dim_shape;
-                            int64_t rel_idx = view.start % (dim_stride*dim_shape);
+                for(const bh_slide_dim &dim: view.slides.dims) {
+                    if (dim.step_delay == 1 || (view.slides.iteration_counter % dim.step_delay == dim.step_delay-1)) {
+                        if (dim.stride) {
+                            int64_t change = dim.offset_change*dim.stride;
+                            int64_t max_rel_idx = dim.stride*dim.shape;
+                            int64_t rel_idx = view.start % (dim.stride*dim.shape);
                             rel_idx += change;
                             if (rel_idx < 0) {
                                 change += max_rel_idx;
@@ -46,19 +39,23 @@ void slide_views(BhIR *bhir) {
                                 change -= max_rel_idx;
                             }
 
-                            view.slides.changes_since_reset[dim] += change;
+                            view.slides.changes_since_reset[dim.dim] += change;
                             view.start += change;
 
-                            auto search = view.slides.resets.find(dim);
+                            const auto search = view.slides.resets.find(dim.dim);
                             if (!first_iter && search != view.slides.resets.end() &&
-                                (view.slides.iteration_counter / step_delay) % search->second == search->second-1) {
+                                (view.slides.iteration_counter / dim.step_delay) % search->second == search->second-1) {
                                 int64_t reset = search->second;
-                                view.start -= view.slides.changes_since_reset[dim];
-                                view.slides.changes_since_reset[dim] = 0;
-                                view.shape[dim] -= reset*shape_change;
+                                view.start -= view.slides.changes_since_reset[dim.dim];
+                                view.slides.changes_since_reset[dim.dim] = 0;
+                                view.shape[dim.dim] -= reset*dim.shape_change;
                             }
                         }
-                        view.shape[dim] += shape_change;
+                        view.shape[dim.dim] += dim.shape_change;
+                        // We allow the user to make the shape negative, but we set it to zero here to prevent confusion
+                        if(view.shape[dim.dim] < 0) {
+                            view.shape[dim.dim] = 0;
+                        }
                     }
                 }
                 view.slides.iteration_counter += 1;

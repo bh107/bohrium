@@ -104,12 +104,8 @@ public:
     template <typename T>
     void slide_view(BhArray<T>* view_ptr, size_t dim, int slide, int shape_change,
                     int view_shape, int view_stride, int step_delay) {
-        view_ptr->slides.offset_change.push_back(slide);
-        view_ptr->slides.shape_change.push_back(shape_change);
-        view_ptr->slides.dim.push_back(dim);
-        view_ptr->slides.dim_stride.push_back(view_stride);
-        view_ptr->slides.dim_shape.push_back(view_shape);
-        view_ptr->slides.step_delay.push_back(step_delay);
+        bh_slide_dim d{(int64_t)dim, slide, shape_change, view_stride, view_shape, step_delay};
+        view_ptr->slides.dims.push_back(d);
     }
 
     /** Resets the changes made to the offset/shape of a dimension.

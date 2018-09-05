@@ -519,8 +519,7 @@ def broadcast_arrays(*args):
                     # while the broadcasted array does not. Add the changes to the
                     # broadcasted array
                     elif b_dvi.dim_shape_change(dim) == 0:
-                        for (_, shape_change, step_delay, shape, stride) in \
-                            bcast_dvi.changes_in_dim(dim):
+                        for (_, shape_change, step_delay, shape, stride) in bcast_dvi.changes_in_dim(dim):
                             # No reason to add a change of 0 in the dimension
                             if shape_change == 0:
                                 continue
@@ -530,8 +529,8 @@ def broadcast_arrays(*args):
                     # dynamic changes. Make sure they are the same. If not the change cannot
                     # be guessed, which results in an error.
                     elif b_dvi.dim_shape_change(dim) != 0 and \
-                         b_dvi.dim_shape_change(dim) != bcast_dvi.dim_shape_change(dim):
-                        raise iterator.IteratorIllegalBroadcast(\
+                            b_dvi.dim_shape_change(dim) != bcast_dvi.dim_shape_change(dim):
+                        raise iterator.IteratorIllegalBroadcast(
                                 dim, a.shape, a_dvi.dim_shape_change(dim),
                                 bcast_array.shape, bcast_dvi.dim_shape_change(dim))
 
