@@ -28,7 +28,7 @@ namespace boost { namespace serialization { class access; }}
 
 struct bh_slide_dim {
     /// The relevant dimension
-    int64_t dim;
+    int64_t rank;
 
     /// Dimensions to be slided each loop iterations
     int64_t offset_change;
@@ -47,7 +47,7 @@ struct bh_slide_dim {
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
-        ar & dim;
+        ar & rank;
         ar & offset_change;
         ar & shape_change;
         ar & stride;
@@ -60,19 +60,44 @@ struct bh_slide_dim {
 struct bh_slide {
     bh_slide() = default;
 
+    /// The slide in each dimension
     std::vector<bh_slide_dim> dims;
 
+    /// Global iteration counter
     int64_t iteration_counter = 0;
 
-    // The amount the iterator can reach, before resetting it
-    std::map<int64_t, int64_t> resets;
-    std::map<int64_t, int64_t> changes_since_reset;
+    /// The amount the iterator can reach, before resetting it
+    /// It maps a dimension to a pair of when to reset and a counter since last reset.
+    std::map<int64_t, std::pair<int64_t, int64_t> > resets;
+
+    /// Transposes by swapping the two axes 'axis1' and 'axis2'
+    void transpose(int64_t axis1, int64_t axis2) {
+        for (bh_slide_dim &dim: dims) {
+            if (dim.rank == axis1) {
+                dim.rank = axis2;
+            } else if (dim.rank == axis2) {
+                dim.rank = axis1;
+            }
+        }
+        auto a1 = resets.find(axis1);
+        auto a2 = resets.find(axis2);
+        if (a1 != resets.end() and a2 != resets.end()) {
+            auto tmp = a1->second;
+            a1->second = a2->second;
+            a2->second = tmp;
+        } else if (a1 != resets.end()) {
+            resets[axis2] = a1->second;
+            resets.erase(a1);
+        } else if (a2 != resets.end()) {
+            resets[axis1] = a2->second;
+            resets.erase(a2);
+        }
+    }
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version) {
         ar & dims;
         ar & iteration_counter;
         ar & resets;
-        ar & changes_since_reset;
     }
 };

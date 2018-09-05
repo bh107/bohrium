@@ -92,6 +92,7 @@ void bh_view::transpose(int64_t axis1, int64_t axis2) {
 
     std::swap(shape[axis1], shape[axis2]);
     std::swap(stride[axis1], stride[axis2]);
+    slides.transpose(axis1, axis2);
 }
 
 vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
