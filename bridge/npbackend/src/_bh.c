@@ -34,7 +34,7 @@ PyObject *bohrium        = NULL; // The Bohrium Python module
 PyObject *array_create   = NULL; // The array_create Python module
 PyObject *reorganization = NULL; // The reorganization Python module
 PyObject *masking        = NULL; // The masking Python module
-PyObject *iterator       = NULL; // The iterator Python module
+PyObject *loop           = NULL; // The loop Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
 
@@ -427,40 +427,6 @@ static PyMemberDef BhArrayMembers[] = {
     {NULL}  /* Sentinel */
 };
 
-
-static int BhArray_SetSlice(PyObject *o, Py_ssize_t ilow, Py_ssize_t ihigh, PyObject *v) {
-    if(v == NULL) {
-        PyErr_SetString(PyExc_ValueError, "cannot delete array elements");
-        return -1;
-    }
-
-    if(!PyArray_ISWRITEABLE((PyArrayObject *) o)) {
-        PyErr_SetString(PyExc_ValueError, "assignment destination is read-only");
-        return -1;
-    }
-
-#if defined(NPY_PY3K)
-    PyObject *low = PyLong_FromSsize_t(ilow);
-    PyObject *high = PyLong_FromSsize_t(ihigh);
-#else
-    PyObject *low = PyInt_FromSsize_t(ilow);
-    PyObject *high = PyInt_FromSsize_t(ihigh);
-#endif
-    PyObject *slice = PySlice_New(low, high, NULL);
-    PyObject *ret = PyObject_CallMethod(ufuncs, "setitem", "OOO", o, slice, v);
-
-    Py_XDECREF(low);
-    Py_XDECREF(high);
-    Py_XDECREF(slice);
-    if(ret == NULL) {
-        return -1;
-    }
-
-    Py_XDECREF(ret);
-    return 0;
-}
-
-
 // Help function that returns True when 'o' contains a list or array
 static int obj_contains_a_list_or_ary(PyObject *o) {
     Py_ssize_t i;
@@ -628,13 +594,13 @@ static PyObject* BhArray_GetItem(PyObject *o, PyObject *k) {
     assert(k != NULL);
     assert(BhArray_CheckExact(o));
 
-    PyObject* iterator_check = PyObject_CallMethod(iterator, "has_iterator", "O", k);
-    if (iterator_check == Py_True) {
-        return PyObject_CallMethod(iterator, "slide_from_view", "OO", o, k);
+    PyObject* loop_check = PyObject_CallMethod(loop, "has_iterator", "O", k);
+    if (loop_check == Py_True) {
+        return PyObject_CallMethod(loop, "slide_from_view", "OO", o, k);
     }
 
     if(((BhArray*) o)->dynamic_view_info && ((BhArray*) o)->dynamic_view_info != Py_None) {
-        return PyObject_CallMethod(iterator, "inherit_dynamic_changes", "OO", o, k);
+        return PyObject_CallMethod(loop, "inherit_dynamic_changes", "OO", o, k);
     }
 
     if (obj_is_a_bool_mask(o, k)) {
@@ -971,19 +937,28 @@ PyMODINIT_FUNC init_bh(void)
 
     PyModule_AddObject(m, "ndarray", (PyObject*) &BhArrayType);
 
-    bohrium        = PyImport_ImportModule("bohrium");
-    ufuncs         = PyImport_ImportModule("bohrium.ufuncs");
-    array_create   = PyImport_ImportModule("bohrium.array_create");
+    bohrium = PyImport_ImportModule("bohrium");
+    if(bohrium == NULL) {
+        return RETVAL;
+    }
+    ufuncs = PyImport_ImportModule("bohrium.ufuncs");
+    if(ufuncs == NULL) {
+        return RETVAL;
+    }
+    array_create = PyImport_ImportModule("bohrium.array_create");
+    if(array_create == NULL) {
+        return RETVAL;
+    }
     reorganization = PyImport_ImportModule("bohrium.reorganization");
-    masking        = PyImport_ImportModule("bohrium.masking");
-    iterator       = PyImport_ImportModule("bohrium.iterator");
-
-    if(ufuncs         == NULL ||
-       bohrium        == NULL ||
-       array_create   == NULL ||
-       reorganization == NULL ||
-       masking        == NULL ||
-       iterator       == NULL) {
+    if(reorganization == NULL) {
+        return RETVAL;
+    }
+    masking = PyImport_ImportModule("bohrium.masking");
+    if(masking == NULL) {
+        return RETVAL;
+    }
+    loop = PyImport_ImportModule("bohrium.loop");
+    if(loop == NULL) {
         return RETVAL;
     }
 

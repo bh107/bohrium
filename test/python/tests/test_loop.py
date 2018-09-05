@@ -240,13 +240,13 @@ failure = False
 try:
     M.do_while(kernel_out_of_bounds_overflow, len(res), dummy)
     failure = True
-except M.iterator.IteratorOutOfBounds:
+except M.loop.IteratorOutOfBounds:
     pass
 
 try:
     M.do_while(kernel_out_of_bounds_underflow, len(res), dummy)
     failure = True
-except M.iterator.IteratorOutOfBounds:
+except M.loop.IteratorOutOfBounds:
     pass
 
 if not failure:
@@ -578,13 +578,13 @@ failure = False
 try:
     M.do_while(iterator_mix1, 2, a)
     failure = True
-except M.iterator.IteratorIllegalDepth:
+except M.loop.IteratorIllegalDepth:
     pass
 
 try:
     M.do_while(iterator_mix2, 2, a)
     failure = True
-except M.iterator.IteratorIllegalDepth:
+except M.loop.IteratorIllegalDepth:
     pass
 
 if not failure:

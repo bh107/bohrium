@@ -10,8 +10,8 @@ import sys
 import os
 import warnings
 from . import _util
-from . import iterator
 from . import array_create
+from . import loop
 import numpy_force as np
 from . import _info
 from .numpy_backport import as_strided
@@ -225,7 +225,7 @@ class Ufunc(object):
 
             # If the views within the ufunc has dynamic changes, then the output array must
             # also be dynamic. Used in regard to iterators within do_while loops.
-            out_dvi = iterator.dynamic_view_info({}, dynamic_out.shape, dynamic_out.strides)
+            out_dvi = loop.DynamicViewInfo({}, dynamic_out.shape, dynamic_out.strides)
             for a in args:
                 if bhary.check(a) and a.bhc_dynamic_view_info:
                     a_dvi = a.bhc_dynamic_view_info
