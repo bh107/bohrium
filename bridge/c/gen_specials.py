@@ -224,8 +224,8 @@ def main(args):
     for key, t in type_map.items():
         decl = "void bhc_slide_view"
         decl += "_A%(name)s" % t
-        decl += "(const %(bhc_ary)s ary1, size_t dim, int slide, int view_shape, \
-                 int array_shape, int array_stride, int step_delay)" % t
+        decl += "(const %(bhc_ary)s ary1, int64_t dim, int64_t slide, int64_t view_shape, \
+                 int64_t array_shape, int64_t array_stride, int64_t step_delay)" % t
         head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
@@ -247,7 +247,7 @@ def main(args):
     for key, t in type_map.items():
         decl = "void bhc_add_reset"
         decl += "_A%(name)s" % t
-        decl += "(const %(bhc_ary)s ary1, size_t dim, size_t reset_max)" % t
+        decl += "(const %(bhc_ary)s ary1, int64_t dim, int64_t reset_max)" % t
         head += "%s;\n" % decl
         impl += "%s" % decl
         impl += """\
