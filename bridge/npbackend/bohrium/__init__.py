@@ -13,6 +13,7 @@ if 'numpy_force' not in sys.modules:
 
 # We import all of NumPy and overwrite with the objects we implement our self
 from numpy_force import *
+from numpy_force import testing
 
 from .array_create import *
 from .array_manipulation import *
