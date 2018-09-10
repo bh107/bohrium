@@ -141,6 +141,13 @@ class Ufunc(object):
         except KeyError:
             pass
 
+        # We ignore the "casting" argument. In Bohrium, we always use unsafe casting
+        try:
+            out = kwargs['casting']
+            del kwargs['casting']
+        except KeyError:
+            pass
+
         # We do not support NumPy's exotic arguments
         for k, val in kwargs.items():
             if val is not None:

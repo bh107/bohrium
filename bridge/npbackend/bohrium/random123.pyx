@@ -7,7 +7,7 @@ Random functions
 """
 import bohrium as np
 import numpy_force as numpy
-from numpy_force.random import mtrand # Expose the mersenne twister API (not accelerated by Bohrium)
+from numpy_force.random import *
 import operator
 import functools
 import datetime

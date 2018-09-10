@@ -30,6 +30,11 @@ class EnableBohrium:
             import netCDF4
         except ImportError:
             pass
+        try:
+            import sklearn
+            import sklearn.preprocessing
+        except ImportError:
+            pass
 
         # Let's save to real NumPy module
         self.__numpy = sys.modules['numpy']
