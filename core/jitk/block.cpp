@@ -60,7 +60,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
         instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
-    const vector<int64_t> shape = instr->shape();
+    const BhIntVec shape = instr->shape();
 
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
@@ -440,7 +440,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_b
     if (instr_list[0]->opcode == BH_NONE) {
         throw runtime_error("create_nested_block: first instruction is BH_NONE!");
     }
-    const vector<int64_t> shape = instr_list[0]->shape();
+    const BhIntVec shape = instr_list[0]->shape();
     const int ndim = (int) shape.size();
     assert(ndim > rank);
 
@@ -537,8 +537,7 @@ bool data_parallel_compatible(const bh_view &writer,
     if (writer.ndim == reader.ndim) {
         // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
         //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
-        return std::equal(writer.shape, writer.shape + writer.ndim, reader.shape) and \
-               std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);;
+        return writer.shape == reader.shape and writer.stride == reader.stride;
     }
 
     // Finally, two equally sized contiguous arrays are also parallel compatible

@@ -39,7 +39,7 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
     {
-        const vector<int64_t> shape = instr.shape();
+        const BhIntVec shape = instr.shape();
         const int sa = instr.sweep_axis();
         size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?shape.size()-1:shape.size();
         for (int64_t i=shape.size()-1; i >= 0 and ndim_left > 1; --i) {
@@ -52,12 +52,9 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's try to simplify the shape of the instruction
     if (instr.ndim() >  1 and instr.reshapable()) {
-        const vector<int64_t> dominating_shape = instr.shape();
+        const BhIntVec dominating_shape = instr.shape();
         assert(dominating_shape.size() > 0);
-
-        const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
-                                                      std::multiplies<int64_t>());
-        const vector<int64_t> shape = {totalsize};
+        const vector<int64_t> shape = {dominating_shape.prod()};
         instr.reshape(shape);
     }
 }
@@ -263,7 +260,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
         assert(not instr->operand.empty()); // The noop instructions is removed by `simplify_instr_list()`
 
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr->shape();
+        const BhIntVec dominating_shape = instr->shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
         vector<InstrPtr> single_instr = {instr};

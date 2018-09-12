@@ -93,7 +93,7 @@ struct bh_instruction {
 
     // Returns the principal shape of this instructions, which is the shape of the computation that constitute
     // this instruction. E.g. in reduce, this function returns the shape of the input array
-    std::vector<int64_t> shape() const;
+    BhIntVec shape() const;
 
     // Returns the principal number of dimension of this instruction, which is the number of dimension of the
     // computation that constitute this instruction

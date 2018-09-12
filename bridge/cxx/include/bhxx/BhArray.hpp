@@ -153,11 +153,9 @@ class BhArray {
         view.base  = base.get();
         view.start = static_cast<int64_t>(offset);
         view.ndim  = static_cast<int64_t>(shape.size());
-
+        view.shape = BhIntVec(shape.begin(), shape.end());
+        view.stride = BhIntVec(stride.begin(), stride.end());;
         view.slides = slides;
-
-        std::copy(shape.begin(), shape.end(), &view.shape[0]);
-        std::copy(stride.begin(), stride.end(), &view.stride[0]);
         return view;
     }
 

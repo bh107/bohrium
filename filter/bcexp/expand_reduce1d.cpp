@@ -28,21 +28,18 @@ namespace bcexp {
 
 static std::map<int, int> fold_map;
 
-static inline int find_fold(int64_t elements, int thread_limit)
-{
-    for (int i = elements/thread_limit; i > 1; i--)
-    {
-        if (elements%i == 0)
+static inline int find_fold(int64_t elements, int thread_limit) {
+    for (int i = elements / thread_limit; i > 1; i--) {
+        if (elements % i == 0)
             return i;
     }
     return 1;
 }
 
 // TODO: What does this do? Give example like expand_sign.cpp
-int Expander::expandReduce1d(BhIR& bhir, int pc, int thread_limit)
-{
+int Expander::expandReduce1d(BhIR &bhir, int pc, int thread_limit) {
     int start_pc = pc;
-    bh_instruction& instr = bhir.instr_list[pc];
+    bh_instruction &instr = bhir.instr_list[pc];
     bh_opcode opcode = instr.opcode;
     int64_t elements = bh_nelements(instr.operand[1]);
     verbose_print("[Reduce1D] Expanding " + string(bh_opcode_text(opcode)));
@@ -55,7 +52,7 @@ int Expander::expandReduce1d(BhIR& bhir, int pc, int thread_limit)
     if (fold_map.find(elements) != fold_map.end()) {
         fold = fold_map.find(elements)->second;
     } else {
-        fold = find_fold(elements,thread_limit);
+        fold = find_fold(elements, thread_limit);
         fold_map[elements] = fold;
     }
 
@@ -69,22 +66,19 @@ int Expander::expandReduce1d(BhIR& bhir, int pc, int thread_limit)
 
     // Grab operands
     bh_view out = instr.operand[0];
-    bh_view in  = instr.operand[1];
+    bh_view in = instr.operand[1];
 
     in.ndim = 2;
-    in.shape[0] = fold;
-    in.shape[1] = elements / fold;
+    in.shape = {fold, elements / fold};
+    in.stride = {in.stride[0] * elements / fold, in.stride[0]};
 
-    in.stride[1] = in.stride[0];
-    in.stride[0] = in.stride[0] * elements / fold;
-
-    bh_view temp = createTemp(in.base->type, elements/fold);
-
-    inject(bhir, ++pc, opcode,  temp, in,   0, bh_type::INT64);
-    inject(bhir, ++pc, opcode,  out,  temp, 0, bh_type::INT64);
+    bh_view temp = createTemp(in.base->type, elements / fold);
+    inject(bhir, ++pc, opcode, temp, in, 0, bh_type::INT64);
+    inject(bhir, ++pc, opcode, out, temp, 0, bh_type::INT64);
     inject(bhir, ++pc, BH_FREE, temp);
-
     return pc - start_pc;
 }
 
-}}}
+}
+}
+}

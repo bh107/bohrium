@@ -86,35 +86,35 @@ bool bh_instruction::reshapable() const {
     return all_same_shape() and isContiguous() and not bh_opcode_is_sweep(opcode);
 }
 
-vector<int64_t> bh_instruction::shape() const {
+BhIntVec bh_instruction::shape() const {
     if (bh_opcode_is_sweep(opcode)) {
         // The principal shape of a sweep is the shape of the array array that is sweeped over
         assert(operand.size() == 3);
         assert(bh_is_constant(&operand[2]));
         assert(not bh_is_constant(&operand[1]));
         const bh_view &view = operand[1];
-        return vector<int64_t>(view.shape, view.shape + view.ndim);
+        return view.shape;
     } else if (opcode == BH_GATHER) {
         // The principal shape of a gather is the shape of the index and output array, which are equal.
         assert(operand.size() == 3);
         assert(not bh_is_constant(&operand[1]));
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
-        return vector<int64_t>(view.shape, view.shape + view.ndim);
+        return view.shape;
     } else if (opcode == BH_SCATTER or opcode == BH_COND_SCATTER) {
         // The principal shape of a scatter is the shape of the index and input array, which are equal.
         assert(operand.size() >= 3);
         assert(not bh_is_constant(&operand[1]));
         assert(not bh_is_constant(&operand[2]));
         const bh_view &view = operand[2];
-        return vector<int64_t>(view.shape, view.shape + view.ndim);
+        return view.shape;
     } else if (operand.empty()) {
         // The principal shape of an instruction with no operands is the empty list
-        return vector<int64_t>();
+        return BhIntVec();
     } else {
         // The principal shape of a default instruction is the shape of the output
         const bh_view &view = operand[0];
-        return vector<int64_t>(view.shape, view.shape + view.ndim);
+        return view.shape;
     }
 }
 
@@ -145,7 +145,8 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
 
         // Let's assign the new shape and stride
         view.ndim = shape.size();
-        copy(shape.begin(), shape.end(), view.shape);
+        view.shape = BhIntVec(shape.begin(), shape.end());
+        view.stride.resize(shape.size());
         bh_set_contiguous_stride(&view);
     }
 }
@@ -156,7 +157,8 @@ void bh_instruction::reshape_force(const vector<int64_t> &shape) {
             continue;
         // Let's assign the new shape and stride
         view.ndim = shape.size();
-        copy(shape.begin(), shape.end(), view.shape);
+        view.shape = BhIntVec(shape.begin(), shape.end());
+        view.stride.resize(shape.size());
         bh_set_contiguous_stride(&view);
     }
 }

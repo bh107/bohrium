@@ -242,7 +242,7 @@ class Statistics {
         if (enabled) {
             for (const bh_instruction &instr: bhir.instr_list) {
                 if (instr.opcode != BH_IDENTITY and not bh_opcode_is_system(instr.opcode)) {
-                    const std::vector<int64_t> shape = instr.shape();
+                    const BhIntVec shape = instr.shape();
                     totalwork += bh_nelements(shape.size(), &shape[0]);
                 }
             }

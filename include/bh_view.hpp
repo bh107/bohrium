@@ -27,17 +27,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <cassert>
 #include <tuple>
-#include "bh_type.hpp"
-#include "bh_base.hpp"
-#include "bh_slide.hpp"
+#include <bh_static_vector.hpp>
+#include <bh_type.hpp>
+#include <bh_base.hpp>
+#include <bh_slide.hpp>
 #include <bh_constant.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/array.hpp> // boost::serialization::make_array()
 
 
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
-
-constexpr int64_t BH_MAXDIM = 16;
 
 //Implements pprint of base arrays
 std::ostream &operator<<(std::ostream &out, const bh_base &b);
@@ -61,10 +61,10 @@ struct bh_view {
     int64_t ndim;
 
     /// Number of elements in each dimensions
-    int64_t shape[BH_MAXDIM];
+    BhIntVec shape;
 
     /// The stride for each dimensions
-    int64_t stride[BH_MAXDIM];
+    BhIntVec stride;
 
     /// Slide information
     bh_slide slides;
@@ -140,11 +140,8 @@ struct bh_view {
         if (base != nullptr) { // This view is NOT a constant
             ar << start;
             ar << ndim;
-            for (int64_t i = 0; i < ndim; ++i) {
-                ar << shape[i];
-                ar << stride[i];
-            }
-            ar << slides;
+            ar << boost::serialization::make_array(shape.data(), shape.size());
+            ar << boost::serialization::make_array(stride.data(), stride.size());
         }
     }
 
@@ -156,11 +153,12 @@ struct bh_view {
         if (base != nullptr) { // This view is NOT a constant
             ar >> start;
             ar >> ndim;
-            for (int64_t i = 0; i < ndim; ++i) {
-                ar >> shape[i];
-                ar >> stride[i];
-            }
-            ar >> slides;
+            // In order to avoid Boost's serializer to reserve more memory than `BH_MAXDIM`,
+            // we manually resize them to their known size.
+            shape.resize(static_cast<size_t>(ndim));
+            stride.resize(static_cast<size_t>(ndim));
+            ar >> boost::serialization::make_array(shape.data(), shape.size());
+            ar >> boost::serialization::make_array(stride.data(), stride.size());
         }
     }
 
@@ -169,22 +167,6 @@ struct bh_view {
 
 //Implements pprint of views
 std::ostream &operator<<(std::ostream &out, const bh_view &v);
-
-/* Returns the simplest view (fewest dimensions) that access
- * the same elements in the same pattern
- *
- * @view The view
- * @return The simplified view
- */
-bh_view bh_view_simplify(const bh_view &view);
-
-/* Simplifies the given view down to the given shape.
- * If that is not possible an std::invalid_argument exception is thrown
- *
- * @view The view
- * @return The simplified view
- */
-bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape);
 
 /* Find the base array for a given view
  *
