@@ -142,6 +142,7 @@ struct bh_view {
             ar << ndim;
             ar << boost::serialization::make_array(shape.data(), shape.size());
             ar << boost::serialization::make_array(stride.data(), stride.size());
+            ar << slides;
         }
     }
 
@@ -159,6 +160,7 @@ struct bh_view {
             stride.resize(static_cast<size_t>(ndim));
             ar >> boost::serialization::make_array(shape.data(), shape.size());
             ar >> boost::serialization::make_array(stride.data(), stride.size());
+            ar >> slides;
         }
     }
 
