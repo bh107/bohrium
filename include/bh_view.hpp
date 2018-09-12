@@ -49,7 +49,7 @@ struct bh_view {
     bh_view(const bh_view &view);
 
     /// Create a view that represents the whole of `base`
-    explicit bh_view(bh_base &base);
+    explicit bh_view(bh_base *base);
 
     /// Pointer to the base array.
     bh_base *base;
@@ -181,14 +181,6 @@ std::ostream &operator<<(std::ostream &out, const bh_view &v);
  * @return  The total number of elements in view
  */
 int64_t bh_set_contiguous_stride(bh_view *view);
-
-/* Updates the view with the complete base
- *
- * @view    The view to update (in-/out-put)
- * @base    The base assign to the view
- * @return  The total number of elements in view
- */
-void bh_assign_complete_base(bh_view *view, bh_base *base);
 
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *

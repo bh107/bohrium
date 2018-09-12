@@ -45,8 +45,12 @@ bh_view::bh_view(const bh_view &view) {
     stride = view.stride;
 }
 
-bh_view::bh_view(bh_base &base) {
-    bh_assign_complete_base(this, &base);
+bh_view::bh_view(bh_base *base) {
+    this->base = base;
+    this->ndim = 1;
+    this->start = 0;
+    this->shape.push_back(this->base->nelem);
+    this->stride.push_back(1);
 }
 
 void bh_view::insert_axis(int64_t dim, int64_t size, int64_t stride) {
@@ -168,16 +172,6 @@ int64_t bh_set_contiguous_stride(bh_view *view) {
         s *= view->shape[i];
     }
     return s;
-}
-
-void bh_assign_complete_base(bh_view *view, bh_base *base) {
-    view->base = base;
-    view->ndim = 1;
-    view->start = 0;
-    view->shape.clear();
-    view->stride.clear();
-    view->shape.push_back(view->base->nelem);
-    view->stride.push_back(1);
 }
 
 bool bh_is_scalar(const bh_view *view) {

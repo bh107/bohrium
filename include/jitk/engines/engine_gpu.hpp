@@ -239,8 +239,7 @@ private:
         }
         // Notice, we have to re-create free instructions
         for (const bh_base *base: kernel.getAllFrees()) {
-            vector<bh_view> operands(1);
-            bh_assign_complete_base(&operands[0], const_cast<bh_base *>(base));
+            vector<bh_view> operands = {bh_view(const_cast<bh_base *>(base))};
             bh_instruction instr(BH_FREE, std::move(operands));
             child_instr_list.push_back(std::move(instr));
         }

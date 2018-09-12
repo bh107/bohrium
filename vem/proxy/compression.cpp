@@ -102,7 +102,7 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
 
 std::vector<unsigned char> Compression::compress(const bh_base &ary, const std::string &param) {
     auto &a = const_cast<bh_base &>(ary);
-    const bh_view view{a}; // View of the whole base
+    const bh_view view{&a}; // View of the whole base
     return compress(view, param);
 }
 
@@ -139,7 +139,7 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
 }
 
 void Compression::uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param) {
-    bh_view view{ary}; // View of the whole base
+    bh_view view{&ary}; // View of the whole base
     uncompress(data, view, param);
 }
 
