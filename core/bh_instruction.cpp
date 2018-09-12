@@ -151,18 +151,6 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     }
 }
 
-void bh_instruction::reshape_force(const vector<int64_t> &shape) {
-    for (bh_view &view: operand) {
-        if (bh_is_constant(&view))
-            continue;
-        // Let's assign the new shape and stride
-        view.ndim = shape.size();
-        view.shape = BhIntVec(shape.begin(), shape.end());
-        view.stride.resize(shape.size());
-        bh_set_contiguous_stride(&view);
-    }
-}
-
 void bh_instruction::remove_axis(int64_t axis) {
     assert(0 <= axis and axis < ndim());
     if (operand.size() > 0) {

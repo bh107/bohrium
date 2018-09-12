@@ -105,9 +105,6 @@ struct bh_instruction {
     // Reshape the views of the instruction to 'shape' with contiguous stride
     void reshape(const std::vector<int64_t> &shape);
 
-    // Reshape the views of the instruction to 'shape' with contiguous stride (no checks!)
-    void reshape_force(const std::vector<int64_t> &shape);
-
     // Remove `axis` from all views in this instruction.
     // Notice that `axis` is based on the 'dominating shape' thus `remove_axis()` will correct
     // the axis value when handling reductions automatically
