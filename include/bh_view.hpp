@@ -177,13 +177,6 @@ std::ostream &operator<<(std::ostream &out, const bh_view &v);
  */
 #define bh_base_array(view) ((view)->base)
 
-/* Set the view stride to contiguous row-major
- *
- * @view    The view in question
- * @return  The total number of elements in view
- */
-int64_t bh_set_contiguous_stride(bh_view *view);
-
 /* Determines whether the view is a scalar or a broadcasted scalar.
  *
  * @view The view

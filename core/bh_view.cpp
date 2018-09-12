@@ -165,15 +165,6 @@ ostream &operator<<(ostream &out, const bh_view &v) {
     return out;
 }
 
-int64_t bh_set_contiguous_stride(bh_view *view) {
-    int64_t s = 1;
-    for (int64_t i = view->ndim - 1; i >= 0; --i) {
-        view->stride[i] = s;
-        s *= view->shape[i];
-    }
-    return s;
-}
-
 bool bh_is_scalar(const bh_view *view) {
     return view->shape.prod() == 1;
 }

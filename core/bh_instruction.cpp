@@ -147,7 +147,11 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
         view.ndim = shape.size();
         view.shape = BhIntVec(shape.begin(), shape.end());
         view.stride.resize(shape.size());
-        bh_set_contiguous_stride(&view);
+        int64_t s = 1;
+        for (int64_t i = view.ndim - 1; i >= 0; --i) {
+            view.stride[i] = s;
+            s *= view.shape[i];
+        }
     }
 }
 
