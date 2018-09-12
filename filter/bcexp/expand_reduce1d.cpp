@@ -41,7 +41,7 @@ int Expander::expandReduce1d(BhIR &bhir, int pc, int thread_limit) {
     int start_pc = pc;
     bh_instruction &instr = bhir.instr_list[pc];
     bh_opcode opcode = instr.opcode;
-    int64_t elements = bh_nelements(instr.operand[1]);
+    const int64_t elements = instr.operand[1].shape.prod();
     verbose_print("[Reduce1D] Expanding " + string(bh_opcode_text(opcode)));
 
     if (elements * 2 < thread_limit) {

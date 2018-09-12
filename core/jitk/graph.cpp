@@ -265,9 +265,9 @@ void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep, int id
                     if (bh_opcode_is_system(instr->opcode))
                         continue;
                     if (total_threading < 1000) {
-                        threading_below_threshold += bh_nelements(instr->operand[0]);
+                        threading_below_threshold += instr->operand[0].shape.prod();
                     }
-                    totalwork += bh_nelements(instr->operand[0]);
+                    totalwork += instr->operand[0].shape.prod();
                 }
             }
             out << ", Work below par-threshold(1000): " << threading_below_threshold / (double)totalwork * 100 << "%";

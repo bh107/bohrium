@@ -243,7 +243,7 @@ class Statistics {
             for (const bh_instruction &instr: bhir.instr_list) {
                 if (instr.opcode != BH_IDENTITY and not bh_opcode_is_system(instr.opcode)) {
                     const BhIntVec shape = instr.shape();
-                    totalwork += bh_nelements(shape.size(), &shape[0]);
+                    totalwork += shape.prod();
                 }
             }
             num_syncs += bhir.getSyncs().size();

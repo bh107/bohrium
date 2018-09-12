@@ -175,16 +175,6 @@ std::ostream &operator<<(std::ostream &out, const bh_view &v);
  */
 #define bh_base_array(view) ((view)->base)
 
-/* Number of element in a given shape
- *
- * @ndim     Number of dimentions
- * @shape[]  Number of elements in each dimention.
- * @return   Number of element operations
- */
-int64_t bh_nelements(int64_t ndim, const int64_t shape[]);
-
-int64_t bh_nelements(const bh_view &view);
-
 /* Set the view stride to contiguous row-major
  *
  * @view    The view in question

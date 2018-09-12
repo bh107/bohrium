@@ -161,19 +161,6 @@ ostream &operator<<(ostream &out, const bh_view &v) {
     return out;
 }
 
-int64_t bh_nelements(int64_t ndim, const int64_t shape[]) {
-    assert (ndim > 0);
-    int64_t res = 1;
-    for (int i = 0; i < ndim; ++i) {
-        res *= shape[i];
-    }
-    return res;
-}
-
-int64_t bh_nelements(const bh_view &view) {
-    return bh_nelements(view.shape.size(), &view.shape[0]);
-}
-
 int64_t bh_set_contiguous_stride(bh_view *view) {
     int64_t s = 1;
     for (int64_t i = view->ndim - 1; i >= 0; --i) {
@@ -194,7 +181,7 @@ void bh_assign_complete_base(bh_view *view, bh_base *base) {
 }
 
 bool bh_is_scalar(const bh_view *view) {
-    return bh_nelements(*view) == 1;
+    return view->shape.prod() == 1;
 }
 
 bool bh_is_constant(const bh_view *o) {

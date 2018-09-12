@@ -139,7 +139,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
     for (bh_view &view: operand) {
         if (bh_is_constant(&view))
             continue;
-        if (totalsize != bh_nelements(view)) {
+        if (totalsize != view.shape.prod()) {
             throw runtime_error("Reshape: shape mismatch!");
         }
 
