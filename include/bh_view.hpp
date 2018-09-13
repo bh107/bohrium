@@ -98,6 +98,9 @@ struct bh_view {
         return base == nullptr;
     }
 
+    /// Return true when this view is contiguous accessing the underlying base array
+    bool isContiguous() const;
+
     /// Less than operator
     bool operator<(const bh_view &other) const {
         if (base < other.base) return true;
@@ -199,13 +202,6 @@ void bh_flag_constant(bh_view *o);
  * @return The boolean answer
  */
 bool bh_view_same_shape(const bh_view *a, const bh_view *b);
-
-/* Determines whether a view is contiguous
- *
- * @a The view
- * @return The boolean answer
- */
-bool bh_is_contiguous(const bh_view *a);
 
 
 /* Determines whether two views access some of the same data points

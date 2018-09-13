@@ -77,6 +77,20 @@ void bh_view::transpose(int64_t axis1, int64_t axis2) {
     slides.transpose(axis1, axis2);
 }
 
+bool bh_view::isContiguous() const {
+    if (isConstant()) {
+        return false;
+    }
+    int64_t weight = 1;
+    for (int64_t dim = ndim - 1; dim >= 0; --dim) {
+        if (shape[dim] > 1 && stride[dim] != weight) {
+            return false;
+        }
+        weight *= shape[dim];
+    }
+    return true;
+}
+
 vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
     //stride&shape&index for each dimension (in that order)
     vector<tuple<int64_t, int64_t, int64_t> > sns;
@@ -187,27 +201,9 @@ bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
     return true;
 }
 
-bool bh_is_contiguous(const bh_view *a) {
-    if (bh_is_constant(a)) {
-        return false;
-    }
-
-    int64_t weight = 1;
-    for (int64_t dim = a->ndim - 1; dim >= 0; --dim) {
-        if (a->shape[dim] > 1 && a->stride[dim] != weight) {
-            return false;
-        }
-
-        weight *= a->shape[dim];
-    }
-
-    return true;
-}
-
 bool has_slides(const bh_view a) {
     return (not a.slides.dims.empty());
 }
-
 
 bool bh_view_disjoint(const bh_view *a, const bh_view *b) {
     // TODO: In order to fixed BUG like <https://github.com/bh107/bohrium/issues/178>, we say that sharing

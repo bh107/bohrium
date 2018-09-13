@@ -52,7 +52,7 @@ static inline bool is_subtracting_zero(const bh_instruction& instr)
 static inline bool is_entire_view(const bh_instruction& instr)
 {
     for(const bh_view &view: instr.operand) {
-        if (bh_is_contiguous(&view)) {
+        if (view.isContiguous()) {
             return true;
         }
     }

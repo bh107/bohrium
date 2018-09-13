@@ -59,7 +59,7 @@ vector<const bh_view *> bh_instruction::get_views() const {
 
 bool bh_instruction::isContiguous() const {
     for (const bh_view &view: operand) {
-        if ((not bh_is_constant(&view)) and (not bh_is_contiguous(&view)))
+        if ((not view.isContiguous()) and (not view.isContiguous()))
             return false;
     }
     return true;

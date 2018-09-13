@@ -541,7 +541,7 @@ bool data_parallel_compatible(const bh_view &writer,
     }
 
     // Finally, two equally sized contiguous arrays are also parallel compatible
-    return writer.shape.prod() == reader.shape.prod() and bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
+    return writer.shape.prod() == reader.shape.prod() and writer.isContiguous() and reader.isContiguous();
 }
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
