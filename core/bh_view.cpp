@@ -165,10 +165,6 @@ ostream &operator<<(ostream &out, const bh_view &v) {
     return out;
 }
 
-bool bh_is_scalar(const bh_view *view) {
-    return view->shape.prod() == 1;
-}
-
 bool bh_is_constant(const bh_view *o) {
     return (o->base == NULL);
 }

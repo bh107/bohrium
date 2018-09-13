@@ -69,24 +69,31 @@ struct bh_view {
     /// Slide information
     bh_slide slides;
 
-    // Returns a vector of tuples that describe the view using (almost)
-    // Python Notation.
-    // NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
+    /** Returns a vector of tuples that describe the view using (almost) Python Notation.
+        NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
+    */
     std::vector<std::tuple<int64_t, int64_t, int64_t> > python_notation() const;
 
-    // Returns a pretty print of this view (as a string)
+    /// Returns a pretty print of this view (as a string)
     std::string pprint(bool python_notation = true) const;
 
-    // Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
-    // NB: 0 <= 'dim' <= ndim
+    /** Insert a new dimension at 'dim' with the size of 'size' and stride of 'stride'
+        NB: 0 <= 'dim' <= ndim
+    */
     void insert_axis(int64_t dim, int64_t size, int64_t stride);
 
-    // Remove the axis 'dim'
+    /// Remove the axis 'dim'
     void remove_axis(int64_t dim);
 
-    // Transposes by swapping the two axes 'axis1' and 'axis2'
+    /// Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
+    /// Return true when this view only represent one element
+    bool is_scalar() const {
+        return shape.prod() == 1;
+    }
+
+    /// Less than operator
     bool operator<(const bh_view &other) const {
         if (base < other.base) return true;
         if (other.base < base) return false;
@@ -94,48 +101,37 @@ struct bh_view {
         if (other.start < start) return false;
         if (ndim < other.ndim) return true;
         if (other.ndim < ndim) return false;
-
         for (int64_t i = 0; i < ndim; ++i) {
             if (shape[i] < other.shape[i]) return true;
             if (other.shape[i] < shape[i]) return false;
         }
-
         for (int64_t i = 0; i < ndim; ++i) {
             if (stride[i] < other.stride[i]) return true;
             if (other.stride[i] < stride[i]) return false;
         }
-
         return false;
     }
 
+    /// Equal operator
     bool operator==(const bh_view &other) const {
         if (base == nullptr or this->base == nullptr) return false;
         if (base != other.base) return false;
         if (ndim != other.ndim) return false;
         if (start != other.start) return false;
-
-        for (int64_t i = 0; i < ndim; ++i) {
-            if (shape[i] != other.shape[i]) {
-                return false;
-            }
-        }
-
-        for (int64_t i = 0; i < ndim; ++i) {
-            if (stride[i] != other.stride[i]) {
-                return false;
-            }
-        }
-
+        if (shape != other.shape) return false;
+        if (stride != other.stride) return false;
         return true;
     }
 
+    /// Not equal operator
     bool operator!=(const bh_view &other) const {
         return !(*this == other);
     }
 
+    /// Boost serialization (save)
     template<class Archive>
     void save(Archive &ar, const unsigned int version) const {
-        size_t tmp = (size_t) base;
+        auto tmp = reinterpret_cast<size_t>(base);
         ar << tmp;
         if (base != nullptr) { // This view is NOT a constant
             ar << start;
@@ -146,11 +142,12 @@ struct bh_view {
         }
     }
 
+    /// Boost serialization (load)
     template<class Archive>
     void load(Archive &ar, const unsigned int version) {
         size_t tmp;
         ar >> tmp;
-        base = (bh_base *) tmp;
+        base = reinterpret_cast<bh_base *>(tmp);
         if (base != nullptr) { // This view is NOT a constant
             ar >> start;
             ar >> ndim;
@@ -176,13 +173,6 @@ std::ostream &operator<<(std::ostream &out, const bh_view &v);
  * @return The Base array
  */
 #define bh_base_array(view) ((view)->base)
-
-/* Determines whether the view is a scalar or a broadcasted scalar.
- *
- * @view The view
- * @return The boolean answer
- */
-bool bh_is_scalar(const bh_view *view);
 
 /* Determines whether the operand is a constant
  *
