@@ -107,21 +107,21 @@ void Engine::writeBlock(const SymbolTable &symbols,
     for (const jitk::Block &block: kernel._block_list) {
         if (block.isInstr()) {
             const jitk::InstrPtr instr = block.getInstr();
-            for (const bh_view *view: instr->get_views()) {
-                if (not scope.isDeclared(*view)) {
-                    if (scope.isTmp(view->base)) {
+            for (const bh_view &view: instr->getViews()) {
+                if (not scope.isDeclared(view)) {
+                    if (scope.isTmp(view.base)) {
                         util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(*view, writeType(view->base->type), out);
+                        scope.writeDeclaration(view, writeType(view.base->type), out);
                         out << "\n";
-                    } else if (scope.isScalarReplaced(*view)) {
+                    } else if (scope.isScalarReplaced(view)) {
                         util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(*view, writeType(view->base->type), out);
-                        out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                        write_array_subscription(scope, *view, out);
+                        scope.writeDeclaration(view, writeType(view.base->type), out);
+                        out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);
+                        write_array_subscription(scope, view, out);
                         out << ";";
                         out << "\n";
-                        if (scope.isScalarReplaced_RW(view->base)) {
-                            scalar_replaced_to_write_back.push_back(view);
+                        if (scope.isScalarReplaced_RW(view.base)) {
+                            scalar_replaced_to_write_back.push_back(&view);
                         }
                     }
                 }
@@ -134,11 +134,11 @@ void Engine::writeBlock(const SymbolTable &symbols,
         for (const jitk::Block &block: kernel._block_list) {
             if (block.isInstr()) {
                 const jitk::InstrPtr instr = block.getInstr();
-                for (const bh_view *view: instr->get_views()) {
-                    if (symbols.existIdxID(*view) and scope.isArray(*view)) {
-                        if (not scope.isIdxDeclared(*view)) {
+                for (const bh_view &view: instr->getViews()) {
+                    if (symbols.existIdxID(view) and scope.isArray(view)) {
+                        if (not scope.isIdxDeclared(view)) {
                             util::spaces(out, 8 + kernel.rank * 4);
-                            scope.writeIdxDeclaration(*view, writeType(bh_type::UINT64), out);
+                            scope.writeIdxDeclaration(view, writeType(bh_type::UINT64), out);
                             out << "\n";
                         }
                     }

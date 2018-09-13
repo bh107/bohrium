@@ -48,15 +48,6 @@ set<bh_base *> bh_instruction::get_bases() {
     return ret;
 }
 
-vector<const bh_view *> bh_instruction::get_views() const {
-    vector<const bh_view *> ret;
-    for (const bh_view &view: operand) {
-        if (not bh_is_constant(&view))
-            ret.push_back(&view);
-    }
-    return ret;
-}
-
 bool bh_instruction::isContiguous() const {
     for (const bh_view &view: operand) {
         if ((not view.isContiguous()) and (not view.isContiguous()))

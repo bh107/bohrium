@@ -169,7 +169,15 @@ struct bh_view {
         }
     }
 
+    /// Tell boost serialization that we have defined a load and store function.
     BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+    /** Predicate class for ignoring constants
+     *  Typically used in combination with boost::adaptors::filter
+     */
+    struct predicate_isNotConstant {
+        bool operator()( const bh_view &v ) const { return not v.isConstant(); }
+    };
 };
 
 //Implements pprint of views

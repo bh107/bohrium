@@ -168,10 +168,10 @@ std::vector<bh_base*> calc_base_ids(const vector<bh_instruction *> &instr_list) 
     std::vector<bh_base*> ret;
     std::set<bh_base*> unique_bases;
     for (const auto &instr: instr_list) {
-        for (const bh_view *view: instr->get_views()) {
-            if (not util::exist(unique_bases, view->base)) {
-                unique_bases.insert(view->base);
-                ret.push_back(view->base);
+        for (const bh_view &view: instr->getViews()) {
+            if (not util::exist(unique_bases, view.base)) {
+                unique_bases.insert(view.base);
+                ret.push_back(view.base);
             }
         }
     }

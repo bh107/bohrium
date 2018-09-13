@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 #include <vector>
 #include <set>
 
@@ -68,9 +69,15 @@ struct bh_instruction {
 
     std::set<bh_base *> get_bases();
 
-    // Return a vector of views in this instruction.
-    // The first element is the output and the rest are inputs (the constant is ignored)
-    std::vector<const bh_view *> get_views() const;
+    /// Return an range over all views excluding constants
+    boost::filtered_range<bh_view::predicate_isNotConstant, std::vector<bh_view> > getViews() {
+        return boost::adaptors::filter(operand, bh_view::predicate_isNotConstant());
+    }
+
+    /// Return an range over all views excluding constants (const version)
+    boost::filtered_range<bh_view::predicate_isNotConstant, const std::vector<bh_view> > getViews() const {
+        return boost::adaptors::filter(operand, bh_view::predicate_isNotConstant());
+    }
 
     // Returns true when one of the operands of 'instr' is a constant
     bool has_constant() const {

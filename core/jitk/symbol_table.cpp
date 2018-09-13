@@ -41,13 +41,13 @@ SymbolTable::SymbolTable(const LoopB &kernel,
     //     the kernels can better be reused
     const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
     for (const InstrPtr &instr: instr_list) {
-        for (const bh_view *view: instr->get_views()) {
-            _base_map.insert(std::make_pair(view->base, _base_map.size()));
-            _view_map.insert(std::make_pair(*view, _view_map.size()));
+        for (const bh_view &view: instr->getViews()) {
+            _base_map.insert(std::make_pair(view.base, _base_map.size()));
+            _view_map.insert(std::make_pair(view, _view_map.size()));
             if (index_as_var) {
-                _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+                _idx_map.insert(std::make_pair(view, _idx_map.size()));
             }
-            _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
+            _offset_strides_map.insert(std::make_pair(view, _offset_strides_map.size()));
         }
         if (const_as_var) {
             assert(instr->origin_id >= 0);
