@@ -93,6 +93,11 @@ struct bh_view {
         return shape.prod() == 1;
     }
 
+    /// Return true when this view represent the constant operand
+    bool isConstant() const {
+        return base == nullptr;
+    }
+
     /// Less than operator
     bool operator<(const bh_view &other) const {
         if (base < other.base) return true;
