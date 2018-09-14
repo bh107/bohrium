@@ -230,19 +230,22 @@ public:
         return _var.which() == 2; // Notice, the third type in '_var' is 'InstrB'
     }
 
-    // Retrieve the Loop Block
+    /// Retrieve the Loop Block
     LoopB &getLoop() { return boost::get<LoopB>(_var); }
 
+    /// Retrieve the Loop Block (const version)
     const LoopB &getLoop() const { return boost::get<LoopB>(_var); }
 
-    // Retrieve the instruction within the instruction block
-    const InstrPtr getInstr() const { return boost::get<InstrB>(_var).instr; }
+    /// Retrieve the instruction within the instruction block
+    InstrPtr &getInstr() { return boost::get<InstrB>(_var).instr; }
 
-    InstrPtr getInstr() { return boost::get<InstrB>(_var).instr; }
+    /// Retrieve the instruction within the instruction block (const version)
+    const InstrPtr &getInstr() const { return boost::get<InstrB>(_var).instr; }
 
+    /// Assign an instruction this block
     void setInstr(const bh_instruction &instr) {
         assert(_var.which() == 0 or _var.which() == 2);
-        boost::get<InstrB>(_var).rank = instr.ndim();
+        boost::get<InstrB>(_var).rank = static_cast<int>(instr.ndim());
         boost::get<InstrB>(_var).instr.reset(new bh_instruction(instr));
     }
 
