@@ -30,7 +30,8 @@ namespace jitk {
 namespace iterator {
 
 /// An iterator over instruction in a block list
-class BlockList : public boost::iterator_facade<BlockList, const bohrium::jitk::InstrPtr, boost::forward_traversal_tag> {
+class BlockList
+        : public boost::iterator_facade<BlockList, const bohrium::jitk::InstrPtr, boost::forward_traversal_tag> {
 private:
     friend class boost::iterator_core_access;
 
@@ -44,7 +45,8 @@ private:
 
     // Notice, we use a static vector with maximum size of `BH_MAXDIM+2` to support all possible ranks plus rank -1
     // and the rank of the bottom level that consist of a single instruction.
-    boost::container::static_vector<std::pair<const std::vector<bohrium::jitk::Block> *, const bohrium::jitk::Block *>, BH_MAXDIM+2> _stack;
+    boost::container::static_vector<std::pair<const std::vector<bohrium::jitk::Block> *, const bohrium::jitk::Block *>,
+            BH_MAXDIM + 2> _stack;
 
     // Go to the bottom of the `block_list` -- pushing each traversed level on the `_stack`
     void _bottom(const std::vector<bohrium::jitk::Block> &block_list);
@@ -74,7 +76,6 @@ BlockList::Range allInstr(const bohrium::jitk::LoopB &loop);
 
 /// Return a range of all instructions in the Block (incl. nested Blocks)
 BlockList::Range allInstr(const bohrium::jitk::Block &block);
-
 
 
 } // iterator

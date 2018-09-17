@@ -110,9 +110,9 @@ BlockList::Range allInstr(const LoopB &loop) {
     auto ret = boost::make_iterator_range(begin, end);
     auto instr_list = loop.getAllInstr();
     size_t i = 0;
-    for (InstrPtr iter: ret) {
+    for (const InstrPtr &iter: ret) {
         if (instr_list[i] != iter) {
-            cout << "allInstr(const LoopB &loop) not equal: " <<  endl;
+            cout << "allInstr(const LoopB &loop) not equal: " << endl;
             cout << *iter << endl;
             cout << *instr_list[i] << endl;
             exit(-1);
@@ -127,9 +127,9 @@ BlockList::Range allInstr(const Block &block) {
     auto ret = boost::make_iterator_range(begin, end);
     auto instr_list = block.getAllInstr();
     size_t i = 0;
-    for (InstrPtr iter: ret) {
+    for (const InstrPtr &iter: ret) {
         if (instr_list[i] != iter) {
-            cout << "allInstr(const Block &block) not equal: " <<  endl;
+            cout << "allInstr(const Block &block) not equal: " << endl;
             cout << *iter << endl;
             cout << *instr_list[i] << endl;
             exit(-1);
