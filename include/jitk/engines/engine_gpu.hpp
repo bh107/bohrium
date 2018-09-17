@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/statistics.hpp>
 #include <jitk/compiler.hpp>
 #include <jitk/apply_fusion.hpp>
+#include <jitk/iterator.hpp>
 
 #include <bh_view.hpp>
 #include <bh_component.hpp>
@@ -234,7 +235,7 @@ private:
 
         // Let's send the kernel instructions to our child
         vector<bh_instruction> child_instr_list;
-        for (const jitk::InstrPtr &instr: kernel.getAllInstr()) {
+        for (const jitk::InstrPtr &instr: bohrium::jitk::iterator::allInstr(kernel)) {
             child_instr_list.push_back(*instr);
         }
         // Notice, we have to re-create free instructions

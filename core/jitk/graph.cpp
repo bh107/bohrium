@@ -31,6 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <jitk/graph.hpp>
 #include <jitk/block.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -151,7 +152,7 @@ uint64_t weight(const Block &b1, const Block &b2) {
 uint64_t block_cost(const Block &block) {
     std::vector<bh_base*> non_temps;
     const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getLoop().getAllTemps();
-    for (const InstrPtr instr: block.getAllInstr()) {
+    for (const InstrPtr &instr: bohrium::jitk::iterator::allInstr(block)) {
         // Find non-temporary arrays
         for(const bh_view &v: instr->operand) {
             if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
@@ -261,7 +262,7 @@ void pprint(const DAG &dag, const char *filename, bool avoid_rank0_sweep, int id
                 if (not graph[v].isInstr()) {
                     total_threading = parallel_ranks(graph[v].getLoop()).second;
                 }
-                for (const InstrPtr instr: graph[v].getAllInstr()) {
+                for (const InstrPtr &instr: bohrium::jitk::iterator::allInstr(graph[v])) {
                     if (bh_opcode_is_system(instr->opcode))
                         continue;
                     if (total_threading < 1000) {

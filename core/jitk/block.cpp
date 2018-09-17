@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/codegen_util.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ namespace jitk {
 namespace {
 
 // Returns true if a block consisting of 'instr_list' is reshapable
-bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
+bool is_reshapeable(const iterator::BlockList::Range &instr_list) {
     if (instr_list.empty()) {
         return true;
     }
@@ -171,7 +172,7 @@ vector<InstrPtr> LoopB::getLocalInstr() const {
 
 std::set<const bh_base *> LoopB::getAllBases() const {
     std::set<const bh_base *> ret;
-    for (InstrPtr instr: getAllInstr()) {
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
         std::set<const bh_base *> t = instr->get_bases_const();
         ret.insert(t.begin(), t.end());
     }
@@ -280,7 +281,7 @@ bool LoopB::validation() const {
         assert(1 == 2);
         return false;
     }
-    for (const InstrPtr &instr: getAllInstr()) {
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
         if (bh_opcode_is_system(instr->opcode)) {
             assert(1 == 2);
             return false;
@@ -371,13 +372,12 @@ void LoopB::metadataUpdate() {
             _news.insert(instr->operand[0].base);
         }
     }
-    const vector<InstrPtr> allInstr = getAllInstr();
-    for (const InstrPtr &instr: allInstr) {
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
         if (instr->sweep_axis() == rank) {
             _sweeps.insert(instr);
         }
     }
-    _reshapable = is_reshapeable(allInstr);
+    _reshapable = is_reshapeable(iterator::allInstr(*this));
 }
 
 
@@ -414,7 +414,7 @@ vector<InstrPtr> Block::getAllInstr() const {
 
 std::set<const bh_base *> Block::getAllBases() const {
     std::set<const bh_base *> ret;
-    for (InstrPtr instr: getAllInstr()) {
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
         std::set<const bh_base *> t = instr->get_bases_const();
         ret.insert(t.begin(), t.end());
     }
@@ -423,8 +423,8 @@ std::set<const bh_base *> Block::getAllBases() const {
 
 // Determines whether this block must be executed after 'other'
 bool Block::dependOn(const Block &other) const {
-    for (const InstrPtr &this_instr: getAllInstr()) {
-        for (const InstrPtr &other_instr: other.getAllInstr()) {
+    for (const InstrPtr &this_instr: iterator::allInstr(*this)) {
+        for (const InstrPtr &other_instr: iterator::allInstr(other)) {
             if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
                 return true;
             }
@@ -459,7 +459,7 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
     ret._sweeps.insert(l2._sweeps.begin(), l2._sweeps.end());
     ret._news.insert(l2._news.begin(), l2._news.end());
     ret._frees.insert(l2._frees.begin(), l2._frees.end());
-    ret._reshapable = is_reshapeable(ret.getAllInstr());
+    ret._reshapable = is_reshapeable(iterator::allInstr(ret));
     return ret;
 }
 
@@ -626,8 +626,8 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 // Check if 'b1' and 'b2' (in that order) supports data-parallelism when merged
 bool data_parallel_compatible(const LoopB &b1, const LoopB &b2) {
     assert(b1.rank == b2.rank);
-    for (const InstrPtr i1 : b1.getAllInstr()) {
-        for (const InstrPtr i2 : b2.getAllInstr()) {
+    for (const InstrPtr &i1 : iterator::allInstr(b1)) {
+        for (const InstrPtr &i2 : iterator::allInstr(b2)) {
             if (i1.get() != i2.get()) {
                 if (not data_parallel_compatible(i1, i2)) {
                     return false;
@@ -653,7 +653,7 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
 Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
     assert(l1._reshapable);
     vector<InstrPtr> instr_list;
-    for (const InstrPtr &instr: l1.getAllInstr()) {
+    for (const InstrPtr &instr: iterator::allInstr(l1)) {
         instr_list.push_back(reshape_rank(instr, l1.rank, size_of_rank_dim));
     }
     if (not instr_list.empty()) {
@@ -685,12 +685,12 @@ Block reshape_and_merge(const LoopB &l1, const LoopB &l2) {
         return Block(merge(new_l1, l2));
     }
     // Empty blocks are mergeable
-    if (l1.getAllInstr().empty()) {
+    if (iterator::allInstr(l1).empty()) {
         LoopB ret_loop = l2;
         auto frees = l1.getAllFrees();
         ret_loop._frees.insert(frees.begin(), frees.end());
         return Block(std::move(ret_loop));
-    } else if (l2.getAllInstr().empty()) {
+    } else if (iterator::allInstr(l2).empty()) {
         LoopB ret_loop = l1;
         auto frees = l2.getAllFrees();
         ret_loop._frees.insert(frees.begin(), frees.end());

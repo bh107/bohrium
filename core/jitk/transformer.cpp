@@ -29,7 +29,7 @@ namespace jitk {
 namespace {
 
 // Help function that swap the two axes, 'axis1' and 'axis2', in all instructions in 'instr_list'
-vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2) {
+vector<InstrPtr> swap_axis(const iterator::BlockList::Range &instr_list, int64_t axis1, int64_t axis2) {
     vector<InstrPtr> ret;
     for (const InstrPtr &instr: instr_list) {
         bh_instruction tmp(*instr);
@@ -52,12 +52,12 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
             loop._frees.insert(parent._frees.begin(), parent._frees.end());
         } else {
             loop.size = child->size;
-            const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
+            const vector<InstrPtr> t = swap_axis(iterator::allInstr(*child), parent.rank, child->rank);
             loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
             loop._frees.insert(child->_frees.begin(), child->_frees.end());
         }
         loop.metadataUpdate();
-        ret.push_back(Block(std::move(loop)));
+        ret.emplace_back(std::move(loop));
     }
     return ret;
 }
