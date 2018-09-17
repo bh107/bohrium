@@ -33,9 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 
 #include <jitk/block.hpp>
-
 #include <jitk/symbol_table.hpp>
-
 #include <jitk/instruction.hpp>
 
 namespace bohrium {
@@ -52,8 +50,9 @@ inline bool sweeping_innermost_axis(InstrPtr instr) {
     return instr->sweep_axis() == instr->operand[1].ndim - 1;
 }
 
-inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const std::set<bh_base*> &local_tmps) {
-    std::vector<const bh_view*> result;
+inline std::vector<const bh_view *>
+scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const std::set<bh_base *> &local_tmps) {
+    std::vector<const bh_view *> result;
 
     // We have to ignore output arrays and arrays that are accumulated
     std::set<bh_base *> ignore_bases;
@@ -69,7 +68,7 @@ inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block
     // we add it to the 'result'
     std::set<bh_view> candidates;
     for (const InstrPtr &instr: block.getAllInstr()) {
-        for(size_t i=1; i < instr->operand.size(); ++i) {
+        for (size_t i = 1; i < instr->operand.size(); ++i) {
             const bh_view &input = instr->operand[i];
             if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
                 if (local_tmps.find(input.base) == local_tmps.end() and
