@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <jitk/symbol_table.hpp>
 #include <jitk/view.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -39,7 +40,7 @@ SymbolTable::SymbolTable(const LoopB &kernel,
 
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
     //     the kernels can better be reused
-    for (const InstrPtr &instr: kernel.getAllInstr()) {
+    for (const InstrPtr &instr: iterator::allInstr(kernel)) {
         for (const bh_view &view: instr->getViews()) {
             _base_map.insert(std::make_pair(view.base, _base_map.size()));
             _view_map.insert(std::make_pair(view, _view_map.size()));
@@ -79,7 +80,7 @@ SymbolTable::SymbolTable(const LoopB &kernel,
     {
         auto non_temp_arrays = kernel.getAllNonTemps();
         non_temp_arrays.insert(_array_always.begin(), _array_always.end());
-        for (const InstrPtr &instr: kernel.getAllInstr()) {
+        for (const InstrPtr &instr: iterator::allInstr(kernel)) {
             for (const bh_view &v: instr->operand) {
                 if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
                     if (not util::exist_linearly(_params, v.base)) {

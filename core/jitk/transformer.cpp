@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <jitk/transformer.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -172,7 +173,7 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
         }
         const LoopB &loop = block.getLoop();
         uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
-        for (const InstrPtr &instr: loop.getAllInstr()) {
+        for (const InstrPtr &instr: iterator::allInstr(loop)) {
             if (instr->operand.size() > 0) {
                 const uint64_t nelem = static_cast<uint64_t>(instr->operand[0].shape.prod());
                 if (nelem > max_nelem)
