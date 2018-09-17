@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-/* Design Overview
+/** Design Overview
 
    A block can represent three things in Bohrium:
     * A kernel (i.e. compiled shared library), which consists of a list of for-loops (class LoopB when rank == -1)
@@ -127,14 +127,7 @@ public:
     std::vector<InstrPtr> getLocalInstr() const;
 
     // Return all bases accessed by this block
-    std::set<const bh_base *> getAllBases() const {
-        std::set<const bh_base *> ret;
-        for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base *> t = instr->get_bases_const();
-            ret.insert(t.begin(), t.end());
-        }
-        return ret;
-    }
+    std::set<const bh_base *> getAllBases() const;
 
     // Return all new arrays in this block (incl. nested blocks)
     void getAllNews(std::set<bh_base *> &out) const;
@@ -267,14 +260,7 @@ public:
     std::vector<InstrPtr> getAllInstr() const;
 
     // Return all bases accessed by this block
-    std::set<const bh_base *> getAllBases() const {
-        std::set<const bh_base *> ret;
-        for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base *> t = instr->get_bases_const();
-            ret.insert(t.begin(), t.end());
-        }
-        return ret;
-    }
+    std::set<const bh_base *> getAllBases() const;
 
     // Returns true when all instructions within this block is system or if the block is empty()
     bool isSystemOnly() const {
@@ -299,16 +285,7 @@ public:
     }
 
     // Determines whether this block must be executed after 'other'
-    bool dependOn(const Block &other) const {
-        for (const InstrPtr &this_instr: getAllInstr()) {
-            for (const InstrPtr &other_instr: other.getAllInstr()) {
-                if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    bool dependOn(const Block &other) const;
 
     // Pretty print this block
     std::string pprint(const char *newline = "\n") const;

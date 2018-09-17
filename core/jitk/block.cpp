@@ -169,6 +169,15 @@ vector<InstrPtr> LoopB::getLocalInstr() const {
     return ret;
 }
 
+std::set<const bh_base *> LoopB::getAllBases() const {
+    std::set<const bh_base *> ret;
+    for (InstrPtr instr: getAllInstr()) {
+        std::set<const bh_base *> t = instr->get_bases_const();
+        ret.insert(t.begin(), t.end());
+    }
+    return ret;
+}
+
 void LoopB::getAllNews(set<bh_base *> &out) const {
     out.insert(_news.begin(), _news.end());
     for (const Block &b: _block_list) {
@@ -401,6 +410,27 @@ vector<InstrPtr> Block::getAllInstr() const {
     vector<InstrPtr> ret;
     getAllInstr(ret);
     return ret;
+}
+
+std::set<const bh_base *> Block::getAllBases() const {
+    std::set<const bh_base *> ret;
+    for (InstrPtr instr: getAllInstr()) {
+        std::set<const bh_base *> t = instr->get_bases_const();
+        ret.insert(t.begin(), t.end());
+    }
+    return ret;
+}
+
+// Determines whether this block must be executed after 'other'
+bool Block::dependOn(const Block &other) const {
+    for (const InstrPtr &this_instr: getAllInstr()) {
+        for (const InstrPtr &other_instr: other.getAllInstr()) {
+            if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 string Block::pprint(const char *newline) const {
