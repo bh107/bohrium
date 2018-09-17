@@ -55,10 +55,9 @@ inline bool sweeping_innermost_axis(InstrPtr instr) {
 inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const std::set<bh_base*> &local_tmps) {
     std::vector<const bh_view*> result;
 
-    const std::vector<InstrPtr> block_instr_list = block.getAllInstr();
     // We have to ignore output arrays and arrays that are accumulated
     std::set<bh_base *> ignore_bases;
-    for (const InstrPtr &instr: block_instr_list) {
+    for (const InstrPtr &instr: block.getAllInstr()) {
         if (not instr->operand.empty()) {
             ignore_bases.insert(instr->operand[0].base);
         }
@@ -69,7 +68,7 @@ inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block
     // First we add a valid view to the set of 'candidates' and if we encounter the view again
     // we add it to the 'result'
     std::set<bh_view> candidates;
-    for (const InstrPtr &instr: block_instr_list) {
+    for (const InstrPtr &instr: block.getAllInstr()) {
         for(size_t i=1; i < instr->operand.size(); ++i) {
             const bh_view &input = instr->operand[i];
             if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {

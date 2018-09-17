@@ -40,7 +40,7 @@ bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
     }
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->ndim();
+    int64_t rank = instr_list.front()->ndim();
     for (const InstrPtr &instr: instr_list) {
         if (not instr->reshapable())
             return false;
@@ -269,8 +269,7 @@ bool LoopB::validation() const {
         assert(1 == 2);
         return false;
     }
-    const vector<InstrPtr> allInstr = getAllInstr();
-    for (const InstrPtr &instr: allInstr) {
+    for (const InstrPtr &instr: getAllInstr()) {
         if (bh_opcode_is_system(instr->opcode)) {
             assert(1 == 2);
             return false;
@@ -510,8 +509,9 @@ void get_first_loop_blocks(const LoopB &block, vector<const LoopB*> &out) {
         get_first_loop_blocks(block._block_list[0].getLoop(), out);
     }
 }
-vector<const LoopB*> get_first_loop_blocks(const LoopB &block) {
-    vector<const LoopB*> ret;
+
+vector<const LoopB *> get_first_loop_blocks(const LoopB &block) {
+    vector<const LoopB *> ret;
     get_first_loop_blocks(block, ret);
     return ret;
 }

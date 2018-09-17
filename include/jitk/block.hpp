@@ -300,10 +300,8 @@ public:
 
     // Determines whether this block must be executed after 'other'
     bool dependOn(const Block &other) const {
-        const std::vector<InstrPtr> this_instr_list = getAllInstr();
-        const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
-        for (const InstrPtr this_instr: this_instr_list) {
-            for (const InstrPtr other_instr: other_instr_list) {
+        for (const InstrPtr &this_instr: getAllInstr()) {
+            for (const InstrPtr &other_instr: other.getAllInstr()) {
                 if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
                     return true;
                 }
