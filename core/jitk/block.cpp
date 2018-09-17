@@ -35,7 +35,7 @@ namespace {
 
 // Returns true if a block consisting of 'instr_list' is reshapable
 bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
-    if(instr_list.empty()) {
+    if (instr_list.empty()) {
         return true;
     }
 
@@ -124,7 +124,7 @@ bool LoopB::isSystemOnly() const {
     return true;
 }
 
-void LoopB::getAllSubBlocks(std::vector<const LoopB*> &out) const {
+void LoopB::getAllSubBlocks(std::vector<const LoopB *> &out) const {
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             out.push_back(&b.getLoop());
@@ -133,8 +133,8 @@ void LoopB::getAllSubBlocks(std::vector<const LoopB*> &out) const {
     }
 }
 
-vector<const LoopB*> LoopB::getLocalSubBlocks() const {
-    vector<const LoopB*> ret;
+vector<const LoopB *> LoopB::getLocalSubBlocks() const {
+    vector<const LoopB *> ret;
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             ret.push_back(&b.getLoop());
@@ -148,6 +148,7 @@ void LoopB::getAllInstr(vector<InstrPtr> &out) const {
         b.getAllInstr(out);
     }
 }
+
 vector<InstrPtr> LoopB::getAllInstr() const {
     vector<InstrPtr> ret;
     getAllInstr(ret);
@@ -161,6 +162,7 @@ void LoopB::getLocalInstr(vector<InstrPtr> &out) const {
         }
     }
 }
+
 vector<InstrPtr> LoopB::getLocalInstr() const {
     vector<InstrPtr> ret;
     getLocalInstr(ret);
@@ -170,7 +172,7 @@ vector<InstrPtr> LoopB::getLocalInstr() const {
 void LoopB::getAllNews(set<bh_base *> &out) const {
     out.insert(_news.begin(), _news.end());
     for (const Block &b: _block_list) {
-        if (not b.isInstr()){
+        if (not b.isInstr()) {
             b.getLoop().getAllNews(out);
         }
     }
@@ -185,7 +187,7 @@ set<bh_base *> LoopB::getAllNews() const {
 void LoopB::getAllFrees(set<bh_base *> &out) const {
     out.insert(_frees.begin(), _frees.end());
     for (const Block &b: _block_list) {
-        if (not b.isInstr()){
+        if (not b.isInstr()) {
             b.getLoop().getAllFrees(out);
         }
     }
@@ -213,7 +215,7 @@ set<bh_base *> LoopB::getLocalTemps() const {
 void LoopB::getAllTemps(set<bh_base *> &out) const {
     getLocalTemps(out);
     for (const Block &b: _block_list) {
-        if (not b.isInstr()){
+        if (not b.isInstr()) {
             b.getLoop().getAllTemps(out);
         }
     }
@@ -225,10 +227,10 @@ set<bh_base *> LoopB::getAllTemps() const {
     return ret;
 }
 
-void LoopB::getAllNonTemps(std::set<bh_base*> &out) const {
+void LoopB::getAllNonTemps(std::set<bh_base *> &out) const {
     const auto all_tmps = getAllTemps();
-    for(const bh_base* t: getAllBases()) {
-        auto b = const_cast<bh_base*>(t);
+    for (const bh_base *t: getAllBases()) {
+        auto b = const_cast<bh_base *>(t);
         if (not util::exist(all_tmps, b)) {
             out.insert(b);
         }
@@ -241,27 +243,27 @@ set<bh_base *> LoopB::getAllNonTemps() const {
     return ret;
 }
 
-pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
+pair<LoopB *, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
     assert(validation());
-    for (int64_t i=_block_list.size()-1; i >= 0; --i) {
+    for (int64_t i = _block_list.size() - 1; i >= 0; --i) {
         if (_block_list[i].isInstr()) {
             if (base == NULL) { // Searching for any access
                 return make_pair(this, i);
             } else {
-                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases_const();
+                const set<const bh_base *> bases = _block_list[i].getInstr()->get_bases_const();
                 if (bases.find(base) != bases.end()) {
                     return make_pair(this, i);
                 }
             }
         } else {
             // Check if the sub block accesses 'base'
-            pair<LoopB*, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
+            pair<LoopB *, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
             if (block.first != NULL) {
                 return block; // We found the block and instruction that accesses 'base'
             }
         }
     }
-    return make_pair((LoopB *)NULL, -1); // Not found
+    return make_pair((LoopB *) NULL, -1); // Not found
 }
 
 bool LoopB::validation() const {
@@ -288,7 +290,7 @@ bool LoopB::validation() const {
             return false;
     }
     for (const InstrPtr &instr: getLocalInstr()) {
-        if (instr->ndim() != rank+1) {
+        if (instr->ndim() != rank + 1) {
             assert(1 == 2);
             return false;
         }
@@ -432,7 +434,7 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
 }
 
 
-Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_base*> frees) {
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_base *> frees) {
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
     }
@@ -447,8 +449,8 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_b
     ret_loop.rank = rank;
     ret_loop.size = shape[rank];
     if (rank == ndim - 1) { // The innermost rank
-        ret_loop.rank = ndim-1;
-        ret_loop.size = shape[ndim-1];
+        ret_loop.rank = ndim - 1;
+        ret_loop.size = shape[ndim - 1];
         ret_loop._frees = std::move(frees);
         for (const InstrPtr &instr: instr_list) {
             if (instr->opcode == BH_FREE) {
@@ -460,7 +462,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_b
             assert(ret_loop._block_list.back().getInstr()->shape() == shape);
         }
     } else {
-        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1, std::move(frees)));
+        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank + 1, std::move(frees)));
     }
     ret_loop.metadataUpdate();
     assert(ret_loop.validation());
@@ -483,7 +485,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
 
 pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth) {
     assert(max_depth > 0);
-    pair<uint64_t, uint64_t> ret = make_pair(0,0);
+    pair<uint64_t, uint64_t> ret = make_pair(0, 0);
     const uint64_t thds = block.localThreading();
     --max_depth;
     if (thds > 0) {
@@ -503,7 +505,7 @@ pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_dep
     return ret;
 }
 
-void get_first_loop_blocks(const LoopB &block, vector<const LoopB*> &out) {
+void get_first_loop_blocks(const LoopB &block, vector<const LoopB *> &out) {
     out.push_back(&block);
     if (not block._block_list.empty() and not block._block_list[0].isInstr()) {
         get_first_loop_blocks(block._block_list[0].getLoop(), out);
@@ -546,7 +548,7 @@ bool data_parallel_compatible(const bh_view &writer,
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
 bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
-    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+    if (bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
     // Gather reads its first input in arbitrary order
@@ -559,13 +561,13 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     // Scatter writes in arbitrary order
     if (a->opcode == BH_SCATTER or a->opcode == BH_COND_SCATTER) {
 
-        for(size_t i=0; i<b->operand.size(); ++i) {
+        for (size_t i = 0; i < b->operand.size(); ++i) {
             if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER or b->opcode == BH_COND_SCATTER) {
-        for(size_t i=0; i<a->operand.size(); ++i) {
+        for (size_t i = 0; i < a->operand.size(); ++i) {
             if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
@@ -574,7 +576,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
-        for(size_t i=0; i<b->operand.size(); ++i) {
+        for (size_t i = 0; i < b->operand.size(); ++i) {
             if (not data_parallel_compatible(src, b->operand[i])) {
                 return false;
             }
@@ -582,7 +584,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     }
     {// The output of 'b' cannot conflict with the input and output of 'a'
         const bh_view &src = b->operand[0];
-        for(const bh_view &a_op: a->operand) {
+        for (const bh_view &a_op: a->operand) {
             if (not data_parallel_compatible(src, a_op)) {
                 return false;
             }
