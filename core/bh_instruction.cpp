@@ -30,15 +30,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-set<const bh_base *> bh_instruction::get_bases_const() const {
-    set<const bh_base *> ret;
-    for (const bh_view &view: operand) {
-        if (not bh_is_constant(&view))
-            ret.insert(view.base);
-    }
-    return ret;
-}
-
 set<bh_base *> bh_instruction::get_bases() {
     set<bh_base *> ret;
     for (const bh_view &view: operand) {

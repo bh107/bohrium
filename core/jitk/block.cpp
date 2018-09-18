@@ -173,7 +173,7 @@ vector<InstrPtr> LoopB::getLocalInstr() const {
 std::set<const bh_base *> LoopB::getAllBases() const {
     std::set<const bh_base *> ret;
     for (const InstrPtr &instr: iterator::allInstr(*this)) {
-        std::set<const bh_base *> t = instr->get_bases_const();
+        auto t = bohrium::jitk::iterator::allBases(*instr);
         ret.insert(t.begin(), t.end());
     }
     return ret;
@@ -257,23 +257,23 @@ pair<LoopB *, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
     assert(validation());
     for (int64_t i = _block_list.size() - 1; i >= 0; --i) {
         if (_block_list[i].isInstr()) {
-            if (base == NULL) { // Searching for any access
+            if (base == nullptr) { // Searching for any access
                 return make_pair(this, i);
             } else {
-                const set<const bh_base *> bases = _block_list[i].getInstr()->get_bases_const();
-                if (bases.find(base) != bases.end()) {
+                auto bases = bohrium::jitk::iterator::allBases(*_block_list[i].getInstr());
+                if (util::exist_linearly(bases, base)) {
                     return make_pair(this, i);
                 }
             }
         } else {
             // Check if the sub block accesses 'base'
             pair<LoopB *, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
-            if (block.first != NULL) {
+            if (block.first != nullptr) {
                 return block; // We found the block and instruction that accesses 'base'
             }
         }
     }
-    return make_pair((LoopB *) NULL, -1); // Not found
+    return make_pair((LoopB *) nullptr, -1); // Not found
 }
 
 bool LoopB::validation() const {
@@ -415,8 +415,8 @@ vector<InstrPtr> Block::getAllInstr() const {
 std::set<const bh_base *> Block::getAllBases() const {
     std::set<const bh_base *> ret;
     for (const InstrPtr &instr: iterator::allInstr(*this)) {
-        std::set<const bh_base *> t = instr->get_bases_const();
-        ret.insert(t.begin(), t.end());
+        auto bases = bohrium::jitk::iterator::allBases(*instr);
+        ret.insert(bases.begin(), bases.end());
     }
     return ret;
 }

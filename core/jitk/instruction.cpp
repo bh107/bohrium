@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/instruction.hpp>
 #include <jitk/symbol_table.hpp>
 #include <jitk/view.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -790,7 +791,7 @@ vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> 
         if (instr.opcode == BH_FREE and not util::exist(computes, instr.operand[0].base)) {
             frees.insert(instr.operand[0].base);
         } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY)) {
-            set<const bh_base*> bases = instr.get_bases_const();
+            auto bases = bohrium::jitk::iterator::allBases(instr);
             computes.insert(bases.begin(), bases.end());
             ret.push_back(&instr);
         }

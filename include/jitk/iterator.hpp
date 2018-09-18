@@ -78,6 +78,68 @@ BlockList::Range allInstr(const bohrium::jitk::LoopB &loop);
 BlockList::Range allInstr(const bohrium::jitk::Block &block);
 
 
+/// An iterator over bases in an instruction (skipping duplicates)
+class BaseList
+        : public boost::iterator_facade<BaseList, const bh_base *, boost::forward_traversal_tag, const bh_base *> {
+private:
+    friend class boost::iterator_core_access;
+
+    std::vector<bh_view>::const_iterator cur, begin, end;
+
+    // Iterate `it` to the next non-constant
+    inline void _next(std::vector<bh_view>::const_iterator &it) {
+        assert(it != end);
+        while (++it != end and it->isConstant()) {}
+    }
+
+    // Increase iterator
+    void increment() {
+        if (cur != end) {
+            _next(cur);
+            if (cur != end) {
+                for (auto it = begin; it != cur; ++it) {
+                    // In order to avoid duplicates, we call increment() again if `cur->base` has already been iterated
+                    if ((not it->isConstant()) and it->base == cur->base) {
+                        increment();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // Iterator equality
+    bool equal(BaseList const &other) const {
+        return cur == other.cur;
+    }
+
+    // Deference the iterator
+    const bh_base *dereference() const {
+        assert(cur != end);
+        assert(not cur->isConstant());
+        return cur->base;
+    }
+
+public:
+
+    /// Construct an "end" pointer
+    explicit BaseList(std::vector<bh_view>::const_iterator end) : cur(end), begin(end), end(end) {}
+
+    /// Construct based on an instruction list
+    explicit BaseList(const std::vector<bh_view> &view_list) : cur(view_list.begin()), begin(view_list.begin()),
+                                                               end(view_list.end()) {
+        // If the first item is a constant, we iterate to the first non-constant
+        if ((not view_list.empty()) and view_list.front().isConstant()) {
+            increment();
+        }
+    }
+
+    typedef boost::iterator_range<BaseList> Range;
+};
+
+/// Return a range of all bases in the instruction (skipping duplicates)
+BaseList::Range allBases(const bh_instruction &instr);
+
 } // iterator
 } // jitk
 } // bohrium

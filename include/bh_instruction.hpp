@@ -42,7 +42,7 @@ struct bh_instruction {
     // Id of each operand
     std::vector<bh_view> operand;
     // Constant included in the instruction (Used if one of the operands == NULL)
-    bh_constant constant;
+    bh_constant constant{};
     // Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
     // For now, this flag is only used by the code generators.
     bool constructor = false;
@@ -65,8 +65,6 @@ struct bh_instruction {
     }
 
     // Return a set of all bases used by the instruction
-    std::set<const bh_base *> get_bases_const() const;
-
     std::set<bh_base *> get_bases();
 
     /// Return an range over all views excluding constants
