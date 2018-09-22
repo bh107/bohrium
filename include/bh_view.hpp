@@ -39,7 +39,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
 
-//Implements pprint of base arrays
+/// Implements pprint of base arrays
 std::ostream &operator<<(std::ostream &out, const bh_base &b);
 
 struct bh_view {
@@ -185,7 +185,7 @@ struct bh_view {
     };
 };
 
-//Implements pprint of views
+/// Implements pprint of views
 std::ostream &operator<<(std::ostream &out, const bh_view &v);
 
 /* Find the base array for a given view
@@ -215,7 +215,6 @@ void bh_flag_constant(bh_view *o);
  * @return The boolean answer
  */
 bool bh_view_same_shape(const bh_view *a, const bh_view *b);
-
 
 /* Determines whether two views access some of the same data points
  * NB: This functions may return True on non-overlapping views.

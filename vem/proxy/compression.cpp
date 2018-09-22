@@ -96,7 +96,7 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
-    stat_per_codex[param].push_back(Stat{ary.base->nbytes(), ret.size()});
+    stat_per_codex[param].push_back(Stat{static_cast<uint64_t>(ary.base->nbytes()), ret.size()});
     return ret;
 }
 
@@ -118,7 +118,7 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
     vector<string> param_list;
     boost::split(param_list, param, boost::is_any_of(","));
     if (param.empty() or param_list.empty() or param_list[0] == "none") {
-        assert(data.size() == ary.base->nbytes());
+        assert(static_cast<int64_t>(data.size()) == ary.base->nbytes());
         memcpy(ary.base->data, &data[0], ary.base->nbytes());
     } else if (param_list[0] == "zlib") {
         zlib_uncompress(data, ary.base->data, ary.base->nbytes());
@@ -130,12 +130,12 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
         if (out.data == nullptr) {
             throw std::runtime_error("imdecode(): failed!");
         }
-        assert(ary.base->nbytes() == (size_t) (out.dataend - out.data));
-        memcpy(ary.base->data, out.data, ary.base->nbytes());
+        assert(ary.base->nbytes() == (out.dataend - out.data));
+        memcpy(ary.base->data, out.data, static_cast<size_t>(ary.base->nbytes()));
     } else {
         throw std::runtime_error("compress(): unknown param");
     }
-    stat_per_codex[param].push_back(Stat{ary.base->nbytes(), data.size()});
+    stat_per_codex[param].push_back(Stat{static_cast<uint64_t >(ary.base->nbytes()), data.size()});
 }
 
 void Compression::uncompress(const std::vector<unsigned char> &data, bh_base &ary, const std::string &param) {
