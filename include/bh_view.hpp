@@ -52,13 +52,13 @@ struct bh_view {
     explicit bh_view(bh_base *base);
 
     /// Pointer to the base array.
-    bh_base *base;
+    bh_base *base = nullptr;
 
     /// Index of the start element
-    int64_t start;
+    int64_t start = 0;
 
     /// Number of dimensions
-    int64_t ndim;
+    int64_t ndim = 0;
 
     /// Number of elements in each dimensions
     BhIntVec shape;
@@ -176,7 +176,7 @@ struct bh_view {
      *  Typically used in combination with boost::adaptors::filter
      */
     struct predicate_isNotConstant {
-        bool operator()( const bh_view &v ) const { return not v.isConstant(); }
+        bool operator()(const bh_view &v) const { return not v.isConstant(); }
     };
 };
 

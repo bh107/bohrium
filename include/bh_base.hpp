@@ -25,46 +25,45 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/split_member.hpp>
 
 // Forward declaration of class boost::serialization::access
-namespace boost {namespace serialization {class access;}}
+namespace boost { namespace serialization { class access; }}
 
-struct bh_base
-{
+struct bh_base {
     // Pointer to the actual data.
-    void*   data;
+    void *data = nullptr;
 
     // The type of data in the array
-    bh_type       type;
+    bh_type type = bh_type::BOOL;
 
     // The number of elements in the array
-    int64_t      nelem;
+    int64_t nelem = 0;
 
     // Returns an unique ID of this base array
-    size_t get_label() const;
+    uint64_t get_label() const;
 
     // Returns pprint string of this base array
     std::string str() const;
 
     // Returns the of bytes in the array
-    size_t nbytes() const {
+    int64_t nbytes() const {
         return nelem * bh_type_size(type);
     };
 
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
-    {
-        size_t tmp = (size_t)data;
+    void save(Archive &ar, const unsigned int version) const {
+        size_t tmp = (size_t) data;
         ar << tmp;
         ar & type;
         ar & nelem;
     }
+
     template<class Archive>
-    void load(Archive & ar, const unsigned int version)
-    {
+    void load(Archive &ar, const unsigned int version) {
         size_t tmp;
         ar >> tmp;
-        data = (void*)tmp;
+        data = (void *) tmp;
         ar & type;
         ar & nelem;
     }
+
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
