@@ -144,18 +144,6 @@ vector<const LoopB *> LoopB::getLocalSubBlocks() const {
     return ret;
 }
 
-void LoopB::getAllInstr(vector<InstrPtr> &out) const {
-    for (const Block &b : _block_list) {
-        b.getAllInstr(out);
-    }
-}
-
-vector<InstrPtr> LoopB::getAllInstr() const {
-    vector<InstrPtr> ret;
-    getAllInstr(ret);
-    return ret;
-}
-
 void LoopB::getLocalInstr(vector<InstrPtr> &out) const {
     for (const Block &b : _block_list) {
         if (b.isInstr() and b.getInstr() != NULL) {
@@ -394,22 +382,6 @@ bool Block::validation() const {
     } else {
         return getLoop().validation();
     }
-}
-
-void Block::getAllInstr(vector<InstrPtr> &out) const {
-    if (isInstr()) {
-        out.push_back(getInstr());
-    } else {
-        for (const Block &b: getLoop()._block_list) {
-            b.getAllInstr(out);
-        }
-    }
-}
-
-vector<InstrPtr> Block::getAllInstr() const {
-    vector<InstrPtr> ret;
-    getAllInstr(ret);
-    return ret;
 }
 
 std::set<const bh_base *> Block::getAllBases() const {

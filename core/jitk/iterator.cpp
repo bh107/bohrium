@@ -107,62 +107,17 @@ InstrPtr const &BlockList::dereference() const {
 
 BlockList::Range allInstr(const LoopB &loop) {
     BlockList end, begin(loop._block_list);
-    auto ret = boost::make_iterator_range(begin, end);
-    {
-        auto instr_list = loop.getAllInstr();
-        size_t i = 0;
-        for (const InstrPtr &iter: ret) {
-            if (instr_list[i] != iter) {
-                cout << "allInstr(const LoopB &loop) not equal: " << endl;
-                cout << *iter << endl;
-                cout << *instr_list[i] << endl;
-                exit(-1);
-            }
-            i++;
-        }
-    }
-    return ret;
+    return boost::make_iterator_range(begin, end);
 }
 
 BlockList::Range allInstr(const Block &block) {
     BlockList end, begin(block);
-    auto ret = boost::make_iterator_range(begin, end);
-    {
-        auto instr_list = block.getAllInstr();
-        size_t i = 0;
-        for (const InstrPtr &iter: ret) {
-            if (instr_list[i] != iter) {
-                cout << "allInstr(const Block &block) not equal: " << endl;
-                cout << *iter << endl;
-                cout << *instr_list[i] << endl;
-                exit(-1);
-            }
-            i++;
-        }
-    }
-    return ret;
+    return boost::make_iterator_range(begin, end);
 }
 
 BaseList::Range allBases(const bh_instruction &instr) {
     BaseList begin{instr.operand}, end{instr.operand.end()};
-    auto ret = boost::make_iterator_range(begin, end);
-    {
-        set<const bh_base *> _bases;
-        for (const bh_view &op: instr.getViews()) {
-            _bases.insert(op.base);
-        }
-        for (const bh_base *b: ret) {
-            if (not util::exist(_bases, b)) {
-                cout << instr << endl;
-                cout << *b << endl;
-                assert(1==2);
-                exit(-1);
-            } else {
-                _bases.erase(b);
-            }
-        }
-    }
-    return ret;
+    return boost::make_iterator_range(begin, end);
 }
 
 
