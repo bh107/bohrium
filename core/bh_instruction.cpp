@@ -32,17 +32,17 @@ using namespace std;
 
 set<bh_base *> bh_instruction::get_bases() {
     set<bh_base *> ret;
-    for (const bh_view &view: operand) {
-        if (not bh_is_constant(&view))
-            ret.insert(view.base);
+    for (const bh_view &view: getViews()) {
+        ret.insert(view.base);
     }
     return ret;
 }
 
 bool bh_instruction::isContiguous() const {
-    for (const bh_view &view: operand) {
-        if ((not view.isContiguous()) and (not view.isContiguous()))
+    for (const bh_view &view: getViews()) {
+        if (not view.isContiguous()) {
             return false;
+        }
     }
     return true;
 }
@@ -118,9 +118,7 @@ void bh_instruction::reshape(const vector<int64_t> &shape) {
         throw runtime_error("Reshape: instruction not reshapable!");
     }
     const int64_t totalsize = std::accumulate(shape.begin(), shape.end(), int64_t{1}, std::multiplies<int64_t>());
-    for (bh_view &view: operand) {
-        if (bh_is_constant(&view))
-            continue;
+    for (bh_view &view: getViews()) {
         if (totalsize != view.shape.prod()) {
             throw runtime_error("Reshape: shape mismatch!");
         }
