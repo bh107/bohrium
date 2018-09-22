@@ -101,6 +101,11 @@ struct bh_view {
     /// Return true when this view is contiguous accessing the underlying base array
     bool isContiguous() const;
 
+    /// Return true when this view has an active sliding object
+    bool hasSlide() const {
+        return not slides.dims.empty();
+    }
+
     /// Less than operator
     bool operator<(const bh_view &other) const {
         if (base < other.base) return true;
@@ -221,6 +226,3 @@ bool bh_view_same_shape(const bh_view *a, const bh_view *b);
  * @return The boolean answer
  */
 bool bh_view_disjoint(const bh_view *a, const bh_view *b);
-
-
-bool has_slides(const bh_view a);

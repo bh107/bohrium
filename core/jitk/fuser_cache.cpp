@@ -67,7 +67,7 @@ void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
         size_t view_id = views.insert(view).first;
         ss << view_id;
         // Sliding views has identical hashes across iterations
-        if (not has_slides(view)) {
+        if (not view.hasSlide()) {
             ss << view.start;
         } else {
             // Check whether the shape of the sliding view is a single value
@@ -124,7 +124,7 @@ void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
     for (size_t i = 0; i < instr.operand.size(); ++i) {
-        if (has_slides(instr.operand[i])) {
+        if (instr.operand[i].hasSlide()) {
             instr.operand[i].start = origin->operand[i].start;
         }
 

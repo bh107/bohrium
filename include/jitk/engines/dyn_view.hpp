@@ -22,7 +22,7 @@ void slide_views(BhIR *bhir) {
     // Iterate through all instructions and slide the relevant views
     for (bh_instruction &instr : bhir->instr_list) {
         for (bh_view &view : instr.operand) {
-            if (has_slides(view)) {
+            if (view.hasSlide()) {
                 // The relevant dimension in the view is updated by the given stride
                 for (const bh_slide_dim &dim: view.slides.dims) {
                     if (dim.step_delay == 1 || (view.slides.iteration_counter % dim.step_delay == dim.step_delay-1)) {

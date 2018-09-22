@@ -201,10 +201,6 @@ bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
     return true;
 }
 
-bool has_slides(const bh_view a) {
-    return (not a.slides.dims.empty());
-}
-
 bool bh_view_disjoint(const bh_view *a, const bh_view *b) {
     // TODO: In order to fixed BUG like <https://github.com/bh107/bohrium/issues/178>, we say that sharing
     //       the same base makes the views overlapping for now.
