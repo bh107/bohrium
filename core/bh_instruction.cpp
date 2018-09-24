@@ -49,11 +49,11 @@ bool bh_instruction::isContiguous() const {
 
 bool bh_instruction::all_same_shape() const {
     if (operand.size() > 0) {
-        assert(not bh_is_constant(&operand[0]));
+        assert(not operand[0].isConstant());
         const bh_view &first = operand[0];
         for (size_t o = 1; o < operand.size(); ++o) {
             const bh_view &view = operand[o];
-            if (not bh_is_constant(&view)) {
+            if (not view.isConstant()) {
                 if (not bh_view_same_shape(&first, &view))
                     return false;
             }
@@ -72,22 +72,22 @@ BhIntVec bh_instruction::shape() const {
     if (bh_opcode_is_sweep(opcode)) {
         // The principal shape of a sweep is the shape of the array array that is sweeped over
         assert(operand.size() == 3);
-        assert(bh_is_constant(&operand[2]));
-        assert(not bh_is_constant(&operand[1]));
+        assert(operand[2].isConstant());
+        assert(not operand[1].isConstant());
         const bh_view &view = operand[1];
         return view.shape;
     } else if (opcode == BH_GATHER) {
         // The principal shape of a gather is the shape of the index and output array, which are equal.
         assert(operand.size() == 3);
-        assert(not bh_is_constant(&operand[1]));
-        assert(not bh_is_constant(&operand[2]));
+        assert(not operand[1].isConstant());
+        assert(not operand[2].isConstant());
         const bh_view &view = operand[2];
         return view.shape;
     } else if (opcode == BH_SCATTER or opcode == BH_COND_SCATTER) {
         // The principal shape of a scatter is the shape of the index and input array, which are equal.
         assert(operand.size() >= 3);
-        assert(not bh_is_constant(&operand[1]));
-        assert(not bh_is_constant(&operand[2]));
+        assert(not operand[1].isConstant());
+        assert(not operand[2].isConstant());
         const bh_view &view = operand[2];
         return view.shape;
     } else if (operand.empty()) {
@@ -107,7 +107,7 @@ int64_t bh_instruction::ndim() const {
 int bh_instruction::sweep_axis() const {
     if (bh_opcode_is_sweep(opcode)) {
         assert(operand.size() == 3);
-        assert(bh_is_constant(&operand[2]));
+        assert(operand[2].isConstant());
         return static_cast<int>(constant.get_int64());
     }
     return BH_MAXDIM;
@@ -140,7 +140,7 @@ void bh_instruction::remove_axis(int64_t axis) {
     if (operand.size() > 0) {
         // In the input we can simply remove the axis
         for (size_t o = 1; o < operand.size(); ++o) {
-            if (not(bh_is_constant(&operand[o]) or     // Ignore constants
+            if (not(operand[o].isConstant() or     // Ignore constants
                     (o == 1 and opcode == BH_GATHER))) // Ignore gather's first input operand
             {
                 operand[o].remove_axis(axis);
@@ -178,7 +178,7 @@ void bh_instruction::transpose(int64_t axis1, int64_t axis2) {
         // The input we can simply transpose
         for (size_t o = 1; o < operand.size(); ++o) {
             bh_view &view = operand[o];
-            if (not bh_is_constant(&view)) {
+            if (not view.isConstant()) {
                 if (not (o == 1 and opcode == BH_GATHER)) { // The input array of gather has arbitrary shape and stride
                     view.transpose(axis1, axis2);
                 }
@@ -239,7 +239,7 @@ void bh_instruction::transpose() {
 bh_type bh_instruction::operand_type(int operand_index) const {
     assert(((int) operand.size()) > operand_index);
     const bh_view &view = operand[operand_index];
-    if (bh_is_constant(&view)) {
+    if (view.isConstant()) {
         return constant.type;
     } else {
         return view.base->type;
@@ -255,7 +255,7 @@ string bh_instruction::pprint(bool python_notation) const {
 
     for (const bh_view &v: operand) {
         ss << " ";
-        if (bh_is_constant(&v)) {
+        if (v.isConstant()) {
             ss << constant;
         } else {
             ss << v.pprint(python_notation);

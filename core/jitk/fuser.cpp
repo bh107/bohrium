@@ -65,7 +65,7 @@ namespace {
 bool fully_data_parallel_compatible(const bh_view &writer, const bh_view &reader) {
 
     // Disjoint views or constants are obviously compatible
-    if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
+    if (writer.isConstant() or reader.isConstant() or writer.base != reader.base) {
         return true;
     }
 
@@ -100,13 +100,13 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     // Scatter writes in arbitrary order
     if (a->opcode == BH_SCATTER or a->opcode == BH_COND_SCATTER) {
         for(size_t i=0; i<b->operand.size(); ++i) {
-            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+            if ((not b->operand[i].isConstant()) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER or b->opcode == BH_COND_SCATTER) {
         for(size_t i=0; i<a->operand.size(); ++i) {
-            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+            if ((not a->operand[i].isConstant()) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
         }

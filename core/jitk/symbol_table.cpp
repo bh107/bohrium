@@ -59,7 +59,7 @@ SymbolTable::SymbolTable(const LoopB &kernel,
         if (bh_opcode_is_accumulate(instr->opcode)) {
             _array_always.insert(instr->operand[0].base);
         } else if (instr->opcode == BH_GATHER) { // Gather accesses the input arbitrarily
-            if (not bh_is_constant(&instr->operand[1])) {
+            if (not instr->operand[1].isConstant()) {
                 _array_always.insert(instr->operand[1].base);
             }
           // Scatter accesses the output arbitrarily
@@ -81,8 +81,8 @@ SymbolTable::SymbolTable(const LoopB &kernel,
         auto non_temp_arrays = kernel.getAllNonTemps();
         non_temp_arrays.insert(_array_always.begin(), _array_always.end());
         for (const InstrPtr &instr: iterator::allInstr(kernel)) {
-            for (const bh_view &v: instr->operand) {
-                if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
+            for (const bh_view &v: instr->getViews()) {
+                if (util::exist(non_temp_arrays, v.base)) {
                     if (not util::exist_linearly(_params, v.base)) {
                         _params.push_back(v.base);
                     }

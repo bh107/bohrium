@@ -95,7 +95,7 @@ bool collapse_instr_axes(LoopB &loop, const int axis) {
             }
             for (size_t i=0; i<instr.operand.size(); ++i) {
                 bh_view &view = instr.operand[i];
-                if (not bh_is_constant(&view)) {
+                if (not view.isConstant()) {
                     int _axis = axis;
                     if (i==0 and bh_opcode_is_reduction(instr.opcode)) {
                         _axis = sa < _axis ? _axis-1 : _axis;

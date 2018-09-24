@@ -63,7 +63,7 @@ constexpr size_t SEP_CONSTANT = SIZE_MAX - 3;
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
  */
 void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
-    if (not bh_is_constant(&view)) {
+    if (not view.isConstant()) {
         size_t view_id = views.insert(view).first;
         ss << view_id;
         // Sliding views has identical hashes across iterations
@@ -128,7 +128,7 @@ void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
             instr.operand[i].start = origin->operand[i].start;
         }
 
-        if (bh_is_constant(&instr.operand[i])) {
+        if (instr.operand[i].isConstant()) {
             // NB: sweeped axis values shouldn't be updated
             if (not bh_opcode_is_sweep(instr.opcode)) {
                 instr.constant = origin->constant;

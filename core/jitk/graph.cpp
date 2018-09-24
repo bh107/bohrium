@@ -154,8 +154,8 @@ uint64_t block_cost(const Block &block) {
     const set<bh_base *> temps = block.isInstr()?set<bh_base *>():block.getLoop().getAllTemps();
     for (const InstrPtr &instr: bohrium::jitk::iterator::allInstr(block)) {
         // Find non-temporary arrays
-        for(const bh_view &v: instr->operand) {
-            if (not bh_is_constant(&v) and temps.find(v.base) == temps.end()) {
+        for(const bh_view &v: instr->getViews()) {
+            if (temps.find(v.base) == temps.end()) {
                 if (std::find(non_temps.begin(), non_temps.end(), v.base) == non_temps.end()) {
                     non_temps.push_back(v.base);
                 }
