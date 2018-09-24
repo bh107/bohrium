@@ -69,11 +69,7 @@ void Contracter::reduction(BhIR &bhir)
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
                 bool other_use = false;
-                for(bh_view &other_view: other_instr.operand) {
-                    if (bh_is_constant(&other_view)) {
-                        continue;
-                    }
-
+                for(bh_view &other_view: other_instr.getViews()) {
                     if (bases.find(other_view.base) != bases.end()) {
                         other_use = true;
                         break;

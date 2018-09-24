@@ -87,7 +87,7 @@ static void rewrite_chain_add_sub(BhIR &bhir, vector<bh_instruction*>& chain)
     }
 
     // Loop through rest and accumulate value
-    for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
+    for(auto ite=chain.begin()+1; ite != chain.end(); ++ite) {
         bh_instruction& rinstr = **ite;
         if (rinstr.opcode == BH_ADD) {
             sum += rinstr.constant.get_double();
@@ -145,7 +145,7 @@ static void rewrite_chain_mul_div(BhIR &bhir, vector<bh_instruction*>& chain)
     }
 
     // Loop through rest and accumulate value
-    for(vector<bh_instruction*>::iterator ite=chain.begin()+1; ite != chain.end(); ++ite) {
+    for(auto ite=chain.begin()+1; ite != chain.end(); ++ite) {
         bh_instruction& rinstr = **ite;
         if (rinstr.opcode == BH_MULTIPLY) {
             result *= rinstr.constant.get_double();
@@ -182,7 +182,7 @@ void Contracter::collect(BhIR &bhir)
     for(size_t pc = 0; pc < bhir.instr_list.size(); ++pc) {
         bh_instruction& instr = bhir.instr_list[pc];
 
-        if ((is_add_sub(instr.opcode) or is_mul_div(instr.opcode)) and bh_is_constant(&(instr.operand[2]))) {
+        if ((is_add_sub(instr.opcode) or is_mul_div(instr.opcode)) and instr.operand[2].isConstant()) {
             collect_opcode = instr.opcode;
             views.push_back(&instr.operand[0]);
             chain.push_back(&instr);
@@ -190,13 +190,13 @@ void Contracter::collect(BhIR &bhir)
             for(size_t pc_chain = pc+1; pc_chain < bhir.instr_list.size(); ++pc_chain) {
                 bh_instruction& other_instr = bhir.instr_list[pc_chain];
 
-                if (is_add_sub(collect_opcode) and is_add_sub(other_instr.opcode) and bh_is_constant(&other_instr.operand[2])) {
+                if (is_add_sub(collect_opcode) and is_add_sub(other_instr.opcode) and other_instr.operand[2].isConstant()) {
                     // Both are ADD or SUBTRACT
                     if (*views.back() == other_instr.operand[1]) {
                         views.push_back(&other_instr.operand[0]);
                         chain.push_back(&other_instr);
                     }
-                } else if (is_mul_div(collect_opcode) and is_mul_div(other_instr.opcode) and bh_is_constant(&other_instr.operand[2])) {
+                } else if (is_mul_div(collect_opcode) and is_mul_div(other_instr.opcode) and other_instr.operand[2].isConstant()) {
                     // Both are MULTIPLY or DIVIDE
 
                     // We are not allowed to DIVIDE when the result operand has integer type

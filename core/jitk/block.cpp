@@ -564,13 +564,13 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     if (a->opcode == BH_SCATTER or a->opcode == BH_COND_SCATTER) {
 
         for (size_t i = 0; i < b->operand.size(); ++i) {
-            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+            if ((not b->operand[i].isConstant()) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER or b->opcode == BH_COND_SCATTER) {
         for (size_t i = 0; i < a->operand.size(); ++i) {
-            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+            if ((not a->operand[i].isConstant()) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
         }

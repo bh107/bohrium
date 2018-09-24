@@ -195,19 +195,6 @@ std::ostream &operator<<(std::ostream &out, const bh_view &v);
  */
 #define bh_base_array(view) ((view)->base)
 
-/* Determines whether the operand is a constant
- *
- * @o The operand
- * @return The boolean answer
- */
-bool bh_is_constant(const bh_view *o);
-
-/* Flag operand as a constant
- *
- * @o The operand
- */
-void bh_flag_constant(bh_view *o);
-
 /* Determines whether two views have same shape.
  *
  * @a The first view

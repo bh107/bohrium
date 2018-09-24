@@ -76,9 +76,7 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
     // Add the new base array to 'remote2local' and to 'data_recv'
     size_t new_base_count = 0;
     for (const bh_instruction &instr: instr_list) {
-        for (const bh_view &v: instr.operand) {
-            if (bh_is_constant(&v))
-                continue;
+        for (const bh_view &v: instr.getViews()) {
             if (not util::exist(remote2local, v.base)) {
                 assert(new_base_count < news.size());
                 remote2local[v.base] = news[new_base_count++];
@@ -91,10 +89,8 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
 
     // Update all base pointers to point to the local bases
     for (bh_instruction &instr: instr_list) {
-        for (bh_view &v: instr.operand) {
-            if (not bh_is_constant(&v)) {
-                v.base = &remote2local.at(v.base);
-            }
+        for (bh_view &v: instr.getViews()) {
+            v.base = &remote2local.at(v.base);
         }
     }
     // Update all base pointers in the bhir's `_syncs` set
@@ -119,8 +115,8 @@ std::vector<char> BhIR::writeSerializedArchive(set<bh_base *> &known_base_arrays
     // Find new base arrays in 'bhir', which the de-serializing component should know about, and their data (if any)
     vector<bh_base> new_bases; // New base arrays in the order they appear in the instruction list
     for (bh_instruction &instr: instr_list) {
-        for (const bh_view &v: instr.operand) {
-            if (not bh_is_constant(&v) and not util::exist(known_base_arrays, v.base)) {
+        for (const bh_view &v: instr.getViews()) {
+            if (not util::exist(known_base_arrays, v.base)) {
                 new_bases.push_back(*v.base);
                 known_base_arrays.insert(v.base);
                 if (v.base->data != nullptr) {

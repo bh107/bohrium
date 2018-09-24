@@ -103,7 +103,7 @@ std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const
 }
 
 bool row_major_access(const bh_view &view) {
-    if(not bh_is_constant(&view)) {
+    if(not view.isConstant()) {
         assert(view.ndim > 0);
         for(int64_t i = 1; i < view.ndim; ++ i) {
             if (view.stride[i] > view.stride[i-1]) {

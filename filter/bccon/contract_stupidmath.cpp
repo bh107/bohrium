@@ -86,7 +86,7 @@ void Contracter::stupidmath(BhIR &bhir)
             instr.opcode = BH_IDENTITY;
 
             // We need to figure out which operand is the constant, and remove it
-            if (bh_is_constant(&(instr.operand[1]))) {
+            if (instr.operand[1].isConstant()) {
                 instr.operand.erase(instr.operand.begin() + 1);
             } else {
                 instr.operand.erase(instr.operand.begin() + 2);

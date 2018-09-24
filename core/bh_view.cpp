@@ -71,7 +71,7 @@ void bh_view::remove_axis(int64_t dim) {
 void bh_view::transpose(int64_t axis1, int64_t axis2) {
     assert(0 <= axis1 and axis1 < ndim);
     assert(0 <= axis2 and axis2 < ndim);
-    assert(not bh_is_constant(this));
+    assert(not isConstant());
     std::swap(shape[axis1], shape[axis2]);
     std::swap(stride[axis1], stride[axis2]);
     slides.transpose(axis1, axis2);
@@ -149,7 +149,7 @@ vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
 string bh_view::pprint(bool py_notation) const {
     stringstream ss;
     ss << "a" << base->get_label() << "[";
-    if (bh_is_constant(this)) {
+    if (isConstant()) {
         ss << "CONST";
     } else if (py_notation) {
         const vector<tuple<int64_t, int64_t, int64_t> > sne = python_notation();
@@ -177,14 +177,6 @@ string bh_view::pprint(bool py_notation) const {
 ostream &operator<<(ostream &out, const bh_view &v) {
     out << v.pprint(true);
     return out;
-}
-
-bool bh_is_constant(const bh_view *o) {
-    return (o->base == NULL);
-}
-
-void bh_flag_constant(bh_view *o) {
-    o->base = NULL;
 }
 
 bool bh_view_same_shape(const bh_view *a, const bh_view *b) {

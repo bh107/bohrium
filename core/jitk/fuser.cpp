@@ -155,11 +155,9 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 // Returns a set of bases that the instruction accesses and is in 'container'
 set<bh_base*> instr_accessing(const bh_instruction *instr, const set<bh_base*> &container) {
     set<bh_base*> ret;
-    for (const bh_view &v: instr->operand) {
-        if (not bh_is_constant(&v)) {
-            if (util::exist(container, v.base)) {
-                ret.insert(v.base);
-            }
+    for (const bh_view &v: instr->getViews()) {
+        if (util::exist(container, v.base)) {
+            ret.insert(v.base);
         }
     }
     return ret;

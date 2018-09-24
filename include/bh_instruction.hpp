@@ -77,7 +77,7 @@ struct bh_instruction {
     /// Returns true when one of the operands of 'instr' is a constant
     bool has_constant() const {
         for (const bh_view &v: operand) {
-            if (bh_is_constant(&v)) {
+            if (v.isConstant()) {
                 return true;
             }
         }
@@ -130,9 +130,9 @@ struct bh_instruction {
             return false;
         }
         for (size_t i = 0; i < operand.size(); ++i) {
-            if (bh_is_constant(&operand[i]) != bh_is_constant(&other.operand[i])) {
+            if (operand[i].isConstant() != other.operand[i].isConstant()) {
                 return false;
-            } else if (bh_is_constant(&operand[i])) { // Both are constant
+            } else if (operand[i].isConstant()) { // Both are constant
                 if (constant != other.constant)
                     return false;
             } else {

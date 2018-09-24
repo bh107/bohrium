@@ -137,7 +137,7 @@ inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out,
 template <typename T>
 inline void bh_set_constant(bh_instruction& instr, int opr_idx, bh_type type, T value)
 {
-    bh_flag_constant(&instr.operand[opr_idx]);
+    instr.operand[opr_idx].base = nullptr;
     instr.constant.type = type;
 
     switch(type) {

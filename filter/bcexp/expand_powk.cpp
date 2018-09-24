@@ -38,7 +38,7 @@ int Expander::expandPowk(BhIR& bhir, int pc)
     bh_instruction& instr = bhir.instr_list[pc];
 
     // Transformation does not apply for non constants
-    if (!bh_is_constant(&instr.operand[2])) {
+    if (!instr.operand[2].isConstant()) {
         return 0;
     }
 

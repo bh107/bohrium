@@ -71,7 +71,7 @@ scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const 
     for (const InstrPtr &instr: iterator::allInstr(block)) {
         for (size_t i = 1; i < instr->operand.size(); ++i) {
             const bh_view &input = instr->operand[i];
-            if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
+            if ((not input.isConstant()) and ignore_bases.find(input.base) == ignore_bases.end()) {
                 if (local_tmps.find(input.base) == local_tmps.end() and
                     (parent_scope == nullptr or parent_scope->isArray(input))) {
                     if (util::exist(candidates, input)) { // 'input' is used multiple times
