@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bh_opcode.h>
 #include <jitk/symbol_table.hpp>
+#include <jitk/iterator.hpp>
 
 // Return the OpenMP reduction symbol
 const char* openmp_reduce_symbol(bh_opcode opcode) {
@@ -71,7 +72,7 @@ bool simd_compatible(const bohrium::jitk::LoopB &block,
     }
 
     // An OpenMP SIMD loop does not support ANY OpenMP pragmas
-    for (bohrium::jitk::InstrPtr instr: block.getAllInstr()) {
+    for (const bohrium::jitk::InstrPtr &instr: bohrium::jitk::iterator::allInstr(block)) {
         if (scope.isOpenmpAtomic(instr) or scope.isOpenmpCritical(instr))
             return false;
     }

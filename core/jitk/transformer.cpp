@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <jitk/transformer.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -28,7 +29,7 @@ namespace jitk {
 namespace {
 
 // Help function that swap the two axes, 'axis1' and 'axis2', in all instructions in 'instr_list'
-vector<InstrPtr> swap_axis(const vector<InstrPtr> &instr_list, int64_t axis1, int64_t axis2) {
+vector<InstrPtr> swap_axis(const iterator::BlockList::Range &instr_list, int64_t axis1, int64_t axis2) {
     vector<InstrPtr> ret;
     for (const InstrPtr &instr: instr_list) {
         bh_instruction tmp(*instr);
@@ -51,12 +52,12 @@ vector<Block> swap_blocks(const LoopB &parent, const LoopB *child) {
             loop._frees.insert(parent._frees.begin(), parent._frees.end());
         } else {
             loop.size = child->size;
-            const vector<InstrPtr> t = swap_axis(child->getAllInstr(), parent.rank, child->rank);
+            const vector<InstrPtr> t = swap_axis(iterator::allInstr(*child), parent.rank, child->rank);
             loop._block_list.push_back(create_nested_block(t, child->rank, parent.size));
             loop._frees.insert(child->_frees.begin(), child->_frees.end());
         }
         loop.metadataUpdate();
-        ret.push_back(Block(std::move(loop)));
+        ret.emplace_back(std::move(loop));
     }
     return ret;
 }
@@ -94,7 +95,7 @@ bool collapse_instr_axes(LoopB &loop, const int axis) {
             }
             for (size_t i=0; i<instr.operand.size(); ++i) {
                 bh_view &view = instr.operand[i];
-                if (not bh_is_constant(&view)) {
+                if (not view.isConstant()) {
                     int _axis = axis;
                     if (i==0 and bh_opcode_is_reduction(instr.opcode)) {
                         _axis = sa < _axis ? _axis-1 : _axis;
@@ -172,9 +173,9 @@ void split_for_threading(vector<Block> &block_list, uint64_t min_threading) {
         }
         const LoopB &loop = block.getLoop();
         uint64_t max_nelem = 0; // The maximum number of element in loop, which tells use the best-case scenario
-        for (const InstrPtr &instr: loop.getAllInstr()) {
+        for (const InstrPtr &instr: iterator::allInstr(loop)) {
             if (instr->operand.size() > 0) {
-                const uint64_t nelem = static_cast<uint64_t>(bh_nelements(instr->operand[0]));
+                const uint64_t nelem = static_cast<uint64_t>(instr->operand[0].shape.prod());
                 if (nelem > max_nelem)
                     max_nelem = nelem;
             }

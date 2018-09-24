@@ -63,11 +63,11 @@ constexpr size_t SEP_CONSTANT = SIZE_MAX - 3;
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
  */
 void hash_view(const bh_view &view, ViewDB &views, std::stringstream &ss) {
-    if (not bh_is_constant(&view)) {
+    if (not view.isConstant()) {
         size_t view_id = views.insert(view).first;
         ss << view_id;
         // Sliding views has identical hashes across iterations
-        if (not has_slides(view)) {
+        if (not view.hasSlide()) {
             ss << view.start;
         } else {
             // Check whether the shape of the sliding view is a single value
@@ -124,11 +124,11 @@ void update_with_origin(bh_instruction &instr, const bh_instruction *origin,
     assert(instr.origin_id == origin->origin_id);
     assert(instr.opcode == origin->opcode);
     for (size_t i = 0; i < instr.operand.size(); ++i) {
-        if (has_slides(instr.operand[i])) {
+        if (instr.operand[i].hasSlide()) {
             instr.operand[i].start = origin->operand[i].start;
         }
 
-        if (bh_is_constant(&instr.operand[i])) {
+        if (instr.operand[i].isConstant()) {
             // NB: sweeped axis values shouldn't be updated
             if (not bh_opcode_is_sweep(instr.opcode)) {
                 instr.constant = origin->constant;
@@ -168,10 +168,10 @@ std::vector<bh_base*> calc_base_ids(const vector<bh_instruction *> &instr_list) 
     std::vector<bh_base*> ret;
     std::set<bh_base*> unique_bases;
     for (const auto &instr: instr_list) {
-        for (const bh_view *view: instr->get_views()) {
-            if (not util::exist(unique_bases, view->base)) {
-                unique_bases.insert(view->base);
-                ret.push_back(view->base);
+        for (const bh_view &view: instr->getViews()) {
+            if (not util::exist(unique_bases, view.base)) {
+                unique_bases.insert(view.base);
+                ret.push_back(view.base);
             }
         }
     }

@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 #include <vector>
 #include <set>
 
@@ -31,17 +32,14 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
 
-// Maximum number of operands in a instruction.
-#define BH_MAX_NO_OPERANDS (3)
-
-//Memory layout of the Bohrium instruction
+/// Memory layout of the Bohrium instruction
 struct bh_instruction {
     // Opcode: Identifies the operation
     bh_opcode opcode = -1;
     // Id of each operand
     std::vector<bh_view> operand;
     // Constant included in the instruction (Used if one of the operands == NULL)
-    bh_constant constant;
+    bh_constant constant{};
     // Flag that indicates whether this instruction construct the output array (i.e. is the first operation on that array)
     // For now, this flag is only used by the code generators.
     bool constructor = false;
@@ -50,7 +48,7 @@ struct bh_instruction {
     // For now, this flag is only used by the code generators.
     int64_t origin_id = -1; // -1 indicates: unset
 
-    // Constructors
+    /// Constructors
     bh_instruction() = default;
 
     bh_instruction(bh_opcode opcode, std::vector<bh_view> operands) : opcode(opcode), operand(std::move(operands)) {}
@@ -63,77 +61,78 @@ struct bh_instruction {
         operand = instr.operand;
     }
 
-    // Return a set of all bases used by the instruction
-    std::set<const bh_base *> get_bases_const() const;
-
+    /// Return a set of all bases used by the instruction
     std::set<bh_base *> get_bases();
 
-    // Return a vector of views in this instruction.
-    // The first element is the output and the rest are inputs (the constant is ignored)
-    std::vector<const bh_view *> get_views() const;
+    /// Return an range over all views excluding constants
+    boost::filtered_range<bh_view::predicate_isNotConstant, std::vector<bh_view> > getViews() {
+        return boost::adaptors::filter(operand, bh_view::predicate_isNotConstant());
+    }
 
-    // Returns true when one of the operands of 'instr' is a constant
+    /// Return an range over all views excluding constants (const version)
+    boost::filtered_range<bh_view::predicate_isNotConstant, const std::vector<bh_view> > getViews() const {
+        return boost::adaptors::filter(operand, bh_view::predicate_isNotConstant());
+    }
+
+    /// Returns true when one of the operands of 'instr' is a constant
     bool has_constant() const {
         for (const bh_view &v: operand) {
-            if (bh_is_constant(&v)) {
+            if (v.isConstant()) {
                 return true;
             }
         }
         return false;
     }
 
-    // Check if all views in this instruction is contiguous
+    /// Check if all views in this instruction is contiguous
     bool isContiguous() const;
 
-    // Check if all view in this instruction have the same shape
+    /// Check if all view in this instruction have the same shape
     bool all_same_shape() const;
 
-    // Is this instruction (and all its views) reshapable?
+    /// Is this instruction (and all its views) reshapable?
     bool reshapable() const;
 
-    // Returns the principal shape of this instructions, which is the shape of the computation that constitute
-    // this instruction. E.g. in reduce, this function returns the shape of the input array
-    std::vector<int64_t> shape() const;
+    /// Returns the principal shape of this instructions, which is the shape of the computation that constitute
+    /// this instruction. E.g. in reduce, this function returns the shape of the input array
+    BhIntVec shape() const;
 
-    // Returns the principal number of dimension of this instruction, which is the number of dimension of the
-    // computation that constitute this instruction
+    /// Returns the principal number of dimension of this instruction, which is the number of dimension of the
+    /// computation that constitute this instruction
     int64_t ndim() const;
 
-    // Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
+    /// Returns the axis this instruction reduces over or 'BH_MAXDIM' if 'instr' isn't a reduction
     int sweep_axis() const;
 
-    // Reshape the views of the instruction to 'shape' with contiguous stride
+    /// Reshape the views of the instruction to 'shape' with contiguous stride
     void reshape(const std::vector<int64_t> &shape);
 
-    // Reshape the views of the instruction to 'shape' with contiguous stride (no checks!)
-    void reshape_force(const std::vector<int64_t> &shape);
-
-    // Remove `axis` from all views in this instruction.
-    // Notice that `axis` is based on the 'dominating shape' thus `remove_axis()` will correct
-    // the axis value when handling reductions automatically
+    /// Remove `axis` from all views in this instruction.
+    /// Notice that `axis` is based on the 'dominating shape' thus `remove_axis()` will correct
+    /// the axis value when handling reductions automatically
     void remove_axis(int64_t axis);
 
-    // Transposes by swapping the two axes 'axis1' and 'axis2'
+    /// Transposes by swapping the two axes 'axis1' and 'axis2'
     void transpose(int64_t axis1, int64_t axis2);
 
-    // Transpose by reversing all axes in the principal shape
+    /// Transpose by reversing all axes in the principal shape
     void transpose();
 
-    // Returns the type of the operand at given index (support constants)
+    /// Returns the type of the operand at given index (support constants)
     bh_type operand_type(int operand_index) const;
 
-    // Returns a pretty print of this instruction (as a string)
+    /// Returns a pretty print of this instruction (as a string)
     std::string pprint(bool python_notation = true) const;
 
-    // Equality
+    /// Equality
     bool operator==(const bh_instruction &other) const {
         if (opcode != other.opcode) {
             return false;
         }
         for (size_t i = 0; i < operand.size(); ++i) {
-            if (bh_is_constant(&operand[i]) != bh_is_constant(&other.operand[i])) {
+            if (operand[i].isConstant() != other.operand[i].isConstant()) {
                 return false;
-            } else if (bh_is_constant(&operand[i])) { // Both are constant
+            } else if (operand[i].isConstant()) { // Both are constant
                 if (constant != other.constant)
                     return false;
             } else {
@@ -144,12 +143,12 @@ struct bh_instruction {
         return true;
     }
 
-    // Inequality
+    /// Inequality
     bool operator!=(const bh_instruction &other) const {
         return !(*this == other);
     }
 
-    // Serialization using Boost
+    /// Serialization using Boost
     friend class boost::serialization::access;
 
     template<class Archive>

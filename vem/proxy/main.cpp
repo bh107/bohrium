@@ -152,10 +152,10 @@ public:
 
     // Handle memory copy
     void memCopy(bh_view &src, bh_view &dst, const std::string &param) override {
-        if (bh_is_constant(&src) or bh_is_constant(&dst)) {
+        if (src.isConstant() or dst.isConstant()) {
             throw runtime_error("PROXY - memCopy(): `src` and `dst` cannot be constants");
         }
-        if (bh_nelements(src) != bh_nelements(dst)) {
+        if (src.shape.prod() != dst.shape.prod()) {
             throw runtime_error("PROXY - memCopy(): `src` and `dst` must have same size");
         }
         if (util::exist(known_base_arrays, dst.base) or dst.base->data != nullptr) {

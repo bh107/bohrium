@@ -43,7 +43,7 @@ void write_array_index(const Scope &scope, const bh_view &view, stringstream &ou
         // Write view.start using the offset-and-strides variable
         out << "vo" << scope.symbols.offsetStridesID(view);
 
-        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
+        if (not view.is_scalar()) { // NB: this optimization is required when reducing a vector to a scalar!
             for (int i = 0; i < view.ndim; ++i) {
                 int t = i;
                 if (i >= hidden_axis) {
@@ -63,7 +63,7 @@ void write_array_index(const Scope &scope, const bh_view &view, stringstream &ou
             out << view.start;
             empty_subscription = false;
         }
-        if (not bh_is_scalar(&view)) { // NB: this optimization is required when reducing a vector to a scalar!
+        if (not view.is_scalar()) { // NB: this optimization is required when reducing a vector to a scalar!
             for (int i = 0; i < view.ndim; ++i) {
                 int t = i;
                 if (i >= hidden_axis)

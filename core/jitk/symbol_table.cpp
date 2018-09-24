@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_util.hpp>
 #include <jitk/symbol_table.hpp>
 #include <jitk/view.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -39,15 +40,14 @@ SymbolTable::SymbolTable(const LoopB &kernel,
 
     // NB: by assigning the IDs in the order they appear in the 'instr_list',
     //     the kernels can better be reused
-    const std::vector <InstrPtr> instr_list = kernel.getAllInstr();
-    for (const InstrPtr &instr: instr_list) {
-        for (const bh_view *view: instr->get_views()) {
-            _base_map.insert(std::make_pair(view->base, _base_map.size()));
-            _view_map.insert(std::make_pair(*view, _view_map.size()));
+    for (const InstrPtr &instr: iterator::allInstr(kernel)) {
+        for (const bh_view &view: instr->getViews()) {
+            _base_map.insert(std::make_pair(view.base, _base_map.size()));
+            _view_map.insert(std::make_pair(view, _view_map.size()));
             if (index_as_var) {
-                _idx_map.insert(std::make_pair(*view, _idx_map.size()));
+                _idx_map.insert(std::make_pair(view, _idx_map.size()));
             }
-            _offset_strides_map.insert(std::make_pair(*view, _offset_strides_map.size()));
+            _offset_strides_map.insert(std::make_pair(view, _offset_strides_map.size()));
         }
         if (const_as_var) {
             assert(instr->origin_id >= 0);
@@ -59,7 +59,7 @@ SymbolTable::SymbolTable(const LoopB &kernel,
         if (bh_opcode_is_accumulate(instr->opcode)) {
             _array_always.insert(instr->operand[0].base);
         } else if (instr->opcode == BH_GATHER) { // Gather accesses the input arbitrarily
-            if (not bh_is_constant(&instr->operand[1])) {
+            if (not instr->operand[1].isConstant()) {
                 _array_always.insert(instr->operand[1].base);
             }
           // Scatter accesses the output arbitrarily
@@ -80,9 +80,9 @@ SymbolTable::SymbolTable(const LoopB &kernel,
     {
         auto non_temp_arrays = kernel.getAllNonTemps();
         non_temp_arrays.insert(_array_always.begin(), _array_always.end());
-        for (const InstrPtr &instr: instr_list) {
-            for (const bh_view &v: instr->operand) {
-                if (not bh_is_constant(&v) and util::exist(non_temp_arrays, v.base)) {
+        for (const InstrPtr &instr: iterator::allInstr(kernel)) {
+            for (const bh_view &v: instr->getViews()) {
+                if (util::exist(non_temp_arrays, v.base)) {
                     if (not util::exist_linearly(_params, v.base)) {
                         _params.push_back(v.base);
                     }

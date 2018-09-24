@@ -29,9 +29,9 @@ using namespace bohrium;
 
 // Returns the label of this base array
 // NB: generated a new label if necessary
-static map<const bh_base *, size_t> _label_map;
+static map<const bh_base *, uint64_t> _label_map;
 
-size_t bh_base::get_label() const {
+uint64_t bh_base::get_label() const {
     if (_label_map.find(this) == _label_map.end()) {
         _label_map[this] = _label_map.size();
     }

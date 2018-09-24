@@ -109,7 +109,7 @@ void add_identity_block(LoopB &loop, int64_t &origin_count) {
                 identity_instr.operand[0].shape[sweep_instr->sweep_axis()] = 1;
             }
 
-            if (loop.rank == -1 and bh_is_scalar(&sweep_instr->operand[0])) {
+            if (loop.rank == -1 and sweep_instr->operand[0].is_scalar()) {
                 ret.emplace_back(identity_instr, 0);
             } else if (loop.rank == sweep_instr->operand[0].ndim - 1) {
                 ret.emplace_back(identity_instr, sweep_instr->operand[0].ndim);
@@ -154,7 +154,7 @@ vector<LoopB> add_identity_block(vector<Block> &block_list, int64_t &origin_coun
                 identity_instr.operand[0].shape[sweep_instr->sweep_axis()] = 1;
             }
 
-            if (bh_is_scalar(&sweep_instr->operand[0])) {
+            if (sweep_instr->operand[0].is_scalar()) {
                 kernel._block_list.emplace_back(identity_instr, 0);
             } else {
                 // Let's create and add the identity loop to `ret`

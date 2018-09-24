@@ -33,10 +33,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bh_config_parser.hpp>
 
 #include <jitk/block.hpp>
-
 #include <jitk/symbol_table.hpp>
-
 #include <jitk/instruction.hpp>
+#include <jitk/iterator.hpp>
 
 namespace bohrium {
 namespace jitk {
@@ -52,13 +51,13 @@ inline bool sweeping_innermost_axis(InstrPtr instr) {
     return instr->sweep_axis() == instr->operand[1].ndim - 1;
 }
 
-inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const std::set<bh_base*> &local_tmps) {
-    std::vector<const bh_view*> result;
+inline std::vector<const bh_view *>
+scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const std::set<bh_base *> &local_tmps) {
+    std::vector<const bh_view *> result;
 
-    const std::vector<InstrPtr> block_instr_list = block.getAllInstr();
     // We have to ignore output arrays and arrays that are accumulated
     std::set<bh_base *> ignore_bases;
-    for (const InstrPtr &instr: block_instr_list) {
+    for (const InstrPtr &instr: iterator::allInstr(block)) {
         if (not instr->operand.empty()) {
             ignore_bases.insert(instr->operand[0].base);
         }
@@ -69,10 +68,10 @@ inline std::vector<const bh_view*> scalar_replaced_input_only(const LoopB &block
     // First we add a valid view to the set of 'candidates' and if we encounter the view again
     // we add it to the 'result'
     std::set<bh_view> candidates;
-    for (const InstrPtr &instr: block_instr_list) {
-        for(size_t i=1; i < instr->operand.size(); ++i) {
+    for (const InstrPtr &instr: iterator::allInstr(block)) {
+        for (size_t i = 1; i < instr->operand.size(); ++i) {
             const bh_view &input = instr->operand[i];
-            if ((not bh_is_constant(&input)) and ignore_bases.find(input.base) == ignore_bases.end()) {
+            if ((not input.isConstant()) and ignore_bases.find(input.base) == ignore_bases.end()) {
                 if (local_tmps.find(input.base) == local_tmps.end() and
                     (parent_scope == nullptr or parent_scope->isArray(input))) {
                     if (util::exist(candidates, input)) { // 'input' is used multiple times

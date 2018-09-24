@@ -39,7 +39,7 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's start by removing redundant 1-sized dimensions (but make sure we don't remove all dimensions!)
     {
-        const vector<int64_t> shape = instr.shape();
+        const BhIntVec shape = instr.shape();
         const int sa = instr.sweep_axis();
         size_t ndim_left = bh_opcode_is_reduction(instr.opcode)?shape.size()-1:shape.size();
         for (int64_t i=shape.size()-1; i >= 0 and ndim_left > 1; --i) {
@@ -52,12 +52,9 @@ void simplify_instr(bh_instruction &instr) {
 
     // Let's try to simplify the shape of the instruction
     if (instr.ndim() >  1 and instr.reshapable()) {
-        const vector<int64_t> dominating_shape = instr.shape();
+        const BhIntVec dominating_shape = instr.shape();
         assert(dominating_shape.size() > 0);
-
-        const int64_t totalsize = std::accumulate(dominating_shape.begin(), dominating_shape.end(), int64_t{1}, \
-                                                      std::multiplies<int64_t>());
-        const vector<int64_t> shape = {totalsize};
+        const vector<int64_t> shape = {dominating_shape.prod()};
         instr.reshape(shape);
     }
 }
@@ -68,7 +65,7 @@ namespace {
 bool fully_data_parallel_compatible(const bh_view &writer, const bh_view &reader) {
 
     // Disjoint views or constants are obviously compatible
-    if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
+    if (writer.isConstant() or reader.isConstant() or writer.base != reader.base) {
         return true;
     }
 
@@ -103,13 +100,13 @@ bool fully_data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     // Scatter writes in arbitrary order
     if (a->opcode == BH_SCATTER or a->opcode == BH_COND_SCATTER) {
         for(size_t i=0; i<b->operand.size(); ++i) {
-            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+            if ((not b->operand[i].isConstant()) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER or b->opcode == BH_COND_SCATTER) {
         for(size_t i=0; i<a->operand.size(); ++i) {
-            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+            if ((not a->operand[i].isConstant()) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
         }
@@ -158,11 +155,9 @@ bool fully_fusible(const vector<InstrPtr> &instr_list, const InstrPtr &instr) {
 // Returns a set of bases that the instruction accesses and is in 'container'
 set<bh_base*> instr_accessing(const bh_instruction *instr, const set<bh_base*> &container) {
     set<bh_base*> ret;
-    for (const bh_view &v: instr->operand) {
-        if (not bh_is_constant(&v)) {
-            if (util::exist(container, v.base)) {
-                ret.insert(v.base);
-            }
+    for (const bh_view &v: instr->getViews()) {
+        if (util::exist(container, v.base)) {
+            ret.insert(v.base);
         }
     }
     return ret;
@@ -263,7 +258,7 @@ vector<Block> fuser_singleton(const vector<bh_instruction *> &instr_list) {
         assert(not instr->operand.empty()); // The noop instructions is removed by `simplify_instr_list()`
 
         // Let's create the block
-        const vector<int64_t> dominating_shape = instr->shape();
+        const BhIntVec dominating_shape = instr->shape();
         assert(dominating_shape.size() > 0);
         int64_t size_of_rank_dim = dominating_shape[0];
         vector<InstrPtr> single_instr = {instr};

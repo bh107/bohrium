@@ -40,59 +40,55 @@ bh_view::bh_view(const bh_view &view) {
     start = view.start;
     ndim = view.ndim;
     assert(ndim < BH_MAXDIM);
-
     slides = view.slides;
-
-    std::memcpy(shape, view.shape, ndim * sizeof(int64_t));
-    std::memcpy(stride, view.stride, ndim * sizeof(int64_t));
+    shape = view.shape;
+    stride = view.stride;
 }
 
-bh_view::bh_view(bh_base &base) {
-    bh_assign_complete_base(this, &base);
+bh_view::bh_view(bh_base *base) {
+    this->base = base;
+    this->ndim = 1;
+    this->start = 0;
+    this->shape.push_back(this->base->nelem);
+    this->stride.push_back(1);
 }
 
 void bh_view::insert_axis(int64_t dim, int64_t size, int64_t stride) {
     assert(dim <= ndim);
-
-    if (dim == ndim) { // Appending
-        this->shape[dim] = size;
-        this->stride[dim] = stride;
-    } else { // Inserting
-        for (int64_t i = ndim - 1; i >= 0; --i) {
-            if (i >= dim) { // Move shape and stride one to the right
-                this->shape[i + 1] = this->shape[i];
-                this->stride[i + 1] = this->stride[i];
-                if (i == dim) { // Insert the new dimension
-                    this->shape[i] = size;
-                    this->stride[i] = stride;
-                }
-            }
-        }
-    }
-
+    this->shape.insert(this->shape.begin() + dim, size);
+    this->stride.insert(this->stride.begin() + dim, size);
     ++ndim;
 }
 
 void bh_view::remove_axis(int64_t dim) {
     assert(1 < ndim);
     assert(dim < ndim);
-
-    for (int64_t i = dim; i < ndim - 1; ++i) {
-        shape[i] = shape[i + 1];
-        stride[i] = stride[i + 1];
-    }
-
+    shape.erase(shape.begin() + dim);
+    stride.erase(stride.begin() + dim);
     --ndim;
 }
 
 void bh_view::transpose(int64_t axis1, int64_t axis2) {
     assert(0 <= axis1 and axis1 < ndim);
     assert(0 <= axis2 and axis2 < ndim);
-    assert(not bh_is_constant(this));
-
+    assert(not isConstant());
     std::swap(shape[axis1], shape[axis2]);
     std::swap(stride[axis1], stride[axis2]);
     slides.transpose(axis1, axis2);
+}
+
+bool bh_view::isContiguous() const {
+    if (isConstant()) {
+        return false;
+    }
+    int64_t weight = 1;
+    for (int64_t dim = ndim - 1; dim >= 0; --dim) {
+        if (shape[dim] > 1 && stride[dim] != weight) {
+            return false;
+        }
+        weight *= shape[dim];
+    }
+    return true;
 }
 
 vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
@@ -153,7 +149,7 @@ vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
 string bh_view::pprint(bool py_notation) const {
     stringstream ss;
     ss << "a" << base->get_label() << "[";
-    if (bh_is_constant(this)) {
+    if (isConstant()) {
         ss << "CONST";
     } else if (py_notation) {
         const vector<tuple<int64_t, int64_t, int64_t> > sne = python_notation();
@@ -170,11 +166,10 @@ string bh_view::pprint(bool py_notation) const {
     } else {
         ss << "start: " << start;
         ss << ", ndim: " << ndim;
-        ss << ", shape: " << pprint_carray(shape, ndim);
-        ss << ", stride: " << pprint_carray(stride, ndim);
+        ss << ", shape: " << shape;
+        ss << ", stride: " << stride;
         ss << ", base: " << base;
     }
-
     ss << "]";
     return ss.str();
 }
@@ -182,171 +177,6 @@ string bh_view::pprint(bool py_notation) const {
 ostream &operator<<(ostream &out, const bh_view &v) {
     out << v.pprint(true);
     return out;
-}
-
-bh_view bh_view_simplify(const bh_view &view) {
-    bh_view res;
-    res.base = view.base;
-    res.ndim = 0;
-    res.start = view.start;
-    int64_t i = 0;
-
-    while (view.shape[i] == 1 && i < view.ndim - 1) {
-        ++i;
-    }
-
-    res.shape[0] = view.shape[i];
-    res.stride[0] = view.stride[i];
-
-    for (++i; i < view.ndim; ++i) {
-        if (view.shape[i] == 0) {
-            res.ndim = 1;
-            res.shape[0] = 0;
-            return res;
-        } else if (view.shape[i] == 1) {
-            continue;
-        }
-
-        if (view.shape[i] * view.stride[i] == res.stride[res.ndim]) {
-            res.shape[res.ndim] *= view.shape[i];
-            res.stride[res.ndim] = view.stride[i];
-        } else {
-            ++res.ndim;
-            res.shape[res.ndim] = view.shape[i];
-            res.stride[res.ndim] = view.stride[i];
-        }
-    }
-
-    if (res.ndim == 0 || res.shape[res.ndim] > 1) {
-        ++res.ndim;
-    }
-    return res;
-}
-
-bh_view bh_view_simplify(const bh_view &view, const std::vector<int64_t> &shape) {
-    assert(false); // TODO: complete rewrite under the assumption the cleandim has been run
-
-    if (view.ndim < (int64_t) shape.size()) {
-        std::stringstream ss;
-        ss << "Can not simplify to more dimensions: ";
-        ss << "shape: " << shape << " view: " << view;
-        throw std::invalid_argument(ss.str());
-    }
-
-    bh_view res;
-    res.base = view.base;
-    res.ndim = 0;
-    res.start = view.start;
-    int64_t i = 0;
-
-    while (view.shape[i] == 1 && i < view.ndim - 1) {
-        ++i;
-    }
-
-    res.shape[0] = view.shape[i];
-    res.stride[0] = view.stride[i];
-
-    for (++i; i < view.ndim; ++i) {
-        if (shape[res.ndim] == 0) {
-            if (view.shape[i] != 0) {
-                continue;
-            } else {
-                res.shape[res.ndim++] = 0;
-                return res;
-            }
-        }
-
-        if ((int64_t) shape.size() == res.ndim) {
-            if (view.shape[i] == 1) {
-                continue;
-            } else {
-                std::stringstream ss;
-                ss << "Can not remove trailing dimensions of size > 1: ";
-                ss << "shape: " << shape << " view: " << view;
-                throw std::invalid_argument(ss.str());
-            }
-        }
-
-        if (view.shape[i - 1] > shape[res.ndim]) {
-            std::stringstream ss;
-            ss << "Can not simplify to lower dimension size: ";
-            ss << "shape: " << shape << " view: " << view;
-            throw std::invalid_argument(ss.str());
-        } else if (view.shape[i - 1] == shape[res.ndim]) {
-            res.shape[++res.ndim] = view.shape[i];
-            res.stride[res.ndim] = view.stride[i];
-            continue;
-        }
-
-        if (view.shape[i] == 1) {
-            continue;
-        }
-
-        if (view.shape[i] * view.stride[i] == res.stride[res.ndim]) {
-            res.shape[res.ndim] *= view.shape[i];
-            res.stride[res.ndim] = view.stride[i];
-        } else {
-            res.shape[++res.ndim] = view.shape[i];
-            res.stride[res.ndim] = view.stride[i];
-        }
-    }
-
-    if (res.ndim == 0 || res.shape[res.ndim] > 1) {
-        ++res.ndim;
-    }
-
-    if (res.ndim != (int64_t) shape.size()) {
-        std::stringstream ss;
-        ss << "Can not simplify to given shape: ";
-        ss << "shape: " << shape << " view: " << view;
-        throw std::invalid_argument(ss.str());
-    }
-
-    return res;
-}
-
-int64_t bh_nelements(int64_t ndim, const int64_t shape[]) {
-    assert (ndim > 0);
-    int64_t res = 1;
-    for (int i = 0; i < ndim; ++i) {
-        res *= shape[i];
-    }
-
-    return res;
-}
-
-int64_t bh_nelements(const bh_view &view) {
-    return bh_nelements(view.ndim, view.shape);
-}
-
-int64_t bh_set_contiguous_stride(bh_view *view) {
-    int64_t s = 1;
-    for (int64_t i = view->ndim - 1; i >= 0; --i) {
-        view->stride[i] = s;
-        s *= view->shape[i];
-    }
-
-    return s;
-}
-
-void bh_assign_complete_base(bh_view *view, bh_base *base) {
-    view->base = base;
-    view->ndim = 1;
-    view->start = 0;
-    view->shape[0] = view->base->nelem;
-    view->stride[0] = 1;
-}
-
-bool bh_is_scalar(const bh_view *view) {
-    return bh_nelements(*view) == 1;
-}
-
-bool bh_is_constant(const bh_view *o) {
-    return (o->base == NULL);
-}
-
-void bh_flag_constant(bh_view *o) {
-    o->base = NULL;
 }
 
 bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
@@ -362,28 +192,6 @@ bool bh_view_same_shape(const bh_view *a, const bh_view *b) {
 
     return true;
 }
-
-bool bh_is_contiguous(const bh_view *a) {
-    if (bh_is_constant(a)) {
-        return false;
-    }
-
-    int64_t weight = 1;
-    for (int64_t dim = a->ndim - 1; dim >= 0; --dim) {
-        if (a->shape[dim] > 1 && a->stride[dim] != weight) {
-            return false;
-        }
-
-        weight *= a->shape[dim];
-    }
-
-    return true;
-}
-
-bool has_slides(const bh_view a) {
-    return (not a.slides.dims.empty());
-}
-
 
 bool bh_view_disjoint(const bh_view *a, const bh_view *b) {
     // TODO: In order to fixed BUG like <https://github.com/bh107/bohrium/issues/178>, we say that sharing

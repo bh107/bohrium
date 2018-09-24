@@ -31,7 +31,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-/* Design Overview
+/** Design Overview
 
    A block can represent three things in Bohrium:
     * A kernel (i.e. compiled shared library), which consists of a list of for-loops (class LoopB when rank == -1)
@@ -116,25 +116,13 @@ public:
     // Return all sub-blocks (excl. nested blocks)
     std::vector<const LoopB *> getLocalSubBlocks() const;
 
-    // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<InstrPtr> &out) const;
-
-    std::vector<InstrPtr> getAllInstr() const;
-
     // Return instructions in the block (excl. nested blocks)
     void getLocalInstr(std::vector<InstrPtr> &out) const;
 
     std::vector<InstrPtr> getLocalInstr() const;
 
     // Return all bases accessed by this block
-    std::set<const bh_base *> getAllBases() const {
-        std::set<const bh_base *> ret;
-        for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base *> t = instr->get_bases_const();
-            ret.insert(t.begin(), t.end());
-        }
-        return ret;
-    }
+    std::set<const bh_base *> getAllBases() const;
 
     // Return all new arrays in this block (incl. nested blocks)
     void getAllNews(std::set<bh_base *> &out) const;
@@ -230,19 +218,22 @@ public:
         return _var.which() == 2; // Notice, the third type in '_var' is 'InstrB'
     }
 
-    // Retrieve the Loop Block
+    /// Retrieve the Loop Block
     LoopB &getLoop() { return boost::get<LoopB>(_var); }
 
+    /// Retrieve the Loop Block (const version)
     const LoopB &getLoop() const { return boost::get<LoopB>(_var); }
 
-    // Retrieve the instruction within the instruction block
-    const InstrPtr getInstr() const { return boost::get<InstrB>(_var).instr; }
+    /// Retrieve the instruction within the instruction block
+    InstrPtr &getInstr() { return boost::get<InstrB>(_var).instr; }
 
-    InstrPtr getInstr() { return boost::get<InstrB>(_var).instr; }
+    /// Retrieve the instruction within the instruction block (const version)
+    const InstrPtr &getInstr() const { return boost::get<InstrB>(_var).instr; }
 
+    /// Assign an instruction this block
     void setInstr(const bh_instruction &instr) {
         assert(_var.which() == 0 or _var.which() == 2);
-        boost::get<InstrB>(_var).rank = instr.ndim();
+        boost::get<InstrB>(_var).rank = static_cast<int>(instr.ndim());
         boost::get<InstrB>(_var).instr.reset(new bh_instruction(instr));
     }
 
@@ -258,20 +249,8 @@ public:
     // Validation check of this block
     bool validation() const;
 
-    // Return all instructions in the block (incl. nested blocks)
-    void getAllInstr(std::vector<InstrPtr> &out) const;
-
-    std::vector<InstrPtr> getAllInstr() const;
-
     // Return all bases accessed by this block
-    std::set<const bh_base *> getAllBases() const {
-        std::set<const bh_base *> ret;
-        for (InstrPtr instr: getAllInstr()) {
-            std::set<const bh_base *> t = instr->get_bases_const();
-            ret.insert(t.begin(), t.end());
-        }
-        return ret;
-    }
+    std::set<const bh_base *> getAllBases() const;
 
     // Returns true when all instructions within this block is system or if the block is empty()
     bool isSystemOnly() const {
@@ -296,18 +275,7 @@ public:
     }
 
     // Determines whether this block must be executed after 'other'
-    bool dependOn(const Block &other) const {
-        const std::vector<InstrPtr> this_instr_list = getAllInstr();
-        const std::vector<InstrPtr> other_instr_list = other.getAllInstr();
-        for (const InstrPtr this_instr: this_instr_list) {
-            for (const InstrPtr other_instr: other_instr_list) {
-                if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    bool dependOn(const Block &other) const;
 
     // Pretty print this block
     std::string pprint(const char *newline = "\n") const;

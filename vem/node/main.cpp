@@ -27,61 +27,58 @@ using namespace std;
 
 namespace {
 class Impl : public ComponentImpl {
-  private:
+private:
     // Allocated base arrays
-    set<bh_base*> _allocated_bases;
+    set<const bh_base *> _allocated_bases;
+
     // Inspect one instruction and throws exception on error
-    void inspect(bh_instruction *instr);
+    void inspect(const bh_instruction &instr);
+
     // Show memory warnings
     bool mem_warn;
-  public:
+public:
     Impl(int stack_level) : ComponentImpl(stack_level) {
         mem_warn = getenv("BH_MEM_WARN") != nullptr;
     }
+
     ~Impl() override; // NB: a destructor implementation must exist
     void execute(BhIR *bhir) override;
 };
 } //Unnamed namespace
 
-extern "C" ComponentImpl* create(int stack_level) {
+extern "C" ComponentImpl *create(int stack_level) {
     return new Impl(stack_level);
 }
-extern "C" void destroy(ComponentImpl* self) {
+extern "C" void destroy(ComponentImpl *self) {
     delete self;
 }
 
 Impl::~Impl() {
-    if (_allocated_bases.size() > 0)
-    {
+    if (not _allocated_bases.empty()) {
         long s = (long) _allocated_bases.size();
         if (s > 20) {
             cerr << "[NODE-VEM] Warning " << s << " base arrays were not freed "
-                    "on exit (too many to show here)." << endl;
+                                                  "on exit (too many to show here)." << endl;
         } else {
             cerr << "[NODE-VEM] Warning " << s << " base arrays were not freed "
-                    "on exit (only showing the array IDs because the view list may "
-                    "be corrupted due to reuse of base struct):" << endl;
-            for (bh_base *b: _allocated_bases) {
+                                                  "on exit (only showing the array IDs because the view list may "
+                                                  "be corrupted due to reuse of base struct):" << endl;
+            for (const bh_base *b: _allocated_bases) {
                 cerr << *b << endl;
             }
         }
     }
 }
 
-void Impl::inspect(bh_instruction *instr) {
+void Impl::inspect(const bh_instruction &instr) {
     //Save all new base arrays
-    for(const bh_view &op: instr->operand) {
-        if(!bh_is_constant(&op)) {
-            _allocated_bases.insert(op.base);
-        }
+    for (const bh_view &op: instr.getViews()) {
+        _allocated_bases.insert(op.base);
     }
-
     //And remove freed arrays
-    if(instr->opcode == BH_FREE)
-    {
-        bh_base *base = instr->operand[0].base;
-        if(_allocated_bases.erase(base) != 1)
-        {
+    if (instr.opcode == BH_FREE) {
+        bh_base *base = instr.operand[0].base;
+        if (_allocated_bases.erase(base) != 1) {
             cerr << "[NODE-VEM] freeing unknown base array: " << *base << endl;
             throw runtime_error("[NODE-VEM] freeing unknown base array");
         }
@@ -90,8 +87,9 @@ void Impl::inspect(bh_instruction *instr) {
 
 void Impl::execute(BhIR *bhir) {
     if (mem_warn) {
-        for(uint64_t i=0; i < bhir->instr_list.size(); ++i)
-            inspect(&bhir->instr_list[i]);
+        for (const bh_instruction &instr: bhir->instr_list) {
+            inspect(instr);
+        }
     }
     child.execute(bhir);
 }

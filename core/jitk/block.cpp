@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/block.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/codegen_util.hpp>
+#include <jitk/iterator.hpp>
 
 using namespace std;
 
@@ -34,13 +35,13 @@ namespace jitk {
 namespace {
 
 // Returns true if a block consisting of 'instr_list' is reshapable
-bool is_reshapeable(const std::vector<InstrPtr> &instr_list) {
-    if(instr_list.empty()) {
+bool is_reshapeable(const iterator::BlockList::Range &instr_list) {
+    if (instr_list.empty()) {
         return true;
     }
 
     // In order to be reshapeable, all instructions must have the same rank and be reshapeable
-    int64_t rank = instr_list[0]->ndim();
+    int64_t rank = instr_list.front()->ndim();
     for (const InstrPtr &instr: instr_list) {
         if (not instr->reshapable())
             return false;
@@ -60,7 +61,7 @@ void add_instr_to_block(LoopB &block, InstrPtr instr, int rank, int64_t size_of_
         instr = reshape_rank(instr, rank, size_of_rank_dim);
     }
 
-    const vector<int64_t> shape = instr->shape();
+    const BhIntVec shape = instr->shape();
 
     // Sanity check
     assert(shape.size() > (uint64_t) rank);
@@ -124,7 +125,7 @@ bool LoopB::isSystemOnly() const {
     return true;
 }
 
-void LoopB::getAllSubBlocks(std::vector<const LoopB*> &out) const {
+void LoopB::getAllSubBlocks(std::vector<const LoopB *> &out) const {
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             out.push_back(&b.getLoop());
@@ -133,24 +134,13 @@ void LoopB::getAllSubBlocks(std::vector<const LoopB*> &out) const {
     }
 }
 
-vector<const LoopB*> LoopB::getLocalSubBlocks() const {
-    vector<const LoopB*> ret;
+vector<const LoopB *> LoopB::getLocalSubBlocks() const {
+    vector<const LoopB *> ret;
     for (const Block &b : _block_list) {
         if (not b.isInstr()) {
             ret.push_back(&b.getLoop());
         }
     }
-    return ret;
-}
-
-void LoopB::getAllInstr(vector<InstrPtr> &out) const {
-    for (const Block &b : _block_list) {
-        b.getAllInstr(out);
-    }
-}
-vector<InstrPtr> LoopB::getAllInstr() const {
-    vector<InstrPtr> ret;
-    getAllInstr(ret);
     return ret;
 }
 
@@ -161,16 +151,26 @@ void LoopB::getLocalInstr(vector<InstrPtr> &out) const {
         }
     }
 }
+
 vector<InstrPtr> LoopB::getLocalInstr() const {
     vector<InstrPtr> ret;
     getLocalInstr(ret);
     return ret;
 }
 
+std::set<const bh_base *> LoopB::getAllBases() const {
+    std::set<const bh_base *> ret;
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
+        auto t = bohrium::jitk::iterator::allBases(*instr);
+        ret.insert(t.begin(), t.end());
+    }
+    return ret;
+}
+
 void LoopB::getAllNews(set<bh_base *> &out) const {
     out.insert(_news.begin(), _news.end());
     for (const Block &b: _block_list) {
-        if (not b.isInstr()){
+        if (not b.isInstr()) {
             b.getLoop().getAllNews(out);
         }
     }
@@ -185,7 +185,7 @@ set<bh_base *> LoopB::getAllNews() const {
 void LoopB::getAllFrees(set<bh_base *> &out) const {
     out.insert(_frees.begin(), _frees.end());
     for (const Block &b: _block_list) {
-        if (not b.isInstr()){
+        if (not b.isInstr()) {
             b.getLoop().getAllFrees(out);
         }
     }
@@ -213,7 +213,7 @@ set<bh_base *> LoopB::getLocalTemps() const {
 void LoopB::getAllTemps(set<bh_base *> &out) const {
     getLocalTemps(out);
     for (const Block &b: _block_list) {
-        if (not b.isInstr()){
+        if (not b.isInstr()) {
             b.getLoop().getAllTemps(out);
         }
     }
@@ -225,10 +225,10 @@ set<bh_base *> LoopB::getAllTemps() const {
     return ret;
 }
 
-void LoopB::getAllNonTemps(std::set<bh_base*> &out) const {
+void LoopB::getAllNonTemps(std::set<bh_base *> &out) const {
     const auto all_tmps = getAllTemps();
-    for(const bh_base* t: getAllBases()) {
-        auto b = const_cast<bh_base*>(t);
+    for (const bh_base *t: getAllBases()) {
+        auto b = const_cast<bh_base *>(t);
         if (not util::exist(all_tmps, b)) {
             out.insert(b);
         }
@@ -241,27 +241,27 @@ set<bh_base *> LoopB::getAllNonTemps() const {
     return ret;
 }
 
-pair<LoopB*, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
+pair<LoopB *, int64_t> LoopB::findLastAccessBy(const bh_base *base) {
     assert(validation());
-    for (int64_t i=_block_list.size()-1; i >= 0; --i) {
+    for (int64_t i = _block_list.size() - 1; i >= 0; --i) {
         if (_block_list[i].isInstr()) {
-            if (base == NULL) { // Searching for any access
+            if (base == nullptr) { // Searching for any access
                 return make_pair(this, i);
             } else {
-                const set<const bh_base*> bases = _block_list[i].getInstr()->get_bases_const();
-                if (bases.find(base) != bases.end()) {
+                auto bases = bohrium::jitk::iterator::allBases(*_block_list[i].getInstr());
+                if (util::exist_linearly(bases, base)) {
                     return make_pair(this, i);
                 }
             }
         } else {
             // Check if the sub block accesses 'base'
-            pair<LoopB*, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
-            if (block.first != NULL) {
+            pair<LoopB *, int64_t> block = _block_list[i].getLoop().findLastAccessBy(base);
+            if (block.first != nullptr) {
                 return block; // We found the block and instruction that accesses 'base'
             }
         }
     }
-    return make_pair((LoopB *)NULL, -1); // Not found
+    return make_pair((LoopB *) nullptr, -1); // Not found
 }
 
 bool LoopB::validation() const {
@@ -269,8 +269,7 @@ bool LoopB::validation() const {
         assert(1 == 2);
         return false;
     }
-    const vector<InstrPtr> allInstr = getAllInstr();
-    for (const InstrPtr &instr: allInstr) {
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
         if (bh_opcode_is_system(instr->opcode)) {
             assert(1 == 2);
             return false;
@@ -289,7 +288,7 @@ bool LoopB::validation() const {
             return false;
     }
     for (const InstrPtr &instr: getLocalInstr()) {
-        if (instr->ndim() != rank+1) {
+        if (instr->ndim() != rank + 1) {
             assert(1 == 2);
             return false;
         }
@@ -361,13 +360,12 @@ void LoopB::metadataUpdate() {
             _news.insert(instr->operand[0].base);
         }
     }
-    const vector<InstrPtr> allInstr = getAllInstr();
-    for (const InstrPtr &instr: allInstr) {
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
         if (instr->sweep_axis() == rank) {
             _sweeps.insert(instr);
         }
     }
-    _reshapable = is_reshapeable(allInstr);
+    _reshapable = is_reshapeable(iterator::allInstr(*this));
 }
 
 
@@ -386,20 +384,25 @@ bool Block::validation() const {
     }
 }
 
-void Block::getAllInstr(vector<InstrPtr> &out) const {
-    if (isInstr()) {
-        out.push_back(getInstr());
-    } else {
-        for (const Block &b: getLoop()._block_list) {
-            b.getAllInstr(out);
-        }
+std::set<const bh_base *> Block::getAllBases() const {
+    std::set<const bh_base *> ret;
+    for (const InstrPtr &instr: iterator::allInstr(*this)) {
+        auto bases = bohrium::jitk::iterator::allBases(*instr);
+        ret.insert(bases.begin(), bases.end());
     }
+    return ret;
 }
 
-vector<InstrPtr> Block::getAllInstr() const {
-    vector<InstrPtr> ret;
-    getAllInstr(ret);
-    return ret;
+// Determines whether this block must be executed after 'other'
+bool Block::dependOn(const Block &other) const {
+    for (const InstrPtr &this_instr: iterator::allInstr(*this)) {
+        for (const InstrPtr &other_instr: iterator::allInstr(other)) {
+            if (bh_instr_dependency(this_instr.get(), other_instr.get())) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 string Block::pprint(const char *newline) const {
@@ -428,19 +431,19 @@ LoopB merge(const LoopB &l1, const LoopB &l2) {
     ret._sweeps.insert(l2._sweeps.begin(), l2._sweeps.end());
     ret._news.insert(l2._news.begin(), l2._news.end());
     ret._frees.insert(l2._frees.begin(), l2._frees.end());
-    ret._reshapable = is_reshapeable(ret.getAllInstr());
+    ret._reshapable = is_reshapeable(iterator::allInstr(ret));
     return ret;
 }
 
 
-Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_base*> frees) {
+Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_base *> frees) {
     if (instr_list.empty()) {
         throw runtime_error("create_nested_block: 'instr_list' is empty!");
     }
     if (instr_list[0]->opcode == BH_NONE) {
         throw runtime_error("create_nested_block: first instruction is BH_NONE!");
     }
-    const vector<int64_t> shape = instr_list[0]->shape();
+    const BhIntVec shape = instr_list[0]->shape();
     const int ndim = (int) shape.size();
     assert(ndim > rank);
 
@@ -448,8 +451,8 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_b
     ret_loop.rank = rank;
     ret_loop.size = shape[rank];
     if (rank == ndim - 1) { // The innermost rank
-        ret_loop.rank = ndim-1;
-        ret_loop.size = shape[ndim-1];
+        ret_loop.rank = ndim - 1;
+        ret_loop.size = shape[ndim - 1];
         ret_loop._frees = std::move(frees);
         for (const InstrPtr &instr: instr_list) {
             if (instr->opcode == BH_FREE) {
@@ -461,7 +464,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, set<bh_b
             assert(ret_loop._block_list.back().getInstr()->shape() == shape);
         }
     } else {
-        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank+1, std::move(frees)));
+        ret_loop._block_list.emplace_back(create_nested_block(instr_list, rank + 1, std::move(frees)));
     }
     ret_loop.metadataUpdate();
     assert(ret_loop.validation());
@@ -484,7 +487,7 @@ Block create_nested_block(const vector<InstrPtr> &instr_list, int rank, int64_t 
 
 pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_depth) {
     assert(max_depth > 0);
-    pair<uint64_t, uint64_t> ret = make_pair(0,0);
+    pair<uint64_t, uint64_t> ret = make_pair(0, 0);
     const uint64_t thds = block.localThreading();
     --max_depth;
     if (thds > 0) {
@@ -504,14 +507,15 @@ pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_dep
     return ret;
 }
 
-void get_first_loop_blocks(const LoopB &block, vector<const LoopB*> &out) {
+void get_first_loop_blocks(const LoopB &block, vector<const LoopB *> &out) {
     out.push_back(&block);
     if (not block._block_list.empty() and not block._block_list[0].isInstr()) {
         get_first_loop_blocks(block._block_list[0].getLoop(), out);
     }
 }
-vector<const LoopB*> get_first_loop_blocks(const LoopB &block) {
-    vector<const LoopB*> ret;
+
+vector<const LoopB *> get_first_loop_blocks(const LoopB &block) {
+    vector<const LoopB *> ret;
     get_first_loop_blocks(block, ret);
     return ret;
 }
@@ -524,7 +528,7 @@ bool data_parallel_compatible(const bh_view &writer,
                               const bh_view &reader) {
 
     // Disjoint views or constants are obviously compatible
-    if (bh_is_constant(&writer) or bh_is_constant(&reader) or writer.base != reader.base) {
+    if (writer.isConstant() or reader.isConstant() or writer.base != reader.base) {
         return true;
     }
 
@@ -537,18 +541,16 @@ bool data_parallel_compatible(const bh_view &writer,
     if (writer.ndim == reader.ndim) {
         // TODO: if the 'reader' never accesses the 'rank' dimension of the 'writer'
         //       the 'reader' is actually allowed to have 0-stride even when the 'writer' does not
-        return std::equal(writer.shape, writer.shape + writer.ndim, reader.shape) and \
-               std::equal(writer.stride, writer.stride + writer.ndim, reader.stride);;
+        return writer.shape == reader.shape and writer.stride == reader.stride;
     }
 
     // Finally, two equally sized contiguous arrays are also parallel compatible
-    return bh_nelements(writer) == bh_nelements(reader) and \
-           bh_is_contiguous(&writer) and bh_is_contiguous(&reader);
+    return writer.shape.prod() == reader.shape.prod() and writer.isContiguous() and reader.isContiguous();
 }
 
 // Check if 'a' and 'b' (in that order) supports data-parallelism when merged
 bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
-    if(bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
+    if (bh_opcode_is_system(a->opcode) || bh_opcode_is_system(b->opcode))
         return true;
 
     // Gather reads its first input in arbitrary order
@@ -561,14 +563,14 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     // Scatter writes in arbitrary order
     if (a->opcode == BH_SCATTER or a->opcode == BH_COND_SCATTER) {
 
-        for(size_t i=0; i<b->operand.size(); ++i) {
-            if ((not bh_is_constant(&b->operand[i])) and a->operand[0].base == b->operand[i].base) {
+        for (size_t i = 0; i < b->operand.size(); ++i) {
+            if ((not b->operand[i].isConstant()) and a->operand[0].base == b->operand[i].base) {
                 return false;
             }
         }
     } else if (b->opcode == BH_SCATTER or b->opcode == BH_COND_SCATTER) {
-        for(size_t i=0; i<a->operand.size(); ++i) {
-            if ((not bh_is_constant(&a->operand[i])) and b->operand[0].base == a->operand[i].base) {
+        for (size_t i = 0; i < a->operand.size(); ++i) {
+            if ((not a->operand[i].isConstant()) and b->operand[0].base == a->operand[i].base) {
                 return false;
             }
         }
@@ -576,7 +578,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 
     {// The output of 'a' cannot conflict with the input and output of 'b'
         const bh_view &src = a->operand[0];
-        for(size_t i=0; i<b->operand.size(); ++i) {
+        for (size_t i = 0; i < b->operand.size(); ++i) {
             if (not data_parallel_compatible(src, b->operand[i])) {
                 return false;
             }
@@ -584,7 +586,7 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
     }
     {// The output of 'b' cannot conflict with the input and output of 'a'
         const bh_view &src = b->operand[0];
-        for(const bh_view &a_op: a->operand) {
+        for (const bh_view &a_op: a->operand) {
             if (not data_parallel_compatible(src, a_op)) {
                 return false;
             }
@@ -596,8 +598,8 @@ bool data_parallel_compatible(const InstrPtr a, const InstrPtr b) {
 // Check if 'b1' and 'b2' (in that order) supports data-parallelism when merged
 bool data_parallel_compatible(const LoopB &b1, const LoopB &b2) {
     assert(b1.rank == b2.rank);
-    for (const InstrPtr i1 : b1.getAllInstr()) {
-        for (const InstrPtr i2 : b2.getAllInstr()) {
+    for (const InstrPtr &i1 : iterator::allInstr(b1)) {
+        for (const InstrPtr &i2 : iterator::allInstr(b2)) {
             if (i1.get() != i2.get()) {
                 if (not data_parallel_compatible(i1, i2)) {
                     return false;
@@ -623,7 +625,7 @@ bool sweeps_accessed_by_block(const set<InstrPtr> &sweeps, const LoopB &loop_blo
 Block reshape(const LoopB &l1, int64_t size_of_rank_dim) {
     assert(l1._reshapable);
     vector<InstrPtr> instr_list;
-    for (const InstrPtr &instr: l1.getAllInstr()) {
+    for (const InstrPtr &instr: iterator::allInstr(l1)) {
         instr_list.push_back(reshape_rank(instr, l1.rank, size_of_rank_dim));
     }
     if (not instr_list.empty()) {
@@ -655,12 +657,12 @@ Block reshape_and_merge(const LoopB &l1, const LoopB &l2) {
         return Block(merge(new_l1, l2));
     }
     // Empty blocks are mergeable
-    if (l1.getAllInstr().empty()) {
+    if (iterator::allInstr(l1).empty()) {
         LoopB ret_loop = l2;
         auto frees = l1.getAllFrees();
         ret_loop._frees.insert(frees.begin(), frees.end());
         return Block(std::move(ret_loop));
-    } else if (l2.getAllInstr().empty()) {
+    } else if (iterator::allInstr(l2).empty()) {
         LoopB ret_loop = l1;
         auto frees = l2.getAllFrees();
         ret_loop._frees.insert(frees.begin(), frees.end());
