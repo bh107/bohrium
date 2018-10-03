@@ -83,7 +83,6 @@ scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const 
             }
         }
     }
-
     return result;
 }
 

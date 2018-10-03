@@ -37,7 +37,7 @@ public:
     const Scope * const parent;
 private:
     std::set<const bh_base*> _tmps; // Set of temporary arrays
-    std::set<const bh_base*> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
+    std::set<bh_view> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
     std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
     std::set<InstrPtr> _omp_atomic; // Set of instructions that should be guarded by OpenMP atomic
     std::set<InstrPtr> _omp_critical; // Set of instructions that should be guarded by OpenMP critical
@@ -57,7 +57,7 @@ public:
         }
         for(const bh_view* view: scalar_replacements_rw) {
             if (not symbols.isAlwaysArray(view->base))
-                _scalar_replacements_rw.insert(view->base);
+                _scalar_replacements_rw.insert(*view);
         }
         for(const bh_view* view: scalar_replacements_r) {
             if (not symbols.isAlwaysArray(view->base))
@@ -68,16 +68,12 @@ public:
     #ifndef NDEBUG
         for (const bh_view &view: _scalar_replacements_r) {
             assert(_tmps.find(view.base) == _tmps.end());
-            assert(_scalar_replacements_rw.find(view.base) == _scalar_replacements_rw.end());
+            assert(_scalar_replacements_rw.find(view) == _scalar_replacements_rw.end());
             assert(symbols.viewID(view) >= 0);
         }
-        for (const bh_base* base: _scalar_replacements_rw) {
-            assert(_tmps.find(base) == _tmps.end());
-            assert(symbols.baseID(base) >= 0);
-        }
-        for (const bh_base* base: _tmps) {
-            assert(_scalar_replacements_rw.find(base) == _scalar_replacements_rw.end());
-            assert(symbols.baseID(base) >= 0);
+        for (const bh_view &view: _scalar_replacements_rw) {
+            assert(_tmps.find(view.base) == _tmps.end());
+            assert(symbols.viewID(view) >= 0);
         }
     #endif
     }
@@ -103,11 +99,11 @@ public:
             return false;
         }
     }
-    bool isScalarReplaced_RW(const bh_base *base) const {
-        if (util::exist(_scalar_replacements_rw, base)) {
+    bool isScalarReplaced_RW(const bh_view &view) const {
+        if (util::exist(_scalar_replacements_rw, view)) {
             return true;
         } else if (parent != nullptr) {
-            return parent->isScalarReplaced_RW(base);
+            return parent->isScalarReplaced_RW(view);
         } else {
             return false;
         }
@@ -115,7 +111,7 @@ public:
 
     // Check if 'view' has been scalar replaced
     bool isScalarReplaced(const bh_view &view) const {
-        return isScalarReplaced_R(view) or isScalarReplaced_RW(view.base);
+        return isScalarReplaced_R(view) or isScalarReplaced_RW(view);
     }
 
     // Check if 'view' is a regular array (not temporary, scalar-replaced etc.)
@@ -192,9 +188,7 @@ public:
             out << "t" << symbols.baseID(view.base);
         } else if (isScalarReplaced(view)) {
             out << "s" << symbols.baseID(view.base);
-            if (isScalarReplaced_R(view)) {
-                out << "_" << symbols.viewID(view);;
-            }
+            out << "_" << symbols.viewID(view);
         } else {
             out << "a" << symbols.baseID(view.base);
         }
@@ -216,9 +210,9 @@ public:
 
         out << type_str << " " << getName(view) << ";";
 
-        if (isTmp(view.base) or isScalarReplaced_RW(view.base)) {
+        if (isTmp(view.base)) {
             _declared_base.insert(view.base);
-        } else if (isScalarReplaced_R(view)){
+        } else if (isScalarReplaced_R(view) or isScalarReplaced_RW(view)){
             _declared_view.insert(view);
         } else {
             throw std::runtime_error("calling writeDeclaration() on a regular array");

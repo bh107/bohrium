@@ -106,7 +106,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
     vector<const bh_view *> scalar_replaced_to_write_back;
     for (const jitk::Block &block: kernel._block_list) {
         if (block.isInstr()) {
-            const jitk::InstrPtr instr = block.getInstr();
+            const jitk::InstrPtr &instr = block.getInstr();
             for (const bh_view &view: instr->getViews()) {
                 if (not scope.isDeclared(view)) {
                     if (scope.isTmp(view.base)) {
@@ -120,7 +120,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
                         write_array_subscription(scope, view, out);
                         out << ";";
                         out << "\n";
-                        if (scope.isScalarReplaced_RW(view.base)) {
+                        if (scope.isScalarReplaced_RW(view)) {
                             scalar_replaced_to_write_back.push_back(&view);
                         }
                     }
@@ -133,7 +133,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
     if (kernel.rank >= 0) {
         for (const jitk::Block &block: kernel._block_list) {
             if (block.isInstr()) {
-                const jitk::InstrPtr instr = block.getInstr();
+                const jitk::InstrPtr &instr = block.getInstr();
                 for (const bh_view &view: instr->getViews()) {
                     if (symbols.existIdxID(view) and scope.isArray(view)) {
                         if (not scope.isIdxDeclared(view)) {
