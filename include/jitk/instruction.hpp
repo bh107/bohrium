@@ -27,22 +27,19 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
-// Write the source code of an instruction (set 'opencl' for OpenCL specific output)
+/// Write the source code of an instruction (set 'opencl' for OpenCL specific output)
 void write_instr(const Scope &scope, const bh_instruction &instr, std::stringstream &out, bool opencl = false);
 
-// Write the neutral value of a reduction
-void write_reduce_identity(bh_opcode opcode, bh_type dtype, std::stringstream &out);
-
-// Return the identity value of an sweep operation
+/// Return the identity value of an sweep operation
 bh_constant sweep_identity(bh_opcode opcode, bh_type dtype);
 
-// Removes syncs and frees from 'instr_list' that are never used in a computation.
-// 'syncs' and 'frees' are the sets of arrays that were removed.
+/// Removes syncs and frees from 'instr_list' that are never used in a computation.
+/// 'syncs' and 'frees' are the sets of arrays that were removed.
 std::vector<bh_instruction*> remove_non_computed_system_instr(std::vector<bh_instruction> &instr_list,
                                                               std::set<bh_base *> &frees);
 
-// Reshape 'instr' to match 'size_of_rank_dim' at the 'rank' dimension.
-// The dimensions from zero to 'rank-1' are untouched.
+/// Reshape 'instr' to match 'size_of_rank_dim' at the 'rank' dimension.
+/// The dimensions from zero to 'rank-1' are untouched.
 InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim);
 
 } // jitk

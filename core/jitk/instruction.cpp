@@ -536,29 +536,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
     out << "\n";
 }
 
-// Print the maximum value of 'dtype'
-void dtype_max(bh_type dtype, stringstream &out) {
-    if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_max_integer(dtype);
-        if (not bh_type_is_signed_integer(dtype)) {
-            out << "u";
-        }
-    } else {
-        out.precision(std::numeric_limits<double>::max_digits10);
-        out << bh_type_limit_max_float(dtype);
-    }
-}
-
-// Print the minimum value of 'dtype'
-void dtype_min(bh_type dtype, stringstream &out) {
-    if (bh_type_is_integer(dtype)) {
-        out << bh_type_limit_min_integer(dtype) + 1;
-    } else {
-        out.precision(std::numeric_limits<double>::max_digits10);
-        out << bh_type_limit_min_float(dtype);
-    }
-}
-
 void get_name_and_subscription(const Scope &scope, const bh_view &view, stringstream &out) {
     scope.getName(view, out);
     if (scope.isArray(view)) {
@@ -753,34 +730,6 @@ bh_constant sweep_identity(bh_opcode opcode, bh_type dtype) {
             cout << "sweep_identity(): unsupported operation: " << bh_opcode_text(opcode) << endl;
             assert(1 == 2);
             throw runtime_error("sweep_identity(): unsupported operation");
-    }
-}
-
-void write_reduce_identity(bh_opcode opcode, bh_type dtype, stringstream &out) {
-    switch (opcode) {
-        case BH_ADD_REDUCE:
-        case BH_BITWISE_OR_REDUCE:
-        case BH_BITWISE_XOR_REDUCE:
-        case BH_LOGICAL_OR_REDUCE:
-        case BH_LOGICAL_XOR_REDUCE:
-            out << "0";
-            break;
-        case BH_MULTIPLY_REDUCE:
-            out << "1";
-            break;
-        case BH_BITWISE_AND_REDUCE:
-        case BH_LOGICAL_AND_REDUCE:
-            out << "~0";
-            break;
-        case BH_MAXIMUM_REDUCE:
-            dtype_min(dtype, out);
-            break;
-        case BH_MINIMUM_REDUCE:
-            dtype_max(dtype, out);
-            break;
-        default:
-            cout << "write_reduce_identity: unsupported operation: " << bh_opcode_text(opcode) << endl;
-            throw runtime_error("write_reduce_identity: unsupported operation");
     }
 }
 
