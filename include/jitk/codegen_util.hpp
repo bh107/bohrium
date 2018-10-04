@@ -107,7 +107,6 @@ void create_directories(const boost::filesystem::path &path);
 // This makes the source of the kernels more identical, which improve the code and compile caches.
 std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
 
-
 // Returns True when `view` is accessing row major style
 bool row_major_access(const bh_view &view);
 

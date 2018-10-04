@@ -103,25 +103,32 @@ void Engine::writeBlock(const SymbolTable &symbols,
     jitk::Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, srio);
 
     // Write temporary and scalar replaced array declarations
-    vector<const bh_view *> scalar_replaced_to_write_back;
+    vector<pair<const bh_view *, int> > scalar_replaced_to_write_back; // Pair of the view and hidden_axis
     for (const jitk::Block &block: kernel._block_list) {
         if (block.isInstr()) {
             const jitk::InstrPtr &instr = block.getInstr();
-            for (const bh_view &view: instr->getViews()) {
+            for (size_t o = 0; o < instr->operand.size(); ++o) {
+                const bh_view &view = instr->operand[o];
                 if (not scope.isDeclared(view)) {
                     if (scope.isTmp(view.base)) {
                         util::spaces(out, 8 + kernel.rank * 4);
                         scope.writeDeclaration(view, writeType(view.base->type), out);
                         out << "\n";
                     } else if (scope.isScalarReplaced(view)) {
+                        // If 'instr' is a reduction we have to ignore the reduced axis when declaring the output
+                        // array (but only if we are reducing to a non-scalar).
+                        int hidden_axis = BH_MAXDIM;  // Note, `BH_MAXDIM` means on hidden axis
+                        if (o == 0 and bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
+                            hidden_axis = instr->sweep_axis();
+                        }
                         util::spaces(out, 8 + kernel.rank * 4);
                         scope.writeDeclaration(view, writeType(view.base->type), out);
                         out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);
-                        write_array_subscription(scope, view, out);
+                        write_array_subscription(scope, view, out, false, hidden_axis);
                         out << ";";
                         out << "\n";
                         if (scope.isScalarReplaced_RW(view)) {
-                            scalar_replaced_to_write_back.push_back(&view);
+                            scalar_replaced_to_write_back.emplace_back(&view, hidden_axis);
                         }
                     }
                 }
@@ -191,11 +198,13 @@ void Engine::writeBlock(const SymbolTable &symbols,
         }
     }
 
-    // Let's copy the scalar replaced reduction outputs back to the original array
-    for (const bh_view *view: scalar_replaced_to_write_back) {
+    // Let's copy the scalar replaced back to the original array
+    for (const auto view_and_hidden_axis: scalar_replaced_to_write_back) {
+        const bh_view *view = view_and_hidden_axis.first;
+        const int hidden_axis = view_and_hidden_axis.second;
         util::spaces(out, 8 + kernel.rank * 4);
         out << "a" << symbols.baseID(view->base);
-        write_array_subscription(scope, *view, out, true);
+        write_array_subscription(scope, *view, out, true, hidden_axis);
         out << " = ";
         scope.getName(*view, out);
         out << ";\n";

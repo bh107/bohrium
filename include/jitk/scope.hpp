@@ -37,12 +37,12 @@ public:
     const Scope * const parent;
 private:
     std::set<const bh_base*> _tmps; // Set of temporary arrays
-    std::set<bh_view> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
-    std::set<bh_view> _scalar_replacements_r; // Set of scalar replaced arrays
+    std::set<bh_view, IgnoreOneDim_less> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
+    std::set<bh_view, IgnoreOneDim_less> _scalar_replacements_r; // Set of scalar replaced arrays
     std::set<InstrPtr> _omp_atomic; // Set of instructions that should be guarded by OpenMP atomic
     std::set<InstrPtr> _omp_critical; // Set of instructions that should be guarded by OpenMP critical
     std::set<bh_base*> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
-    std::set<bh_view> _declared_view; // Set of views that have been locally declared (e.g. a temporary variable)
+    std::set<bh_view, IgnoreOneDim_less> _declared_view; // Set of views that have been locally declared (e.g. scalar replaced variable)
     std::set<bh_view, OffsetAndStrides_less> _declared_idx; // Set of indexes that have been locally declared
 public:
     template<typename T1, typename T2>

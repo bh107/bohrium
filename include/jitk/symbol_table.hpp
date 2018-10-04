@@ -56,17 +56,70 @@ struct OffsetAndStrides_less {
 
 // Compare class for the constant_map
 struct Constant_less {
-    // This compare tje 'origin_id' member of the instructions
+    // This compare the 'origin_id' member of the instructions
     bool operator() (const InstrPtr &i1, const InstrPtr& i2) const {
         return i1->origin_id < i2->origin_id;
     }
 };
 
+// Compare class for the viewID sets and maps
+struct IgnoreOneDim_less {
+    BhIntVec get_shape_where_shape_is_greater_than_one(const bh_view &view) const {
+        BhIntVec ret;
+        for (int64_t i = 0; i < view.ndim; ++i) {
+            if (view.shape[i] > 1) {
+                ret.push_back(view.shape[i]);
+            }
+        }
+        return ret;
+    }
+
+    BhIntVec get_stride_where_shape_is_greater_than_one(const bh_view &view) const {
+        BhIntVec ret;
+        for (int64_t i = 0; i < view.ndim; ++i) {
+            if (view.shape[i] > 1) {
+                ret.push_back(view.stride[i]);
+            }
+        }
+        return ret;
+    }
+
+    // This compare is the same as view compare ('v1 < v2') but ignoring their bases and zero or one-sized dimensions
+    bool operator() (const bh_view& v1, const bh_view& v2) const {
+        if (v1.base < v2.base) return true;
+        if (v2.base < v1.base) return false;
+        if (v1.start < v2.start) return true;
+        if (v2.start < v1.start) return false;
+
+        auto v1_shape = get_shape_where_shape_is_greater_than_one(v1);
+        auto v2_shape = get_shape_where_shape_is_greater_than_one(v2);
+        if (v1_shape.size() < v2_shape.size()) return true;
+        if (v2_shape.size() < v1_shape.size()) return false;
+
+        auto v1_stride = get_stride_where_shape_is_greater_than_one(v1);
+        auto v2_stride = get_stride_where_shape_is_greater_than_one(v2);
+        assert(v1_shape.size() == v1_stride.size());
+        assert(v2_shape.size() == v2_stride.size());
+
+        for (size_t i=0; i < v1_shape.size(); ++i) {
+            if (v1_stride[i] < v2_stride[i]) return true;
+            if (v2_stride[i] < v1_stride[i]) return false;
+            if (v1_shape[i] < v2_shape[i]) return true;
+            if (v2_shape[i] < v1_shape[i]) return false;
+        }
+        return false;
+    }
+    bool operator() (const bh_view* v1, const bh_view* v2) const {
+        return (*this)(*v1, *v2);
+    }
+};
+
+
 // The SymbolTable class contains all array meta date needed for a JIT kernel.
 class SymbolTable {
 private:
     std::map<const bh_base*, size_t> _base_map; // Mapping a base to its ID
-    std::map<bh_view, size_t> _view_map; // Mapping a view to its ID
+    std::map<bh_view, size_t, IgnoreOneDim_less> _view_map; // Mapping a view to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _idx_map; // Mapping a index (of an array) to its ID
     std::map<bh_view, size_t, OffsetAndStrides_less> _offset_strides_map; // Mapping a offset-and-strides to its ID
     std::vector<const bh_view*> _offset_stride_views; // Vector of all offset-and-stride views
