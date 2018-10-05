@@ -85,7 +85,7 @@ std::vector<InstrPtr> order_sweep_by_origin_id(const std::set<InstrPtr> &sweep_s
 
 
 // Help function that adds identity blocks before sweeping blocks.
-// This version update a block rather then return a kernel list (see the function belove)
+// This version update a block rather then return a kernel list (see the function below)
 void add_identity_block(LoopB &loop, int64_t &origin_count) {
     vector<Block> ret;
     for (Block &block: loop._block_list) {

@@ -25,6 +25,41 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
+namespace {
+std::vector<const bh_view *> scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope) {
+    std::vector<const bh_view *> res;
+
+    // We have to ignore output arrays and arrays that are accumulated
+    std::set<bh_base *> ignore_bases;
+    for (const InstrPtr &instr: block.getLocalInstr()) {
+        if (not instr->operand.empty()) {
+            ignore_bases.insert(instr->operand[0].base);
+        }
+        if (bh_opcode_is_accumulate(instr->opcode)) {
+            ignore_bases.insert(instr->operand[1].base);
+        }
+    }
+    // First we add a valid view to the set of 'candidates' and if we encounter the view again
+    // we add it to the 'result'
+    std::set<bh_view> candidates;
+    for (const InstrPtr &instr: block.getLocalInstr()) {
+        for (size_t i = 1; i < instr->operand.size(); ++i) {
+            const bh_view &input = instr->operand[i];
+            if ((not input.isConstant()) and ignore_bases.find(input.base) == ignore_bases.end()) {
+                if (parent_scope == nullptr or parent_scope->isArray(input)) {
+                    if (util::exist(candidates, input)) { // 'input' is used multiple times
+                        res.push_back(&input);
+                    } else {
+                        candidates.insert(input);
+                    }
+                }
+            }
+        }
+    }
+    return res;
+}
+}
+
 void Engine::writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
                                           std::stringstream &ss,
                                           const char *array_type_prefix) {
@@ -75,68 +110,26 @@ void Engine::writeBlock(const SymbolTable &symbols,
         return;
     }
 
-    std::set<jitk::InstrPtr> sweeps_in_child;
-    for (const jitk::Block &sub_block: kernel._block_list) {
-        if (not sub_block.isInstr()) {
-            sweeps_in_child.insert(sub_block.getLoop()._sweeps.begin(), sub_block.getLoop()._sweeps.end());
-        }
-    }
-    // Order all sweep instructions by the viewID of their first operand.
-    // This makes the source of the kernels more identical, which improve the code and compile caches.
-    const vector <jitk::InstrPtr> ordered_block_sweeps = order_sweep_set(sweeps_in_child, symbols);
+    jitk::Scope scope(symbols, parent_scope);
 
-    // Let's find the local temporary arrays and the arrays to scalar replace
-    const set<bh_base *> &local_tmps = kernel.getLocalTemps();
-
-    // We always scalar replace reduction outputs that reduces over the innermost axis
-    vector<const bh_view *> scalar_replaced_reduction_outputs;
-    for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
-        if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
-            if (local_tmps.find(instr->operand[0].base) == local_tmps.end()) {
-                scalar_replaced_reduction_outputs.push_back(&instr->operand[0]);
-            }
-        }
-    }
-
-    // Let's scalar replace input-only arrays that are used multiple times
-    vector<const bh_view *> srio = jitk::scalar_replaced_input_only(kernel, parent_scope, local_tmps);
-    jitk::Scope scope(symbols, parent_scope, local_tmps, scalar_replaced_reduction_outputs, srio);
-
-    // Write temporary and scalar replaced array declarations
-    vector<pair<const bh_view *, int> > scalar_replaced_to_write_back; // Pair of the view and hidden_axis
-    for (const jitk::Block &block: kernel._block_list) {
-        if (block.isInstr()) {
-            const jitk::InstrPtr &instr = block.getInstr();
-            for (size_t o = 0; o < instr->operand.size(); ++o) {
-                const bh_view &view = instr->operand[o];
-                if (not scope.isDeclared(view)) {
-                    if (scope.isTmp(view.base)) {
+    // Declare temporary arrays
+    {
+        const set<bh_base *> &local_tmps = kernel.getLocalTemps();
+        for (const jitk::InstrPtr &instr: kernel.getLocalInstr()) {
+            for (const auto &view: instr->getViews()) {
+                if (util::exist(local_tmps, view.base)) {
+                    if (not (scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
+                        scope.insertTmp(view.base);
                         util::spaces(out, 8 + kernel.rank * 4);
                         scope.writeDeclaration(view, writeType(view.base->type), out);
                         out << "\n";
-                    } else if (scope.isScalarReplaced(view)) {
-                        // If 'instr' is a reduction we have to ignore the reduced axis when declaring the output
-                        // array (but only if we are reducing to a non-scalar).
-                        int hidden_axis = BH_MAXDIM;  // Note, `BH_MAXDIM` means on hidden axis
-                        if (o == 0 and bh_opcode_is_reduction(instr->opcode) and instr->operand[1].ndim > 1) {
-                            hidden_axis = instr->sweep_axis();
-                        }
-                        util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(view, writeType(view.base->type), out);
-                        out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);
-                        write_array_subscription(scope, view, out, false, hidden_axis);
-                        out << ";";
-                        out << "\n";
-                        if (scope.isScalarReplaced_RW(view)) {
-                            scalar_replaced_to_write_back.emplace_back(&view, hidden_axis);
-                        }
                     }
                 }
             }
         }
     }
 
-    //Let's declare indexes if we are not at the kernel level (rank == -1)
+    // Let's declare indexes if we are not at the kernel level (rank == -1)
     if (kernel.rank >= 0) {
         for (const jitk::Block &block: kernel._block_list) {
             if (block.isInstr()) {
@@ -150,6 +143,46 @@ void Engine::writeBlock(const SymbolTable &symbols,
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // Declare scalar replacement of outputs that reduces over the innermost axis in the child block
+    vector<pair<const bh_view *, int> > scalar_replaced_to_write_back; // Pair of the view and hidden_axis
+    {
+        for (const jitk::Block &b1: kernel._block_list) {
+            if (not b1.isInstr()) {
+                for (const jitk::Block &b2: b1.getLoop()._block_list) {
+                    if (b2.isInstr()) {
+                        const InstrPtr &instr = b2.getInstr();
+                        if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
+                            const bh_view &view = instr->operand[0];
+                            if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
+                                scope.insertScalarReplaced_RW(view);
+                                util::spaces(out, 8 + kernel.rank * 4);
+                                scope.writeDeclaration(view, writeType(view.base->type), out);
+                                out << "// For reductions";
+                                out << "\n";
+                                scalar_replaced_to_write_back.emplace_back(&view, instr->sweep_axis());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Let's scalar replace input-only arrays that are used multiple times
+    {
+        for (const bh_view *view: scalar_replaced_input_only(kernel, parent_scope)) {
+            if (not(scope.isDeclared(*view) or symbols.isAlwaysArray(view->base))) {
+                scope.insertScalarReplaced_R(*view);
+                util::spaces(out, 8 + kernel.rank * 4);
+                scope.writeDeclaration(*view, writeType(view->base->type), out);
+                out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
+                write_array_subscription(scope, *view, out, false);
+                out << "; // For input-only";
+                out << "\n";
             }
         }
     }
@@ -174,7 +207,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
     } else {
         for (const Block &b: kernel._block_list) {
             if (b.isInstr()) { // Finally, let's write the instruction
-                const InstrPtr instr = b.getInstr();
+                const InstrPtr &instr = b.getInstr();
                 if (not bh_opcode_is_system(instr->opcode)) {
                     if (instr->operand.size() > 0) {
                         if (scope.isOpenmpAtomic(instr)) {
