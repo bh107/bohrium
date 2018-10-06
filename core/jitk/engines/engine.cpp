@@ -115,7 +115,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
     // Declare temporary arrays
     {
         const set<bh_base *> &local_tmps = kernel.getLocalTemps();
-        for (const jitk::InstrPtr &instr: kernel.getLocalInstr()) {
+        for (const jitk::InstrPtr &instr: iterator::allInstr(kernel)) {
             for (const auto &view: instr->getViews()) {
                 if (util::exist(local_tmps, view.base)) {
                     if (not (scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
