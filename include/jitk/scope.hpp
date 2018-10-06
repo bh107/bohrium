@@ -37,16 +37,14 @@ public:
     const Scope *const parent;
 private:
     std::set<const bh_base *> _tmps; // Set of temporary arrays
-    std::set<bh_view, IgnoreOneDim_less> _scalar_replacements_rw; // Set of scalar replaced arrays that both reads and writes
-    std::set<bh_view, IgnoreOneDim_less> _scalar_replacements_r; // Set of scalar replaced arrays
+    std::set<bh_view, IgnoreOneDim_less> _scalar_replacements; // Set of scalar replaced arrays
     std::set<InstrPtr> _omp_atomic; // Set of instructions that should be guarded by OpenMP atomic
     std::set<InstrPtr> _omp_critical; // Set of instructions that should be guarded by OpenMP critical
-    //std::set<bh_base *> _declared_base; // Set of bases that have been locally declared (e.g. a temporary variable)
-    //std::set<bh_view, IgnoreOneDim_less> _declared_view; // Set of views that have been locally declared (e.g. scalar replaced variable)
     std::set<bh_view, OffsetAndStrides_less> _declared_idx; // Set of indexes that have been locally declared
 public:
     Scope(const SymbolTable &symbols, const Scope *parent) : symbols(symbols), parent(parent) {}
 
+    /// Insert `base` as a temporary array
     void insertTmp(const bh_base *base) {
         _tmps.insert(base);
     }
@@ -62,39 +60,20 @@ public:
         }
     }
 
-    void insertScalarReplaced_R(const bh_view &view) {
-        _scalar_replacements_r.insert(view);
-    }
-
-    void insertScalarReplaced_RW(const bh_view &view) {
-        _scalar_replacements_rw.insert(view);
-    }
-
-    /// Check if 'view' has been scalar replaced read-only
-    bool isScalarReplaced_R(const bh_view &view) const {
-        if (util::exist(_scalar_replacements_r, view)) {
-            return true;
-        } else if (parent != nullptr) {
-            return parent->isScalarReplaced_R(view);
-        } else {
-            return false;
-        }
-    }
-
-    /// Check if 'view' has been scalar replaced read and write
-    bool isScalarReplaced_RW(const bh_view &view) const {
-        if (util::exist(_scalar_replacements_rw, view)) {
-            return true;
-        } else if (parent != nullptr) {
-            return parent->isScalarReplaced_RW(view);
-        } else {
-            return false;
-        }
+    /// Insert `view` as a scalar replaced array
+    void insertScalarReplaced(const bh_view &view) {
+        _scalar_replacements.insert(view);
     }
 
     /// Check if 'view' has been scalar replaced
     bool isScalarReplaced(const bh_view &view) const {
-        return isScalarReplaced_R(view) or isScalarReplaced_RW(view);
+        if (util::exist(_scalar_replacements, view)) {
+            return true;
+        } else if (parent != nullptr) {
+            return parent->isScalarReplaced(view);
+        } else {
+            return false;
+        }
     }
 
     /// Check if 'view' is a regular array (not temporary, scalar-replaced etc.)

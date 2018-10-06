@@ -158,7 +158,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
                         if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
                             const bh_view &view = instr->operand[0];
                             if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
-                                scope.insertScalarReplaced_RW(view);
+                                scope.insertScalarReplaced(view);
                                 util::spaces(out, 8 + kernel.rank * 4);
                                 scope.writeDeclaration(view, writeType(view.base->type), out);
                                 out << "// For reductions";
@@ -176,7 +176,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
     {
         for (const bh_view *view: scalar_replaced_input_only(kernel, parent_scope)) {
             if (not(scope.isDeclared(*view) or symbols.isAlwaysArray(view->base))) {
-                scope.insertScalarReplaced_R(*view);
+                scope.insertScalarReplaced(*view);
                 util::spaces(out, 8 + kernel.rank * 4);
                 scope.writeDeclaration(*view, writeType(view->base->type), out);
                 out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
