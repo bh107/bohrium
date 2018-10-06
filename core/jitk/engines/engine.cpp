@@ -31,7 +31,7 @@ std::vector<const bh_view *> scalar_replaced_input_only(const LoopB &block, cons
 
     // We have to ignore output arrays and arrays that are accumulated
     std::set<bh_base *> ignore_bases;
-    for (const InstrPtr &instr: block.getLocalInstr()) {
+    for (const InstrPtr &instr: iterator::allLocalInstr(block)) {
         if (not instr->operand.empty()) {
             ignore_bases.insert(instr->operand[0].base);
         }
@@ -42,7 +42,7 @@ std::vector<const bh_view *> scalar_replaced_input_only(const LoopB &block, cons
     // First we add a valid view to the set of 'candidates' and if we encounter the view again
     // we add it to the 'result'
     std::set<bh_view> candidates;
-    for (const InstrPtr &instr: block.getLocalInstr()) {
+    for (const InstrPtr &instr: iterator::allLocalInstr(block)) {
         for (size_t i = 1; i < instr->operand.size(); ++i) {
             const bh_view &input = instr->operand[i];
             if ((not input.isConstant()) and ignore_bases.find(input.base) == ignore_bases.end()) {

@@ -86,7 +86,7 @@ private:
 
     std::vector<bh_view>::const_iterator cur, begin, end;
 
-    // Iterate `it` to the next non-constant
+    // Iterate `it` to the next instruction
     inline void _next(std::vector<bh_view>::const_iterator &it) {
         assert(it != end);
         while (++it != end and it->isConstant()) {}
@@ -139,6 +139,52 @@ public:
 
 /// Return a range of all bases in the instruction (skipping duplicates)
 BaseList::Range allBases(const bh_instruction &instr);
+
+
+/// An iterator over local instruction in a block list
+class LocalInstrList : public boost::iterator_facade<LocalInstrList, const bohrium::jitk::InstrPtr, boost::forward_traversal_tag> {
+private:
+    friend class boost::iterator_core_access;
+
+    std::vector<Block>::const_iterator cur, end;
+
+    // Increase iterator
+    void increment() {
+        assert(cur != end);
+        while(++cur != end and not cur->isInstr()) {}
+    }
+
+    // Iterator equality
+    bool equal(LocalInstrList const &other) const {
+        return cur == other.cur;
+    }
+
+    // Deference the iterator
+    InstrPtr const &dereference() const {
+        assert(cur != end);
+        assert(cur->isInstr());
+        return cur->getInstr();
+    }
+
+public:
+    /// Construct an "end" pointer
+    explicit LocalInstrList(std::vector<Block>::const_iterator end) : cur(end), end(end) {}
+
+    /// Construct based on a block
+    explicit LocalInstrList(const std::vector<Block> &block_list) : cur(block_list.begin()), end(block_list.end()) {
+        if (not cur->isInstr()) {
+            increment(); // Get to the first instruction
+        }
+    }
+
+    typedef boost::iterator_range<LocalInstrList> Range;
+};
+
+/// Return a range of all local instructions in the block list
+LocalInstrList::Range allLocalInstr(const std::vector<Block> &block_list);
+
+/// Return a range of all local instructions in the loop
+LocalInstrList::Range allLocalInstr(const LoopB &loop);
 
 } // iterator
 } // jitk
