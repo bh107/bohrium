@@ -144,20 +144,6 @@ vector<const LoopB *> LoopB::getLocalSubBlocks() const {
     return ret;
 }
 
-void LoopB::getLocalInstr(vector<InstrPtr> &out) const {
-    for (const Block &b : _block_list) {
-        if (b.isInstr() and b.getInstr() != NULL) {
-            out.push_back(b.getInstr());
-        }
-    }
-}
-
-vector<InstrPtr> LoopB::getLocalInstr() const {
-    vector<InstrPtr> ret;
-    getLocalInstr(ret);
-    return ret;
-}
-
 std::set<const bh_base *> LoopB::getAllBases() const {
     std::set<const bh_base *> ret;
     for (const InstrPtr &instr: iterator::allInstr(*this)) {
