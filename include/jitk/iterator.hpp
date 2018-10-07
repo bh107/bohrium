@@ -172,8 +172,10 @@ public:
 
     /// Construct based on a block
     explicit LocalInstrList(const std::vector<Block> &block_list) : cur(block_list.begin()), end(block_list.end()) {
-        if (not cur->isInstr()) {
-            increment(); // Get to the first instruction
+        if (cur != end) {
+            if (not cur->isInstr()) {
+                increment(); // Get to the first instruction
+            }
         }
     }
 
