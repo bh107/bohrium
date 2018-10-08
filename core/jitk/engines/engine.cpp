@@ -239,7 +239,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
         const int hidden_axis = view_and_hidden_axis.second;
         util::spaces(out, 8 + kernel.rank * 4);
         out << "a" << symbols.baseID(view->base);
-        write_array_subscription(scope, *view, out, true, hidden_axis);
+        write_array_subscription(scope, *view, out, false, hidden_axis);
         out << " = ";
         scope.getName(*view, out);
         out << ";\n";
