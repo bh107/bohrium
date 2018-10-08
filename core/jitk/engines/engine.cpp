@@ -131,16 +131,18 @@ void Engine::writeBlock(const SymbolTable &symbols,
 
     // Let's declare indexes if we are not at the kernel level (rank == -1)
     if (kernel.rank >= 0) {
-        for (const jitk::Block &block: kernel._block_list) {
-            if (block.isInstr()) {
-                const jitk::InstrPtr &instr = block.getInstr();
-                for (const bh_view &view: instr->getViews()) {
-                    if (symbols.existIdxID(view) and scope.isArray(view)) {
-                        if (not scope.isIdxDeclared(view)) {
-                            util::spaces(out, 8 + kernel.rank * 4);
-                            scope.writeIdxDeclaration(view, writeType(bh_type::UINT64), out);
-                            out << "\n";
+        for (const InstrPtr &instr: iterator::allLocalInstr(kernel)) {
+            for (size_t i = 0; i < instr->operand.size(); ++i) {
+                const bh_view &view = instr->operand[i];
+                if (symbols.existIdxID(view) and scope.isArray(view)) {
+                    if (not scope.isIdxDeclared(view)) {
+                        util::spaces(out, 8 + kernel.rank * 4);
+                        int hidden_axis = BH_MAXDIM;
+                        if (i == 0 and bh_opcode_is_reduction(instr->opcode)) {
+                            hidden_axis = instr->sweep_axis();
                         }
+                        scope.writeIdxDeclaration(view, writeType(bh_type::UINT64), hidden_axis, out);
+                        out << "\n";
                     }
                 }
             }

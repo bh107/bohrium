@@ -170,7 +170,7 @@ public:
     }
 
     // Write the variable declaration of the index calculation of 'view' using 'type_str' as the type string
-    void writeIdxDeclaration(const bh_view &view, const std::string &type_str, std::stringstream &out);
+    void writeIdxDeclaration(const bh_view &view, const std::string &type_str, int hidden_axis, std::stringstream &out);
 };
 
 
