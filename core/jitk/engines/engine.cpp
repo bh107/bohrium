@@ -25,41 +25,6 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-namespace {
-std::vector<const bh_view *> scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope) {
-    std::vector<const bh_view *> res;
-
-    // We have to ignore output arrays and arrays that are accumulated
-    std::set<bh_base *> ignore_bases;
-    for (const InstrPtr &instr: iterator::allLocalInstr(block)) {
-        if (not instr->operand.empty()) {
-            ignore_bases.insert(instr->operand[0].base);
-        }
-        if (bh_opcode_is_accumulate(instr->opcode)) {
-            ignore_bases.insert(instr->operand[1].base);
-        }
-    }
-    // First we add a valid view to the set of 'candidates' and if we encounter the view again
-    // we add it to the 'result'
-    std::set<bh_view> candidates;
-    for (const InstrPtr &instr: iterator::allLocalInstr(block)) {
-        for (size_t i = 1; i < instr->operand.size(); ++i) {
-            const bh_view &input = instr->operand[i];
-            if ((not input.isConstant()) and ignore_bases.find(input.base) == ignore_bases.end()) {
-                if (parent_scope == nullptr or parent_scope->isArray(input)) {
-                    if (util::exist(candidates, input)) { // 'input' is used multiple times
-                        res.push_back(&input);
-                    } else {
-                        candidates.insert(input);
-                    }
-                }
-            }
-        }
-    }
-    return res;
-}
-}
-
 void Engine::writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
                                           std::stringstream &ss,
                                           const char *array_type_prefix) {
@@ -150,23 +115,18 @@ void Engine::writeBlock(const SymbolTable &symbols,
     }
 
     // Declare scalar replacement of outputs that reduces over the innermost axis in the child block
-    vector<pair<const bh_view *, int> > scalar_replaced_to_write_back; // Pair of the view and hidden_axis
     {
         for (const jitk::Block &b1: kernel._block_list) {
             if (not b1.isInstr()) {
-                for (const jitk::Block &b2: b1.getLoop()._block_list) {
-                    if (b2.isInstr()) {
-                        const InstrPtr &instr = b2.getInstr();
-                        if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
-                            const bh_view &view = instr->operand[0];
-                            if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
-                                scope.insertScalarReplaced(view);
-                                util::spaces(out, 8 + kernel.rank * 4);
-                                scope.writeDeclaration(view, writeType(view.base->type), out);
-                                out << "// For reductions";
-                                out << "\n";
-                                scalar_replaced_to_write_back.emplace_back(&view, instr->sweep_axis());
-                            }
+                for (const InstrPtr &instr: iterator::allLocalInstr(b1.getLoop())) {
+                    if (bh_opcode_is_reduction(instr->opcode) and jitk::sweeping_innermost_axis(instr)) {
+                        const bh_view &view = instr->operand[0];
+                        if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
+                            scope.insertScalarReplaced(view);
+                            util::spaces(out, 8 + kernel.rank * 4);
+                            scope.writeDeclaration(view, writeType(view.base->type), out);
+                            out << "// For reductions inner-most";
+                            out << "\n";
                         }
                     }
                 }
@@ -174,17 +134,46 @@ void Engine::writeBlock(const SymbolTable &symbols,
         }
     }
 
-    // Let's scalar replace input-only arrays that are used multiple times
+    // Declare scalar-replacement because of duplicates
     {
-        for (const bh_view *view: scalar_replaced_input_only(kernel, parent_scope)) {
-            if (not(scope.isDeclared(*view) or symbols.isAlwaysArray(view->base))) {
-                scope.insertScalarReplaced(*view);
-                util::spaces(out, 8 + kernel.rank * 4);
-                scope.writeDeclaration(*view, writeType(view->base->type), out);
-                out << " " << scope.getName(*view) << " = a" << symbols.baseID(view->base);
-                write_array_subscription(scope, *view, out, false);
-                out << "; // For input-only";
-                out << "\n";
+        std::set<bh_base *> ignore_bases;
+        for (const InstrPtr &instr: iterator::allLocalInstr(kernel)) {
+            if (bh_opcode_is_accumulate(instr->opcode)) {
+                ignore_bases.insert(instr->operand[1].base);
+            }
+            if (bh_opcode_is_reduction(instr->opcode)) {
+                ignore_bases.insert(instr->operand[0].base);
+                ignore_bases.insert(instr->operand[1].base);
+            }
+            for (const bh_view &view: instr->getViews()) {
+                if (symbols.isAlwaysArray(view.base)) {
+                    ignore_bases.insert(view.base);
+                }
+            }
+        }
+
+        // First we add a valid view to the set of 'candidates' and if we encounter the view declare it
+        std::set<bh_view> candidates;
+        for (const InstrPtr &instr: iterator::allLocalInstr(kernel)) {
+            for (size_t i = 0; i < instr->operand.size(); ++i) {
+                const bh_view &view = instr->operand[i];
+                if (not (view.isConstant() or util::exist(ignore_bases, view.base) or scope.isDeclared(view))) {
+                    if (util::exist(candidates, view)) {
+                        scope.insertScalarReplaced(view);
+                        util::spaces(out, 8 + kernel.rank * 4);
+                        scope.writeDeclaration(view, writeType(view.base->type), out);
+                        out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);
+                        if (i == 0 and bh_opcode_is_reduction(instr->opcode)) {
+                            write_array_subscription(scope, view, out, false, instr->sweep_axis());
+                        } else {
+                            write_array_subscription(scope, view, out, false);
+                        }
+                        out << "; // For duplicate access";
+                        out << "\n";
+                    } else {
+                        candidates.insert(view);
+                    }
+                }
             }
         }
     }
