@@ -234,15 +234,22 @@ void Engine::writeBlock(const SymbolTable &symbols,
     }
 
     // Let's copy the scalar replaced back to the original array
-    for (const auto view_and_hidden_axis: scalar_replaced_to_write_back) {
-        const bh_view *view = view_and_hidden_axis.first;
-        const int hidden_axis = view_and_hidden_axis.second;
-        util::spaces(out, 8 + kernel.rank * 4);
-        out << "a" << symbols.baseID(view->base);
-        write_array_subscription(scope, *view, out, false, hidden_axis);
-        out << " = ";
-        scope.getName(*view, out);
-        out << ";\n";
+    for (const InstrPtr &instr: iterator::allLocalInstr(kernel)) {
+        if (not instr->operand.empty()) {
+            const bh_view &view = instr->operand[0];
+            if (scope.isScalarReplaced(view)) {
+                util::spaces(out, 8 + kernel.rank * 4);
+                out << "a" << symbols.baseID(view.base);
+                if (bh_opcode_is_reduction(instr->opcode)) {
+                    write_array_subscription(scope, view, out, false, instr->sweep_axis());
+                } else {
+                    write_array_subscription(scope, view, out, false);
+                }
+                out << " = ";
+                scope.getName(view, out);
+                out << ";\n";
+            }
+        }
     }
 }
 
