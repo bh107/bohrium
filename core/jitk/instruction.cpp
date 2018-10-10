@@ -347,7 +347,14 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             } else if (opencl and bh_type_is_integer(t0)) {
                 out << "IPOW(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");";
             } else {
-                out << ops[0] << " = pow(" << ops[1] << ", " << ops[2] << ");";
+                // On some systems `pow()` fails with volatile integer inputs if not casted to double.
+                // Since the C99 version of `pow()` calls the double version for integer-inputs anyway,
+                // we might as well do the cast explicitly here.
+                if (bh_type_is_integer(instr.operand_type(0))) {
+                    out << ops[0] << " = pow((double) " << ops[1] << ", (double)" << ops[2] << ");";
+                } else {
+                    out << ops[0] << " = pow(" << ops[1] << ", " << ops[2] << ");";
+                }
             }
             break;
         }
