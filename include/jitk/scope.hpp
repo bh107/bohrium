@@ -60,12 +60,17 @@ public:
         }
     }
 
-    /// Insert `view` as a scalar replaced array
+    /// Insert `view` as a scalar-replaced array
     void insertScalarReplaced(const bh_view &view) {
         _scalar_replacements.insert(view);
     }
 
-    /// Check if 'view' has been scalar replaced
+    /// Remove `view` from the set of scalar-replaced array
+    void eraseScalarReplaced(const bh_view &view) {
+        _scalar_replacements.erase(view);
+    }
+
+    /// Check if 'view' has been scalar-replaced
     bool isScalarReplaced(const bh_view &view) const {
         if (util::exist(_scalar_replacements, view)) {
             return true;
