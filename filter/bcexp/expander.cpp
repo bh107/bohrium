@@ -134,8 +134,8 @@ bh_view Expander::createTemp(bh_type type, int64_t nelem)
     view.base = createBase(type, nelem);
     view.start = 0;
     view.ndim = 1;
-    view.shape[0] = nelem;
-    view.stride[0] = 1;
+    view.shape.push_back(nelem);
+    view.stride.push_back(1);
     return view;
 }
 
