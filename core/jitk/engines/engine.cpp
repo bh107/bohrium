@@ -162,14 +162,17 @@ void Engine::writeBlock(const SymbolTable &symbols,
                         scope.insertScalarReplaced(view);
                         util::spaces(out, 8 + kernel.rank * 4);
                         scope.writeDeclaration(view, writeType(view.base->type), out);
-                        out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);
-                        if (i == 0 and bh_opcode_is_reduction(instr->opcode)) {
-                            write_array_subscription(scope, view, out, false, instr->sweep_axis());
-                        } else {
-                            write_array_subscription(scope, view, out, false);
+                        // Let's load data into the scalar-replaced variable
+                        if (not (i == 0 and instr->constructor)) { // No need to load data into a new output
+                            out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);
+                            if (i == 0 and bh_opcode_is_reduction(instr->opcode)) {
+                                write_array_subscription(scope, view, out, false, instr->sweep_axis());
+                            } else {
+                                write_array_subscription(scope, view, out, false);
+                            }
+                            out << ";";
                         }
-                        out << "; // For duplicate access";
-                        out << "\n";
+                        out << "// For duplicate access\n";
                     } else {
                         candidates.insert(view);
                     }
