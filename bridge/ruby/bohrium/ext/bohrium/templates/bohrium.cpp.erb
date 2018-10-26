@@ -105,6 +105,7 @@ extern "C" void Init_bohrium() {
     // Class methods
     rb_define_singleton_method(cBhArray, "ones",   F(bh_array_s_ones),   -1);
     rb_define_singleton_method(cBhArray, "zeros",  F(bh_array_s_zeros),  -1);
+    rb_define_singleton_method(cBhArray, "random", F(bh_array_s_random), -1);
     rb_define_singleton_method(cBhArray, "arange", F(bh_array_s_arange),  1);
     rb_define_singleton_method(cBhArray, "seq",    F(bh_array_s_arange),  1); // Not an alias, since it's a singleton method
 

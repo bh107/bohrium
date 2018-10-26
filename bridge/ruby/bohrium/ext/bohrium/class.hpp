@@ -30,6 +30,35 @@ inline void _identity(VALUE res, unsigned long rows, unsigned long columns, T va
 }
 
 /**
+    Creates an array of the given size and value using Bohriums random method.
+
+    @param result The data object to add the result to.
+    @param rows The rows of the array.
+    @param columns The columns of the array.
+    @param type The Ruby type of this value.
+*/
+inline void _random(VALUE res, unsigned long rows, unsigned long columns) {
+    bhDataObj<float> *result;
+    Data_Get_Struct(res, bhDataObj<float>, result);
+
+    bhxx::Shape _shape;
+    if (columns == 1) {
+        _shape = {rows};
+    } else {
+        _shape = {rows, columns};
+    }
+
+    bhxx::BhArray<uint64_t>* tmp = new bhxx::BhArray<uint64_t>(_shape);
+    bhxx::BhArray<float>* bhary = new bhxx::BhArray<float>(_shape);
+    uint64_t milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    bhxx::random(*tmp, milliseconds_since_epoch, 0);
+    bhxx::identity(*bhary, *tmp);
+    bhxx::divide(*bhary, *bhary, std::numeric_limits<uint64_t>::max());
+    result->type  = T_FLOAT;
+    result->bhary = bhary;
+}
+
+/**
     Create an array and fill it with ones (or value given).
 
     @param argc Number of elements in argv.
@@ -81,6 +110,23 @@ VALUE bh_array_s_zeros(int argc, VALUE *argv, VALUE klass) {
     if (argc <= 1) { argv[1] = INT2NUM(1); } // Force 'columns' to 1, if not given
     if (argc <= 0) { argv[0] = INT2NUM(1); } // Force 'rows' to 1, if not given
     return bh_array_s_ones(3, argv, klass);
+}
+
+/**
+    Create an array and fill it with random numbers.
+
+    @param argc Number of elements in argv.
+    @param argv The arguments given the method from Ruby.
+    @param klass The class we are defining on.
+    @return The created array.
+*/
+VALUE bh_array_s_random(int argc, VALUE *argv, VALUE klass) {
+    unsigned long rows = 1, columns = 1;
+    VALUE res = bh_array_alloc(klass);
+    if(argc >= 1) { rows    = NUM2INT(argv[0]); }
+    if(argc >= 2) { columns = NUM2INT(argv[1]); }
+    _random(res, rows, columns);
+    return res;
 }
 
 /**
