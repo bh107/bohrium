@@ -182,49 +182,31 @@ void Engine::writeBlock(const SymbolTable &symbols,
     }
 
     // Write the for-loop body
-    // The body in OpenCL and OpenMP are very similar but OpenMP might need to insert "#pragma omp atomic/critical"
-    if (opencl) {
-        for (const Block &b: kernel._block_list) {
-            if (b.isInstr()) { // Finally, let's write the instruction
-                if (b.getInstr() != nullptr and not bh_opcode_is_system(b.getInstr()->opcode)) {
-                    util::spaces(out, 4 + b.rank() * 4);
-                    write_instr(scope, *b.getInstr(), out, true);
-                }
-            } else {
-                util::spaces(out, 4 + b.rank() * 4);
-                loopHeadWriter(symbols, scope, b.getLoop(), thread_stack, out);
-                writeBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-                util::spaces(out, 4 + b.rank() * 4);
-                out << "}\n";
-            }
-        }
-    } else {
-        for (const Block &b: kernel._block_list) {
-            if (b.isInstr()) { // Finally, let's write the instruction
+    for (const Block &b: kernel._block_list) {
+        if (b.isInstr()) { // Finally, let's write the instruction
+            if (b.getInstr() != nullptr and not bh_opcode_is_system(b.getInstr()->opcode)) {
                 const InstrPtr &instr = b.getInstr();
-                if (not bh_opcode_is_system(instr->opcode)) {
-                    if (instr->operand.size() > 0) {
-                        if (scope.isOpenmpAtomic(instr)) {
-                            util::spaces(out, 4 + b.rank() * 4);
-                            out << "#pragma omp atomic\n";
-                        } else if (scope.isOpenmpCritical(instr)) {
-                            util::spaces(out, 4 + b.rank() * 4);
-                            out << "#pragma omp critical\n";
-                        }
+                if (instr->operand.size() > 0) {
+                    if (scope.isOpenmpAtomic(instr)) {
+                        util::spaces(out, 4 + b.rank() * 4);
+                        out << "#pragma omp atomic\n";
+                    } else if (scope.isOpenmpCritical(instr)) {
+                        util::spaces(out, 4 + b.rank() * 4);
+                        out << "#pragma omp critical\n";
                     }
-                    util::spaces(out, 4 + b.rank() * 4);
-                    write_instr(scope, *instr, out);
                 }
-            } else {
                 util::spaces(out, 4 + b.rank() * 4);
-                loopHeadWriter(symbols, scope, b.getLoop(), thread_stack, out);
-                writeBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
-                util::spaces(out, 4 + b.rank() * 4);
-                out << "}\n";
+                write_instr(scope, *instr, out, opencl);
             }
+        } else {
+            util::spaces(out, 4 + b.rank() * 4);
+            loopHeadWriter(symbols, scope, b.getLoop(), thread_stack, out);
+            writeBlock(symbols, &scope, b.getLoop(), thread_stack, opencl, out);
+            util::spaces(out, 4 + b.rank() * 4);
+            out << "}\n";
         }
     }
-
+    
     // Let's copy the scalar replaced back to the original array
     {
         for (const InstrPtr &instr: iterator::allLocalInstr(kernel)) {
