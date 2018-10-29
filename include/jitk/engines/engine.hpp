@@ -172,6 +172,15 @@ protected:
                                 const LoopB &block,
                                 const std::vector<uint64_t> &thread_stack,
                                 std::stringstream &out) = 0;
+
+    /** Write the source code of an instruction
+     *
+     * @param scope     The scope
+     * @param instr     Instruction to write
+     * @param opencl    OpenCL specific output
+     * @param out       The stream output
+     */
+    virtual void writeInstr(const Scope &scope, const bh_instruction &instr, bool opencl, std::stringstream &out);
 };
 
 }

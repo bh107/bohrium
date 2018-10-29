@@ -40,21 +40,22 @@ void write_sign_function(const string &operand, stringstream &out) {
 }
 
 // Write opcodes that uses a different complex functions when targeting OpenCL
-void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, const vector<string> &ops,
+void write_opcodes_with_special_opencl_complex(const bh_instruction &instr, const vector <string> &ops,
                                                stringstream &out, int opencl, const char *fname,
                                                const char *fname_complex) {
     const bh_type t0 = instr.operand_type(0);
     if (opencl and bh_type_is_complex(t0)) {
-        out << fname_complex << "(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " << ops[0] \
- << ", " << ops[1] << ");";
+        out << fname_complex << "(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " << ops[0] << ", "
+            << ops[1] << ");";
     } else {
         out << ops[0] << " = " << fname << "(" << ops[1] << ");";
     }
     out << "\n";
 }
+} // Anon namespace
 
 // Write the 'instr' using the string in 'ops' as ops
-void write_operation(const bh_instruction &instr, const vector<string> &ops, stringstream &out, bool opencl) {
+void write_operation(const bh_instruction &instr, const vector <string> &ops, stringstream &out, bool opencl) {
     switch (instr.opcode) {
         // Opcodes that are Complex/OpenCL agnostic
         case BH_BITWISE_AND:
@@ -144,7 +145,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             break;
         case BH_REMAINDER:
             if (bh_type_is_float(instr.operand[0].base->type)) {
-                out << ops[0] << " = " << ops[1] << " - floor(" << ops[1] <<  " / " << ops[2] << ") * " << ops[2] << ";";
+                out << ops[0] << " = " << ops[1] << " - floor(" << ops[1] << " / " << ops[2] << ") * " << ops[2] << ";";
             } else if (bh_type_is_unsigned_integer(instr.operand[0].base->type)) {
                 out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";";
             } else {
@@ -158,9 +159,9 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                     }
                 */
                 out << ops[0] << " = ((" << ops[1] << " > 0) == (" << ops[2] << " > 0) || "
-                                          "(" << ops[1] <<  " % " << ops[2] << ") == 0) ? "
-                                          "(" << ops[1] <<  " % " << ops[2] << ") : "
-                                          "(" << ops[1] <<  " % " << ops[2] << ") + " << ops[2] << ";";
+                                     "(" << ops[1] <<  " % " << ops[2] << ") == 0) ? "
+                                     "(" << ops[1] <<  " % " << ops[2] << ") : "
+                                     "(" << ops[1] <<  " % " << ops[2] << ") + " << ops[2] << ";";
             }
             break;
         case BH_RINT:
@@ -233,7 +234,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                 } else {
                     out << ops[0] << " = isinf(creal(" << ops[1] << "));";
                 }
-            } else if(bh_type_is_float(t0)) {
+            } else if (bh_type_is_float(t0)) {
                 out << ops[0] << " = isinf(" << ops[1] << ");";
             } else {
                 out << ops[0] << " = false;";
@@ -271,7 +272,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             out << ops[0] << " = " << ops[1] << ";";
             break;
 
-        // Opcodes that uses a different function name in OpenCL
+            // Opcodes that uses a different function name in OpenCL
         case BH_SIN:
             write_opcodes_with_special_opencl_complex(instr, ops, out, opencl, "sin", "CSIN");
             break;
@@ -342,7 +343,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_POWER: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CPOW(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " \
+                out << "CPOW(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", "
                     << ops[0] << ", " << ops[1] << ", " << ops[2] << ");";
             } else if (opencl and bh_type_is_integer(t0)) {
                 out << "IPOW(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");";
@@ -359,8 +360,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             break;
         }
 
-
-        // The operations that has to be handled differently in OpenCL
+            // The operations that has to be handled differently in OpenCL
         case BH_ADD:
             if (opencl and bh_type_is_complex(instr.operand_type(0))) {
                 out << "CADD(" << ops[0] << ", " << ops[1] << ", " << ops[2] << ");";
@@ -413,7 +413,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
         case BH_DIVIDE: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CDIV(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", " \
+                out << "CDIV(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", "
                     << ops[0] << ", " << ops[1] << ", " << ops[2] << ");";
             } else if (bh_type_is_signed_integer(instr.operand[0].base->type)) {
                 /* Python/NumPy signed integer division
@@ -429,16 +429,16 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
                     }
                 */
                 out << ops[0] << " = ((" << ops[1] << " > 0) != (" << ops[2] << " > 0) && "
-                                          "(" << ops[1] <<  " % " << ops[2] << ") != 0)?"
-                                          "(" << ops[1] <<  " / " << ops[2] << " - 1):"
-                                          "(" << ops[1] <<  " / " << ops[2] << ");";
+                                     "(" << ops[1] <<  " % " << ops[2] << ") != 0)?"
+                                     "(" << ops[1] <<  " / " << ops[2] << " - 1):"
+                                     "(" << ops[1] <<  " / " << ops[2] << ");";
             } else {
                 out << ops[0] << " = " << ops[1] << " / " << ops[2] << ";";
             }
             break;
         }
 
-        // In OpenCL we have to do explicit conversion of complex numbers
+            // In OpenCL we have to do explicit conversion of complex numbers
         case BH_IDENTITY: {
             out << ops[0] << " = ";
             const bh_type t0 = instr.operand_type(0);
@@ -459,12 +459,14 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             break;
         }
 
-        // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
+            // C99 does not have log10 for complex, so we use the formula: clog(z) = log(z)/log(10)
         case BH_LOG10: {
             const bh_type t0 = instr.operand_type(0);
             if (opencl and bh_type_is_complex(t0)) {
-                out << "CLOG(" << ops[0] << ", " << ops[1] << "); CDIV(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") \
-                    << ", " << ops[0] << ", " <<  ops[0] << ", make_complex" << (t0 == bh_type::COMPLEX64 ? "64" : "128")
+                out << "CLOG(" << ops[0] << ", " << ops[1] << "); CDIV("
+                    << (t0 == bh_type::COMPLEX64 ? "float" : "double")
+                    << ", " << ops[0] << ", " << ops[0] << ", make_complex"
+                    << (t0 == bh_type::COMPLEX64 ? "64" : "128")
                     << "(log(10.0f), 0.0f));";
             } else if (bh_type_is_complex(t0)) {
                 out << ops[0] << " = clog(" << ops[1] << ") / log(10.0f);";
@@ -474,7 +476,7 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             break;
         }
 
-        // Extracting the real or imaginary part differ in OpenCL
+            // Extracting the real or imaginary part differ in OpenCL
         case BH_REAL:
             if (opencl) {
                 out << ops[0] << " = " << ops[1] << ".x;";
@@ -490,10 +492,10 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
             }
             break;
 
-        /* NOTE: There are different ways to define sign of complex numbers.
-         * We uses the same definition as in NumPy
-         * <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
-         */
+            /* NOTE: There are different ways to define sign of complex numbers.
+             * We uses the same definition as in NumPy
+             * <http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.sign.html>
+             */
         case BH_SIGN: {
             const bh_type t0 = instr.operand_type(0);
             if (bh_type_is_complex(t0)) {
@@ -543,169 +545,6 @@ void write_operation(const bh_instruction &instr, const vector<string> &ops, str
     out << "\n";
 }
 
-void get_name_and_subscription(const Scope &scope, const bh_view &view, stringstream &out) {
-    scope.getName(view, out);
-    if (scope.isArray(view)) {
-        write_array_subscription(scope, view, out);
-    }
-}
-
-string get_name_and_subscription(const Scope &scope, const bh_view &view) {
-    stringstream ss;
-    get_name_and_subscription(scope, view, ss);
-    return ss.str();
-}
-
-void write_range_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    vector<string> ops;
-
-    // Write output operand
-    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
-
-    // Let's find the flatten index of the output view
-    stringstream ss;
-    ss << "(";
-    write_array_index(scope, instr.operand[0], ss);
-    ss << ")";
-    ops.push_back(ss.str());
-    write_operation(instr, ops, out, opencl);
-}
-
-void write_random_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    vector<string> ops;
-
-    // Write output operand
-    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
-
-    // Write the random generation
-    stringstream ss;
-    // Find the random `start` and `key`
-    const int64_t constID = scope.symbols.constID(instr);
-    if (constID >= 0) {
-        ss << "random123(" << "c" << constID << ".x, " << "c" << constID << ".y, " ;
-    } else {
-        ss << "random123(" << instr.constant.value.r123.start << ", " << instr.constant.value.r123.key << ", ";
-    }
-    write_array_index(scope, instr.operand[0], ss);
-    ss << ")";
-    ops.push_back(ss.str());
-    write_operation(instr, ops, out, opencl);
-}
-
-void write_gather_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    assert(not instr.operand[1].isConstant());
-
-    // Format of GATHER: out[<loop-indexes>] = in1[in1.start + in2[<loop-indexes>]]
-    vector<string> ops;
-    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
-
-    stringstream ss;
-    scope.getName(instr.operand[1], ss);
-    ss << "[" << instr.operand[1].start << " + ";
-    get_name_and_subscription(scope, instr.operand[2], ss);
-    ss << "]";
-    ops.push_back(ss.str());
-
-    write_operation(instr, ops, out, opencl);
-}
-
-void write_scatter_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-     // Format of SCATTER: out[out.start + in2[<loop-indexes>]] = in1[<loop-indexes>]
-    vector<string> ops;
-
-    stringstream ss;
-    scope.getName(instr.operand[0], ss);
-    ss << "[" << instr.operand[0].start << " + ";
-    get_name_and_subscription(scope, instr.operand[2], ss);
-    ss << "]";
-    ops.push_back(ss.str());
-
-    ops.push_back(get_name_and_subscription(scope, instr.operand[1]));
-
-    if (instr.opcode == BH_COND_SCATTER) { // Add the conditional array (fourth operand)
-        ops.push_back(get_name_and_subscription(scope, instr.operand[3]));
-    }
-
-    write_operation(instr, ops, out, opencl);
-}
-
-void write_accumulate_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    vector<string> ops;
-
-    // Write output operand
-    ops.push_back(get_name_and_subscription(scope, instr.operand[0]));
-
-    // Write the previous element access, NB: this works because of loop peeling
-    stringstream ss;
-    scope.getName(instr.operand[0], ss);
-    write_array_subscription(scope, instr.operand[0], ss, true, BH_MAXDIM, make_pair(instr.sweep_axis(), -1));
-    ops.push_back(ss.str());
-
-    // Write the current element access
-    ops.push_back(get_name_and_subscription(scope, instr.operand[1]));
-
-    write_operation(instr, ops, out, opencl);
-}
-
-void write_other_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    vector<string> ops;
-    for (size_t o = 0; o < instr.operand.size(); ++o) {
-        const bh_view &view = instr.operand[o];
-        stringstream ss;
-        if (view.isConstant()) {
-            const int64_t constID = scope.symbols.constID(instr);
-            if (constID >= 0) {
-                ss << "c" << scope.symbols.constID(instr);
-            } else {
-                instr.constant.pprint(ss, opencl);
-            }
-        } else {
-            scope.getName(view, ss);
-            if (scope.isArray(view)) {
-                if (o == 0 and bh_opcode_is_reduction(instr.opcode) and instr.operand[1].ndim > 1) {
-                    // If 'instr' is a reduction we have to ignore the reduced axis of the output array when
-                    // reducing to a non-scalar
-                    write_array_subscription(scope, view, ss, true, instr.sweep_axis());
-                } else {
-                    write_array_subscription(scope, view, ss);
-                }
-            }
-        }
-        ops.push_back(ss.str());
-    }
-    write_operation(instr, ops, out, opencl);
-}
-
-} // Anon namespace
-
-void write_instr(const Scope &scope, const bh_instruction &instr, stringstream &out, bool opencl) {
-    if (bh_opcode_is_system(instr.opcode)) {
-        return;
-    }
-    switch(instr.opcode) {
-        case BH_RANGE:
-            write_range_instr(scope, instr, out, opencl);
-            break;
-        case BH_RANDOM:
-            write_random_instr(scope, instr, out, opencl);
-            break;
-        case BH_GATHER:
-            write_gather_instr(scope, instr, out, opencl);
-            break;
-        case BH_SCATTER:
-        case BH_COND_SCATTER:
-            write_scatter_instr(scope, instr, out, opencl);
-            break;
-        default:
-            if (bh_opcode_is_accumulate(instr.opcode)) {
-                write_accumulate_instr(scope, instr, out, opencl);
-            } else {
-                write_other_instr(scope, instr, out, opencl);
-            }
-            break;
-    }
-}
-
 bh_constant sweep_identity(bh_opcode opcode, bh_type dtype) {
     switch (opcode) {
         case BH_ADD_REDUCE:
@@ -740,13 +579,13 @@ bh_constant sweep_identity(bh_opcode opcode, bh_type dtype) {
     }
 }
 
-vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> &instr_list, set<bh_base *> &frees) {
-    vector<bh_instruction*> ret;
-    set<const bh_base*> computes;
+vector<bh_instruction *> remove_non_computed_system_instr(vector <bh_instruction> &instr_list, set<bh_base *> &frees) {
+    vector < bh_instruction * > ret;
+    set<const bh_base *> computes;
     for (bh_instruction &instr: instr_list) {
         if (instr.opcode == BH_FREE and not util::exist(computes, instr.operand[0].base)) {
             frees.insert(instr.operand[0].base);
-        } else if (not (instr.opcode == BH_NONE or instr.opcode == BH_TALLY)) {
+        } else if (not(instr.opcode == BH_NONE or instr.opcode == BH_TALLY)) {
             auto bases = bohrium::jitk::iterator::allBases(instr);
             computes.insert(bases.begin(), bases.end());
             ret.push_back(&instr);
@@ -756,7 +595,7 @@ vector<bh_instruction*> remove_non_computed_system_instr(vector<bh_instruction> 
 }
 
 InstrPtr reshape_rank(const InstrPtr &instr, int rank, int64_t size_of_rank_dim) {
-    vector<int64_t> shape((size_t) rank + 1);
+    vector <int64_t> shape((size_t) rank + 1);
     // The dimensions up til 'rank' (not including 'rank') are unchanged
     for (int64_t r = 0; r < rank; ++r) {
         shape[r] = instr->operand[0].shape[r];
