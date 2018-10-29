@@ -33,6 +33,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/codegen_util.hpp>
 #include <jitk/engines/engine_gpu.hpp>
 
+#define CL_SILENCE_DEPRECATION 1 // Silence OpenCL deprecation warnings for MacOS 10.14 (Mojave)
 #include "cl.hpp"
 
 namespace bohrium {
@@ -117,7 +118,7 @@ public:
     const std::string writeType(bh_type dtype) override;
 
     cl::Buffer *createBuffer(bh_base *base) {
-        auto *buf = reinterpret_cast<cl::Buffer *>(malloc_cache.alloc(base->nbytes()));
+        cl::Buffer *buf = reinterpret_cast<cl::Buffer *>(malloc_cache.alloc(base->nbytes()));
         bool inserted = buffers.insert(std::make_pair(base, buf)).second;
         if (not inserted) {
             throw std::runtime_error("OpenCL - createBuffer(): the base already has a buffer!");
@@ -126,8 +127,8 @@ public:
     }
 
     cl::Buffer *createBuffer(bh_base *base, void *opencl_mem_ptr) {
-        auto *buf = new cl::Buffer();
-        auto _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
+        cl::Buffer *buf = new cl::Buffer();
+        cl_mem _mem = reinterpret_cast<cl_mem>(opencl_mem_ptr);
         cl_int err = clRetainMemObject(_mem); // Increments the memory object reference count
         if (err != CL_SUCCESS) {
             throw std::runtime_error("OpenCL - clRetainMemObject(): failed");
