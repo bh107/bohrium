@@ -37,7 +37,7 @@ uint64_t bh_base::get_label() const {
 }
 
 ostream &operator<<(ostream &out, const bh_base &b) {
-    out << "a" << b.get_label() << "{dtype: " << bh_type_text(b.type) << ", nelem: " << b.nelem 
+    out << "a" << b.get_label() << "{dtype: " << bh_type_text(b.type) << ", nelem: " << b.nelem()
         << ", address: " << &b << "}";
     return out;
 }

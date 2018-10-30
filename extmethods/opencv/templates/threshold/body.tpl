@@ -13,7 +13,7 @@ public:
         bh_view* B = &instr->operand[2];
         bh_data_malloc(B->base);
         void* B_data = B->base->data;
-        assert(B->base->nelem == 2);
+        assert(B->base->nelem() == 2);
 
         // C is our output image
         bh_view* C = &instr->operand[0];

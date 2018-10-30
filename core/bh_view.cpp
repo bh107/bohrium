@@ -49,7 +49,7 @@ bh_view::bh_view(bh_base *base) {
     this->base = base;
     this->ndim = 1;
     this->start = 0;
-    this->shape.push_back(this->base->nelem);
+    this->shape.push_back(this->base->nelem());
     this->stride.push_back(1);
 }
 

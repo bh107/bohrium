@@ -42,7 +42,7 @@ public:
         bh_view *in   = &instr->operand[1];
         bh_int32 *args = (bh_int32 *) instr->operand[2].base->data;
         assert(args != NULL);
-        assert(instr->operand[2].base->nelem == 1);
+        assert(instr->operand[2].base->nelem() == 1);
         assert(in->ndim == out->ndim);
         assert(out->base->type == BH_COMPLEX128);
         assert(in->base->type == BH_COMPLEX128);

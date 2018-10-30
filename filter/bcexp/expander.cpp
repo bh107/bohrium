@@ -104,20 +104,14 @@ size_t Expander::gc(void)
 
 bh_base* Expander::createBase(bh_type type, int64_t nelem)
 {
-    bh_base* base = NULL;
+    bh_base* base = nullptr;
     try {
-        base = new bh_base;
+        base = new bh_base(nelem, type);
     } catch (std::bad_alloc& ba) {
-        base = NULL;
         fprintf(stderr, "Expander::createBase(...) bh_base allocation failed.\n");
         throw std::runtime_error("Expander::createBase(...) bh_base allocation failed.\n");
     }
-
-    base->type = type;
-    base->nelem = nelem;
-    base->data = NULL;
     bases_.push_back(base);
-
     return base;
 }
 

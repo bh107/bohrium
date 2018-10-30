@@ -41,7 +41,7 @@ void BhInstruction::appendOperand(BhBase &base) {
     view.base = &base;
     view.start = 0;
     view.ndim = 1;
-    view.shape.push_back(base.nelem);
+    view.shape.push_back(base.nelem());
     view.stride.push_back(1);
     operand.push_back(view);
 }

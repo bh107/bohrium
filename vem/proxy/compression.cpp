@@ -56,7 +56,7 @@ int bh2cv_dtype(bh_type type) {
 
 std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::string &param) {
     std::vector<unsigned char> ret;
-    if (not ary.isContiguous() or ary.shape.prod() != ary.base->nelem) {
+    if (not ary.isContiguous() or ary.shape.prod() != ary.base->nelem()) {
         throw std::runtime_error("compress(): `ary` must be contiguous and represent the whole of its base");
     }
     if (ary.base->data == nullptr) {
@@ -107,7 +107,7 @@ std::vector<unsigned char> Compression::compress(const bh_base &ary, const std::
 }
 
 void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ary, const std::string &param) {
-    if (not ary.isContiguous() or ary.shape.prod() != ary.base->nelem) {
+    if (not ary.isContiguous() or ary.shape.prod() != ary.base->nelem()) {
         throw std::runtime_error("uncompress(): `ary` must be contiguous and represent the whole of its base");
     }
     if (data.empty()) {

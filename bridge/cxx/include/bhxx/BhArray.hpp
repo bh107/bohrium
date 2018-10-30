@@ -102,7 +102,7 @@ class BhArray {
      */
     BhArray(std::shared_ptr<BhBase> base_, Shape shape)
           : BhArray(std::move(base_), shape, contiguous_stride(shape), 0) {
-        assert(static_cast<size_t>(base->nelem) == shape.prod());
+        assert(static_cast<size_t>(base->nelem()) == shape.prod());
     }
 
     //

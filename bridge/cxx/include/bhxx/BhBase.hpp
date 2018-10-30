@@ -24,7 +24,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 
 namespace bhxx {
-// The base underlying (multiple) arrays
+
+/** The base underlying (multiple) arrays */
 class BhBase : public bh_base {
 public:
     /** Is the memory managed referenced by bh_base's data pointer
@@ -47,12 +48,7 @@ public:
      * incorporate nelem_ elements.
      * */
     template <typename T>
-    BhBase(size_t nelem_, T* memory) :
-        m_own_memory(false) {
-        data  = memory;
-        nelem = static_cast<int64_t>(nelem_);
-        set_type<T>();
-    }
+    BhBase(size_t nelem, T* memory) : bh_base(nelem, bh_type_from_template<T>()), m_own_memory(false) {}
 
     /** Construct a base array and initialise it with the elements
      *  provided by an iterator range.
@@ -62,8 +58,7 @@ public:
      *  BhBase(size_t nelem, T* memory) instead.
      */
     template <typename InputIterator, typename T = typename std::iterator_traits<InputIterator>::value_type>
-    BhBase(InputIterator begin, InputIterator end)
-          : BhBase(T(0), static_cast<size_t>(std::distance(begin, end))) {
+    BhBase(InputIterator begin, InputIterator end) : BhBase(T(0), static_cast<size_t>(std::distance(begin, end))) {
         assert(std::distance(begin, end) > 0);
 
         // Allocate an array and copy the data over.
@@ -84,11 +79,7 @@ public:
      *       do this via the BhArray interface and not using this constructor.
      */
     template <typename T>
-    BhBase(T dummy, size_t nelem_) :
-        m_own_memory(true) {
-        data  = nullptr;
-        nelem = nelem_;
-        set_type<T>();
+    BhBase(T dummy, size_t nelem) : bh_base(nelem, bh_type_from_template<T>()), m_own_memory(true) {
 
         // The dummy is a dummy argument and should always be identical zero.
         assert(dummy == T(0));
@@ -109,7 +100,7 @@ public:
 
     /** Delete move assignment */
     BhBase& operator=(BhBase&& other) = delete;
-    // The reason for doing this is that there might still be
+    // The reason for deleting move and copy is that there might still be
     // objects in the instruction queue which refer to the data
     // pointer used in this object. We hence cannot free the data,
     // but this is our only pointer to it within reach, so we
@@ -124,9 +115,6 @@ public:
     }
 
 private:
-    /** Set the data type of the data pointed by data. */
-    template <typename T>
-    void set_type();
 
     // Is the memory in here owned by Bohrium or is it provided
     // by external means. If it is owned by Bohrium, we assume

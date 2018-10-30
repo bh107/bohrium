@@ -28,14 +28,25 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace boost { namespace serialization { class access; }}
 
 struct bh_base {
-    // Pointer to the actual data.
-    void *data = nullptr;
+private:
+    // The number of elements in the array
+    int64_t _nelem = 0;
 
+public:
     // The type of data in the array
     bh_type type = bh_type::BOOL;
 
-    // The number of elements in the array
-    int64_t nelem = 0;
+    // Pointer to the actual data.
+    void *data = nullptr;
+
+    bh_base() = default;
+
+    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), type(type), data(data) {}
+
+    /// The number of elements in the array
+    int64_t nelem() const noexcept {
+        return _nelem;
+    }
 
     // Returns an unique ID of this base array
     uint64_t get_label() const;
@@ -45,7 +56,7 @@ struct bh_base {
 
     // Returns the of bytes in the array
     int64_t nbytes() const {
-        return nelem * bh_type_size(type);
+        return nelem() * bh_type_size(type);
     };
 
     template<class Archive>
@@ -53,7 +64,7 @@ struct bh_base {
         size_t tmp = (size_t) data;
         ar << tmp;
         ar & type;
-        ar & nelem;
+        ar & _nelem;
     }
 
     template<class Archive>
@@ -62,7 +73,7 @@ struct bh_base {
         ar >> tmp;
         data = (void *) tmp;
         ar & type;
-        ar & nelem;
+        ar & _nelem;
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()

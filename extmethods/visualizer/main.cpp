@@ -36,7 +36,7 @@ public:
         bh_view *subject = &instr->operand[0];
         bh_float32 *args = reinterpret_cast<bh_float32 *>(instr->operand[1].base->data);
         assert(args != nullptr);
-        assert(instr->operand[1].base->nelem == 5);
+        assert(instr->operand[1].base->nelem() == 5);
         assert(instr->operand[1].base->type == bh_type::FLOAT32);
 
         for(int64_t i=0; i<subject->ndim; ++i) {

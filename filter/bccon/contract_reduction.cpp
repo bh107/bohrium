@@ -58,7 +58,7 @@ void Contracter::reduction(BhIR &bhir)
         bh_instruction& instr = bhir.instr_list[pc];
 
         // Look for the "first" reduction in a chain of reductions
-        if (bh_opcode_is_reduction(instr.opcode) and instr.operand[0].base->nelem > 1) {
+        if (bh_opcode_is_reduction(instr.opcode) and instr.operand[0].base->nelem() > 1) {
             reduce_opcode = instr.opcode;
             bases.insert(instr.operand[0].base);
 
@@ -88,7 +88,7 @@ void Contracter::reduction(BhIR &bhir)
                     // Chain is broken - Reset the search
                     first = NULL;
                     break;
-                } else if (other_instr.operand[0].base->nelem == 1) {
+                } else if (other_instr.operand[0].base->nelem() == 1) {
                     // Scalar output - End of the chain
                     last = &other_instr;
                 } else {
