@@ -78,7 +78,7 @@ int Expander::expandSign(BhIR& bhir, int pc)
     bh_view input  = composite.operand[1];
 
     // Grab the input-type
-    bh_type input_type = input.base->type;
+    bh_type input_type = input.base->dtype();
 
     // Inherit ndim and shape
     bh_view meta = composite.operand[0];

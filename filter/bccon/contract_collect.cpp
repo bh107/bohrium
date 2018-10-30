@@ -200,7 +200,7 @@ void Contracter::collect(BhIR &bhir)
                     // Both are MULTIPLY or DIVIDE
 
                     // We are not allowed to DIVIDE when the result operand has integer type
-                    if (bh_type_is_integer(other_instr.operand[0].base->type)) {
+                    if (bh_type_is_integer(other_instr.operand[0].base->dtype())) {
                         chain.clear();
                         views.clear();
                         break;

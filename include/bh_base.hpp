@@ -32,20 +32,26 @@ private:
     // The number of elements in the array
     int64_t _nelem = 0;
 
-public:
     // The type of data in the array
-    bh_type type = bh_type::BOOL;
+    bh_type _type = bh_type::BOOL;
+
+public:
 
     // Pointer to the actual data.
     void *data = nullptr;
 
     bh_base() = default;
 
-    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), type(type), data(data) {}
+    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), _type(type), data(data) {}
 
-    /// The number of elements in the array
+    /// Returns the number of elements in this array
     int64_t nelem() const noexcept {
         return _nelem;
+    }
+
+    /// Returns the data type of this array
+    bh_type dtype() const noexcept {
+        return _type;
     }
 
     // Returns an unique ID of this base array
@@ -56,14 +62,14 @@ public:
 
     // Returns the of bytes in the array
     int64_t nbytes() const {
-        return nelem() * bh_type_size(type);
+        return nelem() * bh_type_size(_type);
     };
 
     template<class Archive>
     void save(Archive &ar, const unsigned int version) const {
         size_t tmp = (size_t) data;
         ar << tmp;
-        ar & type;
+        ar & _type;
         ar & _nelem;
     }
 
@@ -72,7 +78,7 @@ public:
         size_t tmp;
         ar >> tmp;
         data = (void *) tmp;
-        ar & type;
+        ar & _type;
         ar & _nelem;
     }
 

@@ -72,7 +72,7 @@ int Expander::expandReduce1d(BhIR &bhir, int pc, int thread_limit) {
     in.shape = {fold, elements / fold};
     in.stride = {in.stride[0] * elements / fold, in.stride[0]};
 
-    bh_view temp = createTemp(in.base->type, elements / fold);
+    bh_view temp = createTemp(in.base->dtype(), elements / fold);
     inject(bhir, ++pc, opcode, temp, in, 0, bh_type::INT64);
     inject(bhir, ++pc, opcode, out, temp, 0, bh_type::INT64);
     inject(bhir, ++pc, BH_FREE, temp);

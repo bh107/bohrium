@@ -20,11 +20,11 @@ public:
         bh_data_malloc(C->base);
         void* C_data = C->base->data;
 
-        switch(A->base->type) {
+        switch(A->base->dtype()) {
             @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by OpenCV for '@!name!@'.";
+                ss << bh_type_text(A->base->dtype()) << " not supported by OpenCV for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     } /* end execute method */

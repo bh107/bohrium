@@ -50,15 +50,15 @@ public:
         void *C_data = C->base->data;
 
         // We make sure that the data types are the same
-        assert(A->base->type == B->base->type);
-        assert(A->base->type == C->base->type);
+        assert(A->base->dtype() == B->base->dtype());
+        assert(A->base->dtype() == C->base->dtype());
 
         int B_size = B->shape[0] * B->shape[1];
         bh_int8* B_intdata = new bh_int8[B_size];
 
         cv::Mat src, dst;
 
-        switch(A->base->type) {
+        switch(A->base->dtype()) {
             case bh_type::UINT8: {
                 std::copy((bh_uint8*) B_data, ((bh_uint8*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
@@ -79,7 +79,7 @@ public:
             }
             default: {
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by OpenCV for 'erode'.";
+                ss << bh_type_text(A->base->dtype()) << " not supported by OpenCV for 'erode'.";
                 throw std::runtime_error(ss.str());
             }
         }
@@ -114,8 +114,8 @@ public:
         void *C_data = C->base->data;
 
         // We make sure that the data types are the same
-        assert(A->base->type == B->base->type);
-        assert(A->base->type == C->base->type);
+        assert(A->base->dtype() == B->base->dtype());
+        assert(A->base->dtype() == C->base->dtype());
 
         int B_size = B->shape[0] * B->shape[1];
         bh_int8* B_intdata = new bh_int8[B_size];
@@ -123,7 +123,7 @@ public:
         cv::Mat src;
         cv::Mat dst;
 
-        switch(A->base->type) {
+        switch(A->base->dtype()) {
             case bh_type::UINT8: {
                 std::copy((bh_uint8*) B_data, ((bh_uint8*) B_data) + B_size, B_intdata);
                 src = cv::Mat(A->shape[0], A->shape[1], CV_8UC1, (bh_uint8*) A_data);
@@ -144,7 +144,7 @@ public:
             }
             default: {
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by OpenCV for 'erode'.";
+                ss << bh_type_text(A->base->dtype()) << " not supported by OpenCV for 'erode'.";
                 throw std::runtime_error(ss.str());
             }
         }
@@ -168,7 +168,7 @@ public:
         bh_data_malloc(A->base);
         void *A_data = A->base->data;
 
-        if(A->base->type != bh_type::UINT8) {
+        if(A->base->dtype() != bh_type::UINT8) {
             throw std::runtime_error("Connected components by OpenCV only works for uint8 images.");
         }
 

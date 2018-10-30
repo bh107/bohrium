@@ -116,7 +116,7 @@ inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out,
 template <typename T>
 inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, bh_view& in1, T in2)
 {
-    Expander::inject(bhir, pc, opcode, out, in1, in2, in1.base->type);
+    Expander::inject(bhir, pc, opcode, out, in1, in2, in1.base->dtype());
 }
 
 template <typename T>
@@ -131,7 +131,7 @@ inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out,
 template <typename T>
 inline void Expander::inject(BhIR& bhir, int pc, bh_opcode opcode, bh_view& out, T in1)
 {
-    Expander::inject(bhir, pc, opcode, out, in1, out.base->type);
+    Expander::inject(bhir, pc, opcode, out, in1, out.base->dtype());
 }
 
 template <typename T>

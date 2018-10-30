@@ -16,7 +16,7 @@ public:
         // We allocate the B data, if not already present
         bh_data_malloc(B->base);
 
-        assert(A->base->type == B->base->type);
+        assert(A->base->dtype() == B->base->dtype());
         void *B_data = B->base->data;
         <!--(end)-->
 
@@ -27,7 +27,7 @@ public:
         // We allocate the C data, if not already present
         bh_data_malloc(C->base);
 
-        assert(A->base->type == C->base->type);
+        assert(A->base->dtype() == C->base->dtype());
         void *C_data = C->base->data;
         <!--(end)-->
 
@@ -39,11 +39,11 @@ public:
             <!--(if if_B)--> n = B->shape[1]; <!--(end)-->
         <!--(end)-->
 
-        switch(A->base->type) {
+        switch(A->base->dtype()) {
             @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by BLAS for '@!name!@'.";
+                ss << bh_type_text(A->base->dtype()) << " not supported by BLAS for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     } /* end execute method */

@@ -132,21 +132,21 @@ void write_operation(const bh_instruction &instr, const vector <string> &ops, st
                 << ops[1] << ";";
             break;
         case BH_INVERT:
-            if (instr.operand[0].base->type == bh_type::BOOL)
+            if (instr.operand[0].base->dtype() == bh_type::BOOL)
                 out << ops[0] << " = !" << ops[1] << ";";
             else
                 out << ops[0] << " = ~" << ops[1] << ";";
             break;
         case BH_MOD:
-            if (bh_type_is_float(instr.operand[0].base->type))
+            if (bh_type_is_float(instr.operand[0].base->dtype()))
                 out << ops[0] << " = fmod(" << ops[1] << ", " << ops[2] << ");";
             else
                 out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";";
             break;
         case BH_REMAINDER:
-            if (bh_type_is_float(instr.operand[0].base->type)) {
+            if (bh_type_is_float(instr.operand[0].base->dtype())) {
                 out << ops[0] << " = " << ops[1] << " - floor(" << ops[1] << " / " << ops[2] << ") * " << ops[2] << ";";
-            } else if (bh_type_is_unsigned_integer(instr.operand[0].base->type)) {
+            } else if (bh_type_is_unsigned_integer(instr.operand[0].base->dtype())) {
                 out << ops[0] << " = " << ops[1] << " % " << ops[2] << ";";
             } else {
                 /* The Python/NumPy implementation of remainder on signed integers
@@ -415,7 +415,7 @@ void write_operation(const bh_instruction &instr, const vector <string> &ops, st
             if (opencl and bh_type_is_complex(t0)) {
                 out << "CDIV(" << (t0 == bh_type::COMPLEX64 ? "float" : "double") << ", "
                     << ops[0] << ", " << ops[1] << ", " << ops[2] << ");";
-            } else if (bh_type_is_signed_integer(instr.operand[0].base->type)) {
+            } else if (bh_type_is_signed_integer(instr.operand[0].base->dtype())) {
                 /* Python/NumPy signed integer division
                     if (in2 == 0 || (in1 == NPY_MIN_@TYPE@ && in2 == -1)) {
                         npy_set_floatstatus_divbyzero();

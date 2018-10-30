@@ -79,7 +79,7 @@ void Visualizer::setValues(bh_view* _bh, int w, int h, int d, int _cm, bool f, b
         pause = false;
         A = _bh;
         B = _bh->base;
-        type = B->type;
+        type = B->dtype();
         width = w;
         height = h;
         depth = d;

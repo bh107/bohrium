@@ -83,12 +83,12 @@ public:
         bh_view *out = &instr->operand[0];
         assert(out->ndim == 2);
         assert(out->shape[0] == diagonals->shape[1] && out->shape[1] == diagonals->shape[2]);
-        assert(out->base->type == diagonals->base->type);
+        assert(out->base->dtype() == diagonals->base->dtype());
 
         bh_view *rhs = &instr->operand[2];
         assert(rhs->ndim == 2);
         assert(rhs->shape[0] == diagonals->shape[1] && rhs->shape[1] == diagonals->shape[2]);
-        assert(rhs->base->type == diagonals->base->type);
+        assert(rhs->base->dtype() == diagonals->base->dtype());
 
         // cout << diagonals->pprint(false) << endl;
         // cout << rhs->pprint(false) << endl;
@@ -99,7 +99,7 @@ public:
         bh_data_malloc(out->base);
         bh_data_malloc(rhs->base);
 
-        switch(diagonals->base->type) {
+        switch(diagonals->base->dtype()) {
             case bh_type::FLOAT32:
                 tdma_reduce<bh_float32>(diagonals, rhs, out);
                 break;

@@ -53,7 +53,7 @@ void Engine::writeKernelFunctionArguments(const jitk::SymbolTable &symbols,
         if (array_type_prefix != nullptr) {
             stmp << array_type_prefix << " ";
         }
-        stmp << writeType(b->type) << "* __restrict__ a" << symbols.baseID(b) << ", ";
+        stmp << writeType(b->dtype()) << "* __restrict__ a" << symbols.baseID(b) << ", ";
     }
 
     for (const bh_view *view: symbols.offsetStrideViews()) {
@@ -104,7 +104,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
                     if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
                         scope.insertTmp(view.base);
                         util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(view, writeType(view.base->type), out);
+                        scope.writeDeclaration(view, writeType(view.base->dtype()), out);
                         out << "\n";
                     }
                 }
@@ -142,7 +142,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
                         if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
                             scope.insertScalarReplaced(view);
                             util::spaces(out, 8 + kernel.rank * 4);
-                            scope.writeDeclaration(view, writeType(view.base->type), out);
+                            scope.writeDeclaration(view, writeType(view.base->dtype()), out);
                             out << "// For reductions inner-most";
                             out << "\n";
                         }
@@ -179,7 +179,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
                     if (util::exist(candidates, view)) {
                         scope.insertScalarReplaced(view);
                         util::spaces(out, 8 + kernel.rank * 4);
-                        scope.writeDeclaration(view, writeType(view.base->type), out);
+                        scope.writeDeclaration(view, writeType(view.base->dtype()), out);
                         // Let's load data into the scalar-replaced variable
                         if (not(i == 0 and instr->constructor)) { // No need to load data into a new output
                             out << " " << scope.getName(view) << " = a" << symbols.baseID(view.base);

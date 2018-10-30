@@ -242,7 +242,7 @@ bh_type bh_instruction::operand_type(int operand_index) const {
     if (view.isConstant()) {
         return constant.type;
     } else {
-        return view.base->type;
+        return view.base->dtype();
     }
 }
 

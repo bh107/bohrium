@@ -73,7 +73,7 @@ static bool rewrite_chain(BhIR &bhir, const vector<bh_instruction*>& chain, cons
     }
 
     // Set the constant type to the result type
-    first.constant.type = third.operand[0].base->type;
+    first.constant.type = third.operand[0].base->dtype();
 
     // The result of the first operations should be that of the thrid
     first.operand[0] = third.operand[0];

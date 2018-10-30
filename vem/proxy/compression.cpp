@@ -70,8 +70,8 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
     } else if (param_list[0] == "zlib") {
         ret = zlib_compress(ary.base->data, ary.base->nbytes());
     } else if (param_list[0] == "jpg" or param_list[0] == "png" or param_list[0] == "jp2") {
-        const int cv_type = bh2cv_dtype(ary.base->type);
-        if (ary.base->type != bh_type::UINT8) {
+        const int cv_type = bh2cv_dtype(ary.base->dtype());
+        if (ary.base->dtype() != bh_type::UINT8) {
             throw std::runtime_error("compress(): jpg and png only support uint8 arrays");
         }
         int sizes[BH_MAXDIM];
@@ -123,7 +123,7 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
     } else if (param_list[0] == "zlib") {
         zlib_uncompress(data, ary.base->data, ary.base->nbytes());
     } else if (param_list[0] == "jpg" or param_list[0] == "png" or param_list[0] == "jp2") {
-        if (ary.base->type != bh_type::UINT8) {
+        if (ary.base->dtype() != bh_type::UINT8) {
             throw std::runtime_error("uncompress(): jpg and png only support uint8 arrays");
         }
         cv::Mat out = cv::imdecode(data, CV_LOAD_IMAGE_ANYDEPTH);

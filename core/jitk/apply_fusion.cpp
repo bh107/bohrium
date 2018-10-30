@@ -100,7 +100,7 @@ void add_identity_block(LoopB &loop, int64_t &origin_count) {
             bh_instruction identity_instr(BH_IDENTITY, {sweep_instr->operand[0]});
             identity_instr.operand.resize(2);
             identity_instr.operand[1].base = nullptr;
-            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->type);
+            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->dtype());
             identity_instr.origin_id = origin_count++;
             identity_instr.constructor = sweep_instr->constructor;
             // We have to manually set the sweep axis of an accumulate output to 1. The backend will execute
@@ -145,7 +145,7 @@ vector<LoopB> add_identity_block(vector<Block> &block_list, int64_t &origin_coun
             bh_instruction identity_instr(BH_IDENTITY, {sweep_instr->operand[0]});
             identity_instr.operand.resize(2);
             identity_instr.operand[1].base = nullptr;
-            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->type);
+            identity_instr.constant = sweep_identity(sweep_instr->opcode, sweep_instr->operand[0].base->dtype());
             identity_instr.origin_id = origin_count++;
             identity_instr.constructor = sweep_instr->constructor;
             // We have to manually set the sweep axis of an accumulate output to 1. The backend will execute

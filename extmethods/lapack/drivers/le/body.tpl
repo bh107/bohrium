@@ -25,7 +25,7 @@ public:
 
             int lda = n;
 
-            assert(A->base->type == B->base->type);
+            assert(A->base->dtype() == B->base->dtype());
         <!--(end)-->
 
         <!--(if if_AB)-->
@@ -39,7 +39,7 @@ public:
                 // ku is the number of non-zero elements in the first row of A minus 1
                 int ku = 0;
 
-                switch(AB->base->type) {
+                switch(AB->base->dtype()) {
                     case bh_type::FLOAT32: {
                         kl = calc_kl<bh_float32>((bh_float32*) AB_data, AB->shape[0], AB->shape[1]);
                         ku = calc_ku<bh_float32>((bh_float32*) AB_data, AB->shape[0]);
@@ -58,14 +58,14 @@ public:
                     }
                     default:
                         std::stringstream ss;
-                        ss << bh_type_text(AB->base->type) << " not supported by LAPACK for '@!name!@'.";
+                        ss << bh_type_text(AB->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                         throw std::runtime_error(ss.str());
                 }
 
                 // ldab is the second dimension of the banded matrix
                 int lda = 2 * kl + ku + 1;
 
-                switch(AB->base->type) {
+                switch(AB->base->dtype()) {
                     case bh_type::FLOAT32: {
                         AB_data = get_ab_data<bh_float32>((bh_float32*) AB_data, AB->shape[0], AB->shape[1], kl, ku);
                         break;
@@ -82,7 +82,7 @@ public:
                     }
                     default:
                         std::stringstream ss;
-                        ss << bh_type_text(AB->base->type) << " not supported by LAPACK for '@!name!@'.";
+                        ss << bh_type_text(AB->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                         throw std::runtime_error(ss.str());
                 }
             <!--(end)-->
@@ -95,14 +95,14 @@ public:
             bh_data_malloc(A->base);
             // Grab pointer to data
             void *A_data = A->base->data;
-            assert(A->base->type == B->base->type);
+            assert(A->base->dtype() == B->base->dtype());
 
             // DL is the elements of the n-1 sub-diagonal of A
             // D is the elements of the diagonal of A
             // DU is the elements of the n-1 super-diagonal of A
             void *DL, *D, *DU;
 
-            switch(A->base->type) {
+            switch(A->base->dtype()) {
                 case bh_type::FLOAT32: {
                     DL = get_subdiagonal<bh_float32>(A_data, n);
                     D  = get_diagonal<bh_float32>(A_data, n);
@@ -123,7 +123,7 @@ public:
                 }
                 default:
                     std::stringstream ss;
-                    ss << bh_type_text(A->base->type) << " not supported by LAPACK for '@!name!@'.";
+                    ss << bh_type_text(A->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                     throw std::runtime_error(ss.str());
             }
         <!--(end)-->
@@ -137,12 +137,12 @@ public:
             // Grab pointer to data
             void *AP_data = AP->base->data;
 
-            assert(AP->base->type == B->base->type);
+            assert(AP->base->dtype() == B->base->dtype());
 
             // Convert the matrix into an array in upper-packed storage mode.
             // https://www.ibm.com/support/knowledgecenter/SSFHY8_5.3.0/com.ibm.cluster.essl.v5r3.essl100.doc/am5gr_upsm.htm
 
-            switch(B->base->type) {
+            switch(B->base->dtype()) {
                 case bh_type::FLOAT32: {
                     AP_data = get_ap_data<bh_float32>((bh_float32*) AP_data, n);
                     break;
@@ -159,7 +159,7 @@ public:
                 }
                 default:
                     std::stringstream ss;
-                    ss << bh_type_text(B->base->type) << " not supported by LAPACK for '@!name!@'.";
+                    ss << bh_type_text(B->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                     throw std::runtime_error(ss.str());
             }
         <!--(end)-->
@@ -175,11 +175,11 @@ public:
 
         int info;
 
-        switch(B->base->type) {
+        switch(B->base->dtype()) {
             @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(B->base->type) << " not supported by LAPACK for '@!name!@'.";
+                ss << bh_type_text(B->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     } /* end execute method */
