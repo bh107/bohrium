@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace boost { namespace serialization { class access; }}
 
 struct bh_base {
-protected:
+private:
     // The number of elements in the array
     int64_t _nelem = 0;
 
@@ -41,6 +41,12 @@ protected:
 public:
     bh_base() = default;
 
+    /** Construct a new base array
+     *
+     * @param nelem  Number of elements
+     * @param type   The data type
+     * @param data   Pointer to the actual data (or nullptr)
+     */
     bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), _type(type), _data(data) {}
 
     /// Returns the number of elements in this array
@@ -68,13 +74,13 @@ public:
         _data = data_ptr;
     }
 
-    // Returns an unique ID of this base array
+    /// Returns an unique ID of this base array
     uint64_t getLabel() const;
 
-    // Returns pprint string of this base array
+    /// Returns pprint string of this base array
     std::string str() const;
 
-    // Returns the of bytes in the array
+    /// Returns the of bytes in the array
     int64_t nbytes() const {
         return nelem() * bh_type_size(_type);
     };

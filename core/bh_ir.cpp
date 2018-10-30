@@ -79,9 +79,9 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
         for (const bh_view &v: instr.getViews()) {
             if (not util::exist(remote2local, v.base)) {
                 assert(new_base_count < news.size());
-                remote2local[v.base] = news[new_base_count++];
-                if (remote2local[v.base].getDataPtr() != nullptr)
-                    data_recv.push_back(&remote2local[v.base]);
+                remote2local.emplace(v.base, news.at(new_base_count++));
+                if (remote2local.at(v.base).getDataPtr() != nullptr)
+                    data_recv.push_back(&remote2local.at(v.base));
             }
         }
     }
