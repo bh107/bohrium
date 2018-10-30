@@ -116,7 +116,7 @@ public:
     // would theoretically need to free it here.
 
     /** Move another BhBase object here */
-    BhBase(BhBase&& other) :
+    BhBase(BhBase&& other) noexcept :
         bh_base(std::move(other)),
         m_own_memory(other.m_own_memory) {
         other.m_own_memory = true;

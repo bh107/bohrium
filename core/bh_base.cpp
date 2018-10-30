@@ -22,10 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 #include <bh_base.hpp>
-#include <bh_malloc_cache.hpp>
 
 using namespace std;
-using namespace bohrium;
 
 // Returns the label of this base array
 // NB: generated a new label if necessary

@@ -43,6 +43,7 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(std::complex<float>);
 INSTANTIATE(std::complex<double>);
+INSTANTIATE(bh_r123);
 
 #undef INSTANTIATE
 }
