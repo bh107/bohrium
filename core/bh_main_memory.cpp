@@ -76,15 +76,15 @@ MallocCache malloc_cache(main_mem_malloc, main_mem_free, 0);
 
 void bh_data_malloc(bh_base *base) {
     if (base == nullptr) return;
-    if (base->data != nullptr) return;
-    base->data = malloc_cache.alloc(base->nbytes());
+    if (base->getDataPtr() != nullptr) return;
+    base->resetDataPtr(malloc_cache.alloc(base->nbytes()));
 }
 
 void bh_data_free(bh_base *base) {
     if (base == nullptr) return;
-    if (base->data == nullptr) return;
-    malloc_cache.free(base->nbytes(), base->data);
-    base->data = nullptr;
+    if (base->getDataPtr() == nullptr) return;
+    malloc_cache.free(base->nbytes(), base->getDataPtr());
+    base->resetDataPtr();
 }
 
 void bh_set_malloc_cache_limit(uint64_t nbytes) {

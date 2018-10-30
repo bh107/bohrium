@@ -40,7 +40,7 @@ public:
     void execute(bh_instruction *instr, void* arg) {
         bh_view *out  = &instr->operand[0];
         bh_view *in   = &instr->operand[1];
-        bh_int32 *args = (bh_int32 *) instr->operand[2].base->data;
+        bh_int32 *args = (bh_int32 *) instr->operand[2].base->getDataPtr();
         assert(args != NULL);
         assert(instr->operand[2].base->nelem() == 1);
         assert(in->ndim == out->ndim);
@@ -53,8 +53,8 @@ public:
         bh_data_malloc(out->base);
         bh_data_malloc(in->base);
 
-        fftw_complex *i = (fftw_complex*) in->base->data;
-        fftw_complex *o = (fftw_complex*) out->base->data;
+        fftw_complex *i = (fftw_complex*) in->base->getDataPtr();
+        fftw_complex *o = (fftw_complex*) out->base->getDataPtr();
 
         //Convert shape to int
         int shape[BH_MAXDIM];

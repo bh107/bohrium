@@ -6,19 +6,19 @@ public:
         // A is our image
         bh_view* A = &instr->operand[1];
         bh_data_malloc(A->base);
-        void* A_data = A->base->data;
+        void* A_data = A->base->getDataPtr();
 
         // B must be a one-dimensional vector with two values
         // thresh and maxval
         bh_view* B = &instr->operand[2];
         bh_data_malloc(B->base);
-        void* B_data = B->base->data;
+        void* B_data = B->base->getDataPtr();
         assert(B->base->nelem() == 2);
 
         // C is our output image
         bh_view* C = &instr->operand[0];
         bh_data_malloc(C->base);
-        void* C_data = C->base->data;
+        void* C_data = C->base->getDataPtr();
 
         switch(A->base->dtype()) {
             @!func!@

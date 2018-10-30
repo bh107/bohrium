@@ -80,7 +80,7 @@ BhIR::BhIR(const std::vector<char> &serialized_archive, std::map<const bh_base*,
             if (not util::exist(remote2local, v.base)) {
                 assert(new_base_count < news.size());
                 remote2local[v.base] = news[new_base_count++];
-                if (remote2local[v.base].data != nullptr)
+                if (remote2local[v.base].getDataPtr() != nullptr)
                     data_recv.push_back(&remote2local[v.base]);
             }
         }
@@ -119,7 +119,7 @@ std::vector<char> BhIR::writeSerializedArchive(set<bh_base *> &known_base_arrays
             if (not util::exist(known_base_arrays, v.base)) {
                 new_bases.push_back(*v.base);
                 known_base_arrays.insert(v.base);
-                if (v.base->data != nullptr) {
+                if (v.base->getDataPtr() != nullptr) {
                     new_data.push_back(v.base);
                 }
             }

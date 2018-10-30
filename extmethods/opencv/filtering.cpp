@@ -37,17 +37,17 @@ public:
         // A is our image
         bh_view* A = &instr->operand[1];
         bh_data_malloc(A->base);
-        void *A_data = A->base->data;
+        void *A_data = A->base->getDataPtr();
 
         // B is our kernel
         bh_view* B = &instr->operand[2];
         bh_data_malloc(B->base);
-        void *B_data = B->base->data;
+        void *B_data = B->base->getDataPtr();
 
         // C is our output image
         bh_view* C = &instr->operand[0];
         bh_data_malloc(C->base);
-        void *C_data = C->base->data;
+        void *C_data = C->base->getDataPtr();
 
         // We make sure that the data types are the same
         assert(A->base->dtype() == B->base->dtype());
@@ -101,17 +101,17 @@ public:
         // A is our image
         bh_view* A = &instr->operand[1];
         bh_data_malloc(A->base);
-        void *A_data = A->base->data;
+        void *A_data = A->base->getDataPtr();
 
         // B is our kernel
         bh_view* B = &instr->operand[2];
         bh_data_malloc(B->base);
-        void *B_data = B->base->data;
+        void *B_data = B->base->getDataPtr();
 
         // C is our output image
         bh_view* C = &instr->operand[0];
         bh_data_malloc(C->base);
-        void *C_data = C->base->data;
+        void *C_data = C->base->getDataPtr();
 
         // We make sure that the data types are the same
         assert(A->base->dtype() == B->base->dtype());
@@ -166,7 +166,7 @@ public:
         // A is our image
         bh_view* A = &instr->operand[1];
         bh_data_malloc(A->base);
-        void *A_data = A->base->data;
+        void *A_data = A->base->getDataPtr();
 
         if(A->base->dtype() != bh_type::UINT8) {
             throw std::runtime_error("Connected components by OpenCV only works for uint8 images.");
@@ -175,13 +175,13 @@ public:
         // B is a scalar of our connectivity
         bh_view* B = &instr->operand[2];
         bh_data_malloc(B->base);
-        void* B_data = B->base->data;
+        void* B_data = B->base->getDataPtr();
         assert(B->base->nelem() == 1);
 
         // C is our output labels
         bh_view* C = &instr->operand[0];
         bh_data_malloc(C->base);
-        void *C_data = C->base->data;
+        void *C_data = C->base->getDataPtr();
 
         int connectivity = static_cast<int>(((bh_uint8*) B_data)[0]);
 

@@ -94,9 +94,9 @@ class Impl : public ComponentVE {
             if (force_alloc) {
                 bh_data_malloc(b);
             }
-            void *ret = base.data;
+            void *ret = base.getDataPtr();
             if (nullify) {
-                base.data = nullptr;
+                base.resetDataPtr();
             }
             return ret;
         } else {
@@ -110,7 +110,7 @@ class Impl : public ComponentVE {
             std::set<bh_base*> t = { base };
             engine.copyToHost(t);
             engine.delBuffer(base);
-            base->data = mem;
+            base->resetDataPtr(mem);
         } else {
             engine.createBuffer(base, mem);
         }
@@ -159,7 +159,7 @@ void Impl::execute(BhIR *bhir) {
         // Check condition
         if (cond != nullptr) {
             engine.copyToHost({ cond }); // TODO: make it a read-only copy
-            if (cond->data != nullptr and not ((bool*)cond->data)[0]) {
+            if (cond->getDataPtr() != nullptr and not((bool *) cond->getDataPtr())[0]) {
                 break;
             }
         }

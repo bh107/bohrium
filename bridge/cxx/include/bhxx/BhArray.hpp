@@ -128,7 +128,7 @@ class BhArray {
     //
     /** Is the data referenced by this view's base array already
      *  allocated, i.e. initialised */
-    bool isDataInitialised() const { return base->data != nullptr; }
+    bool isDataInitialised() const { return base->getDataPtr() != nullptr; }
 
     /** Obtain the data pointer of the base array, not taking
      *  ownership of any kind.
@@ -139,8 +139,8 @@ class BhArray {
      *  \note No flush is done automatically. The data might be
      *        out of sync with Bohrium.
      */
-    const T* data() const { return static_cast<T*>(base->data); }
-          T* data()       { return static_cast<T*>(base->data); }
+    const T* data() const { return static_cast<T*>(base->getDataPtr()); }
+          T* data()       { return static_cast<T*>(base->getDataPtr()); }
 
     //
     // Routines

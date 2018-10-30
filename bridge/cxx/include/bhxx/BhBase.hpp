@@ -63,7 +63,7 @@ public:
 
         // Allocate an array and copy the data over.
         bh_data_malloc(this);
-        std::copy(begin, end, static_cast<T*>(data));
+        std::copy(begin, end, static_cast<T *>(getDataPtr()));
     }
 
     /** Construct a base array with nelem elements
@@ -89,7 +89,7 @@ public:
         // All memory here should be handed over to the Runtime
         // by a BH_FREE instruction and hence no BhBase object
         // should ever point to any memory on deletion
-        assert(data == nullptr);
+        assert(getDataPtr() == nullptr);
     }
 
     /** Deleted copy constructor */
@@ -111,7 +111,7 @@ public:
         bh_base(std::move(other)),
         m_own_memory(other.m_own_memory) {
         other.m_own_memory = true;
-        other.data         = nullptr;
+        other.resetDataPtr();
     }
 
 private:

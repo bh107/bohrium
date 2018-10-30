@@ -134,9 +134,9 @@ public:
         }
 
         // Nullify the data pointer
-        void *ret = base.data;
+        void *ret = base.getDataPtr();
         if (nullify) {
-            base.data = nullptr;
+            base.resetDataPtr();
             known_base_arrays.erase(&base);
         }
         return ret;
@@ -158,7 +158,7 @@ public:
         if (src.shape.prod() != dst.shape.prod()) {
             throw runtime_error("PROXY - memCopy(): `src` and `dst` must have same size");
         }
-        if (util::exist(known_base_arrays, dst.base) or dst.base->data != nullptr) {
+        if (util::exist(known_base_arrays, dst.base) or dst.base->getDataPtr() != nullptr) {
             throw runtime_error("PROXY - memCopy(): `dst` must be un-initiated");
         }
 
@@ -249,7 +249,7 @@ void Impl::execute(BhIR *bhir) {
 
     // Send array data
     for (bh_base *base: new_data) {
-        assert(base->data != nullptr);
+        assert(base->getDataPtr() != nullptr);
         auto data = compressor.compress(*base, compress_param);
         comm_front.send_data(data);
     }

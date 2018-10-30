@@ -192,8 +192,8 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     vector<void *> data_list;
     data_list.reserve(symbols.getParams().size());
     for (bh_base *base: symbols.getParams()) {
-        assert(base->data != nullptr);
-        data_list.push_back(base->data);
+        assert(base->getDataPtr() != nullptr);
+        data_list.push_back(base->getDataPtr());
     }
 
     // And the offset-and-strides

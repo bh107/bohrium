@@ -59,16 +59,16 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
     if (not ary.isContiguous() or ary.shape.prod() != ary.base->nelem()) {
         throw std::runtime_error("compress(): `ary` must be contiguous and represent the whole of its base");
     }
-    if (ary.base->data == nullptr) {
+    if (ary.base->getDataPtr() == nullptr) {
         throw std::runtime_error("compress(): `ary` data is NULL");
     }
     vector<string> param_list;
     boost::split(param_list, param, boost::is_any_of(","));
     if (param.empty() or param_list.empty() or param_list[0] == "none") {
         ret.resize(ary.base->nbytes());
-        memcpy(&ret[0], ary.base->data, ary.base->nbytes());
+        memcpy(&ret[0], ary.base->getDataPtr(), ary.base->nbytes());
     } else if (param_list[0] == "zlib") {
-        ret = zlib_compress(ary.base->data, ary.base->nbytes());
+        ret = zlib_compress(ary.base->getDataPtr(), ary.base->nbytes());
     } else if (param_list[0] == "jpg" or param_list[0] == "png" or param_list[0] == "jp2") {
         const int cv_type = bh2cv_dtype(ary.base->dtype());
         if (ary.base->dtype() != bh_type::UINT8) {
@@ -91,7 +91,7 @@ std::vector<unsigned char> Compression::compress(const bh_view &ary, const std::
             }
         }
 
-        cv::Mat mat(static_cast<int>(ary.ndim), sizes, cv_type, ary.base->data);
+        cv::Mat mat(static_cast<int>(ary.ndim), sizes, cv_type, ary.base->getDataPtr());
         cv::imencode("." + param_list[0], mat, ret, params);
     } else {
         throw std::runtime_error("compress(): unknown param");
@@ -119,9 +119,9 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
     boost::split(param_list, param, boost::is_any_of(","));
     if (param.empty() or param_list.empty() or param_list[0] == "none") {
         assert(static_cast<int64_t>(data.size()) == ary.base->nbytes());
-        memcpy(ary.base->data, &data[0], ary.base->nbytes());
+        memcpy(ary.base->getDataPtr(), &data[0], ary.base->nbytes());
     } else if (param_list[0] == "zlib") {
-        zlib_uncompress(data, ary.base->data, ary.base->nbytes());
+        zlib_uncompress(data, ary.base->getDataPtr(), ary.base->nbytes());
     } else if (param_list[0] == "jpg" or param_list[0] == "png" or param_list[0] == "jp2") {
         if (ary.base->dtype() != bh_type::UINT8) {
             throw std::runtime_error("uncompress(): jpg and png only support uint8 arrays");
@@ -131,7 +131,7 @@ void Compression::uncompress(const std::vector<unsigned char> &data, bh_view &ar
             throw std::runtime_error("imdecode(): failed!");
         }
         assert(ary.base->nbytes() == (out.dataend - out.data));
-        memcpy(ary.base->data, out.data, static_cast<size_t>(ary.base->nbytes()));
+        memcpy(ary.base->getDataPtr(), out.data, static_cast<size_t>(ary.base->nbytes()));
     } else {
         throw std::runtime_error("compress(): unknown param");
     }

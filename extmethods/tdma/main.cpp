@@ -54,11 +54,11 @@ private:
       const int m = rhs->shape[0];
       const int n = rhs->shape[1];
       T* tmp = (T*) malloc(n * m * sizeof(T));
-      T *a = (T*) diagonals->base->data + diagonals->start;
-      T *b = (T*) diagonals->base->data + diagonals->start + diagonals->stride[0];
-      T *c = (T*) diagonals->base->data + diagonals->start + 2*diagonals->stride[0];
-      T *r = (T*) rhs->base->data + rhs->start;
-      T *o = (T*) out->base->data + out->start;
+      T *a = (T*) diagonals->base->getDataPtr() + diagonals->start;
+      T *b = (T*) diagonals->base->getDataPtr() + diagonals->start + diagonals->stride[0];
+      T *c = (T*) diagonals->base->getDataPtr() + diagonals->start + 2*diagonals->stride[0];
+      T *r = (T*) rhs->base->getDataPtr() + rhs->start;
+      T *o = (T*) out->base->getDataPtr() + out->start;
 
       #pragma omp parallel for
       for(int i=0; i < m; ++i)

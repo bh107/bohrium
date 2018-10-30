@@ -28,21 +28,20 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace boost { namespace serialization { class access; }}
 
 struct bh_base {
-private:
+protected:
     // The number of elements in the array
     int64_t _nelem = 0;
 
     // The type of data in the array
     bh_type _type = bh_type::BOOL;
 
-public:
-
     // Pointer to the actual data.
-    void *data = nullptr;
+    void *_data = nullptr;
 
+public:
     bh_base() = default;
 
-    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), _type(type), data(data) {}
+    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), _type(type), _data(data) {}
 
     /// Returns the number of elements in this array
     int64_t nelem() const noexcept {
@@ -52,6 +51,21 @@ public:
     /// Returns the data type of this array
     bh_type dtype() const noexcept {
         return _type;
+    }
+
+    /// Returns the data pointer of this array
+    void *getDataPtr() {
+        return _data;
+    }
+
+    /// Returns the data pointer of this array (const version)
+    const void *getDataPtr() const {
+        return _data;
+    }
+
+    /// Reset the data pointer for this array to `data_ptr`
+    void resetDataPtr(void *data_ptr = nullptr) {
+        _data = data_ptr;
     }
 
     // Returns an unique ID of this base array
@@ -67,7 +81,7 @@ public:
 
     template<class Archive>
     void save(Archive &ar, const unsigned int version) const {
-        size_t tmp = (size_t) data;
+        size_t tmp = (size_t) _data;
         ar << tmp;
         ar & _type;
         ar & _nelem;
@@ -77,7 +91,7 @@ public:
     void load(Archive &ar, const unsigned int version) {
         size_t tmp;
         ar >> tmp;
-        data = (void *) tmp;
+        _data = (void *) tmp;
         ar & _type;
         ar & _nelem;
     }

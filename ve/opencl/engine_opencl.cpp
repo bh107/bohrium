@@ -414,7 +414,7 @@ void EngineOpenCL::copyToHost(const std::set<bh_base*> &bases) {
     for(bh_base *base: bases) {
         if (util::exist(buffers, base)) {
             bh_data_malloc(base);
-            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
+            queue.enqueueReadBuffer(*buffers.at(base), CL_FALSE, 0, (cl_ulong) base->nbytes(), base->getDataPtr());
             // When syncing we assume that the host writes to the data and invalidate the device data thus
             // we have to remove its data buffer
             delBuffer(base);
@@ -441,8 +441,8 @@ void EngineOpenCL::copyToDevice(const std::set<bh_base*> &base_list) {
             cl::Buffer *buf = createBuffer(base);
 
             // If the host data is non-null we should copy it to the device
-            if (base->data != nullptr) {
-                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) base->nbytes(), base->data);
+            if (base->getDataPtr() != nullptr) {
+                queue.enqueueWriteBuffer(*buf, CL_FALSE, 0, (cl_ulong) base->nbytes(), base->getDataPtr());
             }
         }
     }

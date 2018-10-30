@@ -274,7 +274,7 @@ void Visualizer::computeVertices3D()
     for (int x = 0; x < width; x++)
     {
       vertices[3*i] = (float)(x*dx) - (XWIDTH/2.0f);
-      vertices[3*i+1] = ((float *)B->data)[j];
+      vertices[3*i+1] = ((float *)B->getDataPtr())[j];
       vertices[3*i+2] = (float)(z*dz) - (ZWIDTH/2.0f);
       j++;
       i++;
@@ -286,7 +286,7 @@ void Visualizer::updateArray3D()
   for (int i = 0; i < A->shape[0]; i++){
       for (int j = 0; j < A->shape[1]; j++)
       {
-          vertices[3*(i * width + j)+1] = ((float*)B->data)[A->start + i*A->stride[0]+j*A->stride[1]];
+          vertices[3*(i * width + j)+1] = ((float*)B->getDataPtr())[A->start + i*A->stride[0]+j*A->stride[1]];
       }
   }
 
@@ -353,7 +353,7 @@ void Visualizer:: updateColors()
   for (int i = 0; i < A->shape[0]; i++){
       for (int j = 0; j < A->shape[1]; j++)
       {
-          float v = ((float*)B->data)[A->start + i*A->stride[0]+j*A->stride[1]];
+          float v = ((float*)B->getDataPtr())[A->start + i*A->stride[0]+j*A->stride[1]];
           v =  ((v- min) / (max - min));
           colors[k] = interpolateColor(v, cm.red);
           colors[k+1] = interpolateColor(v, cm.green);
@@ -529,9 +529,10 @@ void Visualizer::displayCube(){
         {
             for (int z = 0; z < depth; z++)
             {
-                if (((float *)B->data)[A->start + x*A->stride[0]+y*A->stride[1] + z*A->stride[2]] > 0.0)
+                if (((float *) B->getDataPtr())[A->start + x * A->stride[0] + y * A->stride[1] + z * A->stride[2]] > 0.0)
                 {
-                    drawCube(x, y , z, ((float *)B->data)[A->start + x*A->stride[0]+y*A->stride[1] + z*A->stride[2]]);
+                    drawCube(x, y, z, ((float *) B->getDataPtr())[A->start + x * A->stride[0] + y * A->stride[1] +
+                                                                z * A->stride[2]]);
                 }
             }
         }
