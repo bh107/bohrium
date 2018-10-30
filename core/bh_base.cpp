@@ -29,7 +29,7 @@ using namespace std;
 // NB: generated a new label if necessary
 static map<const bh_base *, uint64_t> _label_map;
 
-uint64_t bh_base::get_label() const {
+uint64_t bh_base::getLabel() const {
     if (_label_map.find(this) == _label_map.end()) {
         _label_map[this] = _label_map.size();
     }
@@ -37,7 +37,7 @@ uint64_t bh_base::get_label() const {
 }
 
 ostream &operator<<(ostream &out, const bh_base &b) {
-    out << "a" << b.get_label() << "{dtype: " << bh_type_text(b.dtype()) << ", nelem: " << b.nelem()
+    out << "a" << b.getLabel() << "{dtype: " << bh_type_text(b.dtype()) << ", nelem: " << b.nelem()
         << ", address: " << &b << "}";
     return out;
 }

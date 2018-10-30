@@ -307,14 +307,14 @@ string LoopB::pprint(const char *newline) const {
     if (_news.size() > 0) {
         ss << ", news: {";
         for (const bh_base *b : _news) {
-            ss << "a" << b->get_label() << ",";
+            ss << "a" << b->getLabel() << ",";
         }
         ss << "}";
     }
     if (_frees.size() > 0) {
         ss << ", frees: {";
         for (const bh_base *b : _frees) {
-            ss << "a" << b->get_label() << ",";
+            ss << "a" << b->getLabel() << ",";
         }
         ss << "}";
     }
@@ -322,7 +322,7 @@ string LoopB::pprint(const char *newline) const {
     if (temps.size() > 0) {
         ss << ", temps: {";
         for (const bh_base *b : temps) {
-            ss << "a" << b->get_label() << ",";
+            ss << "a" << b->getLabel() << ",";
         }
         ss << "}";
     }

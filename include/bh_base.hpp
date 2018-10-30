@@ -69,7 +69,7 @@ public:
     }
 
     // Returns an unique ID of this base array
-    uint64_t get_label() const;
+    uint64_t getLabel() const;
 
     // Returns pprint string of this base array
     std::string str() const;

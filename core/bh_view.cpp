@@ -148,7 +148,7 @@ vector<tuple<int64_t, int64_t, int64_t> > bh_view::python_notation() const {
 
 string bh_view::pprint(bool py_notation) const {
     stringstream ss;
-    ss << "a" << base->get_label() << "[";
+    ss << "a" << base->getLabel() << "[";
     if (isConstant()) {
         ss << "CONST";
     } else if (py_notation) {

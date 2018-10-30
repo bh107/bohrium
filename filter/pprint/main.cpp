@@ -42,7 +42,7 @@ class Impl : public ComponentImpl {
         ofstream f(ss.str());
         f << "Trace " << count++ << " (syncs:";
         for (const bh_base *b: bhir->getSyncs()) {
-            f << " a" << b->get_label();
+            f << " a" << b->getLabel();
         }
         f << "):" << endl;
         for (const bh_instruction &instr: bhir->instr_list) {
