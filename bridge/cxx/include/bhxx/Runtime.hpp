@@ -37,36 +37,28 @@ class Runtime {
 public:
     Runtime();
 
-    Runtime(Runtime &&) = default;
-
-    Runtime &operator=(Runtime &&) = default;
-
-    Runtime(const Runtime &) = delete;
-
-    Runtime &operator=(const Runtime &) = delete;
-
     ~Runtime() {
         flush();
     }
 
-    // Get the singleton instance of the Runtime class
+    /// Get the singleton instance of the Runtime class
     static Runtime &instance() {
         static Runtime instance;
         return instance;
     }
 
-    // Create and enqueue a new bh_instruction based on `opcode` and a variadic
-    // pack of BhArrays and at most one scalar value
+    /// Create and enqueue a new bh_instruction based on `opcode` and a variadic
+    /// pack of BhArrays and at most one scalar value
     template<typename T, typename... Ts>
     void enqueue(bh_opcode opcode, T &op, Ts &... ops);
 
     /** Enqueue any BhInstruction object */
     void enqueue(BhInstruction instr);
 
-    // We have to handle random specially because of the `BH_R123` scalar type
+    /// We have to handle random specially because of the `BH_R123` scalar type
     void enqueueRandom(BhArray<uint64_t> &out, uint64_t seed, uint64_t key);
 
-    // Enqueue an extension method
+    /// Enqueue an extension method
     template<typename T>
     void enqueueExtmethod(const std::string &name, BhArray<T> &out, BhArray<T> &in1,
                           BhArray<T> &in2);
@@ -77,7 +69,7 @@ public:
      */
     void enqueueDeletion(std::unique_ptr<BhBase> base_ptr);
 
-    // Send enqueued instructions to Bohrium for execution
+    /// Send enqueued instructions to Bohrium for execution
     void flush();
 
     /** Flush and repeat the lazy evaluated operations until `base_ptr` is false or `nrepeats` is reached
@@ -87,7 +79,7 @@ public:
      */
     void flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr);
 
-    // Flag array to be sync'ed after the next flush
+    /// Flag array to be sync'ed after the next flush
     void sync(std::shared_ptr<BhBase> &base_ptr);
 
     /** Changes the offset and shape of a view between the iterations of a `do_while` loop.
@@ -120,7 +112,7 @@ public:
         view_ptr->slides.resets[dim] = std::make_pair(reset_it, 0);
     }
 
-    // Send and receive a message through the component stack
+    /// Send and receive a message through the component stack
     std::string message(const std::string &msg);
 
     /** Get data pointer from the first VE in the runtime stack

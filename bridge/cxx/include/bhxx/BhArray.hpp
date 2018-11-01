@@ -41,8 +41,7 @@ struct RuntimeDeleter {
  *  which use the RuntimeDeleter as their deleter */
 template <typename... Args>
 std::shared_ptr<BhBase> make_base_ptr(Args... args) {
-    return std::shared_ptr<BhBase>(new BhBase(std::forward<Args>(args)...),
-                                   RuntimeDeleter{});
+    return std::shared_ptr<BhBase>(new BhBase(std::forward<Args>(args)...), RuntimeDeleter{});
 }
 
 template <typename T>
@@ -72,8 +71,7 @@ class BhArray {
     }
 
     /** Create a new view (contiguous stride, row-major) */
-    BhArray(Shape shape) :
-        BhArray(shape, contiguous_stride(shape), 0) {}
+    BhArray(Shape shape) : BhArray(shape, contiguous_stride(shape), 0) {}
 
     /** Create a view that points to the given base
      *
