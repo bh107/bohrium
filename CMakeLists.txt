@@ -139,6 +139,7 @@ add_subdirectory(vem/proxy)
 add_subdirectory(ve/openmp)
 add_subdirectory(ve/opencl)
 add_subdirectory(ve/cuda)
+add_subdirectory(ve/pgas)
 
 add_subdirectory(filter/pprint)
 add_subdirectory(filter/bccon)

@@ -345,6 +345,16 @@ public:
      * @return The new array
      */
     BhArray<T> newAxis(int axis) const;
+
+    /** Create a new view with a pgas-enabled base array */
+    BhArray(Shape shape_, Stride stride_, size_t offset_, BhPGAS pgas)
+            : offset(offset_),
+              shape(shape_),
+              stride(std::move(stride_)),
+              base(make_base_ptr(T(0), shape_.prod(), std::move(pgas))) {
+        assert(shape.size() == stride.size());
+        assert(shape.prod() > 0);
+    }
 };
 
 /** Pretty printing the data of an array to a stream

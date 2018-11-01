@@ -49,9 +49,9 @@ public:
      *
      * @return Pointer to the created base.
      */
-    bh_base* createBase(bh_type type, int64_t nelem);
+    bh_base *createBase(bh_type type, int64_t nelem, const BhPGAS &pgas);
     bh_view createTemp(bh_view& meta, bh_type type, int64_t nelem);
-    bh_view createTemp(bh_type type, int64_t nelem);
+    bh_view createTemp(bh_type type, int64_t nelem, const BhPGAS &pgas);
 
     /**
      *  Inject an instruction.
