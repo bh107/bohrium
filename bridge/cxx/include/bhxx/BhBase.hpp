@@ -47,8 +47,10 @@ public:
      * Needless to say that the memory should be large enough to
      * incorporate nelem_ elements.
      * */
-    template <typename T>
-    BhBase(size_t nelem, T* memory) : bh_base(nelem, bh_type_from_template<T>()), m_own_memory(false) {}
+
+    template<typename T>
+    BhBase(size_t nelem, T *memory) : bh_base(nelem, bh_type_from_template<T>(), memory), m_own_memory(false) {}
+
 
     /** Construct a base array and initialise it with the elements
      *  provided by an iterator range.
