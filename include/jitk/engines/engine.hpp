@@ -177,10 +177,11 @@ protected:
      *
      * @param scope     The scope
      * @param instr     Instruction to write
+     * @param indent    Code indentation
      * @param opencl    OpenCL specific output
      * @param out       The stream output
      */
-    virtual void writeInstr(const Scope &scope, const bh_instruction &instr, bool opencl, std::stringstream &out);
+    virtual void writeInstr(Scope &scope, const bh_instruction &instr, int indent, bool opencl, std::stringstream &out);
 };
 
 }

@@ -214,7 +214,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
                     }
                 }
                 util::spaces(out, 4 + b.rank() * 4);
-                writeInstr(scope, *instr, opencl, out);
+                writeInstr(scope, *instr, 4 + b.rank() * 4, opencl, out);
             }
         } else {
             util::spaces(out, 4 + b.rank() * 4);
@@ -248,7 +248,7 @@ void Engine::writeBlock(const SymbolTable &symbols,
     }
 }
 
-void Engine::writeInstr(const Scope &scope, const bh_instruction &instr, bool opencl, stringstream &out) {
+void Engine::writeInstr(Scope &scope, const bh_instruction &instr, int indent, bool opencl, stringstream &out) {
     // We build the list of operands that goes into the `write_operation()` call
     vector<string> ops;
     if (instr.opcode == BH_RANGE) {
