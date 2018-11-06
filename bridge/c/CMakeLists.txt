@@ -35,6 +35,7 @@ add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} gen_specials.py ${CMAKE_CURRENT_BINARY_DIR}/out
     COMMAND ${PYTHON_EXECUTABLE} gen_specials_enum_typed.py ${CMAKE_CURRENT_BINARY_DIR}/out
     COMMAND cat ${SRC_H} > ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h
+    COMMAND cat ${CMAKE_SOURCE_DIR}/include/bh_mem_signal.h >> ${CMAKE_CURRENT_BINARY_DIR}/out/bhc.h
     DEPENDS gen_types.py
             gen_array_operations.py
             gen_array_operations_enum_typed.py

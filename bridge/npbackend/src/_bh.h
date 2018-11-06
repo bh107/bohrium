@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <Python.h>
-#include <bh_osx.h>
 #include <structmember.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
