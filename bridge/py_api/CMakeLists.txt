@@ -36,10 +36,12 @@ else()
     message(STATUS "Python package \"virtualenv\" found (version ${VR_OUT}).")
 endif()
 
+# The user can set `PY_WHEEL` to export Python wheel packages instead of install them
+set(PY_WHEEL "OFF" CACHE PATH "Path to the Python wheel output directory.")
+
 # For each interpreter in the user specified list `PY_EXE_LIST`, we build a package.
 set(PY_EXE_LIST "${PYTHON_EXECUTABLE}" CACHE STRING "List of Python interpreters to build with.")
 message(STATUS "PY_EXE_LIST: \"${PY_EXE_LIST}\"")
-
 foreach(PY_EXE ${PY_EXE_LIST})
 
     # Define `VR_PATH` based on the `PY_EXE` path in order to avoid name clash
@@ -55,16 +57,24 @@ foreach(PY_EXE ${PY_EXE_LIST})
 
     # The `py_api` target is always called, but it will only call the `add_custom_command()` above when it's
     # depdendencies (the files in ${SRC}) changes.
-    add_custom_target(py_api_${PY_EXE_IDENT} ALL DEPENDS bhc ${VR_PATH}/wheel_py_api/package_name.txt)
+    add_custom_target(py_api_${PY_EXE_IDENT} ALL
+            DEPENDS bhc ${VR_PATH}/wheel_py_api/package_name.txt)
 
-    # Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
-    install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
-                  message(STATUS \"Installing \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
-                  set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
-                  execute_process(COMMAND ${PY_EXE} -m pip install --user -I \${WHEEL_NAME}
-                                  RESULT_VARIABLE RES)
-                  if(NOT \"\${RES}\" STREQUAL \"0\")
-                    message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
-                  endif()")
+    if(PY_WHEEL)
+        # Exporting the wheel package to `PY_WHEEL`.
+        install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
+                      message(STATUS \"Writing \${WHEEL_NAME} to ${PY_WHEEL}\")
+                      file(MAKE_DIRECTORY ${PY_WHEEL})
+                      configure_file(\${WHEEL_NAME} ${PY_WHEEL} COPYONLY)")
+    else()
+        # Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
+        install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
+                      message(STATUS \"Exporting \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
+                      set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
+                      execute_process(COMMAND ${PY_EXE} -m pip install --user -I \${WHEEL_NAME}
+                                      RESULT_VARIABLE RES)
+                      if(NOT \"\${RES}\" STREQUAL \"0\")
+                        message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
+                      endif()")
+    endif()
 endforeach()
-
