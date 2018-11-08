@@ -14,7 +14,7 @@ if [ -d "$VR_PATH" ]; then
   echo "Using virtualenv: $VR_PATH"
 else
   echo "Create virtualenv: $VR_PATH"
-  virtualenv -p ${PYTHON_EXECUTABLE} ${VR_PATH}
+  ${PYTHON_EXECUTABLE} -m virtualenv -p ${PYTHON_EXECUTABLE} ${VR_PATH}
 fi
 
 source ${VR_PATH}/bin/activate
