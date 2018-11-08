@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # Script arguments:
 VR_PATH=$1  # the path of the virtualenv

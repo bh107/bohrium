@@ -11,7 +11,10 @@ if(PYTHONINTERP_FOUND)
 
     # We run `build.bash` in order to generate the wheel package.
     set(VR_PATH ${CMAKE_BINARY_DIR}/bridge/py_api/vr${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-    file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.py ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
+    file(GLOB_RECURSE SRC
+            ${CMAKE_CURRENT_SOURCE_DIR}/*.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/*.pyx
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
     add_custom_command(OUTPUT ${VR_PATH}/wheel_npbackend/package_name.txt
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}
             ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}

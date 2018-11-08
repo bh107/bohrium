@@ -47,6 +47,7 @@ def header_dir():
 def info():
     """Return a dict with all info"""
     return {
+        "config_path" : config_file_path(),
         "version": version(),
         "runtime_info": messaging.runtime_info(),
         "statistics": messaging.statistic(),

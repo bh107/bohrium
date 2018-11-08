@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # Script arguments:
 VR_PATH=$1  # the path of the virtualenv
@@ -7,7 +8,7 @@ CMAKE_BINARY_DIR=$3
 CMAKE_SOURCE_DIR=$4
 CMAKE_CURRENT_SOURCE_DIR=$5
 
-echo "==================== PYTHON API ===================="
+echo "===================== NPBACKEND ======================"
 
 
 source ${VR_PATH}/bin/activate

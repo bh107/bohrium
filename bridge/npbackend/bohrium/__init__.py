@@ -3,8 +3,6 @@ The module initialization of npbackend/bohrium imports and exposes all methods
 required to become a drop-in replacement for numpy.
 """
 import sys
-import os
-
 
 if 'numpy_force' not in sys.modules:
     import numpy
@@ -22,7 +20,7 @@ from .contexts import *
 from .ufuncs import UFUNCS
 from .masking import *
 from .bhary import check, fix_biclass
-from ._info import numpy_types
+from bohrium_api._info import numpy_types
 from ._util import is_scalar
 from . import linalg
 from .linalg import matmul, dot, tensordot
@@ -31,7 +29,7 @@ from .disk_io import *
 from .concatenate import *
 from .ufuncs import _handle__array_ufunc__
 from . import contexts
-from . import bh_info
+from bohrium_api import stack_info as bh_info
 from . import interop_pyopencl
 from . import interop_pycuda
 from . import interop_numpy

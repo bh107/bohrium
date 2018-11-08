@@ -13,7 +13,7 @@ from . import _util
 from . import array_create
 from . import loop
 import numpy_force as np
-from . import _info
+from bohrium_api import _info
 from .numpy_backport import as_strided
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper
