@@ -1,10 +1,11 @@
 import util
 import bohrium
+from bohrium_api import _info
 
 
 class test_mix_types:
     def init(self):
-        for dtype in bohrium._info.numpy_types:
+        for dtype in _info.numpy_types:
             dtype = "np.%s"%dtype.name
             for cmd, shape in util.gen_random_arrays("R", 1, min_ndim=1, samples_in_each_ndim=1,
                                                      dtype=dtype, no_views=True):
