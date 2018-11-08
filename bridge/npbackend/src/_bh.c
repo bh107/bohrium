@@ -28,6 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self);
 
+PyObject *bh_api         = NULL; // The Bohrium API Python module
 PyObject *ufuncs         = NULL; // The ufuncs Python module
 PyObject *bohrium        = NULL; // The Bohrium Python module
 PyObject *array_create   = NULL; // The array_create Python module
@@ -925,6 +926,15 @@ PyMODINIT_FUNC init_bh(void)
     if (m == NULL) {
         return RETVAL;
     }
+
+    bh_api = PyImport_ImportModule("bohrium_api");
+    if (bh_api == NULL) {
+        return RETVAL;
+    }
+
+    // Import Bohrium API
+    if (import_bh_api() < 0)
+        return RETVAL;
 
     // Import NumPy
     import_array();

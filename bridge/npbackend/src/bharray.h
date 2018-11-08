@@ -21,6 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #define NO_IMPORT_ARRAY
+#define NO_IMPORT_BH_API
 #include "_bh.h"
 
 /** Returns the bhc handle of `ary`.

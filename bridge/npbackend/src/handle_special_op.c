@@ -91,7 +91,7 @@ PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds) {
 }
 
 PyObject* PyFlush(PyObject *self, PyObject *args) {
-    bhc_flush();
+    BhAPI_flush();
     Py_RETURN_NONE;
 }
 
@@ -268,7 +268,7 @@ void *get_data_pointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, b
     if (copy2host) {
         bhc_sync(dtype, ary_ptr);
     }
-    bhc_flush();
+    BhAPI_flush();
     void *ret = bhc_data_get(dtype, ary_ptr, copy2host, force_alloc, nullify);
     return ret;
 }
@@ -322,7 +322,7 @@ PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
     void *ary_ptr = bharray_bhc((BhArray *) ary);
     bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
     bhc_sync(dtype, ary_ptr);
-    bhc_flush();
+    BhAPI_flush();
     bhc_data_set(dtype, ary_ptr, host_ptr, mem_ptr);
     Py_RETURN_NONE;
 }
@@ -353,7 +353,7 @@ PyObject* PyMemCopy(PyObject *self, PyObject *args, PyObject *kwds) {
     if (PyArray_NBYTES((PyArrayObject*) src) > 0) {
         void *src_ptr = bharray_bhc((BhArray *) src);
         void *dst_ptr = bharray_bhc((BhArray *) dst);
-        bhc_flush();
+        BhAPI_flush();
         bhc_data_copy(dtype, src_ptr, dst_ptr, param);
     }
     Py_DECREF(src);
