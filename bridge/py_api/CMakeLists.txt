@@ -11,7 +11,7 @@ if (PYTHONINTERP_FOUND)
 
     # We run `build.bash` in order to generate the wheel package.
     set(VR_PATH ${CMAKE_CURRENT_BINARY_DIR}/vr${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-    file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.py ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
+    file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.pye ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
     add_custom_command(OUTPUT ${VR_PATH}/wheel_py_api/package_name.txt
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}
             ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
@@ -22,8 +22,13 @@ if (PYTHONINTERP_FOUND)
     add_custom_target(py_api ALL DEPENDS ${VR_PATH}/wheel_py_api/package_name.txt)
 
     install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
-                  message(STATUS \"Installing \${WHEEL_NAME}\")
-                  execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --user -I \${WHEEL_NAME})")
+                  message(STATUS \"Installing \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
+                  set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
+                  execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --user -I \${WHEEL_NAME}
+                                  RESULT_VARIABLE RES)
+                  if(NOT \"\${RES}\" STREQUAL \"0\")
+	                message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
+                  endif()")
 
 else ()
     message(STATUS "The Python API bridge cannot be built, PYTHONINTERP_FOUND not found!")
