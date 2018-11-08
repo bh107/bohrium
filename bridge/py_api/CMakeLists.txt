@@ -36,26 +36,35 @@ else()
     message(STATUS "Python package \"virtualenv\" found (version ${VR_OUT}).")
 endif()
 
-# We run `build.bash` in order to generate the wheel package.
-set(VR_PATH ${CMAKE_CURRENT_BINARY_DIR}/vr${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.pye ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
-add_custom_command(OUTPUT ${VR_PATH}/wheel_py_api/package_name.txt
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}
-        ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
+# For each interpreter in the user specified list `PY_EXE_LIST`, we build a package.
+set(PY_EXE_LIST "${PYTHON_EXECUTABLE}" CACHE STRING "List of Python interpreters to build with.")
+message(STATUS "PY_EXE_LIST: \"${PY_EXE_LIST}\"")
 
-# The `py_api` target is always called, but it will only call the `add_custom_command()` above when it's
-# depdendencies (the files in ${SRC}) changes.
-add_custom_target(py_api ALL DEPENDS bhc ${VR_PATH}/wheel_py_api/package_name.txt)
+foreach(PY_EXE ${PY_EXE_LIST})
 
-# Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
-install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
-              message(STATUS \"Installing \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
-              set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
-              execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install --user -I \${WHEEL_NAME}
-                              RESULT_VARIABLE RES)
-              if(NOT \"\${RES}\" STREQUAL \"0\")
-                message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
-              endif()")
+    # Define `VR_PATH` based on the `PY_EXE` path in order to avoid name clash
+    string(MAKE_C_IDENTIFIER ${PY_EXE} PY_EXE_IDENT)
+    set(VR_PATH ${CMAKE_CURRENT_BINARY_DIR}/vr_${PY_EXE_IDENT})
 
+    # We run `build.bash` in order to generate the wheel package.
+    file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.py ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
+    add_custom_command(OUTPUT ${VR_PATH}/wheel_py_api/package_name.txt
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PY_EXE} ${CMAKE_BINARY_DIR}
+            ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+            DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
+
+    # The `py_api` target is always called, but it will only call the `add_custom_command()` above when it's
+    # depdendencies (the files in ${SRC}) changes.
+    add_custom_target(py_api_${PY_EXE_IDENT} ALL DEPENDS bhc ${VR_PATH}/wheel_py_api/package_name.txt)
+
+    # Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
+    install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
+                  message(STATUS \"Installing \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
+                  set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
+                  execute_process(COMMAND ${PY_EXE} -m pip install --user -I \${WHEEL_NAME}
+                                  RESULT_VARIABLE RES)
+                  if(NOT \"\${RES}\" STREQUAL \"0\")
+                    message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
+                  endif()")
+endforeach()
 
