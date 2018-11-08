@@ -46,7 +46,7 @@ add_custom_command(OUTPUT ${VR_PATH}/wheel_py_api/package_name.txt
 
 # The `py_api` target is always called, but it will only call the `add_custom_command()` above when it's
 # depdendencies (the files in ${SRC}) changes.
-add_custom_target(py_api ALL DEPENDS ${VR_PATH}/wheel_py_api/package_name.txt)
+add_custom_target(py_api ALL DEPENDS bhc ${VR_PATH}/wheel_py_api/package_name.txt)
 
 # Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
 install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
