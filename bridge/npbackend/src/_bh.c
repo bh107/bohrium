@@ -43,7 +43,7 @@ PyThreadState *py_thread_state = NULL;
 // Called when module exits
 static void module_exit(void) {
     PyFlush(NULL, NULL);
-    bh_mem_signal_shutdown();
+    BhAPI_mem_signal_shutdown();
 }
 
 // Help function that creates a simple new array.
@@ -169,7 +169,7 @@ static void BhArray_dealloc(BhArray* self) {
 
     if (self->mmap_allocated) {
         mem_unmap(PyArray_DATA((PyArrayObject*) self), ary_nbytes(self));
-        bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) self));
+        BhAPI_mem_signal_detach(PyArray_DATA((PyArrayObject*) self));
         self->base.data = NULL;
     }
 
@@ -988,7 +988,7 @@ PyMODINIT_FUNC init_bh(void)
     PyGILState_Release(gil);
 
     // Initialize the signal handler
-    bh_mem_signal_init();
+    BhAPI_mem_signal_init();
 
     // Register an module exit function
     Py_AtExit(module_exit);

@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bharray.h"
 #include "memory.h"
 #include "util.h"
-#include <bhc.h>
 
 static BhView bhview_new(const PyArrayObject *npy_view, const PyArrayObject *npy_base) {
     BhView ret;

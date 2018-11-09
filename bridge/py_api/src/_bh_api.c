@@ -36,7 +36,7 @@ If not, see <http://www.gnu.org/licenses/>.
 /// Flush the Bohrium runtime system
 static void BhAPI_flush(void) {
     bhc_flush();
-};
+}
 
 /// Get the number of times flush has been called
 static int BhAPI_flush_count(void) {
@@ -92,9 +92,29 @@ static void BhAPI_sync(bhc_dtype dtype, const void *ary) {
     bhc_sync(dtype, ary);
 }
 
+/// Set a reset for an iterator in a dynamic view within a loop
+static void BhAPI_add_reset(bhc_dtype dtype, const void *ary1, size_t dim, size_t reset_max) {
+    bhc_add_reset(dtype, ary1, dim, reset_max);
+}
+
 /// Do array operation based on `opcode`
 static void BhAPI_op(bhc_opcode opcode, const bhc_dtype types[], const bhc_bool constants[], void *operands[]) {
     bhc_op(opcode, types, constants, operands);
+}
+
+/** Fill out with random data.
+  The returned result is a deterministic function of the key and counter,
+  i.e. a unique (seed, indexes) tuple will always produce the same result.
+  The result is highly sensitive to small changes in the inputs, so that the sequence
+  of values produced by simply incrementing the counter (or key) is effectively
+  indistinguishable from a sequence of samples of a uniformly distributed random variable.
+
+  random123(out, seed, key) where: 'out' is the array to fill with random data
+                                   'seed' is the seed of a random sequence
+                                   'key' is the index in the random sequence
+*/
+static void BhAPI_random123(void *out, uint64_t seed, uint64_t key) {
+    bhc_random123_Auint64_Kuint64_Kuint64(out, seed, key);
 }
 
 /// Extension Method, returns 0 when the extension exist
@@ -130,6 +150,45 @@ static void BhAPI_slide_view(bhc_dtype dtype, const void *ary1, size_t dim, int 
     bhc_slide_view(dtype, ary1, dim, slide, view_shape, array_shape, array_stride, step_delay);
 }
 
+/** Init arrays and signal handler */
+static void BhAPI_mem_signal_init(void) {
+    bh_mem_signal_init();
+}
+
+/** Shutdown of this library */
+static void BhAPI_mem_signal_shutdown(void) {
+    bh_mem_signal_shutdown();
+}
+
+/** Attach continues memory segment to signal handler
+ *
+ * @param idx - Id to identify the memory segment when executing the callback function.
+ * @param addr - Start address of memory segment.
+ * @param size - Size of memory segment in bytes
+ * @param callback - Callback function which is executed when segfault hits in the memory
+ *                   segment. The function is called with the address pointer and the memory segment idx.
+ *                   NB: the function must return non-zero on success
+ */
+static void BhAPI_mem_signal_attach(void *idx, void *addr, uint64_t size,
+                                    int (*callback) (void* fault_address, void* segment_idx)) {
+    bh_mem_signal_attach(idx, addr, size, callback);
+}
+
+/** Detach signal
+ *
+ * @param addr - Start address of memory segment.
+ */
+static void BhAPI_mem_signal_detach(const void *addr) {
+    bh_mem_signal_detach(addr);
+}
+
+/** Check if signal exist
+ *
+ * @param addr - Start address of memory segment.
+ */
+static int BhAPI_mem_signal_exist(const void *addr) {
+    return bh_mem_signal_exist(addr);
+}
 
 
 PyObject *PyFlush(PyObject *self, PyObject *args) {

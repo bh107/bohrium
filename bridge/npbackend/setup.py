@@ -128,13 +128,8 @@ setup(
             include_dirs=[
                 np.get_include(),
                 bohrium_api.get_include(),
-                build_root("bridge", "c", "out"),  # TODO: remove
             ],
-            libraries=['dl', 'bhc', 'bh'],  # TODO: remove
-            library_dirs=[
-                build_root('bridge', 'c'),  # TODO: remove
-                build_root('core')  # TODO: remove
-            ],
+            libraries=['dl'],
             extra_compile_args=cflags,
         ),
         Extension("*", [script_path("bohrium", "*.pyx")],

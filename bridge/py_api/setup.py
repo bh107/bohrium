@@ -85,7 +85,7 @@ def write_header(header_file):
     func_list = []
     with open(src_root("bridge", "py_api", "src", "_bh_api.c")) as f:
         py_api = f.read().replace("\n", "").replace(";", "\n")
-        match_list = re.findall(r'static(.+)BhAPI_(.+)(\(.*\))\s*{', py_api)
+        match_list = re.findall(r'static(.+)BhAPI_(.+?)(\(.*\))\s*{', py_api)
         for m in match_list:
             func_list.append([i.strip() for i in m])
             print (m)

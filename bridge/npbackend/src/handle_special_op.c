@@ -217,7 +217,7 @@ PyObject* PyAddReset(PyObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    bhc_add_reset(type1, operand1, dim, reset_max);
+    BhAPI_add_reset(type1, operand1, dim, reset_max);
     normalize_operand_cleanup(&cleanup1);
 
     Py_RETURN_NONE;
@@ -252,7 +252,7 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
                 return ret;
             }
         }
-        bhc_random123_Auint64_Kuint64_Kuint64(operand, seed, key);
+        BhAPI_random123(operand, seed, key);
         normalize_operand_cleanup(&cleanup);
     }
     return ret;
