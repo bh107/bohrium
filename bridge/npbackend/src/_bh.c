@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "_bh.h"
 #include <dlfcn.h>
-#include <bhc.h>
 #include "handle_array_op.h"
 #include "handle_special_op.h"
 #include "memory.h"
