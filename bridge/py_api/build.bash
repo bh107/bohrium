@@ -23,7 +23,7 @@ export PY_API_LIB2INCLUDE="${CMAKE_BINARY_DIR}/*/*/libbh_*.so"
 export PY_API_SRC_ROOT=${CMAKE_SOURCE_DIR}
 export PY_API_BUILD_ROOT=${CMAKE_BINARY_DIR}
 rm -Rf ${VR_PATH}/wheel_py_api
-pip wheel -w ${VR_PATH}/wheel_py_api ${CMAKE_CURRENT_SOURCE_DIR}
+pip wheel --verbose -w ${VR_PATH}/wheel_py_api ${CMAKE_CURRENT_SOURCE_DIR}
 WHEEL_NAME=`echo ${VR_PATH}/wheel_py_api/*`
 echo "WHEEL_NAME: \"$WHEEL_NAME\""
 pip install -I ${WHEEL_NAME}

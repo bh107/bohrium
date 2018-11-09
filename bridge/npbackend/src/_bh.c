@@ -159,7 +159,7 @@ static void BhArray_dealloc(BhArray* self) {
 
     if(self->bhc_array != NULL) {
         assert(self->view.initiated);
-        bhc_destroy(dtype_np2bhc(self->view.type_enum), self->bhc_array);
+        BhAPI_destroy(dtype_np2bhc(self->view.type_enum), self->bhc_array);
     }
 
     if (!PyArray_CHKFLAGS((PyArrayObject*) self, NPY_ARRAY_OWNDATA)) {

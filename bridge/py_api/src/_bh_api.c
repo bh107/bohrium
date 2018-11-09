@@ -33,9 +33,103 @@ If not, see <http://www.gnu.org/licenses/>.
  * See the `write_header()` function in `setup.py`
  */
 
+/// Flush the Bohrium runtime system
 static void BhAPI_flush(void) {
     bhc_flush();
 };
+
+/// Get the number of times flush has been called
+static int BhAPI_flush_count(void) {
+    return bhc_flush_count();
+}
+
+/// Flush and repeat the lazy evaluated operations `nrepeats` times.
+static void BhAPI_flush_and_repeat(uint64_t nrepeats) {
+    bhc_flush_and_repeat(nrepeats);
+}
+
+/// Flush and repeat the lazy evaluated operations until `condition` is false or `nrepeats` is reached.
+static void BhAPI_flush_and_repeat_condition(uint64_t nrepeats, bhc_ndarray_bool8_p condition) {
+    bhc_flush_and_repeat_condition(nrepeats, condition);
+}
+
+/// Send and receive a message through the component stack
+/// NB: the returned string is invalidated on the next call to BhAPI_message()
+static const char *BhAPI_message(const char *msg) {
+    return bhc_message(msg);
+}
+
+/// Get the device context, such as OpenCL's cl_context, of the first VE in the runtime stack.
+/// If the first VE isn't a device, NULL is returned.
+static void* BhAPI_getDeviceContext(void) {
+    return bhc_getDeviceContext();
+}
+
+/// Set the context handle, such as CUDA's context, of the first VE in the runtime stack.
+/// If the first VE isn't a device, nothing happens.
+static void BhAPI_set_device_context(uint64_t device_context) {
+    bhc_set_device_context(device_context);
+}
+
+/// Create new flat array
+static void *BhAPI_new(bhc_dtype dtype, uint64_t size) {
+    return bhc_new(dtype, size);
+};
+
+/// Destroy array
+static void BhAPI_destroy(bhc_dtype dtype, void *ary) {
+    bhc_destroy(dtype, ary);
+};
+
+/// Create view of a flat array `src`
+static void *BhAPI_view(bhc_dtype dtype, void *src, int64_t rank, int64_t start, const int64_t *shape,
+                        const int64_t *stride) {
+    return bhc_view(dtype, src, rank, start, shape, stride);
+}
+
+/// Informs the runtime system to make data synchronized and available after the next flush().
+static void BhAPI_sync(bhc_dtype dtype, const void *ary) {
+    bhc_sync(dtype, ary);
+}
+
+/// Do array operation based on `opcode`
+static void BhAPI_op(bhc_opcode opcode, const bhc_dtype types[], const bhc_bool constants[], void *operands[]) {
+    bhc_op(opcode, types, constants, operands);
+}
+
+/// Extension Method, returns 0 when the extension exist
+static int BhAPI_extmethod(bhc_dtype dtype, const char *name, const void *out, const void *in1, const void *in2) {
+    return bhc_extmethod(dtype, name, out, in1, in2);
+}
+
+/// Get data pointer from the first VE in the runtime stack
+///   if 'copy2host', always copy the memory to main memory
+///   if 'force_alloc', force memory allocation before returning the data pointer
+///   if 'nullify', set the data pointer to NULL after returning the data pointer
+static void *BhAPI_data_get(bhc_dtype dtype, const void *ary, bhc_bool copy2host, bhc_bool force_alloc,
+                            bhc_bool nullify) {
+    return bhc_data_get(dtype, ary, copy2host, force_alloc, nullify);
+}
+
+/// Set data pointer in the first VE in the runtime stack
+/// NB: The component will deallocate the memory when encountering a BH_FREE
+///   if 'host_ptr', the pointer points to the host memory (main memory) as opposed to device memory
+static void BhAPI_data_set(bhc_dtype dtype, const void *ary, bhc_bool host_ptr, void *data) {
+    bhc_data_set(dtype, ary, host_ptr, data);
+}
+
+/// Copy the memory of `src` to `dst`
+///   Use 'param' to set compression parameters or use the empty string
+static void BhAPI_data_copy(bhc_dtype dtype, const void *src, const void *dst, const char *param) {
+    bhc_data_copy(dtype, src, dst, param);
+}
+
+/// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.
+static void BhAPI_slide_view(bhc_dtype dtype, const void *ary1, size_t dim, int slide, int view_shape, int array_shape,
+                             int array_stride, int step_delay) {
+    bhc_slide_view(dtype, ary1, dim, slide, view_shape, array_shape, array_stride, step_delay);
+}
+
 
 
 PyObject *PyFlush(PyObject *self, PyObject *args) {

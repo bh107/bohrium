@@ -18,7 +18,7 @@ echo "===================== NPBACKEND ======================"
 source ${VR_PATH}/bin/activate
 pip install numpy cython
 rm -Rf ${VR_PATH}/wheel_npbackend
-pip wheel -w ${VR_PATH}/wheel_npbackend ${CMAKE_CURRENT_SOURCE_DIR}
+pip wheel --verbose -w ${VR_PATH}/wheel_npbackend ${CMAKE_CURRENT_SOURCE_DIR}
 WHEEL_NAME=`echo ${VR_PATH}/wheel_npbackend/*`
 echo "WHEEL_NAME: \"$WHEEL_NAME\""
 pip install -I ${WHEEL_NAME}
