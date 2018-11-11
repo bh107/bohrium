@@ -42,10 +42,14 @@ set(PY_WHEEL "OFF" CACHE PATH "Path to the Python wheel output directory.")
 # For each interpreter in the user specified list `PY_EXE_LIST`, we build a package.
 set(PY_EXE_LIST "${PYTHON_EXECUTABLE}" CACHE STRING "List of Python interpreters to build with.")
 message(STATUS "PY_EXE_LIST: \"${PY_EXE_LIST}\"")
-foreach(PY_EXE ${PY_EXE_LIST})
+foreach (PY_EXE ${PY_EXE_LIST})
 
     # Define `VR_PATH` based on the `PY_EXE` path in order to avoid name clash
-    string(MAKE_C_IDENTIFIER ${PY_EXE} PY_EXE_IDENT)
+    if (${CMAKE_VERSION} VERSION_LESS "3.0.0")
+        string(REPLACE "/" "_" PY_EXE_IDENT ${PY_EXE})
+    else ()
+        string(MAKE_C_IDENTIFIER ${PY_EXE} PY_EXE_IDENT)
+    endif ()
     set(VR_PATH ${CMAKE_CURRENT_BINARY_DIR}/vr_${PY_EXE_IDENT})
 
     # We run `build.bash` in order to generate the wheel package.
@@ -60,13 +64,13 @@ foreach(PY_EXE ${PY_EXE_LIST})
     add_custom_target(py_api_${PY_EXE_IDENT} ALL
             DEPENDS bhc ${VR_PATH}/wheel_py_api/package_name.txt)
 
-    if(PY_WHEEL)
+    if (PY_WHEEL)
         # Exporting the wheel package to `PY_WHEEL`.
         install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
                       message(STATUS \"Writing \${WHEEL_NAME} to ${PY_WHEEL}\")
                       file(MAKE_DIRECTORY ${PY_WHEEL})
                       configure_file(\${WHEEL_NAME} ${PY_WHEEL} COPYONLY)")
-    else()
+    else ()
         # Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
         install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
                       message(STATUS \"Exporting \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
@@ -76,5 +80,5 @@ foreach(PY_EXE ${PY_EXE_LIST})
                       if(NOT \"\${RES}\" STREQUAL \"0\")
                         message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
                       endif()")
-    endif()
-endforeach()
+    endif ()
+endforeach ()

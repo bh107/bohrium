@@ -11,7 +11,11 @@ endif()
 foreach(PY_EXE ${PY_EXE_LIST})
 
     # Define `VR_PATH` which should point to the virtualenv over at the `py_api` module
-    string(MAKE_C_IDENTIFIER ${PY_EXE} PY_EXE_IDENT)
+    if(${CMAKE_VERSION} VERSION_LESS "3.0.0")
+        string(REPLACE "/" "_" PY_EXE_IDENT ${PY_EXE})
+    else()
+        string(MAKE_C_IDENTIFIER ${PY_EXE} PY_EXE_IDENT)
+    endif()
     set(VR_PATH ${CMAKE_BINARY_DIR}/bridge/py_api/vr_${PY_EXE_IDENT})
 
     # We run `build.bash` in order to generate the wheel package.
