@@ -79,7 +79,7 @@ EngineCUDA::EngineCUDA(component::ComponentVE &comp, jitk::Statistics &stat) :
     boost::replace_all(compiler_cmd, "{MINOR}", std::to_string(minor));
 
     // Initiate the compiler
-    compiler = jitk::Compiler(compiler_cmd, verbose, comp.config.file_dir.string());
+    compiler = jitk::Compiler(compiler_cmd, comp.config.file_dir.string(), verbose);
 
     // Write the compilation hash
     {

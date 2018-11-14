@@ -93,7 +93,7 @@ cache_file_max = 50000
 malloc_cache_limit = 80
 # The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
 # and {CONF_PATH} with the path to this config file
-compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} ${VE_OPENMP_COMPILER_LIB} {IN} -o {OUT}"
+compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # JIT compile options
 compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
 compiler_openmp_simd = ${_VE_OPENMP_COMPILER_OPENMP_SIMD}

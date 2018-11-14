@@ -93,10 +93,9 @@ if(VE_OPENMP_COMPILER_OPENMP)
 endif()
 
 # Let the user overwrite the compile command
-set(VE_OPENMP_COMPILER_CMD         "${CMAKE_C_COMPILER}"                             CACHE STRING "VE_OPENMP: JIT-Compiler")
-set(VE_OPENMP_COMPILER_INC         "-I${CMAKE_INSTALL_PREFIX}/share/bohrium/include" CACHE STRING "VE_OPENMP: JIT-Compiler includes")
-set(VE_OPENMP_COMPILER_LIB         "-lm -L${CMAKE_INSTALL_PREFIX}/${LIBDIR} -lbh"    CACHE STRING "VE_OPENMP: JIT-Compiler libraries")
-set(VE_OPENMP_COMPILER_FLG         "${VE_OPENMP_COMPILER_FLG}"                       CACHE STRING "VE_OPENMP: JIT-Compiler flags")
+set(VE_OPENMP_COMPILER_CMD "${CMAKE_C_COMPILER}"                             CACHE STRING "JIT-Compiler")
+set(VE_OPENMP_COMPILER_FLG "${VE_OPENMP_COMPILER_FLG}"                       CACHE STRING "JIT-Compiler flags")
+set(VE_OPENMP_COMPILER_INC "-I${CMAKE_INSTALL_PREFIX}/share/bohrium/include" PARENT_SCOPE)
 
 # We need to cleanup the variables for the config file
 if(VE_OPENMP_COMPILER_OPENMP)

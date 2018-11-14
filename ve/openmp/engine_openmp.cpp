@@ -43,8 +43,8 @@ namespace fs = boost::filesystem;
 namespace bohrium {
 
 EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat) :
-        EngineCPU(comp, stat),
-        compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
+        EngineCPU(comp, stat), compiler(comp.config.get<string>("compiler_cmd"),
+                                        comp.config.file_dir.string(), verbose) {
 
     compilation_hash = util::hash(compiler.cmd_template);
 
@@ -336,7 +336,8 @@ void EngineOpenMP::writeKernel(const LoopB &kernel,
     // Write allocations of the kernel temporaries
     for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
-        ss << writeType(b->dtype()) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
+        ss << writeType(b->dtype()) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes()
+           << ");\n";
     }
     ss << "\n";
 
