@@ -12,29 +12,16 @@ if (NOT PYTHONINTERP_FOUND)
     Set PYTHONINTERP or set BRIDGE_PY_API to OFF to disable Python build.")
 endif ()
 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip --version
-        RESULT_VARIABLE VR_RES
-        OUTPUT_VARIABLE VR_OUT
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT "${VR_RES}" STREQUAL "0")
-    message(FATAL_ERROR "The Python API bridge cannot be built, the Python package \"pip\" must be installed. \
-    Install it or set BRIDGE_PY_API to OFF to disable Python build.")
-else()
-    message(STATUS "Python package \"pip\" found: ${VR_OUT}.")
-endif()
-
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -m virtualenv --version
         RESULT_VARIABLE VR_RES
         OUTPUT_VARIABLE VR_OUT
         ERROR_QUIET
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT "${VR_RES}" STREQUAL "0")
-    message(FATAL_ERROR "The Python API bridge cannot be built, the Python package \"virtualenv\" must be installed. \
-    Install it or set BRIDGE_PY_API to OFF to disable Python build.")
-else()
+if (NOT "${VR_RES}" STREQUAL "0")
+    message(FATAL_ERROR "The Python API bridge cannot be built, the Python package \"virtualenv\" must be installed. Install it or set BRIDGE_PY_API to OFF to disable Python build.")
+else ()
     message(STATUS "Python package \"virtualenv\" found (version ${VR_OUT}).")
-endif()
+endif ()
 
 # The user can set `PY_WHEEL` to export Python wheel packages instead of install them
 set(PY_WHEEL "OFF" CACHE PATH "Path to the Python wheel output directory.")
@@ -55,8 +42,8 @@ foreach (PY_EXE ${PY_EXE_LIST})
     # We run `build.bash` in order to generate the wheel package.
     file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.py ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
     add_custom_command(OUTPUT ${VR_PATH}/wheel_py_api/package_name.txt
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PY_EXE} ${CMAKE_BINARY_DIR}
-            ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PYTHON_EXECUTABLE} ${PY_EXE} ${PY_WHEEL}
+            ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}
             DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
 
     # The `py_api` target is always called, but it will only call the `add_custom_command()` above when it's

@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 """
 
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, Extension
 from setuptools.command.build_py import build_py as setup_build_py
-from distutils.dir_util import mkpath
+from distutils.dir_util import mkpath, copy_tree
 from codecs import open
 import os
 import json
@@ -39,8 +39,19 @@ import re
    
       * PY_API_SRC_ROOT - Path to the root of the cmake source directory
       * PY_API_BUILD_ROOT - Path to the root of the cmake build directory
-      * PY_API_LIB2INCLUDE - Glob string that finds the libraries to include with the Python package
+      * PY_API_INSTALL_PREFIX - The `CMAKE_INSTALL_PREFIX` path
+      * PY_API_WHEEL - Set this to OFF, if the config file and libraries shouldn't be included in the package.
 """
+
+assert 'PY_API_INSTALL_PREFIX' in os.environ
+_install_prefix = os.environ['PY_API_INSTALL_PREFIX']
+
+
+def wheel_build():
+    """Return true when we a doing a Python wheel build"""
+    assert 'PY_API_WHEEL' in os.environ
+    env = os.environ['PY_API_WHEEL']
+    return env.lower() != "off"  # Anything other than "off" means "on"
 
 
 def _copy_files(glob_str, dst_dir):
@@ -56,6 +67,19 @@ def _copy_files(glob_str, dst_dir):
             else:
                 shutil.copy(fname, dst_dir)
             print("copy: %s => %s" % (fname, dst_dir))
+
+
+def _copy_dirs(src_dir, dst_dir):
+    """Copy dir"""
+    mkpath(dst_dir)
+    copy_tree(src_dir, dst_dir)
+    print("copy %s => %s" % (src_dir, dst_dir))
+
+
+def _regex_replace(pattern, repl, src):
+    """Replacing matches in `src` with `repl` using regex `pattern`"""
+    print ("config.ini: replacing: '%s' => '%s'" % (pattern, repl))
+    return re.sub(pattern, repl, src)
 
 
 def src_root(*paths):
@@ -88,7 +112,6 @@ def write_header(header_file):
         match_list = re.findall(r'static(.+)BhAPI_(.+?)(\(.*\))\s*{', py_api)
         for m in match_list:
             func_list.append([i.strip() for i in m])
-            print (m)
 
     func_macro = ""
     func_proto = ""
@@ -218,6 +241,42 @@ def write_info(o):
     o.write(s)
 
 
+def write_config_ini(o):
+    """Write a modified config file to `o`"""
+
+    # Write a modified config file to the Python package dir
+    with open(build_root("config.ini"), "r") as f:
+        config_str = f.read()
+
+        # Unset the `cache_dir` option
+        config_str = _regex_replace("cache_dir = .*", "cache_dir = ~/.bohrium/cache", config_str)
+
+        # Set the JIT compiler to gcc
+        config_str = _regex_replace("compiler_cmd = \".* -x c", "compiler_cmd = \"gcc -x c", config_str)
+
+        # clang doesn't support some unneeded flags
+        config_str = _regex_replace("-Wno-expansion-to-defined", "", config_str)
+        config_str = _regex_replace("-Wno-pass-failed", "", config_str)
+
+        # Replace `lib` and `lib64` with `.libs`
+        config_str = _regex_replace("%s/lib/" % _install_prefix,
+                                    "%s/.libs/" % _install_prefix, config_str)
+        config_str = _regex_replace("%s/lib " % _install_prefix,
+                                    "%s/.libs " % _install_prefix, config_str)
+        config_str = _regex_replace("%s/lib64/" % _install_prefix,
+                                    "%s/.libs/" % _install_prefix, config_str)
+        config_str = _regex_replace("%s/lib64 " % _install_prefix,
+                                    "%s/.libs " % _install_prefix, config_str)
+
+        # Compile command: replace absolute include path with a path relative to {CONF_PATH}.
+        config_str = _regex_replace("-I%s/share/bohrium/" % _install_prefix, "-I{CONF_PATH}/", config_str)
+
+        # Replace absolute library paths with a relative path.
+        config_str = _regex_replace("%s/" % _install_prefix, "./", config_str)
+
+        o.write(config_str)
+
+
 # We extend the build_py command to also generate the _info.py file and copy shared libraries into the package
 class build_py(setup_build_py):
     def run(self):
@@ -229,15 +288,28 @@ class build_py(setup_build_py):
             with open(p, 'w') as fobj:
                 write_info(fobj)
 
-            if 'PY_API_LIB2INCLUDE' in os.environ:
-                _copy_files(os.environ['PY_API_LIB2INCLUDE'], os.path.join(target_dir, ".bh_lib"))
-
             self.mkpath(os.path.join(target_dir, 'include'))
             p = os.path.join(target_dir, 'include', 'bohrium_api.h')
             print("Generating '%s'" % p)
             with open(p, 'w') as fobj:
                 write_header(fobj)
+            # We also need a copy in the build root so we know its path
             _copy_files(p, build_root("bridge", "py_api", "include"))
+
+            # The build of npbackend depend on Random123 headers so we include them as well
+            _copy_dirs(src_root("thirdparty", "Random123-1.09", "include"), os.path.join(target_dir, 'include'))
+
+            # If we are doing a wheel build, we have to include a modified config.ini, shared libraries,
+            # and kernel dependencies
+            if wheel_build():
+                p = os.path.join(target_dir, 'config.ini')
+                print("Generating '%s'" % p)
+                with open(p, 'w') as fobj:
+                    write_config_ini(fobj)
+
+                _copy_dirs(src_root("include", "jitk", "kernel_dependencies"),
+                           os.path.join(target_dir, 'include', "kernel_dependencies"))
+                _copy_files(build_root("*", "*", "libbh_*.so"), os.path.join(target_dir, ".libs"))
 
         setup_build_py.run(self)
 
@@ -311,8 +383,4 @@ setup(
             extra_compile_args=cflags,
         ),
     ],
-
-    package_data={
-        'bohrium_api': ['include/bohrium_api.h'],
-    }
 )

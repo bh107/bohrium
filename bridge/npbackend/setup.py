@@ -26,25 +26,9 @@ If not, see <http://www.gnu.org/licenses/>.
 from setuptools import setup, find_packages
 from setuptools.extension import Extension
 from Cython.Build import cythonize
-from codecs import open
-import os
 import numpy as np
 import bohrium_api
-
-""" Beside the regular setup arguments, this script reads the follow environment variables:
-   
-      * NPBACKEND_SRC_ROOT - Path to the root of the cmake source directory
-"""
-
-
-def src_root(*paths):
-    assert 'NPBACKEND_SRC_ROOT' in os.environ
-    return os.path.join(os.environ['NPBACKEND_SRC_ROOT'], *paths)
-
-
-def build_root(*paths):
-    assert 'NPBACKEND_BUILD_ROOT' in os.environ
-    return os.path.join(os.environ['NPBACKEND_BUILD_ROOT'], *paths)
+import os
 
 
 def script_path(*paths):
@@ -53,16 +37,10 @@ def script_path(*paths):
     return os.path.join(prefix, *paths)
 
 
-# The version if written in the VERSION file in the root of Bohrium
-with open(src_root("VERSION"), "r") as f:
-    version = f.read().strip()
-
-t = cythonize(script_path("bohrium", "*.pyx"))
-
 cflags = ["-std=c99"]
 setup(
     name='bohrium',
-    version=version,
+    version=bohrium_api.__version__,
     description='Bohrium Python/NumPy Backend',
     long_description='Bohrium for Python <www.bh107.org>',
     url='http://bh107.org',
@@ -103,6 +81,8 @@ setup(
     # What does your project relate to?
     keywords='Bohrium, bh107, Python, C, HPC, MPI, PGAS, CUDA, OpenCL, OpenMP',
 
+    install_requires=['numpy>=1.7', 'cython'],
+
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['tests']),
@@ -135,7 +115,7 @@ setup(
         Extension("*", [script_path("bohrium", "*.pyx")],
                   include_dirs=[
                       np.get_include(),
-                      src_root('thirdparty', 'Random123-1.09', 'include')
+                      bohrium_api.get_include(),
                   ],
                   libraries=[],
                   library_dirs=[]),
