@@ -5,48 +5,54 @@ MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 WORKDIR /bh
 COPY . .
 
+# TODO: move these to the manylinux image
+RUN pip install virtualenv
+ENV LD_LIBRARY_PATH "/opt/gcc7/lib64/:$LD_LIBRARY_PATH"
+
 # The default build type is "Release"
 ARG BUILD_TYPE=Release
 
-RUN cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DCYTHON_OPENMP=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/install -DFORCE_CONFIG_PATH=/bh/install -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas -DPY_WHEEL=/opt/python/cp27-cp27mu/bin/python
+# List of Python version we want to build
+ARG PY_VER_LIST="cp27-cp27mu;cp34-cp34m;cp35-cp35m;cp36-cp36m"
+
+# Script that creates links to the different python binaries
+RUN echo $'#!/bin/bash\n\
+IFS=";"\n\
+for name in $1; do\n\
+  ln -s /opt/python/${name}/bin/python /usr/bin/${name}\n\
+done' > /bh/py_exe_links
+RUN bash /bh/py_exe_links ${PY_VER_LIST}
+RUN ls -l /usr/bin/cp*
+
+# Build bohrium
+RUN mkdir build
+WORKDIR build
+RUN cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DBRIDGE_NPBACKEND=OFF -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/install -DFORCE_CONFIG_PATH=/bh/install -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas -DPY_WHEEL=/bh/wheel -DPY_EXE_LIST=$PY_VER_LIST
+RUN make -j2
 RUN make install
 
-# Build Bohrium with python2.7
-ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
-RUN bash /bh/build.sh 2.7
-RUN bash /bh/wheel.sh 2.7
-RUN pip install /bh/b2.7/dist/*
-RUN pip install benchpress
+# Let's write a script that for each python version builds a manylinux1 package of
+# bohrium_api, install it along with bohrium, and runs a sanity check.
+RUN echo $'#!/bin/bash\n\
+IFS=";"\n\
+for name in $PY_VER_LIST; do\n\
+  export LD_LIBRARY_PATH=/opt/gcc7/lib64/:/bh/build/bridge/c/:\$LD_LIBRARY_PATH\n\
+  auditwheel repair /bh/wheel/bohrium_api-*-${name}-*.whl -w /bh/wheelhouse\n\
+  ${name} -m pip install /bh/wheelhouse/bohrium_api-*-${name}-*.whl\n\
+  ${name} -m pip install cython numpy\n\
+  ${name} -m pip install /bh/bridge/npbackend\n\
+  BH_STACK=opencl ${name} -m bohrium --info\n\
+done\n\
+cp27-cp27mu /bh/bridge/npbackend/setup.py sdist -d /bh/sdisthouse/\n\
+' > /bh/install.sh
 
-# Build Bohrium with python3.4
-ENV PATH /opt/python/cp34-cp34m/bin/:$PATH
-RUN bash /bh/build.sh 3.4
-RUN bash /bh/wheel.sh 3.4
-RUN pip install /bh/b3.4/dist/*
-
-# Build Bohrium with python3.5
-ENV PATH /opt/python/cp35-cp35m/bin/:$PATH
-RUN bash /bh/build.sh 3.5
-RUN bash /bh/wheel.sh 3.5
-RUN pip install /bh/b3.5/dist/*
-
-# Build Bohrium with python3.6
-ENV PATH /opt/python/cp36-cp36m/bin/:$PATH
-RUN bash /bh/build.sh 3.6
-RUN bash /bh/wheel.sh 3.6
-RUN pip install /bh/b3.6/dist/*
-RUN pip install benchpress
-
-# Sanity check and info
-RUN BH_STACK=opencl /opt/python/cp27-cp27mu/bin/python -m bohrium --info
-RUN BH_STACK=opencl /opt/python/cp34-cp34m/bin/python -m bohrium --info
-RUN BH_STACK=opencl /opt/python/cp35-cp35m/bin/python -m bohrium --info
-RUN BH_STACK=opencl /opt/python/cp36-cp36m/bin/python -m bohrium --info
+# Let's run the script
+RUN bash /bh/install.sh
 
 # Deploy script
 WORKDIR /bh
 RUN echo "#/usr/bin/env bash" > deploy.sh && \
-    echo "python2.7 -m twine upload /bh/b*/dist/* || true" >> deploy.sh && \
+    echo "cp27-cp27mu -m twine upload /bh/wheelhouse/*.whl /bh/sdisthouse/* || true" >> deploy.sh && \
     chmod +x deploy.sh
 
 # Execute script

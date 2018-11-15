@@ -24,7 +24,7 @@ jobs:
     - stage: build docker image
       script:
         - docker login -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then
+        - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
             docker build -t bohrium/wheel --build-arg BUILD_TYPE=Release -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
           else
             docker build -t bohrium/wheel --build-arg BUILD_TYPE=Debug -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
@@ -33,17 +33,17 @@ jobs:
 
     - stage: verify
     # Test suite
-      env: BH_STACK=openmp EXEC="python2.7 $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="python2.7 $TEST_ALL"
-    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="python2.7 $TEST_ALL"
-    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="python2.7 $TEST_ALL"
-    - env: BH_STACK=openmp EXEC="python3.6 $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="python3.6 $TEST_ALL"
-      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="python2.7 $TEST_SMALL"
+      env: BH_STACK=openmp EXEC="cp27-cp27mu $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp27-cp27mu $TEST_ALL"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="cp27-cp27mu $TEST_ALL"
+    - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="cp27-cp27mu $TEST_ALL"
+    - env: BH_STACK=openmp EXEC="cp36-cp36m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp36-cp36m $TEST_ALL"
+      env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="cp27-cp27mu $TEST_SMALL"
 
     # Test of older Python versions
-    - env: BH_STACK=opencl EXEC="python3.4 $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="python3.5 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp34-cp34m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp35-cp35m $TEST_ALL"
 
 deploy:
   provider: script
