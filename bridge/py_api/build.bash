@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set +e
 
 # Script arguments:
 VR_PATH=$1  # the path of the virtualenv
@@ -21,6 +21,11 @@ else
 fi
 
 source ${VR_PATH}/bin/activate
+
+# bohrium_api depend on gcc7 on MacOSX
+if [[ $OSTYPE == darwin* ]]; then
+    pip install gcc7
+fi
 
 export PY_API_WHEEL=${PY_WHEEL}
 export PY_API_SRC_ROOT=${CMAKE_SOURCE_DIR}
