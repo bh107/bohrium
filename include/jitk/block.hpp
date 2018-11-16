@@ -116,11 +116,6 @@ public:
     // Return all sub-blocks (excl. nested blocks)
     std::vector<const LoopB *> getLocalSubBlocks() const;
 
-    // Return instructions in the block (excl. nested blocks)
-    void getLocalInstr(std::vector<InstrPtr> &out) const;
-
-    std::vector<InstrPtr> getLocalInstr() const;
-
     // Return all bases accessed by this block
     std::set<const bh_base *> getAllBases() const;
 

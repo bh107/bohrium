@@ -79,7 +79,7 @@ static void service(const std::string &address, int port) {
 
                 // Receive new base array data
                 for (bh_base *base: data_recv) {
-                    base->data = nullptr;
+                    base->resetDataPtr();
                     auto data = comm_backend.recv_data();
                     if (not data.empty()) {
                         bh_data_malloc(base);
@@ -105,7 +105,7 @@ static void service(const std::string &address, int port) {
                 if (util::exist(remote2local, body.base)) {
                     bh_base &local_base = remote2local.at(body.base);
                     child->getMemoryPointer(local_base, true, false, false); // Note, we delay nullify to after comm.
-                    if (local_base.data != nullptr) {
+                    if (local_base.getDataPtr() != nullptr) {
                         auto data = compression.compress(local_base, compress_param);
                         comm_backend.send_data(data);
                     } else {
@@ -113,7 +113,7 @@ static void service(const std::string &address, int port) {
                     }
                     if (body.nullify) {
                         bh_data_free(&local_base);
-                        local_base.data = nullptr;
+                        local_base.resetDataPtr();
                     }
                 } else {
                     comm_backend.send_data({});
@@ -132,7 +132,7 @@ static void service(const std::string &address, int port) {
                     bh_view src = body.src;
                     src.base = &remote2local.at(body.src.base);
                     child->getMemoryPointer(*src.base, true, false, false);
-                    if (src.base->data != nullptr) {
+                    if (src.base->getDataPtr() != nullptr) {
                         auto t2 = chrono::steady_clock::now();
                         auto data = compression.compress(src, body.param);
                         time_mem_copy_zip += chrono::steady_clock::now() - t2;

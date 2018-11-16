@@ -91,9 +91,9 @@ class Impl : public ComponentVE {
         if (force_alloc) {
             bh_data_malloc(&base);
         }
-        void *ret = base.data;
+        void *ret = base.getDataPtr();
         if (nullify) {
-            base.data = nullptr;
+            base.resetDataPtr();
         }
         return ret;
     }
@@ -103,10 +103,10 @@ class Impl : public ComponentVE {
         if (not host_ptr) {
             throw runtime_error("OpenMP - setMemoryPointer(): `host_ptr` is not True");
         }
-        if (base->data != nullptr) {
-            throw runtime_error("OpenMP - setMemoryPointer(): `base->data` is not NULL");
+        if (base->getDataPtr() != nullptr) {
+            throw runtime_error("OpenMP - setMemoryPointer(): `base->getDataPtr()` is not NULL");
         }
-        base->data = mem;
+        base->resetDataPtr(mem);
     }
 
     // We have no context so returning NULL
@@ -144,7 +144,7 @@ void Impl::execute(BhIR *bhir) {
         engine.handleExecution(bhir);
 
         // Check condition
-        if (cond != nullptr and cond->data != nullptr and not ((bool*) cond->data)[0]) {
+        if (cond != nullptr and cond->getDataPtr() != nullptr and not((bool *) cond->getDataPtr())[0]) {
             break;
         }
 

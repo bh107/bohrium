@@ -21,8 +21,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "memory.h"
 #include "util.h"
 #include "handle_special_op.h"
-#include <bh_mem_signal.h>
 #include <frameobject.h>
+
+// In OSX `MAP_ANONYMOUS` is called `MAP_ANON`
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
 
 // Help function for unprotect memory
 static void _munprotect(void *data, npy_intp size) {

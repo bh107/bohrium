@@ -8,7 +8,7 @@ public:
         bh_view* A = &instr->operand[1];
         // We allocate the A data, if not already present
         bh_data_malloc(A->base);
-        void *A_data = A->base->data;
+        void *A_data = A->base->getDataPtr();
 
         <!--(if if_B)-->
         // B is a k*n matrix
@@ -16,8 +16,8 @@ public:
         // We allocate the B data, if not already present
         bh_data_malloc(B->base);
 
-        assert(A->base->type == B->base->type);
-        void *B_data = B->base->data;
+        assert(A->base->dtype() == B->base->dtype());
+        void *B_data = B->base->getDataPtr();
         <!--(end)-->
 
         <!--(if if_C)-->
@@ -27,8 +27,8 @@ public:
         // We allocate the C data, if not already present
         bh_data_malloc(C->base);
 
-        assert(A->base->type == C->base->type);
-        void *C_data = C->base->data;
+        assert(A->base->dtype() == C->base->dtype());
+        void *C_data = C->base->getDataPtr();
         <!--(end)-->
 
         int k = A->shape[1];
@@ -39,11 +39,11 @@ public:
             <!--(if if_B)--> n = B->shape[1]; <!--(end)-->
         <!--(end)-->
 
-        switch(A->base->type) {
+        switch(A->base->dtype()) {
             @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by BLAS for '@!name!@'.";
+                ss << bh_type_text(A->base->dtype()) << " not supported by BLAS for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     } /* end execute method */

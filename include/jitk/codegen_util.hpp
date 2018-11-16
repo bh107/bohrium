@@ -51,42 +51,6 @@ inline bool sweeping_innermost_axis(InstrPtr instr) {
     return instr->sweep_axis() == instr->operand[1].ndim - 1;
 }
 
-inline std::vector<const bh_view *>
-scalar_replaced_input_only(const LoopB &block, const Scope *parent_scope, const std::set<bh_base *> &local_tmps) {
-    std::vector<const bh_view *> result;
-
-    // We have to ignore output arrays and arrays that are accumulated
-    std::set<bh_base *> ignore_bases;
-    for (const InstrPtr &instr: iterator::allInstr(block)) {
-        if (not instr->operand.empty()) {
-            ignore_bases.insert(instr->operand[0].base);
-        }
-        if (bh_opcode_is_accumulate(instr->opcode)) {
-            ignore_bases.insert(instr->operand[1].base);
-        }
-    }
-    // First we add a valid view to the set of 'candidates' and if we encounter the view again
-    // we add it to the 'result'
-    std::set<bh_view> candidates;
-    for (const InstrPtr &instr: iterator::allInstr(block)) {
-        for (size_t i = 1; i < instr->operand.size(); ++i) {
-            const bh_view &input = instr->operand[i];
-            if ((not input.isConstant()) and ignore_bases.find(input.base) == ignore_bases.end()) {
-                if (local_tmps.find(input.base) == local_tmps.end() and
-                    (parent_scope == nullptr or parent_scope->isArray(input))) {
-                    if (util::exist(candidates, input)) { // 'input' is used multiple times
-                        result.push_back(&input);
-                    } else {
-                        candidates.insert(input);
-                    }
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
 // Returns the filename of a the given hashes and file extension
 // compilation_hash is the hash of the compile command and source_hash is the hash of the source code
 std::string hash_filename(uint64_t compilation_hash, size_t source_hash, std::string file_extension);
@@ -107,7 +71,6 @@ void create_directories(const boost::filesystem::path &path);
 // Order all sweep instructions by the viewID of their first operand.
 // This makes the source of the kernels more identical, which improve the code and compile caches.
 std::vector<InstrPtr> order_sweep_set(const std::set<InstrPtr> &sweep_set, const SymbolTable &symbols);
-
 
 // Returns True when `view` is accessing row major style
 bool row_major_access(const bh_view &view);

@@ -34,7 +34,7 @@ namespace {
  * <view_id><start><ndim>[<shape><stride><SEP_SHAPE>...]<SEP_OP>
  */
 void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstream &ss) {
-    ss << "dtype: " << static_cast<uint32_t>(view.base->type);
+    ss << "dtype: " << static_cast<uint32_t>(view.base->dtype());
     ss << "baseid: " << symbols.baseID(view.base);
 
     if (symbols.strides_as_var) {

@@ -226,7 +226,6 @@ setup(
             ],
             include_dirs=[
                 buildpath("..", "c", "out"),
-                srcpath('..', '..', 'include'),
                 np.get_include()
             ],
             libraries=['dl', 'bhc', 'bh'],

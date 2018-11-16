@@ -216,9 +216,7 @@ public:
             _free(memory, nbytes);
         } else {
             // Insert the segment at the end of `_segments`
-            Segment seg;
-            seg.nbytes = nbytes;
-            seg.mem = memory;
+            Segment seg{nbytes, memory};
             _segments.push_back(seg);
             _cache_size += nbytes;
         }

@@ -60,7 +60,7 @@ void Runtime::enqueueDeletion(std::unique_ptr<BhBase> base_ptr) {
     if (!base_ptr->ownMemory()) {
         // Externally managed
         // => set it to null to avoid deletion by Bohrium
-        base_ptr->data = nullptr;
+        base_ptr->resetDataPtr();
     }
 
     BhInstruction instr(BH_FREE);

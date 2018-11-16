@@ -144,20 +144,6 @@ vector<const LoopB *> LoopB::getLocalSubBlocks() const {
     return ret;
 }
 
-void LoopB::getLocalInstr(vector<InstrPtr> &out) const {
-    for (const Block &b : _block_list) {
-        if (b.isInstr() and b.getInstr() != NULL) {
-            out.push_back(b.getInstr());
-        }
-    }
-}
-
-vector<InstrPtr> LoopB::getLocalInstr() const {
-    vector<InstrPtr> ret;
-    getLocalInstr(ret);
-    return ret;
-}
-
 std::set<const bh_base *> LoopB::getAllBases() const {
     std::set<const bh_base *> ret;
     for (const InstrPtr &instr: iterator::allInstr(*this)) {
@@ -287,7 +273,7 @@ bool LoopB::validation() const {
         if (not b.validation())
             return false;
     }
-    for (const InstrPtr &instr: getLocalInstr()) {
+    for (const InstrPtr &instr: iterator::allLocalInstr(_block_list)) {
         if (instr->ndim() != rank + 1) {
             assert(1 == 2);
             return false;
@@ -321,14 +307,14 @@ string LoopB::pprint(const char *newline) const {
     if (_news.size() > 0) {
         ss << ", news: {";
         for (const bh_base *b : _news) {
-            ss << "a" << b->get_label() << ",";
+            ss << "a" << b->getLabel() << ",";
         }
         ss << "}";
     }
     if (_frees.size() > 0) {
         ss << ", frees: {";
         for (const bh_base *b : _frees) {
-            ss << "a" << b->get_label() << ",";
+            ss << "a" << b->getLabel() << ",";
         }
         ss << "}";
     }
@@ -336,7 +322,7 @@ string LoopB::pprint(const char *newline) const {
     if (temps.size() > 0) {
         ss << ", temps: {";
         for (const bh_base *b : temps) {
-            ss << "a" << b->get_label() << ",";
+            ss << "a" << b->getLabel() << ",";
         }
         ss << "}";
     }
@@ -355,7 +341,7 @@ string LoopB::pprint(const char *newline) const {
 void LoopB::metadataUpdate() {
     _news.clear();
     _sweeps.clear();
-    for (const InstrPtr &instr: getLocalInstr()) {
+    for (const InstrPtr &instr: iterator::allLocalInstr(_block_list)) {
         if (instr->constructor) {
             _news.insert(instr->operand[0].base);
         }
@@ -493,9 +479,9 @@ pair<uint64_t, uint64_t> parallel_ranks(const LoopB &block, unsigned int max_dep
     if (thds > 0) {
         if (max_depth > 0) {
             const size_t nblocks = block.getLocalSubBlocks().size();
-            const size_t ninstr = block.getLocalInstr().size();
+            const bool no_instr = iterator::allLocalInstr(block).empty();
             // Multiple blocks or mixing instructions and blocks makes the sub-blocks non-parallel
-            if (nblocks == 1 and ninstr == 0) {
+            if (nblocks == 1 and no_instr) {
                 auto sub = parallel_ranks(block._block_list[0].getLoop(), max_depth);
                 ret.first += sub.first;
                 ret.second += sub.second;

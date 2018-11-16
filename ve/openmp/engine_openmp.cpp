@@ -192,8 +192,8 @@ void EngineOpenMP::execute(const jitk::SymbolTable &symbols,
     vector<void *> data_list;
     data_list.reserve(symbols.getParams().size());
     for (bh_base *base: symbols.getParams()) {
-        assert(base->data != nullptr);
-        data_list.push_back(base->data);
+        assert(base->getDataPtr() != nullptr);
+        data_list.push_back(base->getDataPtr());
     }
 
     // And the offset-and-strides
@@ -336,7 +336,7 @@ void EngineOpenMP::writeKernel(const LoopB &kernel,
     // Write allocations of the kernel temporaries
     for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
-        ss << writeType(b->type) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
+        ss << writeType(b->dtype()) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
     }
     ss << "\n";
 
@@ -358,7 +358,7 @@ void EngineOpenMP::writeKernel(const LoopB &kernel,
         for (size_t i = 0; i < symbols.getParams().size(); ++i) {
             util::spaces(ss, 4);
             bh_base *b = symbols.getParams()[i];
-            ss << writeType(b->type) << " *a" << symbols.baseID(b);
+            ss << writeType(b->dtype()) << " *a" << symbols.baseID(b);
             ss << " = data_list[" << i << "];\n";
         }
 

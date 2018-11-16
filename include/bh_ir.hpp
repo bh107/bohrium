@@ -37,7 +37,7 @@ public:
     // Number of times to repeat this BhIR
     uint64_t _nrepeats;
     // Repeat while this base evaluate to True or is a nullptr.
-    // NB: the `base->data` must point to a single element of type BH_BOOL
+    // NB: the `base->getDataPtr()` must point to a single element of type BH_BOOL
     bh_base *_repeat_condition;
 
 public:

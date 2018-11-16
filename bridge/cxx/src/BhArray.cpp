@@ -83,7 +83,7 @@ void BhArray<T>::pprint(std::ostream& os) const {
     // Pretty print the content
     os << scientific;
     os << "[";
-    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->nelem); ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(contiguous.base->nelem()); ++i) {
         if (i > 0) {
             os << ", ";
         }

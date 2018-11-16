@@ -26,7 +26,7 @@ public:
         <!--(if if_B)-->
         // B is a k*n matrix
         bh_view* B = &instr->operand[2];
-        assert(A->base->type == B->base->type);
+        assert(A->base->dtype() == B->base->dtype());
         cl_mem bufB = engine->getCBuffer(B->base);
         <!--(end)-->
 
@@ -37,7 +37,7 @@ public:
         // We allocate the C data, if not already present
         bh_data_malloc(C->base);
 
-        assert(A->base->type == C->base->type);
+        assert(A->base->dtype() == C->base->dtype());
         cl_mem bufC = engine->getCBuffer(C->base);
         <!--(end)-->
 
@@ -54,11 +54,11 @@ public:
         // Make sure that everything is copied to device, before executing clBlas method
         clFinish(queue);
 
-        switch(A->base->type) {
+        switch(A->base->dtype()) {
             @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(A->base->type) << " not supported by clBLAS for '@!name!@'.";
+                ss << bh_type_text(A->base->dtype()) << " not supported by clBLAS for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     }; /* end execute method */

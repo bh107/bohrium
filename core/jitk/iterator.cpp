@@ -120,6 +120,15 @@ BaseList::Range allBases(const bh_instruction &instr) {
     return boost::make_iterator_range(begin, end);
 }
 
+LocalInstrList::Range allLocalInstr(const std::vector<Block> &block_list) {
+    LocalInstrList begin{block_list}, end{block_list.end()};
+    return boost::make_iterator_range(begin, end);
+}
+LocalInstrList::Range allLocalInstr(const LoopB &loop) {
+    LocalInstrList begin{loop._block_list}, end{loop._block_list.end()};
+    return boost::make_iterator_range(begin, end);
+}
+
 
 } // iterator
 } // jitk

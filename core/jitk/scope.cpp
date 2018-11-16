@@ -27,12 +27,13 @@ using namespace std;
 namespace bohrium {
 namespace jitk {
 
-void Scope::writeIdxDeclaration(const bh_view &view, const string &type_str, stringstream &out) {
+void
+Scope::writeIdxDeclaration(const bh_view &view, const std::string &type_str, int hidden_axis, std::stringstream &out) {
     assert(not isIdxDeclared(view));
     out << "const " << type_str << " ";
     getIdxName(view, out);
     out << " = (";
-    write_array_index(*this, view, out);
+    write_array_index(*this, view, out, false, hidden_axis);
     out << ");";
     _declared_idx.insert(view);
 }

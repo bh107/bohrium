@@ -28,41 +28,78 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace boost { namespace serialization { class access; }}
 
 struct bh_base {
-    // Pointer to the actual data.
-    void *data = nullptr;
+private:
+    // The number of elements in the array
+    int64_t _nelem = 0;
 
     // The type of data in the array
-    bh_type type = bh_type::BOOL;
+    bh_type _type = bh_type::BOOL;
 
-    // The number of elements in the array
-    int64_t nelem = 0;
+    // Pointer to the actual data.
+    void *_data = nullptr;
 
-    // Returns an unique ID of this base array
-    uint64_t get_label() const;
+public:
+    bh_base() = default;
 
-    // Returns pprint string of this base array
+    /** Construct a new base array
+     *
+     * @param nelem  Number of elements
+     * @param type   The data type
+     * @param data   Pointer to the actual data (or nullptr)
+     */
+    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), _type(type), _data(data) {}
+
+    /// Returns the number of elements in this array
+    int64_t nelem() const noexcept {
+        return _nelem;
+    }
+
+    /// Returns the data type of this array
+    bh_type dtype() const noexcept {
+        return _type;
+    }
+
+    /// Returns the data pointer of this array
+    void *getDataPtr() {
+        return _data;
+    }
+
+    /// Returns the data pointer of this array (const version)
+    const void *getDataPtr() const {
+        return _data;
+    }
+
+    /// Reset the data pointer for this array to `data_ptr`
+    void resetDataPtr(void *data_ptr = nullptr) {
+        _data = data_ptr;
+    }
+
+    /// Returns an unique ID of this base array
+    uint64_t getLabel() const;
+
+    /// Returns pprint string of this base array
     std::string str() const;
 
-    // Returns the of bytes in the array
+    /// Returns the of bytes in the array
     int64_t nbytes() const {
-        return nelem * bh_type_size(type);
+        return nelem() * bh_type_size(_type);
     };
 
     template<class Archive>
     void save(Archive &ar, const unsigned int version) const {
-        size_t tmp = (size_t) data;
+        size_t tmp = (size_t) _data;
         ar << tmp;
-        ar & type;
-        ar & nelem;
+        ar & _type;
+        ar & _nelem;
     }
 
     template<class Archive>
     void load(Archive &ar, const unsigned int version) {
         size_t tmp;
         ar >> tmp;
-        data = (void *) tmp;
-        ar & type;
-        ar & nelem;
+        _data = (void *) tmp;
+        ar & _type;
+        ar & _nelem;
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()

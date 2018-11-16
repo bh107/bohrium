@@ -9,7 +9,7 @@ public:
         // We allocate the B data, if not already present
         bh_data_malloc(B->base);
 
-        void *B_data = B->base->data;
+        void *B_data = B->base->getDataPtr();
 
         int n    = B->shape[0];
         int nrhs = B->ndim == 1 ? 1 : B->shape[1];
@@ -21,17 +21,17 @@ public:
             // We allocate the A data, if not already present
             bh_data_malloc(A->base);
             // Grab pointer to data
-            void *A_data = A->base->data;
+            void *A_data = A->base->getDataPtr();
 
             int lda = n;
 
-            assert(A->base->type == B->base->type);
+            assert(A->base->dtype() == B->base->dtype());
         <!--(end)-->
 
         <!--(if if_AB)-->
             bh_view* AB = &instr->operand[1];
             bh_data_malloc(AB->base);
-            void *AB_data = AB->base->data;
+            void *AB_data = AB->base->getDataPtr();
 
             <!--(if if_klku)-->
                 // kl is the number of non-zero elements in the first column of A minus 1
@@ -39,7 +39,7 @@ public:
                 // ku is the number of non-zero elements in the first row of A minus 1
                 int ku = 0;
 
-                switch(AB->base->type) {
+                switch(AB->base->dtype()) {
                     case bh_type::FLOAT32: {
                         kl = calc_kl<bh_float32>((bh_float32*) AB_data, AB->shape[0], AB->shape[1]);
                         ku = calc_ku<bh_float32>((bh_float32*) AB_data, AB->shape[0]);
@@ -58,14 +58,14 @@ public:
                     }
                     default:
                         std::stringstream ss;
-                        ss << bh_type_text(AB->base->type) << " not supported by LAPACK for '@!name!@'.";
+                        ss << bh_type_text(AB->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                         throw std::runtime_error(ss.str());
                 }
 
                 // ldab is the second dimension of the banded matrix
                 int lda = 2 * kl + ku + 1;
 
-                switch(AB->base->type) {
+                switch(AB->base->dtype()) {
                     case bh_type::FLOAT32: {
                         AB_data = get_ab_data<bh_float32>((bh_float32*) AB_data, AB->shape[0], AB->shape[1], kl, ku);
                         break;
@@ -82,7 +82,7 @@ public:
                     }
                     default:
                         std::stringstream ss;
-                        ss << bh_type_text(AB->base->type) << " not supported by LAPACK for '@!name!@'.";
+                        ss << bh_type_text(AB->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                         throw std::runtime_error(ss.str());
                 }
             <!--(end)-->
@@ -94,15 +94,15 @@ public:
             // We allocate the A data, if not already present
             bh_data_malloc(A->base);
             // Grab pointer to data
-            void *A_data = A->base->data;
-            assert(A->base->type == B->base->type);
+            void *A_data = A->base->getDataPtr();
+            assert(A->base->dtype() == B->base->dtype());
 
             // DL is the elements of the n-1 sub-diagonal of A
             // D is the elements of the diagonal of A
             // DU is the elements of the n-1 super-diagonal of A
             void *DL, *D, *DU;
 
-            switch(A->base->type) {
+            switch(A->base->dtype()) {
                 case bh_type::FLOAT32: {
                     DL = get_subdiagonal<bh_float32>(A_data, n);
                     D  = get_diagonal<bh_float32>(A_data, n);
@@ -123,7 +123,7 @@ public:
                 }
                 default:
                     std::stringstream ss;
-                    ss << bh_type_text(A->base->type) << " not supported by LAPACK for '@!name!@'.";
+                    ss << bh_type_text(A->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                     throw std::runtime_error(ss.str());
             }
         <!--(end)-->
@@ -135,14 +135,14 @@ public:
             // We allocate the AP data, if not already present
             bh_data_malloc(AP->base);
             // Grab pointer to data
-            void *AP_data = AP->base->data;
+            void *AP_data = AP->base->getDataPtr();
 
-            assert(AP->base->type == B->base->type);
+            assert(AP->base->dtype() == B->base->dtype());
 
             // Convert the matrix into an array in upper-packed storage mode.
             // https://www.ibm.com/support/knowledgecenter/SSFHY8_5.3.0/com.ibm.cluster.essl.v5r3.essl100.doc/am5gr_upsm.htm
 
-            switch(B->base->type) {
+            switch(B->base->dtype()) {
                 case bh_type::FLOAT32: {
                     AP_data = get_ap_data<bh_float32>((bh_float32*) AP_data, n);
                     break;
@@ -159,7 +159,7 @@ public:
                 }
                 default:
                     std::stringstream ss;
-                    ss << bh_type_text(B->base->type) << " not supported by LAPACK for '@!name!@'.";
+                    ss << bh_type_text(B->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                     throw std::runtime_error(ss.str());
             }
         <!--(end)-->
@@ -175,11 +175,11 @@ public:
 
         int info;
 
-        switch(B->base->type) {
+        switch(B->base->dtype()) {
             @!func!@
             default:
                 std::stringstream ss;
-                ss << bh_type_text(B->base->type) << " not supported by LAPACK for '@!name!@'.";
+                ss << bh_type_text(B->base->dtype()) << " not supported by LAPACK for '@!name!@'.";
                 throw std::runtime_error(ss.str());
         } /* end of switch */
     } /* end execute method */
