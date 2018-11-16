@@ -36,8 +36,7 @@ public:
     std::string cmd_template;
     std::string config_path;
     bool verbose;
-
-    Compiler(std::string cmd_template, bool verbose, std::string config_path);
+    Compiler(std::string cmd_template, std::string config_path, bool verbose);
     Compiler() = default;
 
     /**

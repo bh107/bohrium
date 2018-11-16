@@ -37,7 +37,7 @@ string expand_compile_cmd(const string &cmd_template, const string &out, const s
     return ret;
 }
 
-Compiler::Compiler(string cmd_template, bool verbose, string config_path) : cmd_template(std::move(cmd_template)),
+Compiler::Compiler(string cmd_template, string config_path, bool verbose) : cmd_template(std::move(cmd_template)),
                                                                             config_path(std::move(config_path)),
                                                                             verbose(verbose) {}
 

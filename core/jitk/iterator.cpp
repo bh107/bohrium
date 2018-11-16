@@ -97,9 +97,8 @@ bool BlockList::equal(BlockList const &other) const {
 }
 
 InstrPtr const &BlockList::dereference() const {
-    auto &block_list = _stack.back().first;
     auto &block = _stack.back().second;
-    assert(block_list == nullptr);
+    assert(_stack.back().first == nullptr);
     assert(block->isInstr());
     return block->getInstr();
 }
