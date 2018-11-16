@@ -321,13 +321,9 @@ setup(
     version=version,
     description='Bohrium Python API',
     long_description='Python API for the Bohrium project <www.bh107.org>',
-
-    # The project's main homepage.
     url='http://bh107.org',
-
-    # Author details
-    author='Mads R. B. Kristensen',
-    author_email='madsbk@gmail.com',
+    author='The Bohrium Team',
+    author_email='contact@bh107.org',
     maintainer='Mads R. B. Kristensen',
     maintainer_email='madsbk@gmail.com',
     platforms=['Linux', 'OSX'],
