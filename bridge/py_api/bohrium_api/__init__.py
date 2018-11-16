@@ -27,7 +27,7 @@ def _pip_specific_config():
         cmd = gcc7.path.gcc()
         cmd += ' -x c -fPIC -shared -std=gnu99 -O3 -march=native -arch x86_64 -Werror'
         cmd += ' -Wl,-rpath,%s -fopenmp' % gcc7.path.lib()
-        cmd += ' -I{CONF_PATH}/include -lm -L{CONF_PATH}/lib64 -lbh {IN} -o {OUT}'
+        cmd += ' -I{CONF_PATH}/include -lm {IN} -o {OUT}'
         os.environ["BH_OPENMP_COMPILER_CMD"] = cmd
         # Finally, we active the OpenMP code generation but deactivate OpenMP-simd, which doesn't work on mac
         if "BH_OPENMP_COMPILER_OPENMP" not in os.environ:
