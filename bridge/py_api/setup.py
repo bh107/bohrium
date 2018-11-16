@@ -27,6 +27,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_py import build_py as setup_build_py
 from distutils.dir_util import mkpath, copy_tree
 from codecs import open
+import platform
 import os
 import json
 import pprint
@@ -314,6 +315,11 @@ class build_py(setup_build_py):
         setup_build_py.run(self)
 
 
+# On MacOSX we add a rpath to the installation path so that `delocate` can locate `libbh.dylib`
+clinks = []
+if platform.system() == 'Darwin':
+    clinks += ['-Xlinker', '-rpath', '-Xlinker', '%s/lib' % _install_prefix]
+
 cflags = ["-std=c99"]
 setup(
     cmdclass={'build_py': build_py},
@@ -377,6 +383,7 @@ setup(
                 build_root('core')
             ],
             extra_compile_args=cflags,
+            extra_link_args=clinks,
         ),
     ],
 )
