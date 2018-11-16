@@ -13,20 +13,7 @@ PyPI Package
 If you use Bohrium through Python, we strongly recommend to install Bohrium through `pypi <https://pypi.python.org/pypi>`_, which will include BLAS, LAPACK, OpenCV, and OpenCL support::
 
     python -m pip install --user bohrium
-
-Homebrew
-~~~~~~~~
-
-Start by `installing Homebrew as explained on their website <http://brew.sh/>`_ ::
-
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-Then install Bohrium::
-
-  pip install cython # This dependency cannot be installed via brew.
-  brew tap bh107/bohrium
-  brew tap homebrew/science # for clblas and the likes
-  brew install bohrium # you can add additional options, see `brew info bohrium`
+    
 
 Install From Source Package
 ---------------------------
@@ -41,7 +28,7 @@ Install dependencies::
   brew install cmake
   brew install boost --with-icu4c
   brew install libsigsegv
-  python3 -m pip install --user numpy cython twine
+  python3 -m pip install --user numpy cython twine gcc7
 
 Visit Bohrium on github.com, download the latest release: https://github.com/bh107/bohrium/releases/latest or download `master`, and then build it::
 
@@ -50,6 +37,12 @@ Visit Bohrium on github.com, download the latest release: https://github.com/bh1
   cd bohrium-master
   mkdir build
   cd build
+  export PATH="$(brew --prefix)/bin:/usr/local/opt/llvm/bin:/usr/local/opt/opencv3/bin:$PATH"
+  export CC="clang"
+  export CXX="clang++"
+  export C_INCLUDE_PATH=$(llvm-config --includedir)
+  export CPLUS_INCLUDE_PATH=$(llvm-config --includedir)
+  export LIBRARY_PATH=$(llvm-config --libdir):$LIBRARY_PATH
   cmake .. -DCMAKE_INSTALL_PREFIX=<path to install directory>
   make
   make install
@@ -58,11 +51,12 @@ Visit Bohrium on github.com, download the latest release: https://github.com/bh1
 
 .. note:: To compile to a custom Python (with valgrind debug support for example), set ``-DPYTHON_EXECUTABLE=<custom python binary>``.
 
-Finally, you need to set the ``LD_LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local/lib`` your need to set ``PYTHONPATH`` as well.
+Finally, you need to set the ``DYLD_LIBRARY_PATH`` and ``LIBRARY_PATH`` environment variables and if you didn't install Bohrium in ``$HOME/.local/lib`` your need to set ``PYTHONPATH`` as well.
 
-The ``LD_LIBRARY_PATH`` should include the path to the installation directory::
+The ``DYLD_LIBRARY_PATH`` and ``LIBRARY_PATH`` should include the path to the installation directory::
 
-    export LD_LIBRARY_PATH="<install dir>:$LD_LIBRARY_PATH"
+    export DYLD_LIBRARY_PATH="<install dir>:$DYLD_LIBRARY_PATH"
+    export LIBRARY_PATH="<install dir>:$LIBRARY_PATH"
 
 The ``PYTHONPATH`` should include the path to the newly installed Bohrium Python module::
 
