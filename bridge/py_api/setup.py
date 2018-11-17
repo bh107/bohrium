@@ -377,9 +377,10 @@ setup(
                 build_root("bridge", "c", "out"),
                 build_root("bridge", "py_api", "include"),
             ],
-            libraries=['dl', 'bhc', 'bh'],
+            libraries=['dl', 'bhc', 'bh', 'bhxx'],
             library_dirs=[
                 build_root('bridge', 'c'),
+                build_root('bridge', 'cxx'),
                 build_root('core')
             ],
             extra_compile_args=cflags,
