@@ -209,9 +209,28 @@ PyObject *PyMessage(PyObject *self, PyObject *args, PyObject *kwds) {
 #endif
 }
 
+PyObject *PySanityCheck(PyObject *self, PyObject *args) {
+    bhc_ndarray_uint64_p a = bhc_new_Auint64(100);
+    bhc_ndarray_uint64_p b = bhc_new_Auint64(1);
+    bhc_range_Auint64(a);
+    bhc_add_reduce_Auint64_Auint64_Kint64(b, a, 0);
+    BhAPI_flush();
+    uint64_t *b_data = (uint64_t*) bhc_data_get_Auint64(b, 1, 1, 0);
+    int success = (4950 == *b_data);  // The sum of 0..100 is 4950.
+    bhc_destroy_Auint64(a);
+    bhc_destroy_Auint64(b);
+    BhAPI_flush();
+    if (success) {
+        Py_RETURN_TRUE;
+    } else {
+        Py_RETURN_FALSE;
+    }
+}
+
 // The methods (functions) of this module
 static PyMethodDef _bh_apiMethods[] = {
         {"flush",   PyFlush,                 METH_NOARGS, "Evaluate all delayed array operations"},
+        {"sanity_check", PySanityCheck,      METH_NOARGS, "Check the Bohrium API installation (returns a boolean)."},
         {"message", (PyCFunction) PyMessage, METH_VARARGS | METH_KEYWORDS,
                                                           "Send and receive a message through the Bohrium stack\n"},
         {NULL,      NULL,                    0,           NULL}        /* Sentinel */
