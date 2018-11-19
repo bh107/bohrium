@@ -188,13 +188,23 @@ static void init_c_api_struct(void *c_api_struct[]) {
     header_file.write(head)
 
 
+# Let's find the version
+cmd = "git describe --tags --long --match v[0-9]*"
+try:
+    # Let's get the Bohrium version without the 'v' and hash (e.g. v0.8.9-47-g6464 => v0.8.9-47)
+    version = subprocess.check_output(cmd, shell=True, cwd=src_root()).decode('utf-8')
+    version = re.match(".*v(.+-\d+)-", str(version)).group(1)
+except subprocess.CalledProcessError as e:
+    print("Couldn't find the Bohrium version through `git describe`, are we not in the git repos?\n"
+          "Using the VERSION file instead")
+    # The version if written in the VERSION file in the root of Bohrium
+    with open(src_root("VERSION"), "r") as f:
+        version = f.read().strip()
+print("Bohrium version: %s" % version)
+
 # Information variables that should be written to the _info.py file
 info_vars = {}
-
-# The version if written in the VERSION file in the root of Bohrium
-with open(src_root("VERSION"), "r") as f:
-    version = f.read().strip()
-    info_vars['__version__'] = version
+info_vars['__version__'] = version
 
 
 def write_info(o):
