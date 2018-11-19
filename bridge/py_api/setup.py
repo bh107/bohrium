@@ -320,7 +320,7 @@ class build_py(setup_build_py):
 
                 _copy_dirs(src_root("include", "jitk", "kernel_dependencies"),
                            os.path.join(target_dir, 'include', "kernel_dependencies"))
-                _copy_files(build_root("*", "*", "libbh_*.so"), os.path.join(target_dir, ".libs"))
+                _copy_files(build_root("*", "*", "libbh_*"), os.path.join(target_dir, ".libs"))
 
         setup_build_py.run(self)
 
