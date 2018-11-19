@@ -84,7 +84,7 @@ cumsum = add.accumulate
 cumprod = multiply.accumulate
 
 # Expose all data types
-for _t in numpy_types:
+for _t in numpy_types():
     exec ("%s = numpy.%s" % (_t.__str__(), _t.__str__()))
 
 # Type aliases

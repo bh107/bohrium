@@ -6,7 +6,7 @@ from bohrium_api import _info
 
 class test_set_bool_mask_scalar:
     def init(self):
-        for dtype in _info.numpy_types:
+        for dtype in _info.numpy_types():
             dtype = "np.%s"%dtype.name
             for cmd, shape in util.gen_random_arrays("R", 2, min_ndim=1, samples_in_each_ndim=1,
                                                      dtype=dtype, no_views=True):
@@ -60,7 +60,7 @@ class test_get_bool_mask:
 
 class test_where:
     def init(self):
-        for dtype in _info.numpy_types:
+        for dtype in _info.numpy_types():
             dtype = "np.%s" % dtype.name
             for cmd, shape in util.gen_random_arrays("R", 2, min_ndim=1, samples_in_each_ndim=1,
                                                      dtype=dtype, no_views=True):

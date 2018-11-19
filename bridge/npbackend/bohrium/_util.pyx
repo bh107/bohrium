@@ -89,7 +89,7 @@ def type_sig(op_name, inputs):
 def dtype_support(dtype):
     """Returns True when Bohrium supports 'dtype' """
 
-    if dtype_in(dtype, _info.numpy_types):
+    if dtype_in(dtype, _info.numpy_types()):
         return True
     else:
         return False
