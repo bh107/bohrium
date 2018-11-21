@@ -1,0 +1,2 @@
+recursive-include bohrium *.c *.h *.py *.pyx
+recursive-include src *.c *.h
