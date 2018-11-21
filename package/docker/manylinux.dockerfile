@@ -9,13 +9,13 @@ RUN mkdir /b
 WORKDIR /b
 
 # Install gcc7 (/opt/gcc7)
-RUN wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-7.2.0/gcc-7.2.0.tar.gz
-RUN tar -xzf gcc-7.2.0.tar.gz
-WORKDIR gcc-7.2.0
+ADD http://mirrors.concertpass.com/gcc/releases/gcc-7.3.0/gcc-7.3.0.tar.gz .
+RUN tar -xzf gcc-7.3.0.tar.gz
+WORKDIR gcc-7.3.0
 RUN ./contrib/download_prerequisites
 RUN mkdir -p /b/gcc_build
 WORKDIR /b/gcc_build
-RUN /b/gcc-7.2.0/configure --prefix /opt/gcc7 --enable-languages=c --disable-bootstrap
+RUN /b/gcc-7.3.0/configure --prefix /opt/gcc7 --enable-languages=c --disable-bootstrap --disable-multilib
 RUN make -j4
 RUN make install
 ENV PATH /opt/gcc7/bin:$PATH
@@ -35,7 +35,7 @@ ENV PATH /opt/python/cp27-cp27mu/bin/:$PATH
 # Install AMD SDK for OpenCL (/opt/AMDAPPSDK-2.9-1)
 RUN yum install -y redhat-lsb
 RUN mkdir -p amd_src
-ADD AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2 amd_src
+ADD AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh amd_src
 ENV OPENCL_HOME /opt/AMDAPPSDK-2.9-1
 ENV OPENCL_LIBPATH /opt/AMDAPPSDK-2.9-1/lib/x86_64
 RUN sh amd_src/AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh -- -s -a yes > /dev/null
@@ -61,22 +61,12 @@ RUN ldconfig
 # Install GNU's libsigsegv
 RUN yum install -y libsigsegv-devel
 
-# Install Python build dependencies
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install 'subprocess32==3.5.0rc1'
-RUN PATH=/opt/python/cp34-cp34m/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
-RUN PATH=/opt/python/cp35-cp35m/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
-RUN PATH=/opt/python/cp36-cp36m/bin:$PATH pip install numpy==1.13.3 cython==0.27.3 scipy==1.0.0
-
-# Install Python test dependencies
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install matplotlib netCDF4
-RUN PATH=/opt/python/cp36-cp36m/bin:$PATH pip install matplotlib netCDF4
-
-# Install deploy dependencies
-RUN PATH=/opt/python/cp27-cp27mu/bin:$PATH pip install twine
+# Install Python build and depoly dependencies
+RUN pip install virtualenv twine
 
 ## Clean up
 WORKDIR /
 RUN rm -Rf /b
 RUN yum clean all
+RUN rm -Rf ~/.cache/pip
 

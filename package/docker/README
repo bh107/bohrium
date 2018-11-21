@@ -3,12 +3,13 @@ NB: no need to upload a new image to docker hub!
 
 When modifying the base image (manylinux), you have to upload a new docker image to docker hub.
 
-In the root dir of Bohrium first download:
-AMD-APP-SDK-linux-v2.9-1.599.381-GA-x64.tar.bz2
+In the root dir of Bohrium first download and unpack:
+AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh
 from
 http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/
 
 and then run:
 
 sudo docker build -t bohrium/manylinux:latest -f package/docker/manylinux.dockerfile .
+sudo docker login
 sudo docker push bohrium/manylinux:latest
