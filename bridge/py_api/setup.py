@@ -327,8 +327,10 @@ class build_py(setup_build_py):
 
 # On MacOSX we add a rpath to the installation path so that `delocate` can locate `libbh.dylib`
 clinks = []
+setup_requires = []
 if platform.system() == 'Darwin':
     clinks += ['-Xlinker', '-rpath', '-Xlinker', '%s/lib' % _install_prefix]
+    setup_requires += ['gcc7']
 
 setup(
     cmdclass={'build_py': build_py},
@@ -373,6 +375,10 @@ setup(
 
     # What does your project relate to?
     keywords='Bohrium, bh107, Python, C, HPC, MPI, PGAS, CUDA, OpenCL, OpenMP',
+
+    # Dependencies
+    install_requires=setup_requires,
+    setup_requires=setup_requires,
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
