@@ -12,6 +12,7 @@ env:
     - BH_OPENCL_VOLATILE=true
     - TEST_ALL="/bh/test/python/run.py /bh/test/python/tests/test_*.py"
     - TEST_SMALL="/bh/test/python/run.py /bh/test/python/tests/test_primitives.py /bh/test/python/tests/test_reduce.py"
+    - TEST_DEPS="numpy scipy matplotlib netCDF4"
 
 script:
   - env | grep -E "BH_|EXEC" | sort > .env-file
@@ -33,17 +34,18 @@ jobs:
 
     - stage: verify
     # Test suite
-      env: BH_STACK=openmp EXEC="cp27-cp27mu $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="cp27-cp27mu $TEST_ALL"
+      env: BH_STACK=openmp EXEC="cp27-cp27mu -m pip install $TEST_DEPS; $cp27-cp27mu $TEST_ALL"
+      env: BH_STACK=opencl EXEC="cp27-cp27mu -m pip install $TEST_DEPS; $cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="cp27-cp27mu $TEST_ALL"
-    - env: BH_STACK=openmp EXEC="cp36-cp36m $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="cp36-cp36m $TEST_ALL"
+    - env: BH_STACK=openmp EXEC="cp37-cp37m -m pip install $TEST_DEPS; cp37-cp37m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp37-cp37m -m pip install $TEST_DEPS; cp37-cp37m $TEST_ALL"
       env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="cp27-cp27mu $TEST_SMALL"
 
     # Test of older Python versions
-    - env: BH_STACK=opencl EXEC="cp34-cp34m $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="cp35-cp35m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp34-cp34m -m pip install $TEST_DEPS; cp34-cp34m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp35-cp35m -m pip install $TEST_DEPS; cp35-cp35m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp36-cp36m -m pip install $TEST_DEPS; cp36-cp36m $TEST_ALL"
 
 deploy:
   provider: script
