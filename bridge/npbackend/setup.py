@@ -82,7 +82,8 @@ setup(
     keywords='Bohrium, bh107, Python, C, HPC, MPI, PGAS, CUDA, OpenCL, OpenMP',
 
     # Dependencies
-    install_requires=['numpy>=1.7'],
+    install_requires=['numpy>=1.7', 'bohrium_api'],
+    setup_requires=['numpy>=1.7', 'bohrium_api'],
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
