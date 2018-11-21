@@ -34,8 +34,8 @@ jobs:
 
     - stage: verify
     # Test suite
-      env: BH_STACK=openmp EXEC="cp27-cp27mu -m pip install $TEST_DEPS; $cp27-cp27mu $TEST_ALL"
-      env: BH_STACK=opencl EXEC="cp27-cp27mu -m pip install $TEST_DEPS; $cp27-cp27mu $TEST_ALL"
+      env: BH_STACK=openmp EXEC="cp27-cp27mu -m pip install $TEST_DEPS; cp27-cp27mu $TEST_ALL"
+      env: BH_STACK=opencl EXEC="cp27-cp27mu -m pip install $TEST_DEPS; cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=openmp EXEC="cp37-cp37m -m pip install $TEST_DEPS; cp37-cp37m $TEST_ALL"
