@@ -62,7 +62,7 @@ foreach (PY_EXE ${PY_EXE_LIST})
         install(CODE "file(READ ${VR_PATH}/wheel_py_api/package_name.txt WHEEL_NAME)
                       message(STATUS \"Exporting \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
                       set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
-                      execute_process(COMMAND ${PY_EXE} -m pip install --user -I \${WHEEL_NAME}
+                      execute_process(COMMAND ${PY_EXE} -m pip install --no-deps --user -I \${WHEEL_NAME}
                                       RESULT_VARIABLE RES)
                       if(NOT \"\${RES}\" STREQUAL \"0\")
                         message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
