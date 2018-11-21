@@ -25,10 +25,10 @@ If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup, find_packages
 from setuptools.extension import Extension
-from Cython.Build import cythonize
-import numpy as np
-import bohrium_api
+from setuptools.command.build_ext import build_ext as setup_build_ext
+import numbers
 import os
+import glob
 
 
 def script_path(*paths):
@@ -37,10 +37,54 @@ def script_path(*paths):
     return os.path.join(prefix, *paths)
 
 
-cflags = ["-std=c99"]
+def get_pyx_extensions():
+    """Find and compiles all cython extensions"""
+    include_dirs = []
+    if 'USE_CYTHON' in os.environ:
+        import numpy
+        import bohrium_api
+        include_dirs.extend([numpy.get_include(), bohrium_api.get_include()])
+    pyx_list = glob.glob(script_path("bohrium", "*.pyx"))
+    ret = []
+    for pyx in pyx_list:
+        ret.append(Extension(name="bohrium.%s" % os.path.splitext(os.path.basename(pyx))[0],
+                             sources=[pyx],
+                             include_dirs=include_dirs))
+    ret.append(Extension(name="bohrium.nobh.bincount_cython",
+                         sources=[script_path("bohrium", "nobh", "bincount_cython.pyx")],
+                         include_dirs=include_dirs))
+    if 'USE_CYTHON' in os.environ:
+        import Cython.Build
+        return Cython.Build.cythonize(ret, nthreads=2)
+    else:
+        return ret
+
+
+class BuildExt(setup_build_ext):
+    """We delay the numpy and bohrium dependency to the build command.
+    Hopefully, PIP has installed them at this point."""
+
+    def run(self):
+        if not self.dry_run:
+            import numpy
+            import bohrium_api
+            for ext in self.extensions:
+                ext.include_dirs.extend([numpy.get_include(), bohrium_api.get_include()])
+        setup_build_ext.run(self)
+
+
+class DelayedVersion(numbers.Number):
+    """In order to delay the version evaluation that depend on `bohrium_api`, we use this class"""
+
+    def __str__(self):
+        import bohrium_api
+        return bohrium_api.__version__
+
+
 setup(
+    cmdclass={'build_ext': BuildExt},
     name='bohrium',
-    version=bohrium_api.__version__,
+    version=DelayedVersion(),
     description='Bohrium Python/NumPy Backend',
     long_description='Bohrium for Python <www.bh107.org>',
     url='http://bh107.org',
@@ -89,7 +133,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['tests']),
 
-    ext_modules=cythonize([
+    ext_modules=get_pyx_extensions() + [
         Extension(
             name='bohrium._bh',
             sources=[script_path('src', '_bh.c'),
@@ -107,25 +151,7 @@ setup(
                 script_path('src', 'memory.h'),
                 script_path('src', 'operator_overload.c')
             ],
-            include_dirs=[
-                np.get_include(),
-                bohrium_api.get_include(),
-            ],
             libraries=['dl'],
-            extra_compile_args=cflags,
-        ),
-        Extension("*", [script_path("bohrium", "*.pyx")],
-                  include_dirs=[
-                      np.get_include(),
-                      bohrium_api.get_include(),
-                  ],
-                  libraries=[],
-                  library_dirs=[]),
-        Extension("*", [script_path("bohrium", "nobh", "*.pyx")],
-                  include_dirs=[
-                      np.get_include()
-                  ],
-                  libraries=[],
-                  library_dirs=[]),
-    ]),
+            extra_compile_args=["-std=c99"],
+        )]
 )

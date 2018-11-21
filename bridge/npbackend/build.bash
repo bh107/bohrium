@@ -15,6 +15,7 @@ echo "===================== NPBACKEND ======================"
 source ${VR_PATH}/bin/activate
 pip install numpy cython
 rm -Rf ${VR_PATH}/wheel_npbackend
+export USE_CYTHON=1
 pip wheel --no-deps --verbose -w ${VR_PATH}/wheel_npbackend ${CMAKE_CURRENT_SOURCE_DIR}
 WHEEL_NAME=`echo ${VR_PATH}/wheel_npbackend/bohrium-*.whl`
 echo "WHEEL_NAME: \"$WHEEL_NAME\""
