@@ -5,15 +5,11 @@ MAINTAINER Mads R. B. Kristensen <madsbk@gmail.com>
 WORKDIR /bh
 COPY . .
 
-# TODO: move these to the manylinux image
-RUN pip install virtualenv
-ENV LD_LIBRARY_PATH "/opt/gcc7/lib64/:$LD_LIBRARY_PATH"
-
 # The default build type is "Release"
 ARG BUILD_TYPE=Release
 
 # List of Python version we want to build
-ARG PY_VER_LIST="cp27-cp27mu;cp34-cp34m;cp35-cp35m;cp36-cp36m"
+ARG PY_VER_LIST="cp27-cp27mu;cp34-cp34m;cp35-cp35m;cp36-cp36m;cp37-cp37m"
 
 # Script that creates links to the different python binaries
 RUN echo $'#!/bin/bash\n\
@@ -37,22 +33,27 @@ RUN echo $'#!/bin/bash\n\
 IFS=";"\n\
 for name in $PY_VER_LIST; do\n\
   export LD_LIBRARY_PATH=/opt/gcc7/lib64/:/bh/build/bridge/c/:\$LD_LIBRARY_PATH\n\
+  export USE_CYTHON=1\n\
   auditwheel repair /bh/wheel/bohrium_api-*-${name}-*.whl -w /bh/wheelhouse\n\
   ${name} -m pip install /bh/wheelhouse/bohrium_api-*-${name}-*.whl\n\
   ${name} -m pip install cython numpy\n\
   ${name} -m pip install /bh/bridge/npbackend\n\
   BH_STACK=opencl ${name} -m bohrium --info\n\
 done\n\
-cp27-cp27mu /bh/bridge/npbackend/setup.py sdist -d /bh/sdisthouse/\n\
+cd /bh/bridge/npbackend/\n\
+cp27-cp27mu setup.py build_ext\n\
+unset USE_CYTHON\n\
+cp /bh/README.rst .\n\
+cp27-cp27mu setup.py sdist -d /bh/sdisthouse/\n\
 ' > /bh/install.sh
 
-# Let's run the script
+# Let's run the install script
 RUN bash /bh/install.sh
 
 # Deploy script
 WORKDIR /bh
 RUN echo "#/usr/bin/env bash" > deploy.sh && \
-    echo "cp27-cp27mu -m twine upload /bh/wheelhouse/*.whl /bh/sdisthouse/* || true" >> deploy.sh && \
+    echo "cp27-cp27mu -m twine upload /bh/wheelhouse/*.whl /bh/sdisthouse/*" >> deploy.sh && \
     chmod +x deploy.sh
 
 # Execute script
