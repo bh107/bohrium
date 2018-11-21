@@ -203,8 +203,7 @@ except subprocess.CalledProcessError as e:
 print("Bohrium version: %s" % version)
 
 # Information variables that should be written to the _info.py file
-info_vars = {}
-info_vars['__version__'] = version
+info_vars = {'__version__': version}
 
 
 def write_info(o):
@@ -286,7 +285,6 @@ def write_config_ini(o):
 
         # Replace absolute library paths with a relative path.
         config_str = _regex_replace("%s/" % _install_prefix, "./", config_str)
-
         o.write(config_str)
 
 
@@ -332,7 +330,6 @@ clinks = []
 if platform.system() == 'Darwin':
     clinks += ['-Xlinker', '-rpath', '-Xlinker', '%s/lib' % _install_prefix]
 
-cflags = ["-std=c99"]
 setup(
     cmdclass={'build_py': build_py},
     name='bohrium_api',
@@ -395,7 +392,7 @@ setup(
                 build_root('bridge', 'cxx'),
                 build_root('core')
             ],
-            extra_compile_args=cflags,
+            extra_compile_args=["-std=c99"],
             extra_link_args=clinks,
         ),
     ],
