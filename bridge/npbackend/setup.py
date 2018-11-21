@@ -81,7 +81,8 @@ setup(
     # What does your project relate to?
     keywords='Bohrium, bh107, Python, C, HPC, MPI, PGAS, CUDA, OpenCL, OpenMP',
 
-    install_requires=['numpy>=1.7', 'cython'],
+    # Dependencies
+    install_requires=['numpy>=1.7'],
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
