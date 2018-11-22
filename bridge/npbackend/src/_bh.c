@@ -20,7 +20,6 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "_bh.h"
 #include <dlfcn.h>
-#include <bhc.h>
 #include "handle_array_op.h"
 #include "handle_special_op.h"
 #include "memory.h"
@@ -28,6 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration
 static PyObject* BhArray_data_bhc2np(PyObject *self);
 
+PyObject *bh_api         = NULL; // The Bohrium API Python module
 PyObject *ufuncs         = NULL; // The ufuncs Python module
 PyObject *bohrium        = NULL; // The Bohrium Python module
 PyObject *array_create   = NULL; // The array_create Python module
@@ -43,7 +43,7 @@ PyThreadState *py_thread_state = NULL;
 // Called when module exits
 static void module_exit(void) {
     PyFlush(NULL, NULL);
-    bh_mem_signal_shutdown();
+    BhAPI_mem_signal_shutdown();
 }
 
 // Help function that creates a simple new array.
@@ -159,7 +159,7 @@ static void BhArray_dealloc(BhArray* self) {
 
     if(self->bhc_array != NULL) {
         assert(self->view.initiated);
-        bhc_destroy(dtype_np2bhc(self->view.type_enum), self->bhc_array);
+        BhAPI_destroy(dtype_np2bhc(self->view.type_enum), self->bhc_array);
     }
 
     if (!PyArray_CHKFLAGS((PyArrayObject*) self, NPY_ARRAY_OWNDATA)) {
@@ -169,7 +169,7 @@ static void BhArray_dealloc(BhArray* self) {
 
     if (self->mmap_allocated) {
         mem_unmap(PyArray_DATA((PyArrayObject*) self), ary_nbytes(self));
-        bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) self));
+        BhAPI_mem_signal_detach(PyArray_DATA((PyArrayObject*) self));
         self->base.data = NULL;
     }
 
@@ -926,6 +926,15 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
     }
 
+    bh_api = PyImport_ImportModule("bohrium_api");
+    if (bh_api == NULL) {
+        return RETVAL;
+    }
+
+    // Import Bohrium API
+    if (import_bh_api() < 0)
+        return RETVAL;
+
     // Import NumPy
     import_array();
 
@@ -979,7 +988,7 @@ PyMODINIT_FUNC init_bh(void)
     PyGILState_Release(gil);
 
     // Initialize the signal handler
-    bh_mem_signal_init();
+    BhAPI_mem_signal_init();
 
     // Register an module exit function
     Py_AtExit(module_exit);

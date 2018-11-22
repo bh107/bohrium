@@ -21,7 +21,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include "bharray.h"
 #include "memory.h"
 #include "util.h"
-#include <bhc.h>
 
 static BhView bhview_new(const PyArrayObject *npy_view, const PyArrayObject *npy_base) {
     BhView ret;
@@ -117,19 +116,19 @@ void *bharray_bhc(BhArray *ary) {
     if (!ary->view.initiated) {
         assert(ary->bhc_array == NULL);
         if (base == ary) {
-            void *new_base = bhc_new(ex_dtype, PyArray_SIZE((PyArrayObject*) ary));
-            ary->bhc_array = bhc_view(ex_dtype, new_base, ex_view.ndim, ex_view.start, ex_view.shape, ex_view.stride);
-            bhc_destroy(ex_dtype, new_base);
+            void *new_base = BhAPI_new(ex_dtype, PyArray_SIZE((PyArrayObject*) ary));
+            ary->bhc_array = BhAPI_view(ex_dtype, new_base, ex_view.ndim, ex_view.start, ex_view.shape, ex_view.stride);
+            BhAPI_destroy(ex_dtype, new_base);
         } else {
-            ary->bhc_array = bhc_view(ex_dtype, base->bhc_array, ex_view.ndim,
+            ary->bhc_array = BhAPI_view(ex_dtype, base->bhc_array, ex_view.ndim,
                                       ex_view.start, ex_view.shape, ex_view.stride);
         }
         ary->view = ex_view;
         PyObject_CallMethod(loop, "add_slide_info", "O", ary);
     } else if(!bhview_identical(&ary->view, &ex_view)) {
         assert(ary->bhc_array != NULL);
-        void *new = bhc_view(ex_dtype, ary->bhc_array, ex_view.ndim, ex_view.start, ex_view.shape, ex_view.stride);
-        bhc_destroy(dtype_np2bhc(ary->view.type_enum), ary->bhc_array);
+        void *new = BhAPI_view(ex_dtype, ary->bhc_array, ex_view.ndim, ex_view.start, ex_view.shape, ex_view.stride);
+        BhAPI_destroy(dtype_np2bhc(ary->view.type_enum), ary->bhc_array);
         ary->bhc_array = new;
         ary->view = ex_view;
     }

@@ -39,7 +39,7 @@ using namespace boost;
 namespace bohrium {
 
 namespace {
-// Path to the config file e.g. ~/.bohrium/config.ini
+/// Path to the config file e.g. ~/.bohrium/config.ini
 string get_config_path() {
 
     const char *homepath = HOME_INI_PATH;
@@ -52,16 +52,16 @@ string get_config_path() {
 
     // Start by looking a path set via environment variable.
     const char *env = getenv("BH_CONFIG");
-    if (env != NULL) {
+    if (env != nullptr) {
         FILE *fp = fopen(env, "r");
         if (fp)
             fclose(fp);
         else
-            env = NULL;//Did not exist.
+            env = nullptr;//Did not exist.
     }
 
     // Then the home directory.
-    if (env == NULL) {
+    if (env == nullptr) {
 #if _WIN32
         char _expand_buffer[MAX_PATH];
         DWORD result = ExpandEnvironmentStrings(
@@ -76,7 +76,7 @@ string get_config_path() {
         }
 #else
         char *h = getenv("HOME");
-        if (h != NULL) {
+        if (h != nullptr) {
             char _expand_buffer[PATH_MAX];
             snprintf(_expand_buffer, PATH_MAX, "%s/%s", h, homepath + 1);
             homepath = _expand_buffer;
@@ -90,7 +90,7 @@ string get_config_path() {
     }
 
     //And then system-wide.
-    if (env == NULL) {
+    if (env == nullptr) {
 #if _WIN32
         char _expand_buffer[MAX_PATH];
         DWORD result = ExpandEnvironmentStrings(
@@ -112,7 +112,7 @@ string get_config_path() {
     }
 
     //And then system-wide.
-    if (env == NULL) {
+    if (env == nullptr) {
 #if _WIN32
         char _expand_buffer[MAX_PATH];
         DWORD result = ExpandEnvironmentStrings(
@@ -133,7 +133,7 @@ string get_config_path() {
         }
     }
     // We could not find the configuration file anywhere
-    if (env == NULL) {
+    if (env == nullptr) {
         fprintf(stderr, "Error: Bohrium could not find the config file.\n"
                         " The search is:\n"
                         "\t* The environment variable BH_CONFIG.\n"
@@ -145,8 +145,8 @@ string get_config_path() {
     return string(env);
 }
 
-// Return section/option as an environment variable
-// or the empty string if the environment variable wasn't found
+/// Return section/option as an environment variable
+/// or the empty string if the environment variable wasn't found
 string lookup_env(const string &section, const string &option) {
     string s = "BH_" + section + "_" + option;
     to_upper(s);
@@ -154,7 +154,7 @@ string lookup_env(const string &section, const string &option) {
     std::replace(s.begin(), s.end(), ' ', '_'); // replace all ' ' to '_'
     const char *env = getenv(s.c_str());
 
-    if (env == NULL) {
+    if (env == nullptr) {
         return string();
     } else {
         return string(env);

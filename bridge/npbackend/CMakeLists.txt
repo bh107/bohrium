@@ -3,97 +3,51 @@ set(BRIDGE_NPBACKEND ${BRIDGE_C} CACHE BOOL "BRIDGE-NPBACKEND: Build the NPBACKE
 if(NOT BRIDGE_NPBACKEND)
     return()
 endif()
-if(NOT BRIDGE_C)
-    message(FATAL_ERROR "BRIDGE_C is required for BRIDGE_NPBACKEND, so please set BRIDGE_C to ON or BRIDGE_NPBACKEND to OFF")
-endif()
 
-find_package(NumPy)
-set_package_properties(NumPy PROPERTIES DESCRIPTION "Numerical Python" URL "www.numpy.org")
-set_package_properties(NumPy PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python).")
+# Notice, all dependecy checks on Python, pip, virtualenv etc is done by the `py_api` module.
+# The dependency on cython and NumPy is automatically installed in the virtualenv
 
-find_package(Cython)
-set_package_properties(Cython PROPERTIES DESCRIPTION "C-Extensions for Python" URL "cython.org")
-set_package_properties(Cython PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the Python/NumPy bridge (together with Python).")
+# For each interpreter in the user specified list `PY_EXE_LIST`, we build a package.
+foreach(PY_EXE ${PY_EXE_LIST})
 
-if(APPLE) # Apple's default Python compiler doesn't support OpenMP
-    set(CYTHON_OPENMP false CACHE BOOL "Use OpenMP in Cython extensions")
-else()
-    set(CYTHON_OPENMP true CACHE BOOL "Use OpenMP in Cython extensions")
-endif()
-
-if(PYTHONINTERP_FOUND AND NUMPY_FOUND AND CYTHON_FOUND AND NUMPY_INCLUDE_DIRS)
-
-    # Get the OpenMP flag for the Cython OpenMP builds
-    if(${VE_OPENMP_COMPILER_OPENMP} AND ${CYTHON_OPENMP})
-        set(OPENMP_ARG "--openmp-flag=\"${OpenMP_C_FLAGS}\"")
+    # Define `VR_PATH` which should point to the virtualenv over at the `py_api` module
+    if(${CMAKE_VERSION} VERSION_LESS "3.0.0")
+        string(REPLACE "/" "_" PY_EXE_IDENT ${PY_EXE})
     else()
-        set(OPENMP_ARG "")
+        string(MAKE_C_IDENTIFIER ${PY_EXE} PY_EXE_IDENT)
     endif()
+    set(VR_PATH ${CMAKE_BINARY_DIR}/bridge/py_api/vr_${PY_EXE_IDENT})
 
-    # Generate distutils package and install it
-    add_custom_target(
-        bhpy ALL
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} --buildpath=${CMAKE_CURRENT_BINARY_DIR} ${OPENMP_ARG} && ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        DEPENDS bhc
-    )
+    # We run `build.bash` in order to generate the wheel package.
+    file(GLOB_RECURSE SRC
+            ${CMAKE_CURRENT_SOURCE_DIR}/*.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/*.pyx
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
+    add_custom_command(OUTPUT ${VR_PATH}/wheel_npbackend/package_name.txt
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PY_EXE} ${CMAKE_BINARY_DIR}
+                    ${CMAKE_CURRENT_SOURCE_DIR}
+            DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
 
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/platlib/
-            DESTINATION ${LIBDIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages
-            COMPONENT bohrium)
-else()
-    if (NOT NUMPY_FOUND)
-        message(STATUS "The Python/NumPy bridge cannot be built, because numpy was not found.")
-    elseif (NOT NUMPY_INCLUDE_DIRS)
-        message(STATUS "The Python/NumPy bridge cannot be built, because the numpy headers are missing")
+    # The `npbackend` target is always called, but it will only call the `add_custom_command()` above when it's
+    # depdendencies (the files in ${SRC}) changes.
+    add_custom_target(npbackend_${PY_EXE_IDENT} ALL
+            DEPENDS py_api_${PY_EXE_IDENT} ${VR_PATH}/wheel_npbackend/package_name.txt)
+
+    if(PY_WHEEL)
+        # Exporting the wheel package to `PY_WHEEL`.
+        install(CODE "file(READ ${VR_PATH}/wheel_npbackend/package_name.txt WHEEL_NAME)
+                      message(STATUS \"Exporting \${WHEEL_NAME} to ${PY_WHEEL}\")
+                      file(MAKE_DIRECTORY ${PY_WHEEL})
+                      configure_file(\${WHEEL_NAME} ${PY_WHEEL} COPYONLY)")
     else()
-        message(STATUS "The Python/NumPy bridge cannot be built")
+        # Install using `pip install --user -I` command where `PYTHONUSERBASE` is set to CMAKE_INSTALL_PREFIX
+        install(CODE "file(READ ${VR_PATH}/wheel_npbackend/package_name.txt WHEEL_NAME)
+                      message(STATUS \"Installing \${WHEEL_NAME} in \${CMAKE_INSTALL_PREFIX}\")
+                      set(ENV{PYTHONUSERBASE} ${CMAKE_INSTALL_PREFIX})
+                      execute_process(COMMAND ${PY_EXE} -m pip install --no-deps --user -I \${WHEEL_NAME}
+                                      RESULT_VARIABLE RES)
+                      if(NOT \"\${RES}\" STREQUAL \"0\")
+                        message(FATAL_ERROR \"Fatal error when installing \${WHEEL_NAME}: \${RES}.\")
+                      endif()")
     endif()
-    return()
-endif()
-
-set(NO_PYTHON3 false CACHE BOOL "Never try to do a Python3 build alongside a Python2 build.")
-if(NO_PYTHON3)
-    return()
-endif()
-
-# If the default python version is version 2 we will try a version 3 build as well
-if(${PYTHON_VERSION_MAJOR} EQUAL "2")
-    find_program(PYTHON3 python3)
-    if(PYTHON3)
-        message(STATUS "Found python3 at '${PYTHON3}'")
-    endif()
-
-    find_program(CYTHON3 cython3)
-    if(CYTHON3)
-        message(STATUS "Found Cython3 at '${CYTHON3}'")
-    endif()
-
-    # Check if NumPy 3 exist
-    execute_process(COMMAND "${PYTHON3}" "-c" "import numpy as n;"
-                    RESULT_VARIABLE NUMPY3
-                    ERROR_QUIET
-                    OUTPUT_QUIET)
-    if(${NUMPY3} EQUAL "0" AND PYTHON3 AND CYTHON3)
-        #Get Python Minor version
-        execute_process(COMMAND "${PYTHON3}" "-c" "import sys; print(sys.version_info.minor);"
-                OUTPUT_VARIABLE NUMPY3_MINOR)
-        string(STRIP ${NUMPY3_MINOR} NUMPY3_MINOR)
-
-        message(STATUS "Found Python3.${NUMPY3_MINOR}, Cython3, and NumPy3")
-
-        # Generate distutils package and install it
-        add_custom_target(
-                bhpy3 ALL
-                COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py build_ext --include-dirs=${NUMPY_INCLUDE_DIRS} --buildpath=${CMAKE_CURRENT_BINARY_DIR} ${OPENMP_ARG} && ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/setup.py install --install-platlib=${CMAKE_CURRENT_BINARY_DIR}/platlib3
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                DEPENDS bhc
-        )
-        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/platlib3/
-                DESTINATION ${LIBDIR}/python3.${NUMPY3_MINOR}/site-packages
-                COMPONENT bohrium3)
-    else()
-        message(STATUS "** Will not build for Python 3")
-    endif()
-endif()
-
+endforeach()

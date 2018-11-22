@@ -1,13 +1,11 @@
 """
-Bohrium Info
-============
+Runtime Stack Info
+==================
 """
 import os
 from os.path import join
+from . import messaging
 from . import _info
-
-# For convenience, we include functions from other modules that also returns relevant Bohrium information
-from .backend_messaging import runtime_info, statistic
 
 # Some cached info
 _opencl_is_in_stack = None
@@ -41,18 +39,19 @@ def version():
     return _info.__version__
 
 
-def numpy_version():
-    """Return the version of NumPy Bohrium was build with."""
-    return _info.version_numpy
+def header_dir():
+    """Return the path to the C header directory"""
+    return os.path.join(os.path.abspath(os.path.dirname(__file__)), "include")
 
 
 def info():
     """Return a dict with all info"""
     return {
+        "config_path" : config_file_path(),
         "version": version(),
-        "numpy_version": numpy_version(),
-        "runtime_info": runtime_info(),
-        "statistics": statistic(),
+        "runtime_info": messaging.runtime_info(),
+        "statistics": messaging.statistic(),
+        "header_dir": header_dir(),
     }
 
 
@@ -60,7 +59,7 @@ def is_opencl_in_stack():
     """Returns True when the OpenCL backend is in the Bohrium backend"""
     global _opencl_is_in_stack
     if _opencl_is_in_stack is None:
-        _opencl_is_in_stack = "OpenCL" in runtime_info()
+        _opencl_is_in_stack = "OpenCL" in messaging.runtime_info()
     return _opencl_is_in_stack
 
 
@@ -68,7 +67,7 @@ def is_cuda_in_stack():
     """Returns True when the CUDA backend is in the Bohrium backend"""
     global _cuda_is_in_stack
     if _cuda_is_in_stack is None:
-        _cuda_is_in_stack = "CUDA" in runtime_info()
+        _cuda_is_in_stack = "CUDA" in messaging.runtime_info()
     return _cuda_is_in_stack
 
 
@@ -76,7 +75,7 @@ def is_proxy_in_stack():
     """Returns True when the Proxy component is in the Bohrium backend"""
     global _proxy_is_in_stack
     if _proxy_is_in_stack is None:
-        _proxy_is_in_stack = "Proxy" in runtime_info()
+        _proxy_is_in_stack = "Proxy" in messaging.runtime_info()
     return _proxy_is_in_stack
 
 
@@ -90,11 +89,10 @@ def pprint():
 
     ret += """----
 Bohrium version: %s
-Build with NumPy version: %s
 Installed through PyPI: %s
 Config file: %s
+Header dir: %s
 Backend stack:
 %s----
-""" % (version(), numpy_version(), installed_through_pypi(), config_file_path(), runtime_info())
-
+""" % (version(), installed_through_pypi(), config_file_path(), header_dir(), messaging.runtime_info())
     return ret

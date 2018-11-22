@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "util.h"
-#include <bhc.h>
 #include "bharray.h"
 
 PyObject *
@@ -74,7 +73,7 @@ PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds) {
 
     }
 
-    int err = bhc_extmethod(types[0], name, operands[0], operands[1], operands[2]);
+    int err = BhAPI_extmethod(types[0], name, operands[0], operands[1], operands[2]);
     if (err) {
         PyErr_Format(PyExc_TypeError, "The current runtime system does not support the extension method '%s'", name);
     }
@@ -91,12 +90,12 @@ PyExtMethod(PyObject *self, PyObject *args, PyObject *kwds) {
 }
 
 PyObject* PyFlush(PyObject *self, PyObject *args) {
-    bhc_flush();
+    BhAPI_flush();
     Py_RETURN_NONE;
 }
 
 PyObject* PyFlushCount(PyObject *self, PyObject *args) {
-    return PyLong_FromLong(bhc_flush_count());
+    return PyLong_FromLong(BhAPI_flush_count());
 }
 
 PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args, PyObject *kwds) {
@@ -107,7 +106,7 @@ PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args, PyObject *kwds) 
         return NULL;
     }
     if (condition == NULL || condition == Py_None) {
-        bhc_flush_and_repeat(nrepeats);
+        BhAPI_flush_and_repeat(nrepeats);
     } else if(!BhArray_CheckExact(condition)) {
         PyErr_Format(PyExc_TypeError, "The condition must a bharray array or None");
         return NULL;
@@ -126,7 +125,7 @@ PyObject* PyFlushCountAndRepeat(PyObject *self, PyObject *args, PyObject *kwds) 
                 Py_RETURN_NONE;
             }
         }
-        bhc_flush_and_repeat_condition(nrepeats, operand);
+        BhAPI_flush_and_repeat_condition(nrepeats, operand);
         normalize_operand_cleanup(&cleanup);
     }
     Py_RETURN_NONE;
@@ -153,7 +152,7 @@ PyObject* PySync(PyObject *self, PyObject *args, PyObject *kwds) {
             Py_RETURN_NONE;
         }
     }
-    bhc_sync(type, operand);
+    BhAPI_sync(type, operand);
     normalize_operand_cleanup(&cleanup);
     Py_RETURN_NONE;
 }
@@ -188,7 +187,7 @@ PyObject* PySlideView(PyObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    bhc_slide_view(type1, operand1, dim, slide, view_shape, array_shape, array_stride, step_delay);
+    BhAPI_slide_view(type1, operand1, dim, slide, view_shape, array_shape, array_stride, step_delay);
     normalize_operand_cleanup(&cleanup1);
 
     Py_RETURN_NONE;
@@ -218,7 +217,7 @@ PyObject* PyAddReset(PyObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    bhc_add_reset(type1, operand1, dim, reset_max);
+    BhAPI_add_reset(type1, operand1, dim, reset_max);
     normalize_operand_cleanup(&cleanup1);
 
     Py_RETURN_NONE;
@@ -253,7 +252,7 @@ PyObject* PyRandom123(PyObject *self, PyObject *args, PyObject *kwds) {
                 return ret;
             }
         }
-        bhc_random123_Auint64_Kuint64_Kuint64(operand, seed, key);
+        BhAPI_random123(operand, seed, key);
         normalize_operand_cleanup(&cleanup);
     }
     return ret;
@@ -266,10 +265,10 @@ void *get_data_pointer(BhArray *ary, bhc_bool copy2host, bhc_bool force_alloc, b
     void *ary_ptr = bharray_bhc(ary);
     bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
     if (copy2host) {
-        bhc_sync(dtype, ary_ptr);
+        BhAPI_sync(dtype, ary_ptr);
     }
-    bhc_flush();
-    void *ret = bhc_data_get(dtype, ary_ptr, copy2host, force_alloc, nullify);
+    BhAPI_flush();
+    void *ret = BhAPI_data_get(dtype, ary_ptr, copy2host, force_alloc, nullify);
     return ret;
 }
 
@@ -321,9 +320,9 @@ PyObject* PySetDataPointer(PyObject *self, PyObject *args, PyObject *kwds) {
 
     void *ary_ptr = bharray_bhc((BhArray *) ary);
     bhc_dtype dtype = dtype_np2bhc(PyArray_DESCR((PyArrayObject*) ary)->type_num);
-    bhc_sync(dtype, ary_ptr);
-    bhc_flush();
-    bhc_data_set(dtype, ary_ptr, host_ptr, mem_ptr);
+    BhAPI_sync(dtype, ary_ptr);
+    BhAPI_flush();
+    BhAPI_data_set(dtype, ary_ptr, host_ptr, mem_ptr);
     Py_RETURN_NONE;
 }
 
@@ -353,8 +352,8 @@ PyObject* PyMemCopy(PyObject *self, PyObject *args, PyObject *kwds) {
     if (PyArray_NBYTES((PyArrayObject*) src) > 0) {
         void *src_ptr = bharray_bhc((BhArray *) src);
         void *dst_ptr = bharray_bhc((BhArray *) dst);
-        bhc_flush();
-        bhc_data_copy(dtype, src_ptr, dst_ptr, param);
+        BhAPI_flush();
+        BhAPI_data_copy(dtype, src_ptr, dst_ptr, param);
     }
     Py_DECREF(src);
     return dst;
@@ -362,7 +361,7 @@ PyObject* PyMemCopy(PyObject *self, PyObject *args, PyObject *kwds) {
 
 PyObject* PyGetDeviceContext(PyObject *self, PyObject *args) {
     assert(args == NULL);
-    return PyLong_FromVoidPtr(bhc_getDeviceContext());
+    return PyLong_FromVoidPtr(BhAPI_getDeviceContext());
 }
 
 PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds) {
@@ -372,8 +371,8 @@ PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds) {
         return NULL;
     }
 #if defined(NPY_PY3K)
-    return PyUnicode_FromString(bhc_message(msg));
+    return PyUnicode_FromString(BhAPI_message(msg));
 #else
-    return PyString_FromString(bhc_message(msg));
+    return PyString_FromString(BhAPI_message(msg));
 #endif
 }

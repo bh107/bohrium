@@ -5,7 +5,7 @@ Reorganization of Array Elements Routines
 import warnings
 import numpy_force as numpy
 from . import bhary
-from . import _info
+from bohrium_api import _info
 from ._util import is_scalar
 from .bhary import fix_biclass_wrapper
 from . import array_create

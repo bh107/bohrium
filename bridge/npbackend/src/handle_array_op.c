@@ -19,7 +19,6 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "handle_array_op.h"
-#include <bhc.h>
 
 PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
     // Read and normalize all operands
@@ -106,7 +105,7 @@ PyObject *array_op(int opcode, const Py_ssize_t nop, PyObject **operand_list) {
         }
     }
 
-    bhc_op(opcode, types, constants, operands);
+    BhAPI_op(opcode, types, constants, operands);
 
     // Clean up
     normalize_operand_cleanup(&cleanup);

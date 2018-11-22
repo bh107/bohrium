@@ -6,7 +6,7 @@ import math
 import warnings
 import collections
 from . import bhary
-from . import _info
+from bohrium_api import _info
 from .bhary import fix_biclass_wrapper
 import numpy_force as numpy
 from ._util import dtype_equal, dtype_in, dtype_support

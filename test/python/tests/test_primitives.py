@@ -1,10 +1,11 @@
 import bohrium
 import numpy
+from bohrium_api import _info
 
 
 class test_bh_opcodes:
     def init(self):
-        for op in bohrium._info.op.values():
+        for op in _info.op.values():
             if op["name"] not in ["identity", "sign"] and op['elementwise']:
                 for type_sig in op["type_sig"]:
                     yield (op, type_sig)

@@ -174,7 +174,7 @@ static void _mprotect_np_part(BhArray *ary) {
         exit(-1);
     }
     assert(((BhArray*) ary)->data_in_bhc);
-    bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
+    BhAPI_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
 }
 
 void* mem_map(uint64_t nbytes) {
@@ -226,12 +226,12 @@ void protected_malloc(BhArray *ary) {
     ary->npy_data = ary->base.data;
     ary->base.data = addr;
     assert(((BhArray*) ary)->data_in_bhc);
-    bh_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
+    BhAPI_mem_signal_attach(ary, ary->base.data, ary_nbytes(ary), mem_access_callback);
     ary->data_in_bhc = 1;
 }
 
 void mem_signal_attach(void *idx, void *addr, uint64_t nbytes) {
-    bh_mem_signal_attach(idx, addr, nbytes, mem_access_callback);
+    BhAPI_mem_signal_attach(idx, addr, nbytes, mem_access_callback);
 }
 
 void mem_bhc2np(BhArray *base_array) {
@@ -242,14 +242,14 @@ void mem_bhc2np(BhArray *base_array) {
     }
 
     // Let's detach the signal
-    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
+    BhAPI_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
 
     if(base_array->bhc_array != NULL) {
         void *d = get_data_pointer((BhArray*) base_array, 1, 0, 1);
         if(d == NULL) {
             _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));
         } else {
-            assert(!bh_mem_signal_exist(d)); // `d` shouldn't be memory protected!
+            assert(!BhAPI_mem_signal_exist(d)); // `d` shouldn't be memory protected!
             _mremap_data(PyArray_DATA((PyArrayObject*) base_array), d, ary_nbytes((BhArray*) base_array));
         }
     } else {
@@ -268,7 +268,7 @@ void mem_np2bhc(BhArray *base_array) {
     base_array->data_in_bhc = 1;
 
     // Let's detach the signal
-    bh_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
+    BhAPI_mem_signal_detach(PyArray_DATA((PyArrayObject*) base_array));
 
     // Then we unprotect the NumPy memory part
     _munprotect(PyArray_DATA((PyArrayObject*) base_array), ary_nbytes((BhArray*) base_array));

@@ -22,6 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <Python.h>
 #include <structmember.h>
+#include <bohrium_api.h>
+
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #define PY_ARRAY_UNIQUE_SYMBOL bh_ARRAY_API
@@ -62,6 +64,7 @@ typedef struct {
 
 // Exposing some global variables implemented in `_bh.c`
 extern PyTypeObject BhArrayType; // Implemented in `_bh.c`
+extern PyObject *bh_api;         // The Bohrium API Python module
 extern PyObject *ufuncs;         // The ufuncs Python module
 extern PyObject *bohrium;        // The Bohrium Python module
 extern PyObject *array_create;   // The array_create Python module
