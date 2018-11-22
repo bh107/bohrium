@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-set -e
+set +e
 
 # Script arguments:
 VR_PATH=$1  # the path of the virtualenv
-PY_EXE=$2 # the Python interpreter to use when building the wheel
-PY_WHEEL=$3
-CMAKE_BINARY_DIR=$4
-CMAKE_SOURCE_DIR=$5
-CMAKE_CURRENT_SOURCE_DIR=$6
-CMAKE_INSTALL_PREFIX=$7
+PYTHON_EXECUTABLE=$2 # the principle Python interpreter
+PY_EXE=$3 # the Python interpreter to use when building the wheel
+PY_WHEEL=$4
+CMAKE_BINARY_DIR=$5
+CMAKE_SOURCE_DIR=$6
+CMAKE_CURRENT_SOURCE_DIR=$7
+CMAKE_INSTALL_PREFIX=$8
 
 echo "==================== PYTHON API ===================="
 
@@ -16,7 +17,7 @@ if [[ -d "$VR_PATH" ]]; then
   echo "Using virtualenv: $VR_PATH"
 else
   echo "Create virtualenv: $VR_PATH"
-  ${PY_EXE} -m virtualenv -p ${VR_PATH}
+  ${PYTHON_EXECUTABLE} -m virtualenv -p ${PY_EXE} ${VR_PATH}
 fi
 
 source ${VR_PATH}/bin/activate
