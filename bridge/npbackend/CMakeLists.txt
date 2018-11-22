@@ -24,8 +24,7 @@ foreach(PY_EXE ${PY_EXE_LIST})
             ${CMAKE_CURRENT_SOURCE_DIR}/*.pyx
             ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
     add_custom_command(OUTPUT ${VR_PATH}/wheel_npbackend/package_name.txt
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PY_EXE} ${CMAKE_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
             DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
 
     # The `npbackend` target is always called, but it will only call the `add_custom_command()` above when it's

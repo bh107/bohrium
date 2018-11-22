@@ -42,7 +42,7 @@ foreach (PY_EXE ${PY_EXE_LIST})
     # We run `build.bash` in order to generate the wheel package.
     file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.py ${CMAKE_CURRENT_SOURCE_DIR}/src/*)
     add_custom_command(OUTPUT ${VR_PATH}/wheel_py_api/package_name.txt
-            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PYTHON_EXECUTABLE} ${PY_EXE} ${PY_WHEEL}
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.bash ${VR_PATH} ${PY_EXE} ${PY_WHEEL}
             ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}
             DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
 

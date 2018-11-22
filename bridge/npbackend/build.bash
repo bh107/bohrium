@@ -3,9 +3,8 @@ set -e
 
 # Script arguments:
 VR_PATH=$1  # the path of the virtualenv
-PYTHON_EXECUTABLE=$2 # the Python interpreter
-CMAKE_BINARY_DIR=$3
-CMAKE_CURRENT_SOURCE_DIR=$4
+CMAKE_BINARY_DIR=$2
+CMAKE_CURRENT_SOURCE_DIR=$3
 
 export LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/bridge/c:${CMAKE_BINARY_DIR}/bridge/cxx:${CMAKE_BINARY_DIR}/core:${LD_LIBRARY_PATH}
 export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
