@@ -12,10 +12,6 @@ cimport numpy as cnp
 ctypedef cnp.uint64_t uint64
 ctypedef cnp.int64_t int64
 
-IF UNAME_SYSNAME == "Linux":
-    cimport openmp
-
-
 @cython.boundscheck(False) # turn off bounds-checking
 @cython.cdivision(True) # turn off division-by-zero checking
 cdef _count(uint64[:] x, uint64[:] out):

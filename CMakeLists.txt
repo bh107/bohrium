@@ -122,6 +122,9 @@ find_package(OpenCV 3)
 set_package_properties(OpenCV PROPERTIES DESCRIPTION "Open Source Computer Vision" URL "opencv.org")
 set_package_properties(OpenCV PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the OpenCV extended method")
 
+# We do not want MacOSX to set "@path" when installing because of the MacOSX wheel tool `delocate`.
+# Instead, we set the installation path manually.
+set(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/${LIBDIR})
 
 #####################
 # Bohrium components
