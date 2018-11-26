@@ -13,6 +13,8 @@ PyPI Package
 If you use Bohrium through Python, we strongly recommend to install Bohrium through `pypi <https://pypi.python.org/pypi>`_, which will include BLAS, LAPACK, OpenCV, and OpenCL support::
 
     python -m pip install --user bohrium
+   
+.. note:: If you get an error message saying that no package match your criteria it is properly because you are using a Python version for which `no package exist https://pypi.org/project/bohrium-api/#files`_ .  Please contact us and we will build a package using your specific Python version.
     
 
 Install From Source Package
