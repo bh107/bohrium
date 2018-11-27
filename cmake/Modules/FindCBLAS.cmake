@@ -19,7 +19,7 @@ function(FIND_AND_CHECK_CBLAS _libname _includename)
   if(_CBLAS_LIBRARIES AND _CBLAS_INCLUDES)
     if(_symbol)
       # check if given symbol is present
-      get_filename_component(_LIB_PATH ${_CBLAS_LIBRARIES} DIRECTORY)
+      get_filename_component(_LIB_PATH ${_CBLAS_LIBRARIES} PATH)
       check_library_exists(${_libname} ${_symbol} ${_LIB_PATH} _HAVE_CBLAS_SYMBOL)
       unset(_LIB_PATH CACHE)
     else()
