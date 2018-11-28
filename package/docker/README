@@ -3,13 +3,18 @@ NB: no need to upload a new image to docker hub!
 
 When modifying the base image (manylinux), you have to upload a new docker image to docker hub.
 
-In the root dir of Bohrium first download and unpack:
-AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh
-from
-http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/
+In the root dir of Bohrium download and unpack:
 
-and then run:
+    AMD-APP-SDK-v2.9-1.599.381-GA-linux64.sh
+    <http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk>
+    cuda_8.0.44_linux.run
+    <https://developer.nvidia.com/cuda-80-download-archive>
 
-sudo docker build -t bohrium/manylinux:latest -f package/docker/manylinux.dockerfile .
-sudo docker login
-sudo docker push bohrium/manylinux:latest
+
+Then run:
+
+    sudo docker build -t bohrium/manylinux:latest -f package/docker/manylinux.dockerfile .
+    sudo docker login
+    sudo docker push bohrium/manylinux:latest
+
+Note, before pushing you might want to squash the image <https://github.com/jwilder/docker-squash>.
