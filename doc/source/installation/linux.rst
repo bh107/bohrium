@@ -31,19 +31,11 @@ Install From Source Package
 
 Visit Bohrium on github.com and download the latest release: https://github.com/bh107/bohrium/releases/latest. Then build and install Bohrium as described in the following subsections.
 
-You need to install all packages required to build NumPy::
+Install dependencies, which on Ubuntu is::
 
-  sudo apt-get build-dep python-numpy
+  sudo apt install build-essential python-pip python-virtualenv cmake git unzip libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev zlib1g-dev libsigsegv-dev
 
-And some additional packages::
-
-  sudo apt-get install python-numpy python-dev swig cmake unzip cython libhwloc-dev libboost-filesystem-dev libboost-serialization-dev libboost-regex-dev zlib1g-dev libsigsegv-dev
-
-And for python v3 support::
-
-  sudo apt-get install python3-dev python3-numpy python3-dev cython3
-
-Packages for visualization::
+And some additional packages for visualization::
 
   sudo apt-get install freeglut3 freeglut3-dev libxmu-dev libxi-dev
 
