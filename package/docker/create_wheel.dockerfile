@@ -27,6 +27,9 @@ RUN cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -s
 RUN make -j2
 RUN make install
 
+# Patch auditwheel to ignore libraries not found e.g. libcuda
+RUN sed -i -e 's/if src_path is None:/if src_path is None:\n                    continue/g' /opt/_internal/cpython-3.6.6/lib/python3.6/site-packages/auditwheel/repair.py
+
 # Let's write a script that for each python version builds a manylinux1 package of
 # bohrium_api, install it along with bohrium, and runs a sanity check.
 RUN echo $'#!/bin/bash\n\

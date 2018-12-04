@@ -64,9 +64,23 @@ RUN yum install -y libsigsegv-devel
 # Install Python build and depoly dependencies
 RUN pip install virtualenv twine
 
-## Clean up
+# Install CUDA toolkit
+WORKDIR /b
+ADD cuda_8.0.44_linux.run .
+RUN sh cuda_8.0.44_linux.run --silent --toolkit --override
+WORKDIR /usr/local/cuda/
+RUN rm -Rf lib64/*.a libnsight  libnvvp  nvml  nvvm  pkgconfig  \
+           share  src samples tools jre extras doc
+
+# Clean up
 WORKDIR /
 RUN rm -Rf /b
 RUN yum clean all
 RUN rm -Rf ~/.cache/pip
 
+# Remove some unneeded AMD files
+RUN rm -Rf /opt/AMDAPPSDK-2.9-1/samples
+RUN rm -Rf /opt/AMDAPPSDK-2.9-1/lib/x86/
+
+# Stripping unneeded data in the GCC binaries
+RUN find /opt/gcc7/libexec/gcc/x86_64-pc-linux-gnu/7.3.0 -maxdepth 1 -type f -size +10M -print0 | xargs -0 strip --strip-unneeded --remove-section=.comment --remove-section=.note

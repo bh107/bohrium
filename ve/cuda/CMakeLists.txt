@@ -21,7 +21,7 @@ include_directories(${CUDA_INCLUDE_DIRS})
 # so we also need to link against cuda by itself.
 # We try to find it by searching relative to the libraries we already found.
 list(GET CUDA_LIBRARIES 0 CUDA_FIRST_LIBRARY)
-get_filename_component(CUDA_LIBDIR "${CUDA_FIRST_LIBRARY}" DIRECTORY)
+get_filename_component(CUDA_LIBDIR "${CUDA_FIRST_LIBRARY}" PATH)
 find_library(CUDA_DRIVER_LIBRARY
     cuda
     HINTS ${CUDA_LIBDIR} ${CUDA_LIBDIR}/stubs

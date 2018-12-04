@@ -304,6 +304,10 @@ void EngineCUDA::execute(const jitk::SymbolTable &symbols,
         }
     }
 
+    for (const bh_instruction *instr: constants) {
+        args.push_back((void *) &instr->constant.value);
+    }
+
     auto exec_start = chrono::steady_clock::now();
 
     tuple<uint32_t, uint32_t, uint32_t> blocks, threads;
