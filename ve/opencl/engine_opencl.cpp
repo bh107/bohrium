@@ -45,7 +45,7 @@ map<const string, cl_device_type> device_map = {
 };
 
 // Get the OpenCL device (search order: GPU, ACCELERATOR, DEFAULT, and CPU)
-cl::Device getDevice(const cl::Platform &platform, const string &default_device_type, const int &device_number) {
+cl::Device getDevice(const cl::Platform &platform, const string &default_device_type, const int &device_number, const bool &verbose) {
     vector<cl::Device> device_list;
     vector<cl::Device> valid_device_list;
     platform.getDevices(CL_DEVICE_TYPE_ALL, &device_list);
@@ -80,7 +80,13 @@ cl::Device getDevice(const cl::Platform &platform, const string &default_device_
     for (auto &device_type: device_map) {
         for (auto &device: device_list) {
             if ((device.getInfo<CL_DEVICE_TYPE>() & device_type.second) == device_type.second) {
-                valid_device_list.push_back(device);
+                if (device.getInfo<CL_DEVICE_TYPE>() == CL_DEVICE_TYPE_CPU && platform.getInfo<CL_PLATFORM_NAME>() == "Apple") {
+                    if (verbose) {
+                        cout << "Apple platform / CPU device combination ignored for CL_DEVICE_TYPE 'auto'" << endl;
+                    }
+                } else {
+                    valid_device_list.push_back(device);
+                }
             }
         }
     }
@@ -117,7 +123,7 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
             try {
                 // Get the device of the platform
                 platform = pform;
-                device = getDevice(platform, default_device_type, default_device_number);
+                device = getDevice(platform, default_device_type, default_device_number, verbose);
                 found = true;
             } catch(const cl::Error &err) {
                 // We try next platform
@@ -133,7 +139,7 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
         }
 
         platform = platforms[platform_no];
-        device = getDevice(platform, default_device_type, default_device_number);
+        device = getDevice(platform, default_device_type, default_device_number, verbose);
         found = true;
     }
 
