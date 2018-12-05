@@ -91,8 +91,7 @@ cache_dir = ${BIN_KERNEL_CACHE_DIR}
 cache_file_max = 50000
 # Set the size limit of malloc cache in percentage of total system memory.
 malloc_cache_limit = 80
-# The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
-# and {CONF_PATH} with the path to this config file
+# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # JIT compile options
 compiler_openmp = ${_VE_OPENMP_COMPILER_OPENMP}
@@ -178,8 +177,7 @@ cache_dir = ${BIN_KERNEL_CACHE_DIR}
 cache_file_max = 50000
 # Set the size limit of malloc cache in percentage of total GPU memory.
 malloc_cache_limit = 90
-# The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
-# and {CONF_PATH} with the path to this config file.
+# The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
 # Additionally, {MAJOR} and {MINOR} are dynamically replaced with the compute capability version of the device
 compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 --disable-warnings ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # List of extension methods
