@@ -135,7 +135,6 @@ device_number = 0
 # OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
 platform_no = -1
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
-compiler_flg = "${VE_OPENMP_COMPILER_INC}"
 compiler_inc_dir = "${VE_OPENMP_COMPILER_INC_DIR}"
 # List of extension methods
 libs = ${BH_OPENCL_LIBS}

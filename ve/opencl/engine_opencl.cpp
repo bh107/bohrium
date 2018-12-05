@@ -158,8 +158,7 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
 
     // Write the compilation hash
     stringstream ss;
-    ss << compile_flg
-       << platform.getInfo<CL_PLATFORM_NAME>()
+    ss << platform.getInfo<CL_PLATFORM_NAME>()
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
     compilation_hash = util::hash(ss.str());
@@ -306,7 +305,7 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
 
     // Finally, we build, save, and return the program
     try {
-        program.build({device}, compile_flg.c_str());
+        program.build();
     } catch (cl::Error &e) {
         cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
         throw;
@@ -556,7 +555,6 @@ std::string EngineOpenCL::info() const {
     ss << "  Memory:         " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
-    ss << "  Compiler flags: " << compile_flg << "\n";
     ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "")  << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
 
