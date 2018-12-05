@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 // This is the OpenCL interface to Random123
 #pragma once
 
-#include <Random123/philox.h>
+#include "../Random123/philox.h"
 
 philox2x32_ctr_t philox2x32_R(unsigned int R, philox2x32_ctr_t ctr, philox2x32_key_t key);
 

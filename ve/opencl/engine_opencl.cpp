@@ -300,9 +300,8 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
         }
 
         // And then we load the binary into a program
-        const vector<cl::Device> dev_list = {device};
         const cl::Program::Binaries bin_list = {make_pair(&bin[0], bin.size())};
-        program = cl::Program(context, dev_list, bin_list);
+        program = cl::Program(context, {device}, bin_list);
     }
 
     // Finally, we build, save, and return the program
@@ -483,10 +482,10 @@ void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
                                stringstream &ss) {
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-    ss << "#include <kernel_dependencies/complex_opencl.h>\n";
-    ss << "#include <kernel_dependencies/integer_operations.h>\n";
+    ss << "#include \"" << comp.config.defaultGet<string>("compiler_inc_dir", "") << "kernel_dependencies/complex_opencl.h\"\n";
+    ss << "#include \"" << comp.config.defaultGet<string>("compiler_inc_dir", "") << "kernel_dependencies/integer_operations.h\"\n";
     if (symbols.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_opencl.h>\n";
+        ss << "#include \"" << comp.config.defaultGet<string>("compiler_inc_dir", "") << "kernel_dependencies/random123_opencl.h\"\n";
     }
     ss << "\n";
 
