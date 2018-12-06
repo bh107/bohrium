@@ -18,13 +18,13 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "_bh_api.h"
-#include <bhc.h>
+#include <Python.h>
+#include <bohrium_api.h>
 
-PyObject* PyFlush(PyObject *self, PyObject *args) {
-    bhc_flush();
-    Py_RETURN_NONE;
-}
+#if PY_MAJOR_VERSION >= 3
+    #define NPY_PY3K
+#endif
+
 
 // The methods (functions) of this module
 static PyMethodDef _bh_apiMethods[] = {

@@ -44,7 +44,7 @@ namespace bohrium {
 
 EnginePGAS::EnginePGAS(component::ComponentVE &comp, jitk::Statistics &stat) :
         EngineCPU(comp, stat),
-        compiler(comp.config.get<string>("compiler_cmd"), verbose, comp.config.file_dir.string()) {
+        compiler(comp.config.get<string>("compiler_cmd"), comp.config.file_dir.string(), verbose) {
 
     compilation_hash = util::hash(compiler.cmd_template);
 
@@ -163,9 +163,9 @@ KernelFunction EnginePGAS::getFunction(const string &source, const std::string &
 
 
 void EnginePGAS::execute(const jitk::SymbolTable &symbols,
-                           const std::string &source,
-                           uint64_t codegen_hash,
-                           const std::vector<const bh_instruction *> &constants) {
+                         const std::string &source,
+                         uint64_t codegen_hash,
+                         const std::vector<const bh_instruction *> &constants) {
     // Notice, we use a "pure" hash of `source` to make sure that the `source_filename` always
     // corresponds to `source` even if `codegen_hash` is buggy.
     uint64_t hash = util::hash(source);
@@ -226,10 +226,10 @@ void EnginePGAS::execute(const jitk::SymbolTable &symbols,
 
 // Writes the OpenMP specific for-loop header
 void EnginePGAS::loopHeadWriter(const jitk::SymbolTable &symbols,
-                                  jitk::Scope &scope,
-                                  const jitk::LoopB &block,
-                                  const vector<uint64_t> &thread_stack,
-                                  stringstream &out) {
+                                jitk::Scope &scope,
+                                const jitk::LoopB &block,
+                                const vector<uint64_t> &thread_stack,
+                                stringstream &out) {
     int64_t local_size = block.size;
     int64_t local_offset = 0;
 
@@ -307,14 +307,17 @@ void EnginePGAS::writeKernel(const LoopB &kernel,
 
     for (bh_base *base: symbols.getParams()) {
         ss << "    MPI_Win win" << symbols.baseID(base) << ";\n";
-        ss << "    MPI_Win_create(a" << symbols.baseID(base) << ", " << base->pgas.localSize() * bh_type_size(base->dtype())
-           << ", " << bh_type_size(base->dtype()) << ", MPI_INFO_NULL, MPI_COMM_WORLD, &win" << symbols.baseID(base) << ");\n";
+        ss << "    MPI_Win_create(a" << symbols.baseID(base) << ", "
+           << base->pgas.localSize() * bh_type_size(base->dtype())
+           << ", " << bh_type_size(base->dtype()) << ", MPI_INFO_NULL, MPI_COMM_WORLD, &win" << symbols.baseID(base)
+           << ");\n";
     }
 
     // Write allocations of the kernel temporaries
     for (const bh_base *b: kernel_temps) {
         util::spaces(ss, 4);
-        ss << writeType(b->dtype()) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes() << ");\n";
+        ss << writeType(b->dtype()) << " * __restrict__ a" << symbols.baseID(b) << " = malloc(" << b->nbytes()
+           << ");\n";
     }
     ss << "\n";
 
@@ -404,7 +407,9 @@ void write_mpi_indexes(const Scope &scope, int rank, const bh_view &view, std::s
     out << "}\n";
 }
 
-void write_mpi_get(const SymbolTable &symbols, const Scope &scope, int rank, const bh_view &view, std::stringstream &out, bool always_mpi = false) {
+void
+write_mpi_get(const SymbolTable &symbols, const Scope &scope, int rank, const bh_view &view, std::stringstream &out,
+              bool always_mpi = false) {
     util::spaces(out, 8 + rank * 4);
     out << "{ // PGAS Get \n";
     write_mpi_indexes(scope, rank, view, out);
@@ -423,7 +428,9 @@ void write_mpi_get(const SymbolTable &symbols, const Scope &scope, int rank, con
     util::spaces(out, 16 + rank * 4);
     out << "MPI_Win_unlock (owner_rank, win" << symbols.baseID(view.base) << ");\n";
     util::spaces(out, 16 + rank * 4);
-    out << "printf(\"%d: MPI_Get(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %ld\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, " << scope.getName(view) << ");\n";
+    out
+            << "printf(\"%d: MPI_Get(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %ld\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, "
+            << scope.getName(view) << ");\n";
     util::spaces(out, 12 + rank * 4);
     out << "}";
     if (always_mpi) {
@@ -433,7 +440,9 @@ void write_mpi_get(const SymbolTable &symbols, const Scope &scope, int rank, con
         util::spaces(out, 16 + rank * 4);
         out << scope.getName(view) << " = a" << symbols.baseID(view.base) << "[owner_offset];\n";
         util::spaces(out, 16 + rank * 4);
-        out << "printf(\"%d: Local_Get(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %d\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, (int)" << scope.getName(view) << ");\n";
+        out
+                << "printf(\"%d: Local_Get(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %d\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, (int)"
+                << scope.getName(view) << ");\n";
         util::spaces(out, 12 + rank * 4);
         out << "}\n";
     }
@@ -441,7 +450,9 @@ void write_mpi_get(const SymbolTable &symbols, const Scope &scope, int rank, con
     out << "}\n";
 }
 
-void write_mpi_put(const SymbolTable &symbols, const Scope &scope, int rank, const bh_view &view, std::stringstream &out, bool always_mpi = false) {
+void
+write_mpi_put(const SymbolTable &symbols, const Scope &scope, int rank, const bh_view &view, std::stringstream &out,
+              bool always_mpi = false) {
     util::spaces(out, 8 + rank * 4);
     out << "{ // PGAS Put \n";
     write_mpi_indexes(scope, rank, view, out);
@@ -452,7 +463,9 @@ void write_mpi_put(const SymbolTable &symbols, const Scope &scope, int rank, con
         out << "if (owner_rank != world_rank) {\n";
     }
     util::spaces(out, 16 + rank * 4);
-    out << "printf(\"%d: MPI_Put(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %d\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, (int)" << scope.getName(view) << ");\n";
+    out
+            << "printf(\"%d: MPI_Put(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %d\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, (int)"
+            << scope.getName(view) << ");\n";
     util::spaces(out, 16 + rank * 4);
     out << "MPI_Win_lock(MPI_LOCK_SHARED, owner_rank, 0, win" << symbols.baseID(view.base) << ");\n";
     util::spaces(out, 16 + rank * 4);
@@ -468,7 +481,9 @@ void write_mpi_put(const SymbolTable &symbols, const Scope &scope, int rank, con
     } else {
         out << "else {\n";
         util::spaces(out, 16 + rank * 4);
-        out << "printf(\"%d: Local_Put(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %d\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, (int)" << scope.getName(view) << ");\n";
+        out
+                << "printf(\"%d: Local_Put(%ld) - owner_rank: %d, owner_offset: %ld, local_size: %ld, value: %d\\n\", world_rank, global_idx, owner_rank, owner_offset, local_size, (int)"
+                << scope.getName(view) << ");\n";
         util::spaces(out, 16 + rank * 4);
         out << "a" << symbols.baseID(view.base) << "[owner_offset] = ";
         scope.getName(view, out);
@@ -500,7 +515,7 @@ void EnginePGAS::writeBlock(const SymbolTable &symbols,
         for (const jitk::InstrPtr &instr: jitk::iterator::allInstr(kernel)) {
             for (const auto &view: instr->getViews()) {
                 if (util::exist(local_tmps, view.base)) {
-                    if (not (scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
+                    if (not(scope.isDeclared(view) or symbols.isAlwaysArray(view.base))) {
                         scope.insertTmp(view.base);
                         util::spaces(out, 8 + kernel.rank * 4);
                         scope.writeDeclaration(view, writeType(view.base->dtype()), out);
@@ -585,7 +600,7 @@ void EnginePGAS::writeBlock(const SymbolTable &symbols,
                     }
                 }
                 util::spaces(out, 4 + b.rank() * 4);
-                writeInstr(scope, *instr,  4 + b.rank() * 4, opencl, out);
+                writeInstr(scope, *instr, 4 + b.rank() * 4, opencl, out);
             }
         } else {
             util::spaces(out, 4 + b.rank() * 4);

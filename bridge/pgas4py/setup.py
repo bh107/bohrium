@@ -26,36 +26,12 @@ from setuptools.extension import Extension
 from setuptools.command.build_ext import build_ext as setup_build_ext
 import numbers
 import os
-import glob
 
 
 def script_path(*paths):
     prefix = os.path.abspath(os.path.dirname(__file__))
     assert len(prefix) > 0
     return os.path.join(prefix, *paths)
-
-
-def get_pyx_extensions():
-    """Find and compiles all cython extensions"""
-    include_dirs = []
-    if 'USE_CYTHON' in os.environ:
-        import numpy
-        import bohrium_api
-        include_dirs.extend([numpy.get_include(), bohrium_api.get_include()])
-    pyx_list = glob.glob(script_path("bohrium", "*.pyx"))
-    ret = []
-    for pyx in pyx_list:
-        ret.append(Extension(name="bohrium.%s" % os.path.splitext(os.path.basename(pyx))[0],
-                             sources=[pyx],
-                             include_dirs=include_dirs))
-    ret.append(Extension(name="bohrium.nobh.bincount_cython",
-                         sources=[script_path("bohrium", "nobh", "bincount_cython.pyx")],
-                         include_dirs=include_dirs))
-    if 'USE_CYTHON' in os.environ:
-        import Cython.Build
-        return Cython.Build.cythonize(ret, nthreads=2)
-    else:
-        return ret
 
 
 class BuildExt(setup_build_ext):
@@ -131,19 +107,12 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['tests']),
 
-    ext_modules=[
-        Extension(
-            name='_bh_api',
-            sources=[script_path('src', '_bh_api.c')],
-            depends=[script_path('src', '_bh_api.h')],
-            include_dirs=[
-                "/home/madsbk/repos/bohrium/b/bridge/c/out/",
-            ],
-            libraries=['bhc'],
-            library_dirs=[
-                "/home/madsbk/repos/bohrium/b/bridge/c/",
-            ],
-            extra_compile_args=["-std=c99"],
-        ),
-    ]
+    # ext_modules=[
+    #     Extension(
+    #         name='_bh_api',
+    #         sources=[script_path('src', '_bh_api.c')],
+    #         depends=[script_path('src', '_bh_api.h')],
+    #         extra_compile_args=["-std=c99"],
+    #     ),
+    # ]
 )
