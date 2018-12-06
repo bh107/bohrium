@@ -127,12 +127,9 @@ cache_dir = ${BIN_KERNEL_CACHE_DIR}
 cache_file_max = 50000
 # Set the size limit of malloc cache in percentage of total GPU memory.
 malloc_cache_limit = 90
-# Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
-device_type = auto
-# Device number of the above type. 0 means first
+# Bohrium sort all found devices by type ('gpu', 'cpu', or 'accelerator'). Set the device number to the device
+# Bohrium should use (0 means first). PS: use `python -m bohrium_api --info` the get available devices.
 device_number = 0
-# OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
-platform_no = -1
 # Additional options given to the opencl compiler. See documentation for clBuildProgram
 compiler_inc_dir = "${VE_OPENCL_COMPILER_INC_DIR}"
 # List of extension methods

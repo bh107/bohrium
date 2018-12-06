@@ -43,8 +43,8 @@ private:
     // Map of all compiled OpenCL programs
     std::map<uint64_t, cl::Program> _programs;
     // The OpenCL context, device, and queue used throughout the execution
-    cl::Context context;
     cl::Device device;
+    cl::Context context;
     cl::CommandQueue queue;
     // We save the OpenCL platform object for later information retrieval
     cl::Platform platform;
