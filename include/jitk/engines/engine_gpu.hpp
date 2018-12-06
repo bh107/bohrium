@@ -37,8 +37,6 @@ namespace jitk {
 
 class EngineGPU : public Engine {
 public:
-    // OpenCL compile flags
-    const std::string compile_flg;
     // Default device type
     const std::string default_device_type;
     // Default device number
@@ -54,8 +52,6 @@ public:
 
     EngineGPU(component::ComponentVE &comp, Statistics &stat) :
             Engine(comp, stat),
-            compile_flg(jitk::expand_compile_cmd(comp.config.defaultGet<std::string>("compiler_flg", ""), "", "",
-                                                 comp.config.file_dir.string())),
             default_device_type(comp.config.defaultGet<std::string>("device_type", "auto")),
             default_device_number(comp.config.defaultGet<int>("device_number", 0)),
             platform_no(comp.config.defaultGet<int>("platform_no", -1)),

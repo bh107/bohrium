@@ -33,7 +33,6 @@ string expand_compile_cmd(const string &cmd_template, const string &out, const s
     string ret = cmd_template;
     boost::replace_all(ret, "{OUT}", out);
     boost::replace_all(ret, "{IN}", in);
-    boost::replace_all(ret, "{CONF_PATH}", config_path);
     return ret;
 }
 

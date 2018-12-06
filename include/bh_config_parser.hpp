@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <string>
 #include <vector>
 
@@ -142,6 +143,10 @@ public:
                << "' not found!\n Using an old config file? try removing it and re-install bohrium" << endl;
             throw ConfigKeyNotFound(ss.str());
         }
+
+        // If the string contains {CONF_PATH} replace it with the config dir
+        boost::replace_all(ret, "{CONF_PATH}", file_dir.string());
+
         //Now let's try to convert the value to the requested type
         try {
             return lexical_cast<T>(ret);

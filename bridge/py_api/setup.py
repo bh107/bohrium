@@ -37,7 +37,7 @@ import subprocess
 import re
 
 """ Beside the regular setup arguments, this script reads the follow environment variables:
-   
+
       * PY_API_SRC_ROOT - Path to the root of the cmake source directory
       * PY_API_BUILD_ROOT - Path to the root of the cmake build directory
       * PY_API_INSTALL_PREFIX - The `CMAKE_INSTALL_PREFIX` path
@@ -181,7 +181,7 @@ static void init_c_api_struct(void *c_api_struct[]) {
 #ifdef __cplusplus
 }
 #endif
-#endif /* !defined(BH_API_H) */    
+#endif /* !defined(BH_API_H) */
 """.replace("{MACRO}", func_macro).replace("{NUM}", str(len(func_list))) \
         .replace("{PROTO}", func_proto).replace("{ASSIGN}", func_assign) \
         .replace("{DEFINE}", func_define).replace("{BHC_TYPES}", bhc_types)
@@ -281,7 +281,7 @@ def write_config_ini(o):
                                     "%s/.libs " % _install_prefix, config_str)
 
         # Compile command: replace absolute include path with a path relative to {CONF_PATH}.
-        config_str = _regex_replace("-I%s/share/bohrium/" % _install_prefix, "-I{CONF_PATH}/", config_str)
+        config_str = _regex_replace("%s/share/bohrium/" % _install_prefix, "{CONF_PATH}/", config_str)
 
         # Replace absolute library paths with a relative path.
         config_str = _regex_replace("%s/" % _install_prefix, "./", config_str)

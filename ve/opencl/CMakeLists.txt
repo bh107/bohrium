@@ -23,4 +23,6 @@ add_library(bh_ve_opencl SHARED ${SRC})
 
 target_link_libraries(bh_ve_opencl bh ${OPENCL_LIBRARIES})
 
+set(VE_OPENCL_COMPILER_INC_DIR "${CMAKE_INSTALL_PREFIX}/share/bohrium/include/" PARENT_SCOPE)
+
 install(TARGETS bh_ve_opencl DESTINATION ${LIBDIR} COMPONENT bohrium-opencl)

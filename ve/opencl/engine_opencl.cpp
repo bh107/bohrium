@@ -164,8 +164,7 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
 
     // Write the compilation hash
     stringstream ss;
-    ss << compile_flg
-       << platform.getInfo<CL_PLATFORM_NAME>()
+    ss << platform.getInfo<CL_PLATFORM_NAME>()
        << device.getInfo<CL_DEVICE_NAME>()
        << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
     compilation_hash = util::hash(ss.str());
@@ -306,14 +305,13 @@ cl::Program EngineOpenCL::getFunction(const string &source) {
         }
 
         // And then we load the binary into a program
-        const vector<cl::Device> dev_list = {device};
         const cl::Program::Binaries bin_list = {make_pair(&bin[0], bin.size())};
-        program = cl::Program(context, dev_list, bin_list);
+        program = cl::Program(context, {device}, bin_list);
     }
 
     // Finally, we build, save, and return the program
     try {
-        program.build({device}, compile_flg.c_str());
+        program.build();
     } catch (cl::Error &e) {
         cerr << "Error building: " << endl << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << endl;
         throw;
@@ -487,12 +485,14 @@ void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
                                const vector<uint64_t> &thread_stack,
                                uint64_t codegen_hash,
                                stringstream &ss) {
+    const string inc_dir(comp.config.defaultGet<string>("compiler_inc_dir", ""));
+
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-    ss << "#include <kernel_dependencies/complex_opencl.h>\n";
-    ss << "#include <kernel_dependencies/integer_operations.h>\n";
+    ss << "#include \"" << inc_dir << "kernel_dependencies/complex_opencl.h\"\n";
+    ss << "#include \"" << inc_dir << "kernel_dependencies/integer_operations.h\"\n";
     if (symbols.useRandom()) { // Write the random function
-        ss << "#include <kernel_dependencies/random123_opencl.h>\n";
+        ss << "#include \"" << inc_dir << "kernel_dependencies/random123_opencl.h\"\n";
     }
     ss << "\n";
 
@@ -563,7 +563,6 @@ std::string EngineOpenCL::info() const {
     ss << "  Memory:         " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024    << " MB\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
-    ss << "  Compiler flags: " << compile_flg << "\n";
     ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "")  << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(comp.config)  << "\n";
 
