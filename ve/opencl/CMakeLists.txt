@@ -9,19 +9,18 @@ find_package(OpenCL)
 set_package_properties(OpenCL PROPERTIES DESCRIPTION "Open Computing Language" URL "www.khronos.org/opencl/")
 set_package_properties(OpenCL PROPERTIES TYPE RECOMMENDED PURPOSE "Enables the GPU-VE.")
 
-if(NOT (OPENCL_FOUND))
-    return()
+if(NOT OpenCL_FOUND)
+    message(FATAL_ERROR "\nOpenCL-Backend cannot be installed, set `-DVE_OPENCL=OFF` or install OpenCL.\n")
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(${OPENCL_INCLUDE_DIRS})
+include_directories(${OpenCL_INCLUDE_DIRS})
 
 file(GLOB SRC *.cpp)
-
 add_library(bh_ve_opencl SHARED ${SRC})
 
-target_link_libraries(bh_ve_opencl bh ${OPENCL_LIBRARIES})
+target_link_libraries(bh_ve_opencl bh ${OpenCL_LIBRARIES})
 
 set(VE_OPENCL_COMPILER_INC_DIR "${CMAKE_INSTALL_PREFIX}/share/bohrium/include/" PARENT_SCOPE)
 
