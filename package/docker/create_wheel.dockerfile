@@ -23,7 +23,7 @@ RUN ls -l /usr/bin/cp*
 # Build bohrium
 RUN mkdir build
 WORKDIR build
-RUN cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DBRIDGE_NPBACKEND=OFF -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/install -DFORCE_CONFIG_PATH=/bh/install -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas -DPY_WHEEL=/bh/wheel -DPY_EXE_LIST=$PY_VER_LIST
+RUN AMDAPPSDKROOT=/opt/AMDAPPSDK-2.9-1/ cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DBRIDGE_NPBACKEND=OFF -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/install -DFORCE_CONFIG_PATH=/bh/install -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas -DPY_WHEEL=/bh/wheel -DPY_EXE_LIST=$PY_VER_LIST
 RUN make -j2
 RUN make install
 

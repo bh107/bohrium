@@ -58,13 +58,13 @@ Which tells us, among other things, that the execution of the compiled JIT kerne
 OpenCL Configuration
 ~~~~~~~~~~~~~~~~~~~~
 
-In order to choose which OpenCL platform and device to use, set the following environment variables::
+Bohrium sorts all available devices by type ('gpu', 'cpu', or 'accelerator'). Set the device number to the device Bohrium should use (0 means first)::
 
-  # OpenCL platform. -1 means automatic. Other numbers will index into list of platforms.
-  BH_OPENCL_PLATFORM_NO = -1
+  BH_OPENCL_DEVICE_NUMBER=0
 
-  # Device type can be one of 'auto', 'gpu', 'cpu', 'accelerator', or 'default'
-  BH_OPENCL_DEVICE_TYPE = auto
+In order to see all available devices, run::
+
+  python -m bohrium_api --info
 
 You can also set the options in the configure file under the ``[opencl]`` section.
 

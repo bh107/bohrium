@@ -5,6 +5,11 @@ if(NOT EXT_CLBLAS)
     return()
 endif()
 
+find_package(OpenCL)
+if(NOT OpenCL_FOUND)
+    message(FATAL_ERROR "\nEXT-CLBLAS cannot be installed, please install OpenCL.\n")
+endif()
+
 #External dependencies
 find_package(CLBLAS)
 set_package_properties(CLBLAS PROPERTIES DESCRIPTION "Basic Linear Algebra Subprograms implemented in OpenCL" URL "clmathlibraries.github.io/clBLAS/")
@@ -33,7 +38,7 @@ if(CLBLAS_FOUND)
     target_link_libraries(bh_clblas bh)
 
     if(APPLE)
-      target_link_libraries(bh_clblas ${OPENCL_LIBRARIES} clBLAS)
+      target_link_libraries(bh_clblas ${OpenCL_LIBRARIES} clBLAS)
     endif()
 
     include_directories(${CLBLAS_INCLUDES})

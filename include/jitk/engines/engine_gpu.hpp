@@ -37,12 +37,8 @@ namespace jitk {
 
 class EngineGPU : public Engine {
 public:
-    // Default device type
-    const std::string default_device_type;
-    // Default device number
-    const int default_device_number;
-    // Default platform number
-    const int platform_no;
+    // The device to use of all available devices on the machine
+    const int device_number;
     // Record profiling statistics
     const bool prof;
     // Maximum number of thread to use
@@ -52,9 +48,7 @@ public:
 
     EngineGPU(component::ComponentVE &comp, Statistics &stat) :
             Engine(comp, stat),
-            default_device_type(comp.config.defaultGet<std::string>("device_type", "auto")),
-            default_device_number(comp.config.defaultGet<int>("device_number", 0)),
-            platform_no(comp.config.defaultGet<int>("platform_no", -1)),
+            device_number(comp.config.defaultGet<int>("device_number", 0)),
             prof(comp.config.defaultGet<bool>("prof", false)),
             num_threads(comp.config.defaultGet<uint64_t>("num_threads", 0)),
             num_threads_round_robin(comp.config.defaultGet<bool>("num_threads_round_robin", false)) {
