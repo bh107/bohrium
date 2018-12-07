@@ -200,7 +200,7 @@ except subprocess.CalledProcessError as e:
     # The version if written in the VERSION file in the root of Bohrium
     with open(src_root("VERSION"), "r") as f:
         version = f.read().strip()
-print("Bohrium version: %s" % version)
+print("Bohrium API version: %s" % version)
 
 # Information variables that should be written to the _info.py file
 info_vars = {'__version__': version}

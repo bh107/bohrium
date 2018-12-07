@@ -26,15 +26,39 @@ If not, see <http://www.gnu.org/licenses/>.
 from setuptools import setup, find_packages
 from setuptools.extension import Extension
 from setuptools.command.build_ext import build_ext as setup_build_ext
+from setuptools.command.build_py import build_py as setup_build_py
+from setuptools.command.sdist import sdist as setup_sdist
 import numbers
 import os
 import glob
+
+""" Beside the regular setup arguments, this script reads the follow environment variables:
+
+      * USE_CYTHON - if defined, this setup will cythonize all pyx files.
+    
+    NB: when running the source distribution command, `setup.py sdist`, do it from the same directory as `setup.py` 
+"""
 
 
 def script_path(*paths):
     prefix = os.path.abspath(os.path.dirname(__file__))
     assert len(prefix) > 0
     return os.path.join(prefix, *paths)
+
+
+def get_version():
+    """Returns the version and true if version.py exist"""
+    ver_path = script_path("bohrium", "version.py")
+    if os.path.exists(ver_path):
+        print("Getting version from version.py")
+        # Loading `__version__` variable from the version file
+        with open(ver_path, "r") as f:
+            exec (f.read())
+        return (__version__, True)
+    else:
+        print("Getting version from bohrium_api")
+        import bohrium_api
+        return (bohrium_api.__version__, False)
 
 
 def get_pyx_extensions():
@@ -60,9 +84,33 @@ def get_pyx_extensions():
         return ret
 
 
+def gen_version_file_in_cmd(self, target_dir):
+    """We extend the setup commands to also generate the `version.py` file if it doesn't exist already"""
+    if not self.dry_run:
+        version, version_file_exist = get_version()
+        if not version_file_exist:
+            self.mkpath(target_dir)
+            p = os.path.join(target_dir, 'version.py')
+            print("Generating '%s'" % p)
+            with open(p, 'w') as fobj:
+                fobj.write("__version__ = \"%s\"\n" % version)
+
+
+class BuildPy(setup_build_py):
+    def run(self):
+        gen_version_file_in_cmd(self, os.path.join(self.build_lib, 'bohrium'))
+        setup_build_py.run(self)
+
+
+class Sdist(setup_sdist):
+    def run(self):
+        gen_version_file_in_cmd(self, "bohrium")
+        setup_sdist.run(self)
+
+
 class BuildExt(setup_build_ext):
     """We delay the numpy and bohrium dependency to the build command.
-    Hopefully, PIP has installed them at this point."""
+       Hopefully, PIP has installed them at this point."""
 
     def run(self):
         if not self.dry_run:
@@ -77,12 +125,11 @@ class DelayedVersion(numbers.Number):
     """In order to delay the version evaluation that depend on `bohrium_api`, we use this class"""
 
     def __str__(self):
-        import bohrium_api
-        return bohrium_api.__version__
+        return get_version()[0]
 
 
 setup(
-    cmdclass={'build_ext': BuildExt},
+    cmdclass={'build_ext': BuildExt, 'build_py': BuildPy, 'sdist': Sdist},
     name='bohrium',
     version=DelayedVersion(),
     description='Bohrium Python/NumPy Backend',

@@ -13,6 +13,7 @@ if 'numpy_force' not in sys.modules:
 from numpy_force import *
 from numpy_force import testing
 
+from .version import __version__
 from .array_create import *
 from .array_manipulation import *
 from .reorganization import *
