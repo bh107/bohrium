@@ -6,14 +6,16 @@ import sys
 
 if 'numpy_force' not in sys.modules:
     import numpy
+
     sys.modules['numpy_force'] = numpy
     del numpy
 
 # We import all of NumPy and overwrite with the objects we implement our self
 from numpy_force import *
 from numpy_force import testing
-
-from .version import __version__
+import warnings
+import bohrium_api
+from .version import __version__, __version_info__
 from .array_create import *
 from .array_manipulation import *
 from .reorganization import *
@@ -30,7 +32,6 @@ from .disk_io import *
 from .concatenate import *
 from .ufuncs import _handle__array_ufunc__
 from . import contexts
-from bohrium_api import stack_info as bh_info
 from . import interop_pyopencl
 from . import interop_pycuda
 from . import interop_numpy
@@ -45,10 +46,14 @@ from ._bh import flush
 # However, NumPy and SciPy's functionality differ! Thus, the ND version cannot replace NumPy's 1D version.
 from .signal import correlate1d as correlate, convolve1d as convolve
 from .signal import correlate as correlate_scipy, convolve as convolve_scipy
-
 from numpy_force import dtype
+
 asarray = array
 asanyarray = array
+
+if __version_info__ > bohrium_api.__version_info__:
+    warnings.warn("The version of Bohrium API (%s) is newer than Bohrium (%s). Please upgrade "
+                  "Bohrium (e.g. `pip install bohrium --upgrade`)" % (__version__, bohrium_api.__version__))
 
 
 def replace_numpy(function):
@@ -57,6 +62,7 @@ def replace_numpy(function):
             # Run your function/program
             result = function(*args, **kwargs)
         return result
+
     return wrapper
 
 
@@ -112,6 +118,7 @@ __all__ = [x for x in dir() if not x.startswith("_")]
 if sys.version_info[0] < 3:
     def set_printoptions(*args, **kwargs):
         numpy.core.arrayprint.set_printoptions(*args, **kwargs)
+
 
     def get_printoptions(*args, **kwargs):
         return numpy.core.arrayprint.get_printoptions()

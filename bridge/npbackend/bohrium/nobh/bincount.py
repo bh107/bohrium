@@ -1,10 +1,9 @@
 import math
 import numpy_force as np
-
+from bohrium_api import stack_info
 from .. import interop_pyopencl
 from .. import interop_pycuda
 from .. import array_create
-from .. import bh_info
 from .bincount_cython import bincount_cython
 
 
@@ -83,7 +82,7 @@ def bincount(x, weights=None, minlength=None):
     assert(np.issubdtype(x.dtype.type, np.integer))
     assert(np.issubdtype(x.dtype.type, np.integer))
 
-    if bh_info.is_proxy_in_stack():  # Cannot directly access array data through a proxy
+    if stack_info.is_proxy_in_stack():  # Cannot directly access array data through a proxy
         return np.bincount(x.copy2numpy(), weights=weights, minlength=minlength)
 
     try:

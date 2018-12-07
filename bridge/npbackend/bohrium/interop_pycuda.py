@@ -2,10 +2,10 @@
 Interop PyCUDA
 ~~~~~~~~~~~~~~
 """
+from bohrium_api import stack_info
 from .bhary import get_base
 from ._bh import get_data_pointer
 from .backend_messaging import cuda_use_current_context
-from . import bh_info
 from . import contexts
 
 
@@ -19,11 +19,11 @@ def _import_pycuda_module():
     except ImportError:
         raise ImportError("Failed to import the `pycuda` module, please install PyCUDA")
 
-    if not bh_info.is_cuda_in_stack():
+    if not stack_info.is_cuda_in_stack():
         raise RuntimeError("No CUDA device in the Bohrium stack! "
                            "Try defining the environment variable `BH_STACK=cuda`.")
 
-    if bh_info.is_proxy_in_stack():
+    if stack_info.is_proxy_in_stack():
         raise RuntimeError("Cannot directly access the CUDA device through a proxy.")
     return pycuda
 

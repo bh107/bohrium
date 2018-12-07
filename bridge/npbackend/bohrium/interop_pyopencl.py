@@ -2,9 +2,9 @@
 Interop PyOpenCL
 ~~~~~~~~~~~~~~~~
 """
+from bohrium_api import stack_info
 from .bhary import get_base
 from ._bh import get_data_pointer, set_data_pointer, get_device_context
-from . import bh_info
 
 
 def _import_pyopencl_module():
@@ -14,11 +14,11 @@ def _import_pyopencl_module():
     except ImportError:
         raise ImportError("Failed to import the `pyopencl` module, please install PyOpenCL")
 
-    if not bh_info.is_opencl_in_stack():
+    if not stack_info.is_opencl_in_stack():
         raise RuntimeError("No OpenCL device in the Bohrium stack! "
                            "Try defining the environment variable `BH_STACK=opencl`.")
 
-    if bh_info.is_proxy_in_stack():
+    if stack_info.is_proxy_in_stack():
         raise RuntimeError("Cannot directly access the OpenCL device through a proxy.")
     return pyopencl
 

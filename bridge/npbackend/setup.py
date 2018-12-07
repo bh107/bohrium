@@ -47,18 +47,18 @@ def script_path(*paths):
 
 
 def get_version():
-    """Returns the version and true if version.py exist"""
+    """Returns the version, version_info, and true if version.py exist"""
     ver_path = script_path("bohrium", "version.py")
     if os.path.exists(ver_path):
         print("Getting version from version.py")
         # Loading `__version__` variable from the version file
         with open(ver_path, "r") as f:
             exec (f.read())
-        return (__version__, True)
+        return (__version__, __version_info__, True)
     else:
         print("Getting version from bohrium_api")
         import bohrium_api
-        return (bohrium_api.__version__, False)
+        return (bohrium_api.__version__, bohrium_api.__version_info__, False)
 
 
 def get_pyx_extensions():
@@ -87,13 +87,14 @@ def get_pyx_extensions():
 def gen_version_file_in_cmd(self, target_dir):
     """We extend the setup commands to also generate the `version.py` file if it doesn't exist already"""
     if not self.dry_run:
-        version, version_file_exist = get_version()
+        version, version_info, version_file_exist = get_version()
         if not version_file_exist:
             self.mkpath(target_dir)
             p = os.path.join(target_dir, 'version.py')
             print("Generating '%s'" % p)
             with open(p, 'w') as fobj:
                 fobj.write("__version__ = \"%s\"\n" % version)
+                fobj.write("__version_info__ = (%d, %d, %d, %d)\n" % version_info)
 
 
 class BuildPy(setup_build_py):
