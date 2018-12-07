@@ -66,15 +66,18 @@ vector<pair<cl::Platform, cl::Device> > get_device_list() {
     return ret;
 }
 
+/// Printing of device description
 ostream &operator<<(ostream &out, const pair<cl::Platform, cl::Device> &device) {
     out << device.first.getInfo<CL_PLATFORM_NAME>() << " / " << device.second.getInfo<CL_DEVICE_NAME>()
         << " (" << device.second.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << ")";
     return out;
 }
 
+/// Printing of a list of device description
 ostream &operator<<(ostream &out, const vector<pair<cl::Platform, cl::Device> > &device_list) {
+    int i = 0;
     for (const pair<cl::Platform, cl::Device> &device: device_list) {
-        out << device << "\n";
+        out << "[" << i++ << "] " << device << "\n";
     }
     return out;
 }
