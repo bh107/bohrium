@@ -7,7 +7,7 @@ Bohrium API: a Python and C API
 """
 import os
 from ._bh_api import _C_API  # Exposing the C_API of `_bh_api.c`
-from ._info import __version__
+from .version import __version__, __version_info__
 from . import stack_info
 
 

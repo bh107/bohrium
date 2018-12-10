@@ -13,7 +13,7 @@ from . import _util
 from . import array_create
 from . import loop
 import numpy_force as np
-from bohrium_api import _info
+from bohrium_api import _info, stack_info
 from .numpy_backport import as_strided
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper
@@ -354,7 +354,6 @@ class Ufunc(object):
                [ 9, 13]])
         """
         from . import _bh
-        from . import bh_info
 
         if out is not None:
             if bhary.check(out):
@@ -427,7 +426,7 @@ class Ufunc(object):
         else:
             # Let's sort the axis indexes by their stride
             # We use column major when a GPU is in the stack
-            column_major = bh_info.is_opencl_in_stack() or bh_info.is_cuda_in_stack()
+            column_major = stack_info.is_opencl_in_stack() or stack_info.is_cuda_in_stack()
             strides = []
             for i, s in enumerate(ary.strides):
                 if i in axis:

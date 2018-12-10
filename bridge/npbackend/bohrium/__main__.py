@@ -7,7 +7,8 @@ import sys
 import os
 import argparse
 import bohrium
-from . import bh_info
+import bohrium_api
+from . import version
 
 
 @bohrium.replace_numpy
@@ -49,7 +50,8 @@ if len(argv) > 0:
     execfile_wrapper(sys.argv[0])
 else:
     if args.info:
-        print(bh_info.pprint())
+        print("----\nBohrium version: %s" % version.__version__)
+        print(bohrium_api.stack_info.pprint())
 
         cmd = "import bohrium as bh; import numpy as np; assert((bh.arange(10) == np.arange(10)).all())"
         sys.stdout.write('Sanity Check: "%s"' % cmd)

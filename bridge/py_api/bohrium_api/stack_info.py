@@ -5,7 +5,7 @@ Runtime Stack Info
 import os
 from os.path import join
 from . import messaging
-from . import _info
+from .version import __version__, __version_info__
 
 # Some cached info
 _opencl_is_in_stack = None
@@ -34,11 +34,6 @@ def installed_through_pypi():
     return os.path.exists(os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.ini"))
 
 
-def version():
-    """Return the version of Bohrium"""
-    return _info.__version__
-
-
 def header_dir():
     """Return the path to the C header directory"""
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), "include")
@@ -47,8 +42,9 @@ def header_dir():
 def info():
     """Return a dict with all info"""
     return {
-        "config_path" : config_file_path(),
-        "version": version(),
+        "config_path": config_file_path(),
+        "version": __version__,
+        "version_info": __version_info__,
         "runtime_info": messaging.runtime_info(),
         "statistics": messaging.statistic(),
         "header_dir": header_dir(),
@@ -82,17 +78,15 @@ def is_proxy_in_stack():
 def pprint():
     """Pretty print Bohrium info"""
 
-    ret = ""
-    if not (is_opencl_in_stack() or is_cuda_in_stack()):
-        ret += "Note: in order to activate and retrieve GPU info, set the `BH_STACK=opencl` " \
-               "or `BH_STACK=cuda` environment variable.\n"
-
-    ret += """----
-Bohrium version: %s
+    ret = """----
+Bohrium API version: %s
 Installed through PyPI: %s
 Config file: %s
 Header dir: %s
 Backend stack:
 %s----
-""" % (version(), installed_through_pypi(), config_file_path(), header_dir(), messaging.runtime_info())
+""" % (__version__, installed_through_pypi(), config_file_path(), header_dir(), messaging.runtime_info())
+    if not (is_opencl_in_stack() or is_cuda_in_stack()):
+        ret += "Note: in order to activate and retrieve GPU info, set the `BH_STACK=opencl` " \
+               "or `BH_STACK=cuda` environment variable.\n"
     return ret

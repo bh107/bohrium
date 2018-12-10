@@ -3,7 +3,7 @@ Interop NumPy
 ~~~~~~~~~~~~~
 """
 from .bhary import get_base
-from . import bh_info
+from bohrium_api import stack_info
 
 
 def get_array(bh_ary):
@@ -24,7 +24,7 @@ def get_array(bh_ary):
 
     """
 
-    if bh_info.is_proxy_in_stack():
+    if stack_info.is_proxy_in_stack():
         raise RuntimeError("Cannot directly access array data through a proxy.")
 
     if get_base(bh_ary) is not bh_ary:

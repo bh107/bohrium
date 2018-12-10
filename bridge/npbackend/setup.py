@@ -26,15 +26,57 @@ If not, see <http://www.gnu.org/licenses/>.
 from setuptools import setup, find_packages
 from setuptools.extension import Extension
 from setuptools.command.build_ext import build_ext as setup_build_ext
+from setuptools.command.build_py import build_py as setup_build_py
+from setuptools.command.sdist import sdist as setup_sdist
 import numbers
 import os
 import glob
+
+""" Beside the regular setup arguments, this script reads the follow environment variables:
+
+      * USE_CYTHON - if defined, this setup will cythonize all pyx files.
+    
+    NB: when running the source distribution command, `setup.py sdist`, do it from the same directory as `setup.py` 
+"""
 
 
 def script_path(*paths):
     prefix = os.path.abspath(os.path.dirname(__file__))
     assert len(prefix) > 0
     return os.path.join(prefix, *paths)
+
+
+def version_file_exist():
+    """Return whether the version.py file exist or not"""
+    ver_path = script_path("bohrium", "version.py")
+    return os.path.exists(ver_path)
+
+
+def get_version():
+    """Returns the version and version_info.
+        If the version.py file doesn't exist, the version of Bohrium API is returned.
+        NB: If the version.py file doesn't exist, this function must be called after the call to `setup()`.
+    """
+    ver_path = script_path("bohrium", "version.py")
+    if os.path.exists(ver_path):
+        print("Getting version from version.py")
+        # Loading `__version__` variable from the version file
+        with open(ver_path, "r") as f:
+            exec (f.read())
+        return (__version__, __version_info__)
+    else:
+        print("Getting version from bohrium_api")
+        import bohrium_api
+        return (bohrium_api.__version__, bohrium_api.__version_info__)
+
+
+def get_bohrium_api_required_string():
+    """Returns the install_requires/setup_requires string for `bohrium_api`"""
+    try:
+        ver_tuple = get_version()[1]
+        return "bohrium_api>=%d.%d.%d" % (ver_tuple[0], ver_tuple[1], ver_tuple[2])
+    except ImportError:
+        return "bohrium_api"  # If `bohrium_api` is not available, we expect PIP to install the newest package
 
 
 def get_pyx_extensions():
@@ -60,9 +102,34 @@ def get_pyx_extensions():
         return ret
 
 
+def gen_version_file_in_cmd(self, target_dir):
+    """We extend the setup commands to also generate the `version.py` file if it doesn't exist already"""
+    if not self.dry_run:
+        version, version_info = get_version()
+        if not version_file_exist():
+            self.mkpath(target_dir)
+            p = os.path.join(target_dir, 'version.py')
+            print("Generating '%s'" % p)
+            with open(p, 'w') as fobj:
+                fobj.write("__version__ = \"%s\"\n" % version)
+                fobj.write("__version_info__ = %s\n" % str(version_info))
+
+
+class BuildPy(setup_build_py):
+    def run(self):
+        gen_version_file_in_cmd(self, os.path.join(self.build_lib, 'bohrium'))
+        setup_build_py.run(self)
+
+
+class Sdist(setup_sdist):
+    def run(self):
+        gen_version_file_in_cmd(self, "bohrium")
+        setup_sdist.run(self)
+
+
 class BuildExt(setup_build_ext):
     """We delay the numpy and bohrium dependency to the build command.
-    Hopefully, PIP has installed them at this point."""
+       Hopefully, PIP has installed them at this point."""
 
     def run(self):
         if not self.dry_run:
@@ -77,12 +144,11 @@ class DelayedVersion(numbers.Number):
     """In order to delay the version evaluation that depend on `bohrium_api`, we use this class"""
 
     def __str__(self):
-        import bohrium_api
-        return bohrium_api.__version__
+        return get_version()[0]
 
 
 setup(
-    cmdclass={'build_ext': BuildExt},
+    cmdclass={'build_ext': BuildExt, 'build_py': BuildPy, 'sdist': Sdist},
     name='bohrium',
     version=DelayedVersion(),
     description='Bohrium Python/NumPy Backend',
@@ -126,8 +192,8 @@ setup(
     keywords='Bohrium, bh107, Python, C, HPC, MPI, PGAS, CUDA, OpenCL, OpenMP',
 
     # Dependencies
-    install_requires=['numpy>=1.7', 'bohrium_api'],
-    setup_requires=['numpy>=1.7', 'bohrium_api'],
+    install_requires=['numpy>=1.7', get_bohrium_api_required_string()],
+    setup_requires=['numpy>=1.7', get_bohrium_api_required_string()],
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
