@@ -46,19 +46,37 @@ def script_path(*paths):
     return os.path.join(prefix, *paths)
 
 
+def version_file_exist():
+    """Return whether the version.py file exist or not"""
+    ver_path = script_path("bohrium", "version.py")
+    return os.path.exists(ver_path)
+
+
 def get_version():
-    """Returns the version, version_info, and true if version.py exist"""
+    """Returns the version and version_info.
+        If the version.py file doesn't exist, the version of Bohrium API is returned.
+        NB: If the version.py file doesn't exist, this function must be called after the call to `setup()`.
+    """
     ver_path = script_path("bohrium", "version.py")
     if os.path.exists(ver_path):
         print("Getting version from version.py")
         # Loading `__version__` variable from the version file
         with open(ver_path, "r") as f:
             exec (f.read())
-        return (__version__, __version_info__, True)
+        return (__version__, __version_info__)
     else:
         print("Getting version from bohrium_api")
         import bohrium_api
-        return (bohrium_api.__version__, bohrium_api.__version_info__, False)
+        return (bohrium_api.__version__, bohrium_api.__version_info__)
+
+
+def get_bohrium_api_required_string():
+    """Returns the install_requires/setup_requires string for `bohrium_api`"""
+    try:
+        ver_tuple = get_version()[1]
+        return "bohrium_api>=%d.%d.%d" % (ver_tuple[0], ver_tuple[1], ver_tuple[2])
+    except ImportError:
+        return "bohrium_api"  # If `bohrium_api` is not available, we expect PIP to install the newest package
 
 
 def get_pyx_extensions():
@@ -87,14 +105,14 @@ def get_pyx_extensions():
 def gen_version_file_in_cmd(self, target_dir):
     """We extend the setup commands to also generate the `version.py` file if it doesn't exist already"""
     if not self.dry_run:
-        version, version_info, version_file_exist = get_version()
-        if not version_file_exist:
+        version, version_info = get_version()
+        if not version_file_exist():
             self.mkpath(target_dir)
             p = os.path.join(target_dir, 'version.py')
             print("Generating '%s'" % p)
             with open(p, 'w') as fobj:
                 fobj.write("__version__ = \"%s\"\n" % version)
-                fobj.write("__version_info__ = (%d, %d, %d, %d)\n" % version_info)
+                fobj.write("__version_info__ = %s\n" % str(version_info))
 
 
 class BuildPy(setup_build_py):
@@ -174,8 +192,8 @@ setup(
     keywords='Bohrium, bh107, Python, C, HPC, MPI, PGAS, CUDA, OpenCL, OpenMP',
 
     # Dependencies
-    install_requires=['numpy>=1.7', 'bohrium_api'],
-    setup_requires=['numpy>=1.7', 'bohrium_api'],
+    install_requires=['numpy>=1.7', get_bohrium_api_required_string()],
+    setup_requires=['numpy>=1.7', get_bohrium_api_required_string()],
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
