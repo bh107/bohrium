@@ -48,7 +48,6 @@ public:
      * Needless to say that the memory should be large enough to
      * incorporate nelem_ elements.
      * */
-
     template<typename T>
     BhBase(size_t nelem, T *memory) : bh_base(nelem, bh_type_from_template<T>(), memory), m_own_memory(false) {}
 
@@ -86,7 +85,8 @@ public:
         // The dummy is a dummy argument and should always be identical zero.
         assert(dummy == T(0));
     }
-    
+
+    /** Destructor */
     ~BhBase() {
         // All memory here should be handed over to the Runtime
         // by a BH_FREE instruction and hence no BhBase object

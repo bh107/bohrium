@@ -19,9 +19,9 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "BhBase.hpp"
-#include "SVector.hpp"
 #include <ostream>
+#include <bh_static_vector.hpp>
+#include "BhBase.hpp"
 
 namespace bhxx {
 
@@ -34,44 +34,64 @@ namespace bhxx {
  *  been emptied.
  */
 struct RuntimeDeleter {
-    void operator()(BhBase* ptr) const;
+    void operator()(BhBase *ptr) const;
 };
 
 /** Helper function to make shared pointers to BhBase,
  *  which use the RuntimeDeleter as their deleter */
-template <typename... Args>
+template<typename... Args>
 std::shared_ptr<BhBase> make_base_ptr(Args... args) {
     return std::shared_ptr<BhBase>(new BhBase(std::forward<Args>(args)...), RuntimeDeleter{});
 }
 
-template <typename T>
+/** Static allocated shapes and strides that is interchangeable with standard C++ vector as long
+ *  as the vector is smaller than `BH_MAXDIM`.
+ */
+typedef BhStaticVector<uint64_t> Shape;
+using Stride = BhIntVec;
+
+/// Return a contiguous stride (row-major) based on `shape`
+extern inline Stride contiguous_stride(const Shape &shape) {
+    Stride ret(shape.size());
+    int64_t stride = 1;
+    for (int64_t i = shape.size() - 1; i >= 0; --i) {
+        ret[i] = stride;
+        stride *= shape[i];
+    }
+    return ret;
+}
+
+/** Representation of a multidimensional array that point to a `BhBase` array.
+ *
+ * @tparam T  The data type of the array and the underlying base array
+ */
+template<typename T>
 class BhArray {
-  public:
+public:
     // The data type of each array element
     typedef T scalar_type;
     // The array offset (from the start of the base in number of elements)
-    size_t offset;
+    uint64_t offset;
     // The array shape (size of each dimension in number of elements)
     Shape shape;
     // The array stride (the absolute stride of each dimension in number of elements)
     Stride stride;
     // Pointer to the base of this array
     std::shared_ptr<BhBase> base;
-
+    // Metadata to support sliding views
     bh_slide slides;
 
     /** Create a new view */
-    BhArray(Shape shape_, Stride stride_, const size_t offset_ = 0)
-          : offset(offset_),
-            shape(shape_),
-            stride(std::move(stride_)),
-            base(make_base_ptr(T(0), shape_.prod())) {
+    explicit
+    BhArray(Shape shape, Stride stride, uint64_t offset = 0) : offset(offset), shape(std::move(shape)),
+                                                               stride(std::move(stride)),
+                                                               base(make_base_ptr(T(0), shape.prod())) {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
 
     /** Create a new view (contiguous stride, row-major) */
-    BhArray(Shape shape) : BhArray(shape, contiguous_stride(shape), 0) {}
+    explicit BhArray(Shape shape) : BhArray(std::move(shape), contiguous_stride(shape), 0) {}
 
     /** Create a view that points to the given base
      *
@@ -81,11 +101,11 @@ class BhArray {
      *        construct a BhBase object, use the make_base_ptr
      *        helper function.
      */
-    BhArray(std::shared_ptr<BhBase> base_, Shape shape_, Stride stride_, const size_t offset_ = 0)
-          : offset(offset_),
-            shape(std::move(shape_)),
-            stride(std::move(stride_)),
-            base(std::move(base_)) {
+    explicit
+    BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride, uint64_t offset = 0) : offset(offset),
+                                                                                             shape(std::move(shape)),
+                                                                                             stride(std::move(stride)),
+                                                                                             base(std::move(base)) {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
@@ -98,9 +118,9 @@ class BhArray {
      *        construct a BhBase object, use the make_base_ptr
      *        helper function.
      */
-    BhArray(std::shared_ptr<BhBase> base_, Shape shape)
-          : BhArray(std::move(base_), shape, contiguous_stride(shape), 0) {
-        assert(static_cast<size_t>(base->nelem()) == shape.prod());
+    explicit BhArray(std::shared_ptr<BhBase> base, Shape shape) : BhArray(std::move(base), std::move(shape),
+                                                                          contiguous_stride(shape), 0) {
+        assert(static_cast<uint64_t>(base->nelem()) == shape.prod());
     }
 
     //
@@ -114,7 +134,7 @@ class BhArray {
     }
 
     /** Return the number of elements */
-    size_t numberOfElements() const {
+    uint64_t numberOfElements() const {
         return shape.prod();
     }
 
@@ -137,8 +157,10 @@ class BhArray {
      *  \note No flush is done automatically. The data might be
      *        out of sync with Bohrium.
      */
-    const T* data() const { return static_cast<T*>(base->getDataPtr()); }
-          T* data()       { return static_cast<T*>(base->getDataPtr()); }
+    T *data() { return static_cast<T *>(base->getDataPtr()); }
+
+    /// The const version of `data()`
+    const T *data() const { return static_cast<T *>(base->getDataPtr()); }
 
     //
     // Routines
@@ -148,9 +170,9 @@ class BhArray {
     bh_view getBhView() const {
         bh_view view;
         assert(base.use_count() > 0);
-        view.base  = base.get();
+        view.base = base.get();
         view.start = static_cast<int64_t>(offset);
-        view.ndim  = static_cast<int64_t>(shape.size());
+        view.ndim = static_cast<int64_t>(shape.size());
         view.shape = BhIntVec(shape.begin(), shape.end());
         view.stride = BhIntVec(stride.begin(), stride.end());;
         view.slides = slides;
@@ -159,11 +181,11 @@ class BhArray {
 
     // Pretty printing the content of the array
     // TODO: for now it always print the flatten array
-    void pprint(std::ostream& os) const;
+    void pprint(std::ostream &os) const;
 };
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const BhArray<T>& ary) {
+template<typename T>
+std::ostream &operator<<(std::ostream &os, const BhArray<T> &ary) {
     ary.pprint(os);
     return os;
 }

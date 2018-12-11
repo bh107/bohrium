@@ -28,39 +28,40 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/container/static_vector.hpp>
 #include <sstream>
 
-// The maximum number of possible dimension in arrays.
+/// The maximum number of possible dimension in arrays.
 constexpr int64_t BH_MAXDIM = 16;
 
 
 /** We use a static allocated vector with a maximum capacity of `BH_MAXDIM`
-    Notice, `BhIntVec` and `std::vector<int64_t>` is interchangeable as long
+    Notice, `BhStaticVector<T>` and `std::vector<T>` is interchangeable as long
     as the vector is smaller than `BH_MAXDIM`.
 */
-class BhIntVec : public boost::container::static_vector<int64_t, BH_MAXDIM> {
+template<typename T>
+class BhStaticVector : public boost::container::static_vector<T, BH_MAXDIM> {
 public:
 
     // This is C++11 syntax for exposing the constructor from the parent class
-    using boost::container::static_vector<int64_t, BH_MAXDIM>::static_vector;
+    using boost::container::static_vector<T, BH_MAXDIM>::static_vector;
 
     /// The sum of the elements in this vector
-    int64_t sum() const {
-        return std::accumulate(this->begin(), this->end(), int64_t{0});
+    virtual T sum() const {
+        return std::accumulate(this->begin(), this->end(), T{0});
     }
 
     /// The product of the elements in this vector
-    int64_t prod() const {
-        return std::accumulate(this->begin(), this->end(), int64_t{1}, std::multiplies<int64_t>());
+    virtual T prod() const {
+        return std::accumulate(this->begin(), this->end(), T{1}, std::multiplies<T>());
     }
 
     /// Pretty printing of this vector
-    std::string pprint() const {
+    virtual std::string pprint() const {
         std::stringstream ss;
         ss << '(';
-        if (!empty()) {
-            auto it = begin();
+        if (!this->empty()) {
+            auto it = this->begin();
             ss << *it;
             ++it;
-            for (; it != end(); ++it) ss << ',' << *it;
+            for (; it != this->end(); ++it) ss << ',' << *it;
         }
         ss << ')';
         return ss.str();
@@ -68,7 +69,11 @@ public:
 };
 
 /// Print overload
-inline std::ostream &operator<<(std::ostream &o, const BhIntVec &vec) {
+template<typename T>
+inline std::ostream &operator<<(std::ostream &o, const BhStaticVector<T> &vec) {
     o << vec.pprint();
     return o;
 }
+
+/// The type used throughout Bohrium
+typedef BhStaticVector<int64_t> BhIntVec;
