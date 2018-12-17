@@ -31,6 +31,7 @@ from setuptools.command.sdist import sdist as setup_sdist
 import numbers
 import os
 import glob
+import re
 
 """ Beside the regular setup arguments, this script reads the follow environment variables:
 
@@ -62,8 +63,10 @@ def get_version():
         print("Getting version from version.py")
         # Loading `__version__` variable from the version file
         with open(ver_path, "r") as f:
-            exec (f.read())
-        return (__version__, __version_info__)
+            t=f.read()
+            version = re.search("__version__\s*=\s*\"([^\"]*)\"",t).group(1);
+            version_info = eval(re.search("__version_info__\s*=\s*(\([^\)]+\))",t).group(1));
+            return (version, version_info)
     else:
         print("Getting version from bohrium_api")
         import bohrium_api
