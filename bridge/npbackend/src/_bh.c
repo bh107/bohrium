@@ -386,6 +386,11 @@ static PyObject* BhArray_mean(PyObject *self, PyObject *args, PyObject *kwds) {
     return method2function("mean", self, args, kwds);
 }
 
+static PyObject* BhArray_dot(PyObject *self, PyObject *args, PyObject *kwds) {
+    return method2function("dot", self, args, kwds);
+}
+
+
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
     {"__array_ufunc__",    (PyCFunction) BhArray_array_ufunc,   METH_VARARGS | METH_KEYWORDS, "Handle ufunc"},
@@ -415,7 +420,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"tofile",             (PyCFunction) BhArray_print_to_file, METH_VARARGS | METH_KEYWORDS, "a.tofile(fid, sep=\"\", format=\"%s\")\n\nWrite array to a file as text or binary (default)."},
     {"take",               (PyCFunction) BhArray_take,          METH_VARARGS | METH_KEYWORDS, "a.take(indices, axis=None, out=None, mode='raise')."},
     {"put",                (PyCFunction) BhArray_put,           METH_VARARGS | METH_KEYWORDS, "a.put(indices, values, mode='raise')\n\nSet a.flat[n] = values[n] for all n in indices."},
-    {"mean",               (PyCFunction) BhArray_mean,          METH_VARARGS | METH_KEYWORDS, "a.mean(a, axis=None, dtype=None, out=None)\n\n Compute the arithmetic mean along the specified axis."},
+    {"mean",               (PyCFunction) BhArray_mean,          METH_VARARGS | METH_KEYWORDS, "a.mean(axis=None, dtype=None, out=None)\n\n Compute the arithmetic mean along the specified axis."},
+    {"dot",               (PyCFunction) BhArray_dot,          METH_VARARGS | METH_KEYWORDS, "a.dot(b, out=None)\n\n Compute the dot product."},    
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
