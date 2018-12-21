@@ -50,7 +50,7 @@ std::shared_ptr<BhBase> make_base_ptr(Args... args) {
 typedef BhStaticVector<uint64_t> Shape;
 using Stride = BhIntVec;
 
-/// Return a contiguous stride (row-major) based on `shape`
+/** Return a contiguous stride (row-major) based on `shape` */
 extern inline Stride contiguous_stride(const Shape &shape) {
     Stride ret(shape.size());
     int64_t stride = 1;
@@ -61,31 +61,51 @@ extern inline Stride contiguous_stride(const Shape &shape) {
     return ret;
 }
 
+/** Core class that represent the core attributes of a view that isn't typed by its dtype */
+class BhArrayUnTypedCore {
+public:
+    /// The array offset (from the start of the base in number of elements)
+    uint64_t offset;
+    /// The array shape (size of each dimension in number of elements)
+    Shape shape;
+    /// The array stride (the absolute stride of each dimension in number of elements)
+    Stride stride;
+    /// Pointer to the base of this array
+    std::shared_ptr<BhBase> base;
+    /// Metadata to support sliding views
+    bh_slide slides;
+
+    /// Only Constructor
+    BhArrayUnTypedCore(uint64_t offset, Shape shape, Stride stride, std::shared_ptr<BhBase> base) :
+            offset(offset), shape(std::move(shape)), stride(std::move(stride)), base(std::move(base)) {}
+
+    /** Return a `bh_view` of the array */
+    bh_view getBhView() const {
+        bh_view view;
+        assert(base.use_count() > 0);
+        view.base = base.get();
+        view.start = static_cast<int64_t>(offset);
+        view.ndim = static_cast<int64_t>(shape.size());
+        view.shape = BhIntVec(shape.begin(), shape.end());
+        view.stride = BhIntVec(stride.begin(), stride.end());;
+        view.slides = slides;
+        return view;
+    }
+};
+
 /** Representation of a multidimensional array that point to a `BhBase` array.
  *
  * @tparam T  The data type of the array and the underlying base array
  */
 template<typename T>
-class BhArray {
+class BhArray : public BhArrayUnTypedCore {
 public:
     // The data type of each array element
     typedef T scalar_type;
-    // The array offset (from the start of the base in number of elements)
-    uint64_t offset;
-    // The array shape (size of each dimension in number of elements)
-    Shape shape;
-    // The array stride (the absolute stride of each dimension in number of elements)
-    Stride stride;
-    // Pointer to the base of this array
-    std::shared_ptr<BhBase> base;
-    // Metadata to support sliding views
-    bh_slide slides;
 
     /** Create a new view */
-    explicit
-    BhArray(Shape shape, Stride stride, uint64_t offset = 0) : offset(offset), shape(std::move(shape)),
-                                                               stride(std::move(stride)),
-                                                               base(make_base_ptr(T(0), shape.prod())) {
+    explicit BhArray(Shape shape, Stride stride, uint64_t offset = 0) :
+                BhArrayUnTypedCore(offset, std::move(shape), std::move(stride), make_base_ptr(T(0), shape.prod())) {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
@@ -101,11 +121,8 @@ public:
      *        construct a BhBase object, use the make_base_ptr
      *        helper function.
      */
-    explicit
-    BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride, uint64_t offset = 0) : offset(offset),
-                                                                                             shape(std::move(shape)),
-                                                                                             stride(std::move(stride)),
-                                                                                             base(std::move(base)) {
+    explicit BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride, uint64_t offset = 0) :
+                BhArrayUnTypedCore(offset, std::move(shape), std::move(stride), std::move(base)) {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
@@ -162,25 +179,8 @@ public:
     /// The const version of `data()`
     const T *data() const { return static_cast<T *>(base->getDataPtr()); }
 
-    //
-    // Routines
-    //
-
-    /** Return a `bh_view` of the array */
-    bh_view getBhView() const {
-        bh_view view;
-        assert(base.use_count() > 0);
-        view.base = base.get();
-        view.start = static_cast<int64_t>(offset);
-        view.ndim = static_cast<int64_t>(shape.size());
-        view.shape = BhIntVec(shape.begin(), shape.end());
-        view.stride = BhIntVec(stride.begin(), stride.end());;
-        view.slides = slides;
-        return view;
-    }
-
-    // Pretty printing the content of the array
-    // TODO: for now it always print the flatten array
+    /// Pretty printing the content of the array
+    /// TODO: for now it always print the flatten array
     void pprint(std::ostream &os) const;
 };
 
