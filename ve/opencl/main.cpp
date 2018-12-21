@@ -120,6 +120,12 @@ class Impl : public ComponentVE {
     void* getDeviceContext() override {
         return engine.getCContext();
     };
+
+    // Handle user kernels
+    string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                      const std::string &compile_cmd) override {
+        throw std::runtime_error("[OpenCL] userKernel not Implemented");
+    }
 };
 }
 

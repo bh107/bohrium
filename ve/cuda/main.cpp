@@ -106,6 +106,12 @@ class Impl : public ComponentVE {
             return (void*) (*engine.getBuffer(b));
         }
     }
+
+    // Handle user kernels
+    string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                      const std::string &compile_cmd) override {
+        throw std::runtime_error("[CUDA] userKernel not Implemented");
+    }
 };
 }
 
