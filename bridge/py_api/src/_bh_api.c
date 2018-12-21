@@ -190,6 +190,17 @@ static int BhAPI_mem_signal_exist(const void *addr) {
     return bh_mem_signal_exist(addr);
 }
 
+/** Run an user kernel
+ *
+ * @param kernel The source code of the kernel
+ * @param nop Number of operands
+ * @param operands The operands given to the kernel all of which must be regular arrays
+ * @param compile_cmd The compilation command
+ * @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string
+ */
+static const char* BhAPI_user_kernel(const char* kernel, int nop, void *operands[], char* compile_cmd) {
+    return bhc_user_kernel(kernel, nop, operands, compile_cmd);
+}
 
 PyObject *PyFlush(PyObject *self, PyObject *args) {
     BhAPI_flush();
