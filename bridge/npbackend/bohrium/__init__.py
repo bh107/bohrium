@@ -37,6 +37,7 @@ from . import interop_pycuda
 from . import interop_numpy
 from . import backend_messaging
 from . import loop
+from . import user_kernel
 from .loop import do_while
 from .nobh import bincount
 from .contexts import EnableBohrium as Enable, DisableBohrium as Disable
