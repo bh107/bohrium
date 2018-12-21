@@ -894,6 +894,8 @@ static PyMethodDef _bhMethods[] = {
             "Send and receive a message through the Bohrium stack\n"},
     {"same_view", (PyCFunction) PySameView, METH_VARARGS | METH_KEYWORDS,
             "Return true when `v1` and `v2` is exactly the same (incl. pointing to the same base)\n"},
+    {"user_kernel", (PyCFunction) PyUserKernel, METH_VARARGS | METH_KEYWORDS,
+            "Run an user kernel\n"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
