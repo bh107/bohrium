@@ -43,14 +43,6 @@ namespace boost { namespace serialization { class access; }}
 std::ostream &operator<<(std::ostream &out, const bh_base &b);
 
 struct bh_view {
-    bh_view() = default;
-
-    /// Copy Constructor
-    bh_view(const bh_view &view);
-
-    /// Create a view that represents the whole of `base`
-    explicit bh_view(bh_base *base);
-
     /// Pointer to the base array.
     bh_base *base = nullptr;
 
@@ -68,6 +60,19 @@ struct bh_view {
 
     /// Slide information
     bh_slide slides;
+
+    /// Default Constructor, which create an empty view that doesn't point to any base array
+    bh_view() = default;
+
+    /// Constructor assigned all regular values
+    bh_view(bh_base *base, int64_t start, int64_t ndim, BhIntVec shape, BhIntVec stride) :
+            base(base), start(start), ndim(ndim), shape(std::move(shape)), stride(std::move(stride)) {}
+
+    /// Copy Constructor
+    bh_view(const bh_view &view);
+
+    /// Create a view that represents the whole of `base`
+    explicit bh_view(bh_base *base) : bh_view(base, 0, 1, {base->nelem()}, {1}) {}
 
     /** Returns a vector of tuples that describe the view using (almost) Python Notation.
         NB: in this notation the stride is always absolute eg. [2:4:3, 0:3:1]
