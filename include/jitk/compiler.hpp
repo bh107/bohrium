@@ -20,46 +20,70 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <string>
-#include <sstream>
-#include <cstdio>
-#include <iostream>
+#include <boost/filesystem.hpp>
 #include <bh_config_parser.hpp>
 
 namespace bohrium {
 namespace jitk {
 
-/**
- * compile() forks and executes a system process.
- */
+/** Compiler that fork a process that compiles a shared library */
 class Compiler {
 public:
     std::string cmd_template;
     std::string config_path;
-    bool verbose;
-    Compiler(std::string cmd_template, std::string config_path, bool verbose);
+    bool verbose = false;
+
+    /** Default constructor */
     Compiler() = default;
 
-    /**
-     *  Compile by piping, the given sourcecode into a shared object.
+    /** Constructor that takes:
      *
-     *  Throws runtime_error on compilation failure
+     * @param cmd_template Default command that expand {OUT} and {IN}
+     * @param config_path Path to the configuration file
+     * @param verbose Print the fully expanded compile command
      */
-    void compile(std::string object_abspath, const char* sourcecode,size_t source_len) const;
+    Compiler(std::string cmd_template, std::string config_path, bool verbose) : cmd_template(std::move(cmd_template)),
+                                                                                config_path(std::move(config_path)),
+                                                                                verbose(verbose) {}
 
-    /**
-     *  Compile source on disk.
-     */
-
-    /**
-     *  Compile by disk writing, the given sourcecode into a shared object.
+    /** Compile source to a binary shared library
      *
-     *  Throws runtime_error on compilation failure
+     * @param output_file Path to the resulting output file
+     * @param source The source to compile
+     * @param command The compile command where {OUT} and {IN} are expanded.
      */
-    void compile(std::string object_abspath, std::string src_abspath) const;
+    void
+    compile(const boost::filesystem::path &output_file, const std::string &source, const std::string &command) const;
+
+    /** Compile source to a binary shared library using the default command template `cmd_template`
+     *
+     * @param output_file Path to the resulting output file
+     * @param source The source to compile
+     */
+    void compile(const boost::filesystem::path &output_file, const std::string &source) const {
+        compile(output_file, source, cmd_template);
+    }
+
+    /** Compile source to a binary shared library
+     *
+     * @param output_file Path to the resulting output file
+     * @param source_file Path to the source file
+     * @param command The compile command where {OUT} and {IN} are expanded.
+     */
+    void compile(const boost::filesystem::path &output_file, const boost::filesystem::path &source_file,
+                 const std::string &command) const;
+
+    /** Compile source to a binary shared library using the default command template `cmd_template`
+     *
+     * @param output_file Path to the resulting output file
+     * @param source_file Path to the source file
+     */
+    void compile(const boost::filesystem::path &output_file, const boost::filesystem::path &source_file) const {
+        compile(output_file, source_file, cmd_template);
+    }
 };
 
-/** Returns the command where {OUT} and {IN} are expanded. */
-std::string expand_compile_cmd(const std::string &cmd_template, const std::string &out,
-                               const std::string &in, const std::string &config_path);
 
-}}
+}
+}
+

@@ -21,14 +21,17 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <stdexcept>
 #include <boost/algorithm/string/replace.hpp>
-
 #include <jitk/compiler.hpp>
+#include <jitk/subprocess.hpp>
 
 using namespace std;
+namespace P = subprocess;
 
 namespace bohrium {
 namespace jitk {
 
+
+/** Returns the command where {OUT} and {IN} are expanded. */
 string expand_compile_cmd(const string &cmd_template, const string &out, const string &in, const string &config_path) {
     string ret = cmd_template;
     boost::replace_all(ret, "{OUT}", out);
@@ -36,68 +39,40 @@ string expand_compile_cmd(const string &cmd_template, const string &out, const s
     return ret;
 }
 
-Compiler::Compiler(string cmd_template, string config_path, bool verbose) : cmd_template(std::move(cmd_template)),
-                                                                            config_path(std::move(config_path)),
-                                                                            verbose(verbose) {}
 
-
-void Compiler::compile(string object_abspath, const char* sourcecode, size_t source_len) const {
-    const string cmd = expand_compile_cmd(cmd_template, object_abspath, " - ", config_path);
+void Compiler::compile(const boost::filesystem::path &output_file, const string &source,
+                       const string &command) const {
+    const string cmd = expand_compile_cmd(command, output_file.string(), " - ", config_path);
     if (verbose) {
-        cout << "compile command: " << cmd << endl;
+        cout << "compile command: \"" << cmd << "\"" << endl;
     }
-
-    FILE* cmd_stdin = popen(cmd.c_str(), "w");  // Open process and get stdin stream
-    if (!cmd_stdin) {
-        perror("popen()");
-        fprintf(stderr, "popen() failed for: [%s]", sourcecode);
-        throw runtime_error("Compiler: popen() failed");
-    }
-                                                // Write / pipe to stdin
-    int write_res = fwrite(sourcecode, sizeof(char), source_len, cmd_stdin);
-    if (write_res < (int)source_len) {
-        perror("fwrite()");
-        fprintf(stderr, "fwrite() failed in file %s at line # %d\n", __FILE__, __LINE__-5);
-        pclose(cmd_stdin);
-        throw runtime_error("Compiler: error!");
-    }
-
-    int flush_res = fflush(cmd_stdin);          // Flush stdin
-    if (EOF == flush_res) {
-        perror("fflush()");
-        fprintf(stderr, "fflush() failed in file %s at line # %d\n", __FILE__, __LINE__-5);
-        pclose(cmd_stdin);
-        throw runtime_error("Compiler: fflush() failed");
-    }
-
-    int exit_code = (pclose(cmd_stdin)/256);
-    if (0!=exit_code) {
-        perror("pclose()");
-        fprintf(stderr, "pclose() failed.\n");
-        throw runtime_error("Compiler: pclose() failed");
+    P::Popen p = P::Popen(cmd, P::input{P::PIPE}, P::output{P::PIPE}, P::error{P::PIPE});
+    p.send(source.c_str(), source.size());
+    auto res = p.communicate();
+    stringstream ss;
+    ss << "[JIT compiler fatal error retcode: " << p.retcode() << "]\n";
+    ss << res.first.buf.data() << "\n"; // Stdout
+    ss << res.second.buf.data() << "\n";// Stderr
+    if (p.retcode() > 0) {
+        throw std::runtime_error(ss.str());
     }
 }
 
-void Compiler::compile(string object_abspath, string src_abspath) const {
-    const string cmd = expand_compile_cmd(cmd_template, object_abspath, src_abspath, config_path);
+void Compiler::compile(const boost::filesystem::path &output_file, const boost::filesystem::path &source_file, const std::string &command) const {
+    const string cmd = expand_compile_cmd(command, output_file.string(), source_file.string(), config_path);
     if (verbose) {
-        cout << "compile command: " << cmd << endl;
+        cout << "compile command: \"" << cmd << "\"" << endl;
     }
-
-    // Execute the process
-    FILE *cmd_stdin = NULL;                     // Handle for library-file
-    cmd_stdin = popen(cmd.c_str(), "w");        // Execute the command
-    if (!cmd_stdin) {
-        std::cout << "Err: Could not execute process! ["<< cmd <<"]" << std::endl;
-        throw runtime_error("Compiler: error!");
-    }
-    fflush(cmd_stdin);
-    int exit_code = (pclose(cmd_stdin)/256);
-    if (0!=exit_code) {
-        perror("pclose()");
-        fprintf(stderr, "pclose() failed.\n");
-        throw runtime_error("Compiler: pclose() failed");
+    P::Popen p = P::Popen(cmd, P::output{P::PIPE}, P::error{P::PIPE});
+    auto res = p.communicate();
+    stringstream ss;
+    ss << "[JIT compiler fatal error retcode: " << p.retcode() << "]\n";
+    ss << res.first.buf.data() << "\n"; // Stdout
+    ss << res.second.buf.data() << "\n";// Stderr
+    if (p.retcode() > 0) {
+        throw std::runtime_error(ss.str());
     }
 }
 
-}}
+}
+}

@@ -47,10 +47,11 @@ private:
     // The compiler to use when function doesn't exist
     const jitk::Compiler compiler;
 
-    // Return a kernel function based on the given 'source' and the name of the kernel function
-    KernelFunction getFunction(const std::string &source, const std::string &func_name);
-
 public:
+    // Return a kernel function based on the given 'source' and the name of the kernel function
+    KernelFunction getFunction(const std::string &source, const std::string &func_name,
+                               const std::string &compile_cmd = "");
+
     EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat);
 
     ~EngineOpenMP() override;
