@@ -168,8 +168,18 @@ public:
      */
     void setDeviceContext(void *device_context);
 
-    // Get the number of calls to flush so far
+    /// Get the number of calls to flush so far
     uint64_t getFlushCount() { return _flush_count; }
+
+    /** Run an user kernel
+     *
+     * @param kernel The source code of the kernel
+     * @param operand_list The operands given to the kernel all of which must be regular arrays
+     * @param compile_cmd The compilation command
+     * @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string
+     */
+    std::string userKernel(const std::string &kernel, std::vector<BhArrayUnTypedCore*> &operand_list,
+                           const std::string &compile_cmd);
 
 private:
     //@{

@@ -128,4 +128,13 @@ void Runtime::setDeviceContext(void *device_context) {
     runtime.setDeviceContext(device_context);
 }
 
+std::string Runtime::userKernel(const std::string &kernel, std::vector<BhArrayUnTypedCore*> &operand_list,
+                                const std::string &compile_cmd) {
+    std::vector<bh_view> ops;
+    for (BhArrayUnTypedCore* op: operand_list) {
+        ops.push_back(op->getBhView());
+    }
+    return runtime.userKernel(kernel, ops, compile_cmd);
+}
+
 }  // namespace bhxx
