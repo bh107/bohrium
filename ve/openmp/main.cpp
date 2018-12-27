@@ -47,11 +47,11 @@ using namespace std;
 
 namespace {
 class Impl : public ComponentVE {
-  private:
+private:
     //Allocated base arrays
-    set<bh_base*> _allocated_bases;
+    set<bh_base *> _allocated_bases;
 
-  public:
+public:
     // Some statistics
     Statistics stat;
     // The OpenMP engine
@@ -60,8 +60,11 @@ class Impl : public ComponentVE {
     Impl(int stack_level) : ComponentVE(stack_level),
                             stat(config),
                             engine(*this, stat) {}
+
     ~Impl() override;
+
     void execute(BhIR *bhir) override;
+
     void extmethod(const string &name, bh_opcode opcode) override {
         // ExtmethodFace does not have a default or copy constructor thus
         // we have to use its move constructor.
@@ -84,7 +87,7 @@ class Impl : public ComponentVE {
     }
 
     // Handle memory pointer retrieval
-    void* getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
+    void *getMemoryPointer(bh_base &base, bool copy2host, bool force_alloc, bool nullify) override {
         if (not copy2host) {
             throw runtime_error("OpenMP - getMemoryPointer(): `copy2host` is not True");
         }
@@ -110,7 +113,7 @@ class Impl : public ComponentVE {
     }
 
     // We have no context so returning NULL
-    void* getDeviceContext() override {
+    void *getDeviceContext() override {
         return nullptr;
     };
 
@@ -119,10 +122,10 @@ class Impl : public ComponentVE {
 };
 }
 
-extern "C" ComponentImpl* create(int stack_level) {
+extern "C" ComponentImpl *create(int stack_level) {
     return new Impl(stack_level);
 }
-extern "C" void destroy(ComponentImpl* self) {
+extern "C" void destroy(ComponentImpl *self) {
     delete self;
 }
 

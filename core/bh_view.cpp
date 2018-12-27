@@ -45,14 +45,6 @@ bh_view::bh_view(const bh_view &view) {
     stride = view.stride;
 }
 
-bh_view::bh_view(bh_base *base) {
-    this->base = base;
-    this->ndim = 1;
-    this->start = 0;
-    this->shape.push_back(this->base->nelem());
-    this->stride.push_back(1);
-}
-
 void bh_view::insert_axis(int64_t dim, int64_t size, int64_t stride) {
     assert(dim <= ndim);
     this->shape.insert(this->shape.begin() + dim, size);

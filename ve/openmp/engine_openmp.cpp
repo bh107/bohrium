@@ -110,7 +110,7 @@ EngineOpenMP::~EngineOpenMP() {
     // }
 }
 
-KernelFunction EngineOpenMP::getFunction(const string &source, const std::string &func_name) {
+KernelFunction EngineOpenMP::getFunction(const string &source, const string &func_name, const string &compile_cmd) {
     uint64_t hash = util::hash(source);
     ++stat.kernel_cache_lookups;
 
@@ -133,10 +133,18 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const std::string
         if (verbose) {
             std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".c");
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir, source_filename, true);
-            compiler.compile(binfile.string(), srcfile.string());
+            if (compile_cmd.empty()) {
+                compiler.compile(binfile, srcfile);
+            } else {
+                compiler.compile(binfile, srcfile, compile_cmd);
+            }
         } else {
             // Pipe the source directly into the compiler thus no source file is written
-            compiler.compile(binfile.string(), source.c_str(), source.size());
+            if (compile_cmd.empty()) {
+                compiler.compile(binfile, source);
+            } else {
+                compiler.compile(binfile, source, compile_cmd);
+            }
         }
     }
 

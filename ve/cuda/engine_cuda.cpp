@@ -204,7 +204,7 @@ CUfunction EngineCUDA::getFunction(const string &source, const std::string &func
             std::string kernel_filename = jitk::hash_filename(compilation_hash, hash, ".cu");
             fs::path srcfile = jitk::write_source2file(source, tmp_src_dir,
                                                        kernel_filename, verbose);
-            compiler.compile(binfile.string(), srcfile.string());
+            compiler.compile(binfile, srcfile);
         }
         /* else {
             // Pipe the source directly into the compiler thus no source file is written
