@@ -31,6 +31,8 @@ Documentation for C++ subprocessing libraray.
 @version 1.0.0
 */
 
+// NB: Removed the `preexec_func` argument since it fails on OSX. We do not use it in Bohrium anyway
+
 #ifndef SUBPROCESS_HPP
 #define SUBPROCESS_HPP
 
@@ -604,34 +606,6 @@ struct error
 // that wont yield me the consistent syntax which I am
 // aiming for. If you know, then please do let me know.
 
-class preexec_func
-{
-public:
-  preexec_func() {}
-
-  template <typename Func>
-  preexec_func(Func f): holder_(new FuncHolder<Func>(f))
-  {}
-
-  void operator()() {
-    (*holder_)();
-  }
-
-private:
-  struct HolderBase {
-    virtual void operator()() const = 0;
-  };
-  template <typename T>
-  struct FuncHolder: HolderBase {
-    FuncHolder(T func): func_(func) {}
-    void operator()() const override {}
-    // The function pointer/reference
-    T func_;
-  };
-
-  std::unique_ptr<HolderBase> holder_ = nullptr;
-};
-
 // ~~~~ End Popen Args ~~~~
 
 
@@ -740,7 +714,6 @@ struct ArgumentDeducer
   void set_option(output&& out);
   void set_option(error&& err);
   void set_option(close_fds&& cfds);
-  void set_option(preexec_func&& prefunc);
   void set_option(session_leader&& sleader);
 
 private:
@@ -1026,14 +999,12 @@ private:
 
   bool defer_process_start_ = false;
   bool close_fds_ = false;
-  bool has_preexec_fn_ = false;
   bool shell_ = false;
   bool session_leader_ = false;
 
   std::string exe_name_;
   std::string cwd_;
   std::map<std::string, std::string> env_;
-  preexec_func preexec_fn_;
 
   // Command in string format
   std::string args_;
@@ -1267,10 +1238,6 @@ namespace detail {
     popen_->close_fds_ = cfds.close_all;
   }
 
-  inline void ArgumentDeducer::set_option(preexec_func&& prefunc) {
-    popen_->preexec_fn_ = std::move(prefunc);
-    popen_->has_preexec_fn_ = true;
-  }
 
 
   inline void Child::execute_child() {
@@ -1332,10 +1299,6 @@ namespace detail {
       if (parent_->cwd_.length()) {
         sys_ret = chdir(parent_->cwd_.c_str());
         if (sys_ret == -1) throw OSError("chdir failed", errno);
-      }
-
-      if (parent_->has_preexec_fn_) {
-        parent_->preexec_fn_();
       }
 
       if (parent_->session_leader_) {
