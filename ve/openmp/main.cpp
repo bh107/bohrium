@@ -164,6 +164,10 @@ void Impl::execute(BhIR *bhir) {
 string Impl::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
                         const std::string &compile_cmd, const std::string &tag) {
 
+    if (tag != "openmp") {
+        throw std::runtime_error("[OpenMP] userKernel not Implemented");
+    }
+
     for (const bh_view &op: operand_list) {
         if (op.isConstant()) {
             return "[UserKernel] fatal error - operands cannot be constants";

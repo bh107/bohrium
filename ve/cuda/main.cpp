@@ -110,7 +110,14 @@ class Impl : public ComponentVE {
     // Handle user kernels
     string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
                       const std::string &compile_cmd, const std::string &tag) override {
-        throw std::runtime_error("[CUDA] userKernel not Implemented");
+        if (tag == "cuda") {
+            throw std::runtime_error("[CUDA] userKernel not Implemented, set tag \"openmp\"");
+        } else {
+            for (const bh_view &op: operand_list) {
+                engine.copyToHost({op.base});
+            }
+            return child.userKernel(kernel, operand_list, compile_cmd, tag);
+        }
     }
 };
 }
