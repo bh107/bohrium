@@ -179,7 +179,7 @@ public:
      * @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string
      */
     std::string userKernel(const std::string &kernel, std::vector<BhArrayUnTypedCore*> &operand_list,
-                           const std::string &compile_cmd);
+                           const std::string &compile_cmd, const std::string &tag);
 
 private:
     //@{

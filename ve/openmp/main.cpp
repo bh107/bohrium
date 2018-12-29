@@ -122,7 +122,7 @@ public:
 
     // Handle user kernels
     string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                      const std::string &compile_cmd) override;
+                      const std::string &compile_cmd, const std::string &tag) override;
 };
 }
 
@@ -162,7 +162,7 @@ void Impl::execute(BhIR *bhir) {
 
 
 string Impl::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                        const std::string &compile_cmd) {
+                        const std::string &compile_cmd, const std::string &tag) {
 
     for (const bh_view &op: operand_list) {
         if (op.isConstant()) {

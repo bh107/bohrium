@@ -196,10 +196,12 @@ static int BhAPI_mem_signal_exist(const void *addr) {
  * @param nop Number of operands
  * @param operands The operands given to the kernel all of which must be regular arrays
  * @param compile_cmd The compilation command
+ * @param tag String that define which component that should handle this kernel (e.g. "openmp", "opencl", or "cuda")
  * @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string
  */
-static const char* BhAPI_user_kernel(const char* kernel, int nop, void *operands[], char* compile_cmd) {
-    return bhc_user_kernel(kernel, nop, operands, compile_cmd);
+static const char* BhAPI_user_kernel(const char* kernel, int nop, void *operands[],
+                                     const char* compile_cmd, const char* tag) {
+    return bhc_user_kernel(kernel, nop, operands, compile_cmd, tag);
 }
 
 PyObject *PyFlush(PyObject *self, PyObject *args) {

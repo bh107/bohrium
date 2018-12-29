@@ -16,14 +16,14 @@ def get_default_compiler_command():
     return _default_compiler_command
 
 
-def execute(kernel_source, operand_list, compiler_command=None):
+def execute(kernel_source, operand_list, compiler_command=None, tag="openmp"):
     if compiler_command is None:
         compiler_command = get_default_compiler_command()
     for op in operand_list:
         if not bhary.check(op):
             raise TypeError("All operands in `operand_list` must be Bohrium arrays")
     _bh.flush()
-    ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command)
+    ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command, tag)
     if len(ret_msg) > 0:
         raise RuntimeError(ret_msg)
 

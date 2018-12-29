@@ -285,10 +285,11 @@ def main(args):
 
 """ % t
 
-    doc = "\n// Send and receive a message through the component stack\n"
+    doc = "\n// Run an user kernel\n"
     doc += "// NB: the returned string is invalidated on the next call to bhc_user_kernel()\n"
     impl += doc; head += doc
-    decl = "const char* bhc_user_kernel(const char* kernel, int nop, void *operands[], char* compile_cmd)"
+    decl = "const char* bhc_user_kernel(const char* kernel, int nop, void *operands[], const char *compile_cmd, " \
+           "const char *tag)"
     head += "%s;\n" % decl
     impl += "%s" % decl
     impl += """
@@ -298,7 +299,7 @@ def main(args):
     for (int i=0; i<nop; ++i) {
         ops.push_back(static_cast<bhxx::BhArrayUnTypedCore*>(operands[i]));
     }
-    ret_msg = bhxx::Runtime::instance().userKernel(kernel, ops, compile_cmd);
+    ret_msg = bhxx::Runtime::instance().userKernel(kernel, ops, compile_cmd, tag);
     return ret_msg.c_str();
 }
 """
