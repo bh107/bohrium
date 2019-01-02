@@ -1,4 +1,5 @@
 import numpy_force as np
+from bohrium_api import stack_info
 from . import _bh, bhary, _util
 
 _default_compiler_command = None
@@ -17,6 +18,8 @@ def get_default_compiler_command():
 
 
 def execute(kernel_source, operand_list, compiler_command=None, tag="openmp"):
+    if stack_info.is_proxy_in_stack():
+        raise RuntimeError("The proxy backend does not support user kernels")
     if compiler_command is None:
         compiler_command = get_default_compiler_command()
     for op in operand_list:
