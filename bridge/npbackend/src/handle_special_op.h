@@ -102,3 +102,12 @@ PyObject* PyGetDeviceContext(PyObject *self, PyObject *args);
  * @return     The message answer from the bhc runtime
  */
 PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds);
+
+/** Run an user kernel
+*
+* @param kernel The source code of the kernel
+* @param operand_list The operands given to the kernel all of which must be regular arrays (not scalars)
+* @param compile_cmd The compilation command
+* @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string
+*/
+PyObject* PyUserKernel(PyObject *self, PyObject *args, PyObject *kwds);

@@ -285,6 +285,25 @@ def main(args):
 
 """ % t
 
+    doc = "\n// Run an user kernel\n"
+    doc += "// NB: the returned string is invalidated on the next call to bhc_user_kernel()\n"
+    impl += doc; head += doc
+    decl = "const char* bhc_user_kernel(const char* kernel, int nop, void *operands[], const char *compile_cmd, " \
+           "const char *tag, const char *param)"
+    head += "%s;\n" % decl
+    impl += "%s" % decl
+    impl += """
+{
+    static std::string ret_msg;
+    std::vector<bhxx::BhArrayUnTypedCore*> ops;
+    for (int i=0; i<nop; ++i) {
+        ops.push_back(static_cast<bhxx::BhArrayUnTypedCore*>(operands[i]));
+    }
+    ret_msg = bhxx::Runtime::instance().userKernel(kernel, ops, compile_cmd, tag, param);
+    return ret_msg.c_str();
+}
+"""
+
     #Let's add header and footer
     head = """/* Bohrium C Bridge: special functions. Auto generated! */
 #pragma once

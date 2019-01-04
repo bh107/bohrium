@@ -20,6 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <vector>
 #include <iostream>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <bh_instruction.hpp>
 #include <bh_component.hpp>
@@ -54,7 +56,7 @@ vector<pair<cl::Platform, cl::Device> > get_device_list() {
     constexpr cl_device_type type_list[] = {CL_DEVICE_TYPE_GPU, CL_DEVICE_TYPE_ACCELERATOR, CL_DEVICE_TYPE_ALL};
     for (cl_device_type type: type_list) {
         // Find all devices of type 'type' and move them into `ret`
-        for (auto it = all_device_list.begin(); it != all_device_list.end(); ) {
+        for (auto it = all_device_list.begin(); it != all_device_list.end();) {
             if (it->second.getInfo<CL_DEVICE_TYPE>() & type) {
                 ret.emplace_back(*it);
                 it = all_device_list.erase(it); // `.erase()` returns the next valid iterator
@@ -519,7 +521,7 @@ std::string EngineOpenCL::info() const {
     ss << std::boolalpha; // Printing true/false instead of 1/0
     ss << "----" << "\n";
     ss << "OpenCL:" << "\n";
-    ss << "  Device[" << device_number <<"]: " << device_list.at(device_number) << "\n";
+    ss << "  Device[" << device_number << "]: " << device_list.at(device_number) << "\n";
     if (device_list.size() > 1) {
         ss << "  Available devices: \n" << device_list;
     }
@@ -571,6 +573,91 @@ const std::string EngineOpenCL::writeType(bh_type dtype) {
             std::cerr << "Unknown OpenCL type: " << bh_type_text(dtype) << std::endl;
             throw std::runtime_error("Unknown OpenCL type");
     }
+}
+
+// Help function to extract a comma separated list of integers
+namespace {
+vector<size_t> param_extract_integer_list(const std::string &option, const std::string &param) {
+    const boost::regex expr{option + ":\\s*([\\d,\\s]+)"};
+    boost::smatch match;
+    if (!boost::regex_search(param, match, expr) || match.size() < 2) {
+        return {};
+    }
+    vector<size_t> ret;
+    vector<string> tokens;
+    const string str_list = match[1].str();
+    boost::algorithm::split(tokens, str_list, boost::is_any_of("\t, "), boost::token_compress_on);
+    for (const auto &token: tokens) {
+        if (!token.empty()) {
+            try {
+                ret.emplace_back(boost::lexical_cast<size_t>(token));
+            } catch (const boost::bad_lexical_cast &) {
+                return {};
+            }
+        }
+    }
+    return ret;
+}
+}
+
+// Handle user kernels
+string EngineOpenCL::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                                const std::string &compile_cmd, const std::string &tag, const std::string &param) {
+
+    uint64_t hash = util::hash(kernel);
+    std::string source_filename = jitk::hash_filename(compilation_hash, hash, ".cl");
+
+    cl::Program program;
+    cl::Kernel opencl_kernel;
+    auto tcompile = chrono::steady_clock::now();
+    try {
+        program = getFunction(kernel);
+        opencl_kernel = cl::Kernel(program, "execute");
+    } catch (const cl::Error &e) {
+        return string(e.what());
+    }
+    stat.time_compile += chrono::steady_clock::now() - tcompile;
+
+    for (cl_uint i = 0; i < operand_list.size(); ++i) {
+        opencl_kernel.setArg(i, *getBuffer(operand_list[i].base));
+    }
+
+    const vector<size_t> global_work_size = param_extract_integer_list("global_work_size", param);
+    const vector<size_t> local_work_size = param_extract_integer_list("local_work_size", param);
+    if (global_work_size.size() != local_work_size.size()) {
+        return "[OpenCL] userKernel-param dimension of global_work_size and local_work_size must be the same";
+    }
+
+    // Pack the sizes into cl::NDRange
+    cl::NDRange gsize, lsize;
+    switch (global_work_size.size()) {
+        case 1:
+            gsize = cl::NDRange(global_work_size[0]);
+            lsize = cl::NDRange(local_work_size[0]);
+            break;
+        case 2:
+            gsize = cl::NDRange(global_work_size[0], global_work_size[1]);
+            lsize = cl::NDRange(local_work_size[0], local_work_size[1]);
+            break;
+        case 3:
+            gsize = cl::NDRange(global_work_size[0], global_work_size[1], global_work_size[2]);
+            lsize = cl::NDRange(local_work_size[0], local_work_size[1], local_work_size[2]);
+            break;
+        default:
+            return "[OpenCL] userKernel-param maximum of three dimensions!";
+    }
+
+    auto start_exec = chrono::steady_clock::now();
+    try {
+        queue.enqueueNDRangeKernel(opencl_kernel, cl::NullRange, gsize, lsize);
+        queue.finish();
+    } catch (const cl::Error &e) {
+        return string(e.what());
+    }
+    auto texec = chrono::steady_clock::now() - start_exec;
+    stat.time_exec += texec;
+    stat.time_per_kernel[source_filename].register_exec_time(texec);
+    return "";
 }
 
 } // bohrium

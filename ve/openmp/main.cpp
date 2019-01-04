@@ -118,7 +118,11 @@ public:
     };
 
     // We have no context so doing nothing
-    void setDeviceContext(void* device_context) override {};
+    void setDeviceContext(void *device_context) override {};
+
+    // Handle user kernels
+    string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                      const std::string &compile_cmd, const std::string &tag, const std::string &param) override;
 };
 }
 
@@ -154,4 +158,55 @@ void Impl::execute(BhIR *bhir) {
         // Change views that slide between iterations
         slide_views(bhir);
     }
+}
+
+
+string Impl::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                        const std::string &compile_cmd, const std::string &tag, const std::string &param) {
+
+    if (tag != "openmp") {
+        stringstream ss;
+        throw std::runtime_error("No backend with tag \"" + tag + "\" found");
+    }
+
+    for (const bh_view &op: operand_list) {
+        if (op.isConstant()) {
+            return "[UserKernel] fatal error - operands cannot be constants";
+        }
+        bh_data_malloc(op.base);
+    }
+    string kernel_with_launcher;
+    vector<void *> data_list;
+    {
+        stringstream ss;
+        ss << kernel << "\n";
+        ss << "void _bh_launcher(void *data_list[]) {\n";
+        for (size_t i=0; i<operand_list.size(); ++i) {
+            ss << "    " << engine.writeType(operand_list[i].base->dtype());
+            ss << " *a" << i << " = data_list[" << i << "];\n";
+            data_list.push_back(operand_list[i].base->getDataPtr());
+        }
+        ss << "    execute(";
+        for (size_t i=0; i<operand_list.size()-1; ++i) {
+            ss << "a" << i << ", ";
+        }
+        if (not operand_list.empty()) {
+            ss << "a" << operand_list.size()-1;
+        }
+        ss << ");\n";
+        ss << "}\n";
+        kernel_with_launcher = ss.str();
+    }
+
+    UserKernelFunction func;
+    try {
+        KernelFunction f = engine.getFunction(kernel_with_launcher, "_bh_launcher", compile_cmd);
+        func = reinterpret_cast<UserKernelFunction>(f);
+        assert(func != nullptr);
+    } catch (const std::runtime_error &e) {
+        return string(e.what());
+    }
+
+    func(&data_list[0]);
+    return "";
 }

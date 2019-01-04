@@ -118,6 +118,8 @@ def array(obj, dtype=None, copy=False, order=None, subok=False, ndmin=0, bohrium
         if bhary.check(ary):
             if order == 'F':
                 raise ValueError("Cannot convert a Bohrium array to column-major ('F') memory representation")
+            elif order == 'C' and not ary.flags['C_CONTIGUOUS']:
+                copy = True  # We need to copy in order to make the returned array contiguous
 
             if copy:
                 t = empty_like(ary)

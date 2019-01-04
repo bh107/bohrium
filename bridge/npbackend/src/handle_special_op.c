@@ -376,3 +376,54 @@ PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds) {
     return PyString_FromString(BhAPI_message(msg));
 #endif
 }
+
+PyObject* PyUserKernel(PyObject *self, PyObject *args, PyObject *kwds) {
+    char *kernel, *compile_cmd, *tag, *param;
+    PyObject *operand_fast_seq;
+    {
+        PyObject *operand_list;
+        static char *kwlist[] = {"kernel:str", "operand_list:list", "compiler_cmd:str", "tag:str", "param:str", NULL};
+        if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOsss", kwlist, &kernel, &operand_list, &compile_cmd, &tag,
+                                         &param)) {
+            return NULL;
+        }
+        operand_fast_seq = PySequence_Fast(operand_list, "`operand_list` should be a sequence.");
+        if (operand_fast_seq == NULL) {
+            return NULL;
+        }
+    }
+    const Py_ssize_t nop = PySequence_Fast_GET_SIZE(operand_fast_seq);
+
+    // Read and normalize all operands
+    bhc_dtype types[nop];
+    bhc_bool constant;
+    void *operands[nop];
+    normalize_cleanup_handle cleanup;
+    cleanup.objs2free_count = 0;
+    for (int i = 0; i < nop; ++i) {
+        PyObject *op = PySequence_Fast_GET_ITEM(operand_fast_seq, i); // Borrowed reference and will not fail
+        int err = normalize_operand(op, &types[i], &constant, &operands[i], &cleanup);
+        if (err != -1) {
+            if (constant) {
+                PyErr_Format(PyExc_TypeError, "Scalars isn't supported.");
+                err = -1;
+            }
+        }
+        if (err == -1) {
+            normalize_operand_cleanup(&cleanup);
+            Py_DECREF(operand_fast_seq);
+            if (PyErr_Occurred() != NULL) {
+                return NULL;
+            } else {
+                Py_RETURN_NONE;
+            }
+        }
+    }
+
+    const char *ret = BhAPI_user_kernel(kernel, nop, operands, compile_cmd, tag, param);
+#if defined(NPY_PY3K)
+    return PyUnicode_FromString(ret);
+#else
+    return PyString_FromString(ret);
+#endif
+}
