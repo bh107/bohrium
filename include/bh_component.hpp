@@ -112,7 +112,7 @@ public:
     virtual void setDeviceContext(void *device_context);
 
     virtual std::string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                                   const std::string &compile_cmd, const std::string &tag);
+                                   const std::string &compile_cmd, const std::string &tag, const std::string &param);
 };
 
 // Representation of a component implementation, which is an abstract class
@@ -240,11 +240,12 @@ public:
      * @param operand_list The operands given to the kernel all of which must be regular arrays and not constants
      * @param compile_cmd The compilation command
      * @param tag String that define which component that should handle this kernel (e.g. "openmp", "opencl", or "cuda")
+     * @param param Backend specific parameters (e.g. OpenCL needs `global_work_size` and `local_work_size`)
      * @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string.
      */
     virtual std::string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                                   const std::string &compile_cmd, const std::string &tag) {
-        return child.userKernel(kernel, operand_list, compile_cmd, tag);
+                                   const std::string &compile_cmd, const std::string &tag, const std::string &param) {
+        return child.userKernel(kernel, operand_list, compile_cmd, tag, param);
     }
 };
 

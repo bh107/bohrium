@@ -132,11 +132,12 @@ void ComponentFace::setDeviceContext(void *device_context) {
 
 
 std::string ComponentFace::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                                      const std::string &compile_cmd, const std::string &tag) {
+                                      const std::string &compile_cmd, const std::string &tag,
+                                      const std::string &param) {
     if (not initiated()) {
         throw std::runtime_error("uninitiated component interface");
     }
-    return _implementation->userKernel(kernel, operand_list, compile_cmd, tag);
+    return _implementation->userKernel(kernel, operand_list, compile_cmd, tag, param);
 }
 
 }} //namespace bohrium::component

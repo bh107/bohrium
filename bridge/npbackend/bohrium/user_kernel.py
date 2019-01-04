@@ -18,7 +18,7 @@ def get_default_compiler_command():
     return _default_compiler_command
 
 
-def execute(kernel_source, operand_list, compiler_command=None, tag="openmp"):
+def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", param=""):
     """ Compile and execute the function `execute()` with the arguments in `operand_list`
 
     Parameters
@@ -34,6 +34,8 @@ def execute(kernel_source, operand_list, compiler_command=None, tag="openmp"):
         When this options isn't specified, the default command are used see `get_default_compiler_command()`.
     tag : str, optional
         Name of the backend that should handle this kernel.
+    param : str, optional
+        Backend specific parameters (e.g. OpenCL needs `global_work_size` and `local_work_size`).
 
     Examples
     --------
@@ -60,7 +62,7 @@ def execute(kernel_source, operand_list, compiler_command=None, tag="openmp"):
         if not bhary.check(op):
             raise TypeError("All operands in `operand_list` must be Bohrium arrays")
     _bh.flush()
-    ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command, tag)
+    ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command, tag, param)
     if len(ret_msg) > 0:
         raise RuntimeError(ret_msg)
 

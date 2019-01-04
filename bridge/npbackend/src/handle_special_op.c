@@ -378,12 +378,13 @@ PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds) {
 }
 
 PyObject* PyUserKernel(PyObject *self, PyObject *args, PyObject *kwds) {
-    char *kernel, *compile_cmd, *tag;
+    char *kernel, *compile_cmd, *tag, *param;
     PyObject *operand_fast_seq;
     {
         PyObject *operand_list;
-        static char *kwlist[] = {"kernel:str", "operand_list:list", "compiler_cmd:str", "tag:str", NULL};
-        if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOss", kwlist, &kernel, &operand_list, &compile_cmd, &tag)) {
+        static char *kwlist[] = {"kernel:str", "operand_list:list", "compiler_cmd:str", "tag:str", "param:str", NULL};
+        if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOsss", kwlist, &kernel, &operand_list, &compile_cmd, &tag,
+                                         &param)) {
             return NULL;
         }
         operand_fast_seq = PySequence_Fast(operand_list, "`operand_list` should be a sequence.");
@@ -419,7 +420,7 @@ PyObject* PyUserKernel(PyObject *self, PyObject *args, PyObject *kwds) {
         }
     }
 
-    const char *ret = BhAPI_user_kernel(kernel, nop, operands, compile_cmd, tag);
+    const char *ret = BhAPI_user_kernel(kernel, nop, operands, compile_cmd, tag, param);
 #if defined(NPY_PY3K)
     return PyUnicode_FromString(ret);
 #else

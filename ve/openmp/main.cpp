@@ -122,7 +122,7 @@ public:
 
     // Handle user kernels
     string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                      const std::string &compile_cmd, const std::string &tag) override;
+                      const std::string &compile_cmd, const std::string &tag, const std::string &param) override;
 };
 }
 
@@ -162,7 +162,7 @@ void Impl::execute(BhIR *bhir) {
 
 
 string Impl::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
-                        const std::string &compile_cmd, const std::string &tag) {
+                        const std::string &compile_cmd, const std::string &tag, const std::string &param) {
 
     if (tag != "openmp") {
         throw std::runtime_error("[OpenMP] userKernel not Implemented");
