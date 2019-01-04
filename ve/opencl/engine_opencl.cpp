@@ -585,7 +585,8 @@ vector<size_t> param_extract_integer_list(const std::string &option, const std::
     }
     vector<size_t> ret;
     vector<string> tokens;
-    boost::algorithm::split(tokens, match[1], boost::is_any_of("\t, "), boost::token_compress_on);
+    const string str_list = match[1].str();
+    boost::algorithm::split(tokens, str_list, boost::is_any_of("\t, "), boost::token_compress_on);
     for (const auto &token: tokens) {
         if (!token.empty()) {
             try {
