@@ -125,7 +125,7 @@ class Impl : public ComponentVE {
     string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
                       const std::string &compile_cmd, const std::string &tag, const std::string &param) override {
         if (tag == "opencl") {
-            throw std::runtime_error("[OpenCL] userKernel not Implemented, set tag \"openmp\"");
+            return engine.userKernel(kernel, operand_list, compile_cmd, tag, param);
         } else {
             for (const bh_view &op: operand_list) {
                 engine.copyToHost({op.base});

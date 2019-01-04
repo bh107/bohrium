@@ -174,6 +174,10 @@ public:
         stat.malloc_cache_lookups = malloc_cache.getTotalNumLookups();
         stat.malloc_cache_misses = malloc_cache.getTotalNumMisses();
     }
+
+    // Handle user kernels
+    std::string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                           const std::string &compile_cmd, const std::string &tag, const std::string &param);
 };
 
 } // bohrium
