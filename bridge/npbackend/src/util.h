@@ -48,9 +48,9 @@ typedef struct _normalize_cleanup_handle {
  * NB: remember to call `normalize_operand_cleanup()` after you have used the extracted values
  *
  * @param op       The Python object to normalize and extract from. Can be a Numpy-array, Bohrium-array, and Scalar
- * @param dtype    The returned list of data types bhc enums
- * @param constant The returned list of booleans the indicate whether an operand is a constant or not
- * @param operand  The returned list of bhc array pointers and constants
+ * @param dtype    The returned data types bhc enums
+ * @param constant The returned booleans the indicate whether an operand is a constant or not
+ * @param operand  The returned bhc array pointers and constants
  * @param cleanup  The clean up handle, which should be initiated with `objs2free_count = 0`
  * @return         Is 0 on success and -1 on abort. Use `PyErr_Occurred()` to check if its a Python error
  *                 or legit abort, in which case you can return Py_RETURN_NONE

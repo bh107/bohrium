@@ -165,7 +165,6 @@ string Impl::userKernel(const std::string &kernel, std::vector<bh_view> &operand
                         const std::string &compile_cmd, const std::string &tag, const std::string &param) {
 
     if (tag != "openmp") {
-        stringstream ss;
         throw std::runtime_error("No backend with tag \"" + tag + "\" found");
     }
 
