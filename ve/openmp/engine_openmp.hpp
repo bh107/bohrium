@@ -91,6 +91,9 @@ public:
         bh_get_malloc_cache_stat(stat.malloc_cache_lookups, stat.malloc_cache_misses, stat.max_memory_usage);
     }
 
+    std::string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                           const std::string &compile_cmd, const std::string &tag, const std::string &param);
+
 private:
     // Writes the union of C99 types that can make up a constant
     inline void writeUnionType(std::stringstream& out) {
