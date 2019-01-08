@@ -421,6 +421,8 @@ PyObject* PyUserKernel(PyObject *self, PyObject *args, PyObject *kwds) {
     }
 
     const char *ret = BhAPI_user_kernel(kernel, nop, operands, compile_cmd, tag, param);
+    normalize_operand_cleanup(&cleanup);
+    Py_DECREF(operand_fast_seq);
 #if defined(NPY_PY3K)
     return PyUnicode_FromString(ret);
 #else

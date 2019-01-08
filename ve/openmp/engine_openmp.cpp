@@ -467,4 +467,56 @@ const std::string EngineOpenMP::writeType(bh_type dtype) {
     }
 }
 
+string EngineOpenMP::userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
+                                const std::string &compile_cmd, const std::string &tag, const std::string &param) {
+
+    for (const bh_view &op: operand_list) {
+        if (op.isConstant()) {
+            return "[UserKernel] fatal error - operands cannot be constants";
+        }
+        bh_data_malloc(op.base);
+    }
+    string kernel_with_launcher;
+    vector<void *> data_list;
+    {
+        stringstream ss;
+        ss << kernel << "\n";
+        ss << "void _bh_launcher(void *data_list[]) {\n";
+        for (size_t i=0; i<operand_list.size(); ++i) {
+            ss << "    " << writeType(operand_list[i].base->dtype());
+            ss << " *a" << i << " = data_list[" << i << "];\n";
+            data_list.push_back(operand_list[i].base->getDataPtr());
+        }
+        ss << "    execute(";
+        for (size_t i=0; i<operand_list.size()-1; ++i) {
+            ss << "a" << i << ", ";
+        }
+        if (not operand_list.empty()) {
+            ss << "a" << operand_list.size()-1;
+        }
+        ss << ");\n";
+        ss << "}\n";
+        kernel_with_launcher = ss.str();
+    }
+
+    auto tcompile = chrono::steady_clock::now();
+    UserKernelFunction func;
+    try {
+        KernelFunction f = getFunction(kernel_with_launcher, "_bh_launcher", compile_cmd);
+        func = reinterpret_cast<UserKernelFunction>(f);
+        assert(func != nullptr);
+    } catch (const std::runtime_error &e) {
+        return string(e.what());
+    }
+    stat.time_compile += chrono::steady_clock::now() - tcompile;
+
+    auto start_exec = chrono::steady_clock::now();
+    func(&data_list[0]);
+    auto texec = chrono::steady_clock::now() - start_exec;
+    stat.time_exec += texec;
+    stat.time_per_kernel[jitk::hash_filename(compilation_hash, util::hash(kernel), ".c")].register_exec_time(texec);
+    return "";
+}
+
+
 } // bohrium
