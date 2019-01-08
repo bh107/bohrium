@@ -175,3 +175,29 @@ PyObject *PySameView(PyObject *self, PyObject *args, PyObject *kwds) {
         Py_RETURN_FALSE;
     }
 }
+
+PyObject *PyIsBehaving(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary;
+    static char *kwlist[] = {"ary:bharray", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ary)) {
+        return NULL;
+    }
+    if (!BhArray_CheckExact(ary)) {
+        PyErr_Format(PyExc_TypeError, "Array must be a Bohrium array.");
+        return NULL;
+    }
+    BhArray *base = get_base(ary);
+    if (base == NULL) {
+        return NULL;
+    }
+    if (PyArray_DATA(ary) != PyArray_DATA(base)) {
+        Py_RETURN_FALSE; // `ary` uses an offset
+    }
+    if (!PyArray_IS_C_CONTIGUOUS(ary)) {
+        Py_RETURN_FALSE; // `ary` is not C-style contiguous
+    }
+    if (PyArray_SIZE(ary) != PyArray_SIZE(base)) {
+        Py_RETURN_FALSE; // `ary` does not represent the whole of its base
+    }
+    Py_RETURN_TRUE;
+}

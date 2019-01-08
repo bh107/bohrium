@@ -88,3 +88,13 @@ BhArray *get_base(PyObject *ary);
  */
 int same_view(PyArrayObject *v1, PyArrayObject *v2);
 PyObject *PySameView(PyObject *self, PyObject *args, PyObject *kwds);
+
+/** Check if `ary` is a "behaving" Bohrium array, which requires:
+ *    - C-style contiguous
+ *    - Points to the first element in the underlying base array (no offset)
+ *    - Has the same total length as its base
+ *
+ * @param ary The Bohrium array to check
+ * @return The boolean answer
+ */
+PyObject *PyIsBehaving(PyObject *self, PyObject *args, PyObject *kwds);

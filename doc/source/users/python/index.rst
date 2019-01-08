@@ -220,8 +220,8 @@ In order to write and run your own kernel use `bh.user_kernel.execute() <https:/
     import bohrium as bh
 
     def fftn(ary):
-        # Making sure that `ary` is complex and contiguous
-        ary = bh.array(ary, dtype=bh.complex128, order='C')
+        # Making sure that `ary` is complex, contiguous, and uses no offset
+        ary = bh.user_kernel.make_behaving(ary, dtype=bh.complex128)
         res = bh.empty_like(a)
 
         # Indicates the direction of the transform you are interested in;
