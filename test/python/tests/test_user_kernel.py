@@ -16,13 +16,15 @@ void execute(double *a, double *b, double *c) {
 }
 """
 a = bh.ones(100, bh.double)
-b = bh.ones(100, bh.double)
+b = bh.ones(110, bh.double)
+b = bh.user_kernel.make_behaving(b[10:])
 res = bh.empty_like(a)
 bh.user_kernel.execute(kernel, [a, b, res])
 '''
         np_cmd = '''
 a = np.ones(100, bh.double)
-b = np.ones(100, bh.double)
+b = np.ones(110, bh.double)
+b = b[10:]
 res = a + b + np.arange(100)
 '''
         return (np_cmd, bh_cmd)
@@ -41,13 +43,15 @@ kernel void execute(global double *a, global double *b, global double *c) {
 }
 """
 a = bh.ones(100, bh.double)
-b = bh.ones(100, bh.double)
+b = bh.ones(110, bh.double)
+b = bh.user_kernel.make_behaving(b[10:])
 res = bh.empty_like(a)
 bh.user_kernel.execute(kernel, [a, b, res], tag="opencl", param="global_work_size: 100; local_work_size: 1")
 '''
         np_cmd = '''
 a = np.ones(100, bh.double)
-b = np.ones(100, bh.double)
+b = np.ones(110, bh.double)
+b = b[10:]
 res = a + b + np.arange(100)
 '''
         return (np_cmd, bh_cmd)

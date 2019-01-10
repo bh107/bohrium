@@ -1,6 +1,6 @@
 import numpy_force as np
 from bohrium_api import stack_info
-from . import _bh, bhary, _util
+from . import _bh, bhary, _util, array_create
 
 _default_compiler_command = None
 
@@ -18,7 +18,7 @@ def get_default_compiler_command():
     return _default_compiler_command
 
 
-def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", param=""):
+def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", param="", only_behaving_operands=True):
     """ Compile and execute the function `execute()` with the arguments in `operand_list`
 
     Parameters
@@ -36,10 +36,16 @@ def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", pa
         Name of the backend that should handle this kernel.
     param : str, optional
         Backend specific parameters (e.g. OpenCL needs `global_work_size` and `local_work_size`).
+    only_behaving_operands : bool, optional
+        Set to False in order to allow non-behaving operands. Requirements for a behaving array:
+             * Is a bohrium array
+             * Is C-style contiguous
+             * Points to the first element in the underlying base array (no offset)
+             * Has the same total length as its base
+        See `make_behaving()`
 
     Examples
     --------
-
     # Simple addition kernel
     import bohrium as bh
     kernel = r'''
@@ -61,6 +67,9 @@ def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", pa
     for op in operand_list:
         if not bhary.check(op):
             raise TypeError("All operands in `operand_list` must be Bohrium arrays")
+        if only_behaving_operands and not _bh.is_array_behaving(op):
+            raise TypeError("Operand is not behaving set `only_behaving_operands=False` or use `make_behaving()`")
+
     _bh.flush()
     ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command, tag, param)
     if len(ret_msg) > 0:
@@ -94,3 +103,34 @@ def gen_function_prototype(operand_list, operand_name_list=None):
         else:
             ret += "%s, " % operand_name_list[i]
     return "%s)\n" % ret[:-2]
+
+
+def make_behaving(ary, dtype=None):
+    """ Make sure that `ary` is a "behaving" bohrium array of type `dtype`.
+    Requirements for a behaving array:
+     * Is a bohrium array
+     * Is C-style contiguous
+     * Points to the first element in the underlying base array (no offset)
+     * Has the same total length as its base
+
+    Parameters
+    ----------
+    ary : array_like
+        The array to make behaving
+    dtype : boolean, optional
+        The return array is converted to `dtype` if not None
+    
+    Returns
+    -------
+    A behaving Bohrium array that might be a copy of `ary`
+
+    Note
+    ----
+    Use this function to make sure that operands given to `execute()` is "behaving" that is
+    the kernel can access the arrays without worrying about offset and stride.
+    """
+
+    ary = array_create.array(ary, dtype=dtype, order='C')
+    if not _bh.is_array_behaving(ary):
+        ary = array_create.array(ary, copy=True)
+    return ary
