@@ -66,6 +66,8 @@ struct KernelStats {
 };
 
 class Statistics {
+  private:
+    uint64_t max_num_kernels = 100;
   public:
     bool enabled;
     bool print_on_exit; // On exist, write to file or pprint to stdout
@@ -162,13 +164,8 @@ class Statistics {
                                        << std::setw(12) << "Total time"
                                        << std::setw(12) << "Max time"
                                        << std::setw(12) << "Min time"                                << "\n" << RST;
-              auto cmp = [](std::pair<std::string, KernelStats> const & a, std::pair<std::string, KernelStats> const & b) {
-                // compare map by values (descending)
-                return !(a.second < b.second);
-              };
-              std::vector<std::pair<std::string, KernelStats> > tpk_sorted(time_per_kernel.begin(), time_per_kernel.end());
-              std::sort(std::begin(tpk_sorted), std::end(tpk_sorted), cmp);
-              for (auto const& x : tpk_sorted) {
+              auto const topk_kernels = topkKernelTimes(max_num_kernels);
+              for (auto const& x : topk_kernels) {
                 std::string kernel_filename = x.first;
                 KernelStats kernel_data = x.second;
                 out << "  "
@@ -179,12 +176,34 @@ class Statistics {
                                          << std::setw(8) << kernel_data.max_time.count()   << "s   "
                                          << std::setw(8) << kernel_data.min_time.count()   << "s   " << "\n" << RST;
               }
+              const uint64_t num_omitted_kernels = time_per_kernel.size() - topk_kernels.size();
+              if (num_omitted_kernels > 0) {
+                  out << "  (" << num_omitted_kernels << " kernels omitted)\n";
+              }
             }
             out << endl;
         } else {
             out << BLU << "[" << backend_name << "] Profiling: " << RST;
             out << BOLD << RED << "Statistic Disabled\n" << RST;
         }
+    }
+
+    std::vector<std::pair<std::string, KernelStats> > topkKernelTimes(uint64_t k) {
+        // Returns a sorted vector containing the top K entries from time_per_kernel (default ordering)
+        auto cmp = [](std::pair<std::string, KernelStats> const &a, std::pair<std::string, KernelStats> const &b) {
+            // compare map by values (descending)
+            return !(a.second < b.second);
+        };
+        std::vector<std::pair<std::string, KernelStats>> tpk_sorted(time_per_kernel.begin(), time_per_kernel.end());
+        k = std::min(k, (uint64_t)tpk_sorted.size());
+        std::partial_sort(
+            std::begin(tpk_sorted),
+            std::begin(tpk_sorted) + k,
+            std::end(tpk_sorted),
+            cmp
+        );
+        tpk_sorted.resize(k);
+        return tpk_sorted;
     }
 
     // Export statistic using the YAML format <http://yaml.org>
