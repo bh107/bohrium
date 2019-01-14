@@ -75,19 +75,21 @@ public:
     /// Metadata to support sliding views
     bh_slide slides;
 
-    /// Only Constructor
-    BhArrayUnTypedCore(uint64_t offset, Shape shape, Stride stride, std::shared_ptr<BhBase> base) :
-            offset(offset), shape(std::move(shape)), stride(std::move(stride)), base(std::move(base)) {}
-
     /** Return a `bh_view` of the array */
     bh_view getBhView() const {
         bh_view view;
         assert(base.use_count() > 0);
         view.base = base.get();
         view.start = static_cast<int64_t>(offset);
-        view.ndim = static_cast<int64_t>(shape.size());
-        view.shape = BhIntVec(shape.begin(), shape.end());
-        view.stride = BhIntVec(stride.begin(), stride.end());;
+        if (shape.empty()) { // Scalar views (i.e. 0-dim views) are represented as 1-dim arrays with size one.
+            view.ndim = 1;
+            view.shape = BhIntVec({1});
+            view.stride = BhIntVec({1});
+        } else {
+            view.ndim = static_cast<int64_t>(shape.size());
+            view.shape = BhIntVec(shape.begin(), shape.end());
+            view.stride = BhIntVec(stride.begin(), stride.end());;
+        }
         view.slides = slides;
         return view;
     }
@@ -100,12 +102,15 @@ public:
 template<typename T>
 class BhArray : public BhArrayUnTypedCore {
 public:
-    // The data type of each array element
+    /// The data type of each array element
     typedef T scalar_type;
+
+    /** Default constructor that leave the instance completely uninitialized. */
+    BhArray() = default;
 
     /** Create a new view */
     explicit BhArray(Shape shape, Stride stride, uint64_t offset = 0) :
-                BhArrayUnTypedCore(offset, std::move(shape), std::move(stride), make_base_ptr(T(0), shape.prod())) {
+            BhArrayUnTypedCore{offset, std::move(shape), std::move(stride), make_base_ptr(T(0), shape.prod())} {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
@@ -122,7 +127,7 @@ public:
      *        helper function.
      */
     explicit BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride, uint64_t offset = 0) :
-                BhArrayUnTypedCore(offset, std::move(shape), std::move(stride), std::move(base)) {
+            BhArrayUnTypedCore{offset, std::move(shape), std::move(stride), std::move(base)} {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
@@ -165,8 +170,7 @@ public:
      *  allocated, i.e. initialised */
     bool isDataInitialised() const { return base->getDataPtr() != nullptr; }
 
-    /** Obtain the data pointer of the base array, not taking
-     *  ownership of any kind.
+    /** Obtain the data pointer of the array, not taking ownership of any kind.
      *
      *  \note This pointer might be a nullptr if the data in
      *        the base data is not initialised.
@@ -174,14 +178,30 @@ public:
      *  \note No flush is done automatically. The data might be
      *        out of sync with Bohrium.
      */
-    T *data() { return static_cast<T *>(base->getDataPtr()); }
+    T *data() {
+        T *ret = static_cast<T *>(base->getDataPtr());
+        if (ret == nullptr) {
+            return nullptr;
+        } else {
+            return offset + ret;
+        }
+    }
 
     /// The const version of `data()`
-    const T *data() const { return static_cast<T *>(base->getDataPtr()); }
+    const T *data() const {
+        const T *ret = static_cast<T *>(base->getDataPtr());
+        if (ret == nullptr) {
+            return nullptr;
+        } else {
+            return offset + ret;
+        }
+    }
 
     /// Pretty printing the content of the array
-    /// TODO: for now it always print the flatten array
     void pprint(std::ostream &os) const;
+
+    /// Returns a new view of the `idx` dimension. Negative index counts from the back
+    BhArray<T> operator[](int64_t idx) const;
 };
 
 template<typename T>

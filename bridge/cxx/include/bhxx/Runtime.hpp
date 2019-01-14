@@ -80,7 +80,7 @@ public:
     void flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr);
 
     /// Flag array to be sync'ed after the next flush
-    void sync(std::shared_ptr<BhBase> &base_ptr);
+    void sync(const std::shared_ptr<BhBase> &base_ptr);
 
     /** Changes the offset and shape of a view between the iterations of a `do_while` loop.
      * This is the underlying functionality behind using iterators.

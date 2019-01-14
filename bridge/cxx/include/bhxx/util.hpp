@@ -114,7 +114,7 @@ BhArray<T> inner_product(const BhArray<T>& oplhs, const BhArray<T>& oprhs) {
  *  This version allows to specify the operations used for multiplication
  *  and addition, such that other things as inner products can be achieved
  *  as well (e.g. equality comparision is multiplication == equal and
- *  add_reduction == locical_and_reduce)
+ *  add_reduction == local_and_reduce)
  *
  *  \note Performs exactly the same job as std::inner_product, but
  *  on BhArray objects.
