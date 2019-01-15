@@ -288,7 +288,7 @@ In order to use the OpenCL backend, use the `tag` and `param` of `bh.user_kernel
     # Notice, the OpenCL backend requires global_work_size and local_work_size
     bh.user_kernel.execute(kernel, [a, res],
                            tag="opencl",
-                           param={"global_work_size: 10, 5; local_work_size: 1, 1")
+                           param={"global_work_size": [10, 5], "local_work_size": [1, 1])
     print(res)
 
 .. note:: Remember to use the OpenCL backend by setting `BH_STACK=opencl`.
