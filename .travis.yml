@@ -43,7 +43,6 @@ jobs:
       env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="cp27-cp27mu $TEST_SMALL"
 
     # Test of older Python versions
-    - env: BH_STACK=opencl EXEC="cp34-cp34m -m pip install $TEST_DEPS; cp34-cp34m $TEST_ALL"
     - env: BH_STACK=opencl EXEC="cp35-cp35m -m pip install $TEST_DEPS; cp35-cp35m $TEST_ALL"
     - env: BH_STACK=opencl EXEC="cp36-cp36m -m pip install $TEST_DEPS; cp36-cp36m $TEST_ALL"
 
