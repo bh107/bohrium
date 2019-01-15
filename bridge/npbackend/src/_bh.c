@@ -901,7 +901,7 @@ static PyMethodDef _bhMethods[] = {
     {"same_view", (PyCFunction) PySameView, METH_VARARGS | METH_KEYWORDS,
             "Return true when `v1` and `v2` is exactly the same (incl. pointing to the same base)\n"},
     {"user_kernel", (PyCFunction) PyUserKernel, METH_VARARGS | METH_KEYWORDS,
-            "Run an user kernel\n"},
+            "Run a user kernel\n"},
     {"is_array_behaving", (PyCFunction) PyIsBehaving, METH_VARARGS | METH_KEYWORDS,
             "Check if a bohrium array is behaving\n"},
     {NULL, NULL, 0, NULL}        /* Sentinel */

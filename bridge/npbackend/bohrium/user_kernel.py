@@ -18,7 +18,7 @@ def get_default_compiler_command():
     return _default_compiler_command
 
 
-def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", param="", only_behaving_operands=True):
+def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", param=None, only_behaving_operands=True):
     """ Compile and execute the function `execute()` with the arguments in `operand_list`
 
     Parameters
@@ -34,7 +34,7 @@ def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", pa
         When this options isn't specified, the default command are used see `get_default_compiler_command()`.
     tag : str, optional
         Name of the backend that should handle this kernel.
-    param : str, optional
+    param : dict, optional
         Backend specific parameters (e.g. OpenCL needs `global_work_size` and `local_work_size`).
     only_behaving_operands : bool, optional
         Set to False in order to allow non-behaving operands. Requirements for a behaving array:
@@ -70,8 +70,20 @@ def execute(kernel_source, operand_list, compiler_command=None, tag="openmp", pa
         if only_behaving_operands and not _bh.is_array_behaving(op):
             raise TypeError("Operand is not behaving set `only_behaving_operands=False` or use `make_behaving()`")
 
+    if param is None:
+        param = {}
+
+    def parse_param():
+        import collections
+        for key, value in param.items():
+            if isinstance(value, collections.Iterable) and not isinstance(value, str):
+                value = " ".join(str(subvalue) for subvalue in value)
+            yield "%s: %s" % (key, value)
+
+    param_str = "; ".join(parse_param())
+
     _bh.flush()
-    ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command, tag, param)
+    ret_msg = _bh.user_kernel(kernel_source, operand_list, compiler_command, tag, param_str)
     if len(ret_msg) > 0:
         raise RuntimeError(ret_msg)
 

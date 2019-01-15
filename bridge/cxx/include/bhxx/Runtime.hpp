@@ -171,7 +171,7 @@ public:
     /// Get the number of calls to flush so far
     uint64_t getFlushCount() { return _flush_count; }
 
-    /** Run an user kernel
+    /** Run a user kernel
      *
      * @param kernel The source code of the kernel
      * @param operand_list The operands given to the kernel all of which must be regular arrays

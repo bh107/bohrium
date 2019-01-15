@@ -103,7 +103,7 @@ PyObject* PyGetDeviceContext(PyObject *self, PyObject *args);
  */
 PyObject* PyMessage(PyObject *self, PyObject *args, PyObject *kwds);
 
-/** Run an user kernel
+/** Run a user kernel
 *
 * @param kernel The source code of the kernel
 * @param operand_list The operands given to the kernel all of which must be regular arrays (not scalars)
