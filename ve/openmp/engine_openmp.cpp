@@ -499,6 +499,8 @@ string EngineOpenMP::userKernel(const std::string &kernel, std::vector<bh_view> 
         kernel_with_launcher = ss.str();
     }
 
+    std::string source_filename = jitk::hash_filename(compilation_hash, util::hash(kernel_with_launcher), ".c");
+
     auto tcompile = chrono::steady_clock::now();
     UserKernelFunction func;
     try {
@@ -514,7 +516,7 @@ string EngineOpenMP::userKernel(const std::string &kernel, std::vector<bh_view> 
     func(&data_list[0]);
     auto texec = chrono::steady_clock::now() - start_exec;
     stat.time_exec += texec;
-    stat.time_per_kernel[jitk::hash_filename(compilation_hash, util::hash(kernel), ".c")].register_exec_time(texec);
+    stat.time_per_kernel[source_filename].register_exec_time(texec);
     return "";
 }
 
