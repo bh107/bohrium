@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import json
 import os
-from os.path import join, exists
+from os.path import join
 import argparse
+
 
 def main(args):
     prefix = os.path.abspath(os.path.dirname(__file__))
@@ -11,18 +12,19 @@ def main(args):
     with open(join(prefix, '..', '..', 'core', 'codegen', 'opcodes.json')) as f:
         opcodes = json.loads(f.read())
     with open(join(prefix, '..', '..', 'core', 'codegen', 'types.json')) as f:
-        types   = json.loads(f.read())
+        types = json.loads(f.read())
         type_map = {}
         for t in types[:-1]:
             type_map[t['enum']] = {
-                'cpp'     : t['cpp'],
-                'bhc'     : t['bhc'],
-                'name'    : t['union'],
-                'bhc_ary' : "bhc_ndarray_%s_p"%t['union']
+                'cpp': t['cpp'],
+                'bhc': t['bhc'],
+                'name': t['union'],
+                'bhc_ary': "bhc_ndarray_%s_p" % t['union']
             }
 
     # Let's generate the header and implementation of all array operations
-    head = ""; impl = ""
+    head = ""
+    impl = ""
     for op in opcodes:
         if op['opcode'] in ["BH_RANDOM"]:
             continue
@@ -30,9 +32,10 @@ def main(args):
         if len(op['types']) == 0:
             continue
 
-        doc = "// %s: %s\n"%(op['opcode'][3:], op['doc'])
-        doc += "// E.g. %s:\n"%(op['code'])
-        impl += doc; head += doc
+        doc = "// %s: %s\n" % (op['opcode'][3:], op['doc'])
+        doc += "// E.g. %s:\n" % (op['code'])
+        impl += doc
+        head += doc
 
         # Generate a function for each type signature
         for type_sig in op['types']:
@@ -45,15 +48,45 @@ def main(args):
                         if symbol == "A":
                             decl += ", const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
                         else:
-                            decl += ", %s in%d"%(type_map[t]['cpp'], i)
+                            decl += ", %s in%d" % (type_map[t]['cpp'], i)
                 decl += ")"
                 head += "%s;\n" % decl
-                impl += decl;
+                impl += decl
                 impl += "\n{\n\tRuntime::instance().enqueue(%s, out" % op['opcode']
-                for i in range(len(layout)-1):
-                    impl += ", in%d" % (i+1)
+                for i in range(len(layout) - 1):
+                    impl += ", in%d" % (i + 1)
                 impl += ");\n}\n"
-        impl += "\n\n"; head += "\n\n"
+
+        # Generate a function for each type signature
+        for type_sig in op['types']:
+            if len(type_sig) > 2:
+                for layout in op['layout']:
+                    out_cpp_type = type_map[type_sig[0]]['cpp']
+                    decl = "BhArray<%s> %s(" % (out_cpp_type, op['opcode'][3:].lower())
+                    first_input_array = -1
+                    for i, (symbol, t) in list(enumerate(zip(layout, type_sig)))[1:]:
+                        if i > 1:
+                            decl += ", "
+                        if symbol == "A":
+                            first_input_array = i
+                            decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+                        else:
+                            decl += "%s in%d" % (type_map[t]['cpp'], i)
+                    decl += ")"
+                    head += "%s;\n" % decl
+                    impl += decl
+                    impl += "\n{\n"
+                    assert (first_input_array != -1)
+                    impl += "\tBhArray<{0}> out = BhArray<{0}>".format(out_cpp_type)
+                    impl += "{in%(i)d.shape, in%(i)d.stride, in%(i)d.offset};\n" % {"i": first_input_array}
+                    impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
+                    for i in range(len(layout) - 1):
+                        impl += ", in%d" % (i + 1)
+                    impl += ");\n"
+                    impl += "\treturn out;\n"
+                    impl += "}\n"
+        impl += "\n\n"
+        head += "\n\n"
 
     # Let's handle random
     doc = """
@@ -68,7 +101,8 @@ def main(args):
                                    'seed' is the seed of a random sequence
                                    'key' is the index in the random sequence */
 """
-    impl += doc; head += doc
+    impl += doc;
+    head += doc
     decl = "void random(BhArray<uint64_t> &out, uint64_t seed, uint64_t key)"
     head += "%s;\n" % decl
     impl += "%s\n" % decl
@@ -82,10 +116,12 @@ def main(args):
     head = """/* Bohrium CXX Bridge: array operation functions. Auto generated! */
 #pragma once
 
-#include <bhxx/BhArray.hpp>
+#include <cstdint>
 #include <complex>
 
 namespace bhxx {
+
+template<typename T> class BhArray;
 
 %s
 
@@ -116,6 +152,7 @@ namespace bhxx {
     with open(join(args.src_output, 'array_operations.cpp'), 'w') as f:
         f.write(impl)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Generates the array operation source files for the Bohrium CXX bridge.',
@@ -131,5 +168,3 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(args)
-
-
