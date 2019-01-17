@@ -57,12 +57,42 @@ def main(args):
                     impl += ", in%d" % (i + 1)
                 impl += ");\n}\n"
 
-        # Generate a function for each type signature
+        # Generate a function that returns its output for each type signature
         for type_sig in op['types']:
             if len(type_sig) > 2:
                 for layout in op['layout']:
                     out_cpp_type = type_map[type_sig[0]]['cpp']
                     decl = "BhArray<%s> %s(" % (out_cpp_type, op['opcode'][3:].lower())
+                    first_input_array = -1
+                    for i, (symbol, t) in list(enumerate(zip(layout, type_sig)))[1:]:
+                        if i > 1:
+                            decl += ", "
+                        if symbol == "A":
+                            first_input_array = i
+                            decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+                        else:
+                            decl += "%s in%d" % (type_map[t]['cpp'], i)
+                    decl += ")"
+                    head += "%s;\n" % decl
+                    impl += decl
+                    impl += "\n{\n"
+                    assert (first_input_array != -1)
+                    impl += "\tBhArray<{0}> out = BhArray<{0}>".format(out_cpp_type)
+                    impl += "{in%(i)d.shape, in%(i)d.stride, in%(i)d.offset};\n" % {"i": first_input_array}
+                    impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
+                    for i in range(len(layout) - 1):
+                        impl += ", in%d" % (i + 1)
+                    impl += ");\n"
+                    impl += "\treturn out;\n"
+                    impl += "}\n"
+        # Generate an operator overload for each type signature
+        operator = {"BH_ADD": "+", "BH_SUBTRACT": "-", "BH_MULTIPLY": "*", "BH_DIVIDE": "/", "BH_MOD": "%",
+                    "BH_BITWISE_AND": "&", "BH_BITWISE_OR": "|", "BH_BITWISE_XOR": "^"}
+        if op['opcode'] in operator:
+            for type_sig in op['types']:
+                for layout in op['layout']:
+                    out_cpp_type = type_map[type_sig[0]]['cpp']
+                    decl = "BhArray<%s> operator%s(" % (out_cpp_type, operator[op['opcode']])
                     first_input_array = -1
                     for i, (symbol, t) in list(enumerate(zip(layout, type_sig)))[1:]:
                         if i > 1:
@@ -101,7 +131,7 @@ def main(args):
                                    'seed' is the seed of a random sequence
                                    'key' is the index in the random sequence */
 """
-    impl += doc;
+    impl += doc
     head += doc
     decl = "void random(BhArray<uint64_t> &out, uint64_t seed, uint64_t key)"
     head += "%s;\n" % decl
