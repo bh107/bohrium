@@ -18,10 +18,6 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-/** Type trait to implement `is_safe_numeric_cast`
- *  Based on <https://stackoverflow.com/a/36272533>
- */
-
 #pragma once
 
 #include <type_traits>
@@ -30,6 +26,9 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bhxx {
 namespace type_traits {
 
+/** Type trait to implement `is_safe_numeric_cast`
+ *  Based on <https://stackoverflow.com/a/36272533>
+ */
 
 template<class T>
 struct is_complex_or_floating_point : std::is_floating_point<T> {
@@ -116,6 +115,20 @@ struct is_safe_numeric_cast
                      (sizeof(T) > sizeof(F) || (sizeof(T) == sizeof(F) && same_signage<T, F>::value)))> {
 };
 
+// Instantiate all possible types of `BhArray`. Define the macro function INSTANTIATE(TYPE),
+// which must define a function prototype of type `TYPE`.
+#define instantiate_dtype() INSTANTIATE(bool) INSTANTIATE(int8_t) INSTANTIATE(int16_t) INSTANTIATE(int32_t) \
+                            INSTANTIATE(int64_t) INSTANTIATE(uint8_t) INSTANTIATE(uint16_t) INSTANTIATE(uint32_t) \
+                            INSTANTIATE(uint64_t) INSTANTIATE(float) INSTANTIATE(double) \
+                            INSTANTIATE(std::complex<float>) INSTANTIATE(std::complex<double>)
+
+// Instantiate all possible types of `BhArray` excluding `bool`. Define the macro function INSTANTIATE(TYPE),
+// which must define a function prototype of type `TYPE`.
+#define instantiate_dtype_excl_bool() INSTANTIATE(int8_t) INSTANTIATE(int16_t) \
+                                      INSTANTIATE(int32_t) INSTANTIATE(int64_t) INSTANTIATE(uint8_t) \
+                                      INSTANTIATE(uint16_t) INSTANTIATE(uint32_t) INSTANTIATE(uint64_t) \
+                                      INSTANTIATE(float) INSTANTIATE(double) INSTANTIATE(std::complex<float>) \
+                                      INSTANTIATE(std::complex<double>)
 
 } // namespace type_traits
 } // namespace bhxx

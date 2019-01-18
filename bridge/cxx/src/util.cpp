@@ -25,23 +25,23 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
-template <typename T>
+template<typename T>
 T as_scalar(BhArray<T> ary) {
     if (ary.base == nullptr) {
         throw std::runtime_error(
-              "Cannot call bhxx::as_scalar on BhArray objects without base");
+                "Cannot call bhxx::as_scalar on BhArray objects without base");
     }
 
     if (ary.size() != 1) {
         throw std::runtime_error(
-              "Cannot call bhxx::as_scalar on BhArray objects with more than one "
-              "element");
+                "Cannot call bhxx::as_scalar on BhArray objects with more than one "
+                "element");
     }
 
     Runtime::instance().sync(ary.base);
     Runtime::instance().flush();
 
-    const T* data = ary.data();
+    const T *data = ary.data();
     if (data == nullptr) {
         throw std::runtime_error("Cannot get the scalar from an uninitialised BhArray.");
     }
@@ -49,49 +49,49 @@ T as_scalar(BhArray<T> ary) {
     return *data;
 }
 
-template <typename T>
+template<typename T>
 BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size) {
     if (axis < 0 || static_cast<size_t>(axis) > ary.rank()) {
         throw std::runtime_error(
-              "Axis to replicate needs to be larger than -1 and less than or equal to "
-              "the rank of the array.");
+                "Axis to replicate needs to be larger than -1 and less than or equal to "
+                "the rank of the array.");
     }
     if (size == 0) throw std::runtime_error("The new size needs to be larger than 0");
-    auto& shape  = ary.shape;
-    auto& stride = ary.stride;
+    auto &shape = ary.shape;
+    auto &stride = ary.stride;
 
     shape.insert(shape.begin() + axis, size);
     stride.insert(stride.begin() + axis, 0);
     return ary;
 }
 
-template <typename T>
+template<typename T>
 BhArray<T> transpose(BhArray<T> ary) {
     std::reverse(ary.shape.begin(), ary.shape.end());
     std::reverse(ary.stride.begin(), ary.stride.end());
     return ary;
 }
 
-template <typename T>
+template<typename T>
 BhArray<T> reshape(BhArray<T> ary, Shape shape) {
     if (ary.size() != shape.prod()) {
         throw std::runtime_error(
-              "Changing the shape cannot change the number of elements");
+                "Changing the shape cannot change the number of elements");
     }
 
     if (ary.shape == shape) return ary;
 
     if (!ary.isContiguous()) {
         throw std::runtime_error(
-              "Reshape not yet implemented for non-contiguous arrays.");
+                "Reshape not yet implemented for non-contiguous arrays.");
     }
 
-    ary.shape  = shape;
+    ary.shape = shape;
     ary.stride = contiguous_stride(shape);
     return ary;
 }
 
-template <typename T>
+template<typename T>
 BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     if (lhs.rank() == 0 || rhs.rank() == 0) {
         throw std::runtime_error("Lhs and Rhs need to be of at least rank 1.");
@@ -118,11 +118,11 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     Shape result_shape{lhs.shape.front(), rhs.shape.back()};
     if (lhs.rank() == 1) {
         result_shape = {rhs.shape.back()};
-        lhs          = reshape(std::move(lhs), {1, lhs.size()});
+        lhs = reshape(std::move(lhs), {1, lhs.size()});
     }
     if (rhs.rank() == 1) {
         result_shape = {lhs.shape.front()};
-        rhs          = reshape(std::move(rhs), {rhs.size(), 1});
+        rhs = reshape(std::move(rhs), {rhs.size(), 1});
     }
 
     BhArray<T> result({lhs.shape.front(), rhs.shape.back()});
@@ -135,7 +135,7 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
         // TODO Use check function once it is available
 
         // Broadcast lhs and a transposed rhs
-        Shape      broad_shape{lhs.shape.front(), rhs.shape.back(), rhs.shape.front()};
+        Shape broad_shape{lhs.shape.front(), rhs.shape.back(), rhs.shape.front()};
         BhArray<T> rhs_trans = transpose(std::move(rhs));
         BhArray<T> lhs_broad = broadcast(std::move(lhs), 1, broad_shape[1]);
         BhArray<T> rhs_broad = broadcast(std::move(rhs_trans), 0, broad_shape[0]);
@@ -151,31 +151,23 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     return reshape(std::move(result), result_shape);
 }
 
-// Instantiate all possible types of `BhArray`
+// Instantiate API that support all data types
 #define INSTANTIATE(T)                         \
     template T          as_scalar(BhArray<T>); \
     template BhArray<T> transpose(BhArray<T>); \
-    template BhArray<T> broadcast(BhArray<T>, int64_t, size_t)
+    template BhArray<T> broadcast(BhArray<T>, int64_t, size_t);
 
-#define INSTANTIATE_NOBOOL(T) \
-    INSTANTIATE(T);           \
-    template BhArray<T> matmul(BhArray<T>, BhArray<T>)
-
-INSTANTIATE(bool);
-INSTANTIATE_NOBOOL(int8_t);
-INSTANTIATE_NOBOOL(int16_t);
-INSTANTIATE_NOBOOL(int32_t);
-INSTANTIATE_NOBOOL(int64_t);
-INSTANTIATE_NOBOOL(uint8_t);
-INSTANTIATE_NOBOOL(uint16_t);
-INSTANTIATE_NOBOOL(uint32_t);
-INSTANTIATE_NOBOOL(uint64_t);
-INSTANTIATE_NOBOOL(float);
-INSTANTIATE_NOBOOL(double);
-INSTANTIATE_NOBOOL(std::complex<float>);
-INSTANTIATE_NOBOOL(std::complex<double>);
+instantiate_dtype()
 
 #undef INSTANTIATE
-#undef INSTANTIATE_NOBOOL
+
+// Instantiate API that doesn't support booleans
+#define INSTANTIATE(T)                         \
+    template BhArray<T> matmul(BhArray<T>, BhArray<T>);
+
+instantiate_dtype_excl_bool()
+
+#undef INSTANTIATE
+
 
 }  // namespace bhxx

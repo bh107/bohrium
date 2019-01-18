@@ -108,34 +108,10 @@ BhArray<T> BhArray<T>::operator[](int64_t idx) const {
     return BhArray<T>(base, ret_shape, ret_stride, ret_offset);
 }
 
-// Instantiate all possible types of `BhArray`
-#define INSTANTIATE(TYPE) template class BhArray<TYPE>
 
-INSTANTIATE(bool);
+#define INSTANTIATE(TYPE) template class BhArray<TYPE>;
 
-INSTANTIATE(int8_t);
-
-INSTANTIATE(int16_t);
-
-INSTANTIATE(int32_t);
-
-INSTANTIATE(int64_t);
-
-INSTANTIATE(uint8_t);
-
-INSTANTIATE(uint16_t);
-
-INSTANTIATE(uint32_t);
-
-INSTANTIATE(uint64_t);
-
-INSTANTIATE(float);
-
-INSTANTIATE(double);
-
-INSTANTIATE(std::complex<float>);
-
-INSTANTIATE(std::complex<double>);
+instantiate_dtype()
 
 #undef INSTANTIATE
 
