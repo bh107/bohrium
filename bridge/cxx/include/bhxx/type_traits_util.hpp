@@ -106,13 +106,11 @@ struct same_signage : pred_base<(both_signed<T, F>::value) || (both_unsigned<T, 
 
 template<class T, class F>
 struct is_safe_numeric_cast
-        : pred_base<both_numeric<T, F>::value &&// Obviously both src and dest must be numbers
-                    (is_complex_or_floating_point<T>::value &&
-                     (std::is_integral<F>::value || sizeof(T) >= sizeof(F))) ||
-                    // Floating dest: src must be integral or smaller/equal float-type
-                    ((both_integral<T, F>::value) &&
-                     // Integral dest: src must be integral and (smaller/equal+same signage) or (smaller+different signage)
-                     (sizeof(T) > sizeof(F) || (sizeof(T) == sizeof(F) && same_signage<T, F>::value)))> {
+        : pred_base<both_numeric<T, F>::value && ((is_complex_or_floating_point<T>::value &&
+                                                   (std::is_integral<F>::value || sizeof(T) >= sizeof(F))) ||
+                                                  ((both_integral<T, F>::value) && (sizeof(T) > sizeof(F) ||
+                                                                                    (sizeof(T) == sizeof(F) &&
+                                                                                     same_signage<T, F>::value))))> {
 };
 
 // Instantiate all possible types of `BhArray`. Define the macro function INSTANTIATE(TYPE),
