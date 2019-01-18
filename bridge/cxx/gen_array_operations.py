@@ -133,7 +133,7 @@ def main(args):
 """
     impl += doc
     head += doc
-    decl = "void random(BhArray<uint64_t> &out, uint64_t seed, uint64_t key)"
+    decl = "void random123(BhArray<uint64_t> &out, uint64_t seed, uint64_t key)"
     head += "%s;\n" % decl
     impl += "%s\n" % decl
     impl += """

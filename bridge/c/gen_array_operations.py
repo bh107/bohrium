@@ -101,7 +101,7 @@ def main(args):
     impl += "%s\n" % decl
     impl += """
 {
-    bhxx::random(*((bhxx::BhArray<uint64_t>*) out), seed, key);
+    bhxx::random123(*((bhxx::BhArray<uint64_t>*) out), seed, key);
 }
 """
 
