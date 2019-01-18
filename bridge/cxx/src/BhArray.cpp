@@ -54,7 +54,7 @@ bool BhArray<T>::isContiguous() const {
         acc *= static_cast<int64_t>(*itshape);
     }
 
-    assert(acc == static_cast<int64_t>(numberOfElements()));
+    assert(acc == static_cast<int64_t>(size()));
     return offset == 0;
 }
 

@@ -91,7 +91,7 @@ BhArray<T> accumulate(BhArray<T> op, AddReduction&& reduction) {
         op = reduction(op, op.rank() - 1);
     }
     assert(op.rank() == 1);
-    assert(op.numberOfElements() == 1);
+    assert(op.size() == 1);
     return op;
 }
 

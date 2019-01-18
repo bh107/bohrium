@@ -19,9 +19,12 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
+#include <type_traits>
 #include <ostream>
 #include <bh_static_vector.hpp>
-#include "BhBase.hpp"
+#include <bhxx/BhBase.hpp>
+#include <bhxx/type_traits_util.hpp>
+#include <bhxx/array_operations.hpp>
 
 namespace bhxx {
 
@@ -145,6 +148,16 @@ public:
         assert(static_cast<uint64_t>(base->nelem()) == shape.prod());
     }
 
+    /** Create a copy of `ary` using a Bohrium `identity` operation.
+     *
+     *  \note This function implements implicit type conversion for all widening type casts
+     */
+    template<typename InType,
+            typename std::enable_if<type_traits::is_safe_numeric_cast<scalar_type, InType>::value, int>::type = 0>
+    BhArray(const BhArray<InType> &ary) {
+        bhxx::identity(*this, ary);
+    }
+
     //
     // Information
     //
@@ -156,7 +169,7 @@ public:
     }
 
     /** Return the number of elements */
-    uint64_t numberOfElements() const {
+    uint64_t size() const {
         return shape.prod();
     }
 

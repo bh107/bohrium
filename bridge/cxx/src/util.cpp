@@ -32,7 +32,7 @@ T as_scalar(BhArray<T> ary) {
               "Cannot call bhxx::as_scalar on BhArray objects without base");
     }
 
-    if (ary.numberOfElements() != 1) {
+    if (ary.size() != 1) {
         throw std::runtime_error(
               "Cannot call bhxx::as_scalar on BhArray objects with more than one "
               "element");
@@ -74,7 +74,7 @@ BhArray<T> transpose(BhArray<T> ary) {
 
 template <typename T>
 BhArray<T> reshape(BhArray<T> ary, Shape shape) {
-    if (ary.numberOfElements() != shape.prod()) {
+    if (ary.size() != shape.prod()) {
         throw std::runtime_error(
               "Changing the shape cannot change the number of elements");
     }
@@ -118,11 +118,11 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     Shape result_shape{lhs.shape.front(), rhs.shape.back()};
     if (lhs.rank() == 1) {
         result_shape = {rhs.shape.back()};
-        lhs          = reshape(std::move(lhs), {1, lhs.numberOfElements()});
+        lhs          = reshape(std::move(lhs), {1, lhs.size()});
     }
     if (rhs.rank() == 1) {
         result_shape = {lhs.shape.front()};
-        rhs          = reshape(std::move(rhs), {rhs.numberOfElements(), 1});
+        rhs          = reshape(std::move(rhs), {rhs.size(), 1});
     }
 
     BhArray<T> result({lhs.shape.front(), rhs.shape.back()});
