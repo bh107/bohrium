@@ -128,6 +128,10 @@ struct is_safe_numeric_cast
                                       INSTANTIATE(float) INSTANTIATE(double) INSTANTIATE(std::complex<float>) \
                                       INSTANTIATE(std::complex<double>)
 
+// Instantiate floats of `BhArray`. Define the macro function INSTANTIATE(TYPE),
+// which must define a function prototype of type `TYPE`.
+#define instantiate_dtype_float() INSTANTIATE(float) INSTANTIATE(double)
+
 } // namespace type_traits
 } // namespace bhxx
 
