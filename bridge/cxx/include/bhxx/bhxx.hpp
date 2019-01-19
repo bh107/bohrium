@@ -1,6 +1,3 @@
-//
-// Copyright (C) 2017 by the linalgwrap authors
-//
 /*
 This file is part of Bohrium and copyright (c) 2012 the Bohrium
 team <http://www.bh107.org>.
@@ -26,3 +23,5 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
 #include <bhxx/util.hpp>
+#include <bhxx/random.hpp>
+#include <bhxx/array_create.hpp>
