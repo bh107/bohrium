@@ -20,23 +20,18 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include <bhxx/bhxx.hpp>
+#include <bhxx/array_create.hpp>
+
 
 using namespace bhxx;
 
 void compute() {
     std::cout << "Hello Indexing." << std::endl;
 
-    BhArray<double> a;
-    {
-        BhArray<uint64_t> t1({2 * 3});
-        range(t1);
-        auto t2 = decltype(a)({2 * 3});
-        identity(t2, t1);
-        auto t3 = reshape(t2, {2, 3});
-        a = t3;
-    }
+    auto a = bhxx::arange<double>(6);
+    a = a.reshape({2, 3});
     std::cout << a << std::endl;
-    auto b = a[1][1];
+    auto b = a[1];
     std::cout << b << std::endl;
 }
 

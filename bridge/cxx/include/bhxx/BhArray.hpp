@@ -215,6 +215,13 @@ public:
 
     /// Returns a new view of the `idx` dimension. Negative index counts from the back
     BhArray<T> operator[](int64_t idx) const;
+
+    /// Return a new transposed view
+    BhArray<T> transpose() const;
+
+    /// Return a new reshaped view (the array must be contigues)
+    BhArray<T> reshape(Shape shape) const;
+
 };
 
 template<typename T>

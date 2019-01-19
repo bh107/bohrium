@@ -49,14 +49,6 @@ BhArray<T> as_contiguous(BhArray<T> ary) {
 template <typename T>
 BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size);
 
-/** Transpose an array */
-template <typename T>
-BhArray<T> transpose(BhArray<T> ary);
-
-/** Reshape an array */
-template <typename T>
-BhArray<T> reshape(BhArray<T> ary, Shape shape);
-
 /** Perform a matrix-matrix multiplication
  *
  * Multiplies the rightmost dimension of lhs with the leftmost

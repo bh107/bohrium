@@ -66,32 +66,6 @@ BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size) {
 }
 
 template<typename T>
-BhArray<T> transpose(BhArray<T> ary) {
-    std::reverse(ary.shape.begin(), ary.shape.end());
-    std::reverse(ary.stride.begin(), ary.stride.end());
-    return ary;
-}
-
-template<typename T>
-BhArray<T> reshape(BhArray<T> ary, Shape shape) {
-    if (ary.size() != shape.prod()) {
-        throw std::runtime_error(
-                "Changing the shape cannot change the number of elements");
-    }
-
-    if (ary.shape == shape) return ary;
-
-    if (!ary.isContiguous()) {
-        throw std::runtime_error(
-                "Reshape not yet implemented for non-contiguous arrays.");
-    }
-
-    ary.shape = shape;
-    ary.stride = contiguous_stride(shape);
-    return ary;
-}
-
-template<typename T>
 BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     if (lhs.rank() == 0 || rhs.rank() == 0) {
         throw std::runtime_error("Lhs and Rhs need to be of at least rank 1.");
@@ -118,11 +92,11 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     Shape result_shape{lhs.shape.front(), rhs.shape.back()};
     if (lhs.rank() == 1) {
         result_shape = {rhs.shape.back()};
-        lhs = reshape(std::move(lhs), {1, lhs.size()});
+        lhs = lhs.reshape({1, lhs.size()});
     }
     if (rhs.rank() == 1) {
         result_shape = {lhs.shape.front()};
-        rhs = reshape(std::move(rhs), {rhs.size(), 1});
+        rhs = rhs.reshape({rhs.size(), 1});
     }
 
     BhArray<T> result({lhs.shape.front(), rhs.shape.back()});
@@ -136,7 +110,7 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
 
         // Broadcast lhs and a transposed rhs
         Shape broad_shape{lhs.shape.front(), rhs.shape.back(), rhs.shape.front()};
-        BhArray<T> rhs_trans = transpose(std::move(rhs));
+        BhArray<T> rhs_trans = rhs.transpose();
         BhArray<T> lhs_broad = broadcast(std::move(lhs), 1, broad_shape[1]);
         BhArray<T> rhs_broad = broadcast(std::move(rhs_trans), 0, broad_shape[0]);
         assert(lhs_broad.shape == rhs_broad.shape);
@@ -148,13 +122,12 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
         add_reduce(result, tmp, 2);
     }
 
-    return reshape(std::move(result), result_shape);
+    return result.reshape(result_shape);
 }
 
 // Instantiate API that support all data types
 #define INSTANTIATE(T)                         \
     template T          as_scalar(BhArray<T>); \
-    template BhArray<T> transpose(BhArray<T>); \
     template BhArray<T> broadcast(BhArray<T>, int64_t, size_t);
 
 instantiate_dtype()

@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
 #include <bhxx/util.hpp>
+#include <bhxx/array_create.hpp>
 
 using namespace std;
 
@@ -106,6 +107,25 @@ BhArray<T> BhArray<T>::operator[](int64_t idx) const {
     Stride ret_stride(stride.begin() + 1, stride.end());
     uint64_t ret_offset = offset + idx * stride[0];
     return BhArray<T>(base, ret_shape, ret_stride, ret_offset);
+}
+
+template<typename T>
+BhArray<T> BhArray<T>::transpose() const {
+    Shape ret_shape(shape.rbegin(), shape.rend());
+    Stride ret_stride(stride.rbegin(), stride.rend());
+    BhArray<T> ret(std::move(ret_shape), std::move(ret_stride));
+    return ret;
+}
+
+template<typename T>
+BhArray<T> BhArray<T>::reshape(Shape shape) const {
+    if (size() != shape.prod()) {
+        throw std::runtime_error("Changing the shape cannot change the number of elements");
+    }
+    if (!isContiguous()) {
+        throw std::runtime_error("Reshape not yet implemented for non-contiguous arrays.");
+    }
+    return BhArray<T>(std::move(shape), contiguous_stride(shape));
 }
 
 
