@@ -5,6 +5,53 @@ from os.path import join
 import argparse
 
 
+def write_decl(op, layout, type_sig, type_map, operator_map, out_as_operand):
+    signature = list(enumerate(zip(layout, type_sig)))
+    out_cpp_type = type_map[type_sig[0]]['cpp']
+
+    if operator_map is None:
+        func_name = "%s" % op['opcode'][3:].lower()
+    else:
+        func_name = "operator%s" % operator_map[op['opcode']]
+    if out_as_operand:
+        decl = "void %s(BhArray<%s> &out" % (func_name, out_cpp_type)
+        if len(signature) > 1:
+            decl += ", "
+    else:
+        decl = "BhArray<%s> %s(" % (out_cpp_type, func_name)
+
+    for i, (symbol, t) in signature[1:]:
+        if symbol == "A":
+            decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+        else:
+            decl += "%s in%d" % (type_map[t]['cpp'], i)
+        if i < len(layout) - 1:
+            decl += ", "
+    decl += ")"
+    return decl
+
+
+def get_array_operands(layout):
+    ret = []
+    for i, symbol in enumerate(layout):
+        if symbol == "A":
+            if i == 0:
+                ret.append("out")
+            else:
+                ret.append("in%d" % i)
+    return ret
+
+
+def write_broadcasted_shape(array_operands):
+    ret = "const Shape shape = broadcasted_shape<%d>({" % len(array_operands)
+    for i, op in enumerate(array_operands):
+        ret += "%s.shape" % op
+        if i < len(array_operands) - 1:
+            ret += ", "
+    ret += "});"
+    return ret
+
+
 def main(args):
     prefix = os.path.abspath(os.path.dirname(__file__))
 
@@ -40,19 +87,16 @@ def main(args):
         # Generate a function for each type signature
         for type_sig in op['types']:
             for layout in op['layout']:
-                decl = "void %s(" % op['opcode'][3:].lower()
-                for i, (symbol, t) in enumerate(zip(layout, type_sig)):
-                    if i == 0:
-                        decl += "BhArray<%s> &out" % type_map[t]['cpp']
-                    else:
-                        if symbol == "A":
-                            decl += ", const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
-                        else:
-                            decl += ", %s in%d" % (type_map[t]['cpp'], i)
-                decl += ")"
+                array_operands = get_array_operands(layout)
+                decl = write_decl(op, layout, type_sig, type_map, None, True)
                 head += "%s;\n" % decl
                 impl += decl
-                impl += "\n{\n\tRuntime::instance().enqueue(%s, out" % op['opcode']
+                impl += " {\n"
+                impl += "\t%s\n" % write_broadcasted_shape(array_operands)
+                for op_var in array_operands:
+                    impl += "\tif(shape != %s.shape) {std::runtime_error(\"Shape miss match!\");}\n" % op_var
+                impl += "\n"
+                impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
                 for i in range(len(layout) - 1):
                     impl += ", in%d" % (i + 1)
                 impl += ");\n}\n"
@@ -61,24 +105,16 @@ def main(args):
         for type_sig in op['types']:
             if len(type_sig) > 2:
                 for layout in op['layout']:
-                    out_cpp_type = type_map[type_sig[0]]['cpp']
-                    decl = "BhArray<%s> %s(" % (out_cpp_type, op['opcode'][3:].lower())
-                    first_input_array = -1
-                    for i, (symbol, t) in list(enumerate(zip(layout, type_sig)))[1:]:
-                        if i > 1:
-                            decl += ", "
-                        if symbol == "A":
-                            first_input_array = i
-                            decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
-                        else:
-                            decl += "%s in%d" % (type_map[t]['cpp'], i)
-                    decl += ")"
+                    array_operands = get_array_operands(layout)
+                    decl = write_decl(op, layout, type_sig, type_map, None, False)
                     head += "%s;\n" % decl
                     impl += decl
-                    impl += "\n{\n"
-                    assert (first_input_array != -1)
-                    impl += "\tBhArray<{0}> out = BhArray<{0}>".format(out_cpp_type)
-                    impl += "{in%(i)d.shape, in%(i)d.stride, in%(i)d.offset};\n" % {"i": first_input_array}
+                    impl += " {\n"
+                    impl += "\t%s\n" % write_broadcasted_shape(array_operands[1:])
+                    for op_var in array_operands[1:]:
+                        impl += "\tif(shape != %s.shape) {std::runtime_error(\"Shape miss match!\");}\n" % op_var
+                    out_cpp_type = type_map[type_sig[0]]['cpp']
+                    impl += "\tBhArray<%s> out{shape};\n" % out_cpp_type
                     impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
                     for i in range(len(layout) - 1):
                         impl += ", in%d" % (i + 1)
@@ -91,24 +127,16 @@ def main(args):
         if op['opcode'] in operator:
             for type_sig in op['types']:
                 for layout in op['layout']:
+                    array_operands = get_array_operands(layout)
                     out_cpp_type = type_map[type_sig[0]]['cpp']
-                    decl = "BhArray<%s> operator%s(" % (out_cpp_type, operator[op['opcode']])
-                    first_input_array = -1
-                    for i, (symbol, t) in list(enumerate(zip(layout, type_sig)))[1:]:
-                        if i > 1:
-                            decl += ", "
-                        if symbol == "A":
-                            first_input_array = i
-                            decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
-                        else:
-                            decl += "%s in%d" % (type_map[t]['cpp'], i)
-                    decl += ")"
+                    decl = write_decl(op, layout, type_sig, type_map, operator, False)
                     head += "%s;\n" % decl
                     impl += decl
-                    impl += "\n{\n"
-                    assert (first_input_array != -1)
-                    impl += "\tBhArray<{0}> out = BhArray<{0}>".format(out_cpp_type)
-                    impl += "{in%(i)d.shape, in%(i)d.stride, in%(i)d.offset};\n" % {"i": first_input_array}
+                    impl += " {\n"
+                    impl += "\t%s\n" % write_broadcasted_shape(array_operands[1:])
+                    for op_var in array_operands[1:]:
+                        impl += "\tif(shape != %s.shape) {std::runtime_error(\"Shape miss match!\");}\n" % op_var
+                    impl += "\tBhArray<%s> out{shape};\n" % out_cpp_type
                     impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
                     for i in range(len(layout) - 1):
                         impl += ", in%d" % (i + 1)
@@ -163,6 +191,7 @@ template<typename T> class BhArray;
 
 #include <bhxx/Runtime.hpp>
 #include <bhxx/array_operations.hpp>
+#include <bhxx/util.hpp>
 
 namespace bhxx {
 

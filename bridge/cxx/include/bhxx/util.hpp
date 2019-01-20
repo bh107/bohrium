@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
+#include <algorithm>
 #include "BhArray.hpp"
 #include <bhxx/functor.hpp>
 
@@ -26,12 +27,12 @@ namespace bhxx {
 
 /** Convert an array with exactly one element to a scalar by calling
  *  sync and flush and returning the value. */
-template <typename T>
+template<typename T>
 T as_scalar(BhArray<T> ary);
 
 /** Convert an array to a contiguous representation if it is not yet
  *  contiguous. */
-template <typename T>
+template<typename T>
 BhArray<T> as_contiguous(BhArray<T> ary) {
     if (ary.isContiguous()) return ary;
 
@@ -46,7 +47,7 @@ BhArray<T> as_contiguous(BhArray<T> ary) {
  *               (i.e. 4 between 4 and 5, ...)
  * \param size   Size of the new broadcasted axis
  */
-template <typename T>
+template<typename T>
 BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size);
 
 /** Perform a matrix-matrix multiplication
@@ -54,7 +55,7 @@ BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size);
  * Multiplies the rightmost dimension of lhs with the leftmost
  * dimension of rhs.
  * */
-template <typename T>
+template<typename T>
 BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs);
 
 /** Performs a full reduction of the array along all axis using the
@@ -63,7 +64,7 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs);
  *  \note Performs exactly the same job as std::accumulate, but on
  *  BhArray objects.
  */
-template <typename T>
+template<typename T>
 BhArray<T> accumulate(BhArray<T> op) {
     return accumulate(std::move(op), bhxx::AddReduce<T>{});
 }
@@ -74,8 +75,8 @@ BhArray<T> accumulate(BhArray<T> op) {
  *  \note Performs exactly the same job as std::accumulate, but on
  *  BhArray objects.
  */
-template <typename T, typename AddReduction>
-BhArray<T> accumulate(BhArray<T> op, AddReduction&& reduction) {
+template<typename T, typename AddReduction>
+BhArray<T> accumulate(BhArray<T> op, AddReduction &&reduction) {
     // Reduce to a single value by repetitively calling the reduction function
     // until the rank is down to 1:
     const size_t rank = op.rank();
@@ -94,8 +95,8 @@ BhArray<T> accumulate(BhArray<T> op, AddReduction&& reduction) {
  *  \note Performs exactly the same job as std::inner_product, but
  *  on BhArray objects.
  */
-template <typename T>
-BhArray<T> inner_product(const BhArray<T>& oplhs, const BhArray<T>& oprhs) {
+template<typename T>
+BhArray<T> inner_product(const BhArray<T> &oplhs, const BhArray<T> &oprhs) {
     return inner_product(oplhs, oprhs, bhxx::Multiply<T>{}, bhxx::AddReduce<T>{});
 }
 
@@ -111,12 +112,47 @@ BhArray<T> inner_product(const BhArray<T>& oplhs, const BhArray<T>& oprhs) {
  *  \note Performs exactly the same job as std::inner_product, but
  *  on BhArray objects.
  */
-template <typename T, typename Multiplication, typename AddReduction>
-auto inner_product(const BhArray<T>& oplhs, const BhArray<T>& oprhs,
-                   Multiplication&& multiplication, AddReduction&& add_reduction)
-      -> decltype(multiplication(oplhs, oprhs)) {
+template<typename T, typename Multiplication, typename AddReduction>
+auto inner_product(const BhArray<T> &oplhs, const BhArray<T> &oprhs,
+                   Multiplication &&multiplication, AddReduction &&add_reduction)
+-> decltype(multiplication(oplhs, oprhs)) {
     return accumulate(multiplication(oplhs, oprhs),
                       std::forward<AddReduction>(add_reduction));
+}
+
+
+/** Return the result of broadcasting `shapes` against each other
+ *
+ * @param shapes  Array of shapes
+ * @return        Broadcasted shape
+ */
+template<int N>
+Shape broadcasted_shape(std::array<Shape, N> shapes) {
+    // Find the number of dimension of the broadcasted shape
+    uint64_t ret_ndim = 0;
+    for (const Shape &shape: shapes) {
+        if (shape.size() > ret_ndim) {
+            ret_ndim = shape.size();
+        }
+    }
+
+    // Make sure that all shapes has the same length by appending ones
+    for (Shape &shape: shapes) {
+        shape.insert(shape.end(), ret_ndim - shape.size(), 1);
+    }
+
+    // The resulting shape is the max of each dimension
+    Shape ret;
+    for (uint64_t i = 0; i < ret_ndim; ++i) {
+        uint64_t greatest = 0;
+        for (const Shape &shape: shapes) {
+            if (shape[i] > greatest) {
+                greatest = shape[i];
+            }
+        }
+        ret.push_back(greatest);
+    }
+    return ret;
 }
 
 }  // namespace bhxx
