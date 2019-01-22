@@ -19,6 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
+#include <sstream>
 #include <algorithm>
 #include "BhArray.hpp"
 #include <bhxx/functor.hpp>
@@ -153,6 +154,38 @@ Shape broadcasted_shape(std::array<Shape, N> shapes) {
         ret.push_back(greatest);
     }
     return ret;
+}
+
+/** Return a new view of `ary` that is broadcasted to `shape`
+ *
+ * @param ary    Input array
+ * @param shape  The new shape
+ * @return       The broadcasted array
+ */
+template<typename T>
+BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
+    if (ary.shape.size() < shape.size()) {
+        throw std::runtime_error("The length of `shape` is smaller than `ary.shape`");
+    }
+    // Append ones to shape and zeros to stride in order to make them the same lengths as `shape`
+    assert(ary.shape.size() == ary.stride.size());
+    ary.shape.insert(ary.shape.end(), shape.size() - ary.shape.size(), 1);
+    ary.stride.insert(ary.stride.end(), shape.size() - ary.stride.size(), 0);
+
+    // Broadcast each dimension by setting ary.stride to zero and ary.shape to `shape`
+    for (uint64_t i = 0; i < shape.size(); ++i) {
+        if (ary.shape[i] != shape[i]) {
+            if (ary.shape[i] == 1) {
+                ary.shape[i] = shape[i];
+                ary.stride[i] = 0;
+            } else {
+                std::stringstream ss;
+                ss << "Cannot broadcast `shape[" << i << "]=" << ary.shape << "` to `" << shape[i] << "`.";
+                throw std::runtime_error(ss.str());
+            }
+        }
+    }
+    return std::move(ary);
 }
 
 }  // namespace bhxx
