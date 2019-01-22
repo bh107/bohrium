@@ -325,7 +325,6 @@ public:
 
     /// Return a new reshaped view (the array must be contiguous)
     BhArray<T> reshape(Shape shape) const;
-
 };
 
 template<typename T>

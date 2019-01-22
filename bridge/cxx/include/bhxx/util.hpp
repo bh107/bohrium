@@ -26,32 +26,17 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
-/** Convert an array with exactly one element to a scalar by calling
- *  sync and flush and returning the value. */
-template<typename T>
-T as_scalar(BhArray<T> ary);
-
 /** Convert an array to a contiguous representation if it is not yet
  *  contiguous. */
 template<typename T>
 BhArray<T> as_contiguous(BhArray<T> ary) {
-    if (ary.isContiguous()) return ary;
+    if (ary.isContiguous()) return std::move(ary);
 
     BhArray<T> contiguous{ary.shape()};
     identity(contiguous, ary);
     return contiguous;
 }
 
-
-/** Perform a matrix-matrix multiplication
- *
- * Multiplies the rightmost dimension of lhs with the leftmost
- * dimension of rhs.
- * */
-/*
-template<typename T>
-BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs);
-*/
 /** Performs a full reduction of the array along all axis using the
  *  add_reduce operation.
  *
@@ -113,7 +98,6 @@ auto inner_product(const BhArray<T> &oplhs, const BhArray<T> &oprhs,
     return accumulate(multiplication(oplhs, oprhs),
                       std::forward<AddReduction>(add_reduction));
 }
-
 
 /** Return the result of broadcasting `shapes` against each other
  *
