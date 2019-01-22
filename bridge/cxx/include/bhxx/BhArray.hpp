@@ -98,7 +98,7 @@ public:
     }
 
     /** Swapping `a` and `b` */
-    friend void swap(BhArrayUnTypedCore& a, BhArrayUnTypedCore& b) noexcept {
+    friend void swap(BhArrayUnTypedCore &a, BhArrayUnTypedCore &b) noexcept {
         using std::swap; // enable ADL
         swap(a.offset, b.offset);
         swap(a.shape, b.shape);
@@ -166,6 +166,36 @@ public:
             typename std::enable_if<type_traits::is_safe_numeric_cast<scalar_type, InType>::value, int>::type = 0>
     BhArray(const BhArray<InType> &ary) : BhArray(ary.shape) {
         bhxx::identity(*this, ary);
+    }
+
+    /** Copy constructor that only copies meta data. The underlying array data is untouched */
+    BhArray(const BhArray &) = default;
+
+    /** Move constructor that only moves meta data. The underlying array data is untouched */
+    BhArray(BhArray &&) noexcept = default;
+
+    /** Copy the data of `other` into the array using a Bohrium `identity` operation */
+    BhArray<T> &operator=(const BhArray<T> &other) {
+        bhxx::identity(*this, other);
+        return *this;
+    }
+
+    /** Copy the data of `other` into the array using a Bohrium `identity` operation
+     *
+     *  \note A move assignment is the same as a copy assignment.
+     */
+    BhArray<T> &operator=(BhArray<T> &&other) {
+        bhxx::identity(*this, other);
+        other.reset();
+        return *this;
+    }
+
+    /**  Copy the scalar of `scalar_value` into the array using a Bohrium `identity` operation */
+    template<typename InType,
+            typename std::enable_if<type_traits::is_arithmetic<InType>::value, int>::type = 0>
+    BhArray<T> &operator=(const InType &scalar_value) {
+        bhxx::identity(*this, scalar_value);
+        return *this;
     }
 
     /** Reset the array to `ary` */
@@ -240,7 +270,7 @@ public:
     /// Return a new transposed view
     BhArray<T> transpose() const;
 
-    /// Return a new reshaped view (the array must be contigues)
+    /// Return a new reshaped view (the array must be contiguous)
     BhArray<T> reshape(Shape shape) const;
 
 };
