@@ -30,12 +30,10 @@ void compute()
     BhArray<float> a({2,3,4}, {12,4,1});
     BhArray<float> b({2,3,4}, {12,4,1});
     BhArray<float> c({2,3,4}, {12,4,1});
-    identity(b, 1);
-    identity(c, 2);
-
-    add(a, b, c);
+    b = 1;
+    c = 2;
+    a = b + c;
     std::cout << a << std::endl;
-
     add(b, a, -10.0);
     std::cout << b << std::endl;
 

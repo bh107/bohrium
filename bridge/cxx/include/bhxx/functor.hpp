@@ -52,7 +52,7 @@ struct OpBase {
 template <typename T>
 struct Add : public OpBase {
     BhArray<T> operator()(const BhArray<T>& lhs, const BhArray<T>& rhs) {
-        BhArray<T> result(result_shape(lhs.shape, rhs.shape));
+        BhArray<T> result(result_shape(lhs.shape(), rhs.shape()));
         add(result, lhs, rhs);
         return result;
     }
@@ -61,7 +61,7 @@ struct Add : public OpBase {
 template <typename T>
 struct Multiply : public OpBase {
     BhArray<T> operator()(const BhArray<T>& lhs, const BhArray<T>& rhs) {
-        BhArray<T> result(result_shape(lhs.shape, rhs.shape));
+        BhArray<T> result(result_shape(lhs.shape(), rhs.shape()));
         multiply(result, lhs, rhs);
         return result;
     }
@@ -70,7 +70,7 @@ struct Multiply : public OpBase {
 template <typename T>
 struct Equal : public OpBase {
     BhArray<bool> operator()(const BhArray<T>& lhs, const BhArray<T>& rhs) {
-        BhArray<bool> result(result_shape(lhs.shape, rhs.shape));
+        BhArray<bool> result(result_shape(lhs.shape(), rhs.shape()));
         equal(result, lhs, rhs);
         return result;
     }
@@ -79,7 +79,7 @@ struct Equal : public OpBase {
 template <typename T>
 struct NotEqual : public OpBase {
     BhArray<bool> operator()(const BhArray<T>& lhs, const BhArray<T>& rhs) {
-        BhArray<bool> result(result_shape(lhs.shape, rhs.shape));
+        BhArray<bool> result(result_shape(lhs.shape(), rhs.shape()));
         not_equal(result, lhs, rhs);
         return result;
     }
@@ -88,7 +88,7 @@ struct NotEqual : public OpBase {
 template <typename T>
 struct AddReduce : public OpBase {
     BhArray<T> operator()(const BhArray<T>& lhs, int64_t axis) {
-        BhArray<T> result(reduction_shape(lhs.shape, axis));
+        BhArray<T> result(reduction_shape(lhs.shape(), axis));
         add_reduce(result, lhs, axis);
         return result;
     }
@@ -97,7 +97,7 @@ struct AddReduce : public OpBase {
 template <typename T>
 struct LogicalAndReduce : public OpBase {
     BhArray<T> operator()(const BhArray<T>& lhs, int64_t axis) {
-        BhArray<T> result(reduction_shape(lhs.shape, axis));
+        BhArray<T> result(reduction_shape(lhs.shape(), axis));
         logical_and_reduce(result, lhs, axis);
         return result;
     }
@@ -106,7 +106,7 @@ struct LogicalAndReduce : public OpBase {
 template <typename T>
 struct LogicalOrReduce : public OpBase {
     BhArray<T> operator()(const BhArray<T>& lhs, int64_t axis) {
-        BhArray<T> result(reduction_shape(lhs.shape, axis));
+        BhArray<T> result(reduction_shape(lhs.shape(), axis));
         logical_or_reduce(result, lhs, axis);
         return result;
     }

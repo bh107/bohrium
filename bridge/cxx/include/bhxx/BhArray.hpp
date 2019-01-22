@@ -66,45 +66,104 @@ extern inline Stride contiguous_stride(const Shape &shape) {
 
 /** Core class that represent the core attributes of a view that isn't typed by its dtype */
 class BhArrayUnTypedCore {
-public:
+protected:
     /// The array offset (from the start of the base in number of elements)
-    uint64_t offset;
+    uint64_t _offset = 0;
     /// The array shape (size of each dimension in number of elements)
-    Shape shape;
+    Shape _shape;
     /// The array stride (the absolute stride of each dimension in number of elements)
-    Stride stride;
+    Stride _stride;
     /// Pointer to the base of this array
-    std::shared_ptr<BhBase> base;
+    std::shared_ptr<BhBase> _base;
     /// Metadata to support sliding views
-    bh_slide slides;
+    bh_slide _slides;
+public:
+
+    /** Default constructor that leave the instance completely uninitialized */
+    BhArrayUnTypedCore() = default;
+
+    /** Constructor to initiate all but the `_slides` attribute */
+    BhArrayUnTypedCore(uint64_t offset, Shape shape, Stride stride, std::shared_ptr<BhBase> base) :
+            _offset(offset), _shape(std::move(shape)), _stride(std::move(stride)), _base(std::move(base)) {
+        if (_shape.size() != _stride.size()) {
+            throw std::runtime_error("The shape and stride must have same length");
+        }
+        if (shape.prod() <= 0) {
+            throw std::runtime_error("The total size must be greater than zero");
+        }
+    }
 
     /** Return a `bh_view` of the array */
     bh_view getBhView() const {
         bh_view view;
-        assert(base.use_count() > 0);
-        view.base = base.get();
-        view.start = static_cast<int64_t>(offset);
-        if (shape.empty()) { // Scalar views (i.e. 0-dim views) are represented as 1-dim arrays with size one.
+        assert(_base.use_count() > 0);
+        view.base = _base.get();
+        view.start = static_cast<int64_t>(offset());
+        if (shape().empty()) { // Scalar views (i.e. 0-dim views) are represented as 1-dim arrays with size one.
             view.ndim = 1;
             view.shape = BhIntVec({1});
             view.stride = BhIntVec({1});
         } else {
-            view.ndim = static_cast<int64_t>(shape.size());
-            view.shape = BhIntVec(shape.begin(), shape.end());
-            view.stride = BhIntVec(stride.begin(), stride.end());;
+            view.ndim = static_cast<int64_t>(shape().size());
+            view.shape = BhIntVec(shape().begin(), shape().end());
+            view.stride = BhIntVec(_stride.begin(), _stride.end());;
         }
-        view.slides = slides;
+        view.slides = _slides;
         return view;
     }
 
     /** Swapping `a` and `b` */
     friend void swap(BhArrayUnTypedCore &a, BhArrayUnTypedCore &b) noexcept {
         using std::swap; // enable ADL
-        swap(a.offset, b.offset);
-        swap(a.shape, b.shape);
-        swap(a.stride, b.stride);
-        swap(a.base, b.base);
-        swap(a.slides, b.slides);
+        swap(a._offset, b._offset);
+        swap(a._shape, b._shape);
+        swap(a._stride, b._stride);
+        swap(a._base, b._base);
+        swap(a._slides, b._slides);
+    }
+
+    /** Return the offset of the array */
+    uint64_t offset() const {
+        return _offset;
+    }
+
+    /** Return the shape of the array */
+    const Shape &shape() const {
+        return _shape;
+    }
+
+    /** Return the stride of the array */
+    const Stride &stride() const {
+        return _stride;
+    }
+
+    /** Return the base of the array */
+    const std::shared_ptr<BhBase> &base() const {
+        return _base;
+    }
+
+    /** Return the base of the array */
+    std::shared_ptr<BhBase> base() {
+        return _base;
+    }
+
+    /** Set the shape and stride of the array (both must have the same lenth) */
+    void setShapeAndStride(Shape shape, Stride stride) {
+        if (shape.size() != stride.size()) {
+            throw std::runtime_error("The shape and stride must have same length");
+        }
+        _shape = std::move(shape);
+        _stride = std::move(stride);
+    }
+
+    /** Return the slides object of the array */
+    const bh_slide &slides() const {
+        return _slides;
+    }
+
+    /** Return the slides object of the array */
+    bh_slide &slides() {
+        return _slides;
     }
 };
 
@@ -121,17 +180,18 @@ public:
     /** Default constructor that leave the instance completely uninitialized. */
     BhArray() = default;
 
-    /** Create a new view */
-    explicit BhArray(Shape shape, Stride stride, uint64_t offset = 0) :
-            BhArrayUnTypedCore{offset, std::move(shape), std::move(stride), make_base_ptr(T(0), shape.prod())} {
-        assert(shape.size() == stride.size());
-        assert(shape.prod() > 0);
-    }
+    /** Create a new array. `Shape` and `Stride` must have the same length.
+     *
+     * @param shape   Shape of the new array
+     * @param stride  Stride of the new array
+     */
+    explicit BhArray(Shape shape, Stride stride) : BhArrayUnTypedCore{0, std::move(shape), std::move(stride),
+                                                                      make_base_ptr(T(0), shape.prod())} {}
 
-    /** Create a new view (contiguous stride, row-major) */
-    explicit BhArray(Shape shape) : BhArray(std::move(shape), contiguous_stride(shape), 0) {}
+    /** Create a new array (contiguous stride, row-major) */
+    explicit BhArray(Shape shape) : BhArray(std::move(shape), contiguous_stride(shape)) {}
 
-    /** Create a view that points to the given base
+    /** Create a array that points to the given base
      *
      *  \note The caller should make sure that the shared pointer
      *        uses the RuntimeDeleter as its deleter, since this is
@@ -164,7 +224,7 @@ public:
      */
     template<typename InType,
             typename std::enable_if<type_traits::is_safe_numeric_cast<scalar_type, InType>::value, int>::type = 0>
-    BhArray(const BhArray<InType> &ary) : BhArray(ary.shape) {
+    BhArray(const BhArray<InType> &ary) : BhArray(ary.shape()) {
         bhxx::identity(*this, ary);
     }
 
@@ -209,30 +269,23 @@ public:
         reset(BhArray());
     }
 
-    //
-    // Information
-    //
-
     /** Return the rank of the BhArray */
     size_t rank() const {
-        assert(shape.size() == stride.size());
-        return shape.size();
+        assert(shape().size() == _stride.size());
+        return shape().size();
     }
 
     /** Return the number of elements */
     uint64_t size() const {
-        return shape.prod();
+        return shape().prod();
     }
 
     /** Return whether the view is contiguous and row-major */
     bool isContiguous() const;
 
-    //
-    // Data access
-    //
     /** Is the data referenced by this view's base array already
      *  allocated, i.e. initialised */
-    bool isDataInitialised() const { return base->getDataPtr() != nullptr; }
+    bool isDataInitialised() const { return _base->getDataPtr() != nullptr; }
 
     /** Obtain the data pointer of the array, not taking ownership of any kind.
      *
@@ -243,21 +296,21 @@ public:
      *        out of sync with Bohrium.
      */
     T *data() {
-        T *ret = static_cast<T *>(base->getDataPtr());
+        T *ret = static_cast<T *>(_base->getDataPtr());
         if (ret == nullptr) {
             return nullptr;
         } else {
-            return offset + ret;
+            return _offset + ret;
         }
     }
 
     /// The const version of `data()`
     const T *data() const {
-        const T *ret = static_cast<T *>(base->getDataPtr());
+        const T *ret = static_cast<T *>(_base->getDataPtr());
         if (ret == nullptr) {
             return nullptr;
         } else {
-            return offset + ret;
+            return _offset + ret;
         }
     }
 

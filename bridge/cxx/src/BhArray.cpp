@@ -44,19 +44,19 @@ void RuntimeDeleter::operator()(BhBase *ptr) const {
 
 template<typename T>
 bool BhArray<T>::isContiguous() const {
-    assert(shape.size() == stride.size());
+    assert(shape().size() == _stride.size());
 
-    auto itshape = shape.rbegin();
-    auto itstride = stride.rbegin();
+    auto itshape = shape().rbegin();
+    auto itstride = _stride.rbegin();
 
     int64_t acc = 1;
-    for (; itstride != stride.rend(); ++itstride, ++itshape) {
+    for (; itstride != _stride.rend(); ++itstride, ++itshape) {
         if (*itstride > 1 && acc != *itstride) return false;
         acc *= static_cast<int64_t>(*itshape);
     }
 
     assert(acc == static_cast<int64_t>(size()));
-    return offset == 0;
+    return offset() == 0;
 }
 
 //
@@ -65,13 +65,13 @@ bool BhArray<T>::isContiguous() const {
 
 template<typename T>
 void BhArray<T>::pprint(std::ostream &os) const {
-    if (base == nullptr) {
+    if (_base == nullptr) {
         throw runtime_error("Cannot call pprint on array without base");
     }
-    Runtime::instance().sync(base);
+    Runtime::instance().sync(_base);
     Runtime::instance().flush();
 
-    if (shape.empty()) {
+    if (shape().empty()) {
         if (data() == nullptr) {
             os << "null";
         } else {
@@ -80,10 +80,10 @@ void BhArray<T>::pprint(std::ostream &os) const {
         }
     } else {
         os << "[";
-        for (uint64_t i = 0; i < shape[0]; ++i) {
+        for (uint64_t i = 0; i < shape()[0]; ++i) {
             BhArray<T> t = (*this)[i];
             t.pprint(os);
-            if (i < shape[0] - 1) {
+            if (i < shape()[0] - 1) {
                 os << ",";
             }
         }
@@ -93,26 +93,26 @@ void BhArray<T>::pprint(std::ostream &os) const {
 
 template<typename T>
 BhArray<T> BhArray<T>::operator[](int64_t idx) const {
-    if (shape.empty()) {
+    if (shape().empty()) {
         throw std::overflow_error("Cannot index a scalar, use `.data()` to access the scalar value");
     }
     // Negative index counts from the back
     if (idx < 0) {
-        idx = shape[0] + idx;
+        idx = shape()[0] + idx;
     }
-    if (idx < 0 || idx >= static_cast<int64_t >(shape[0])) {
+    if (idx < 0 || idx >= static_cast<int64_t >(shape()[0])) {
         throw std::overflow_error("Index out of bound");
     }
-    Shape ret_shape(shape.begin() + 1, shape.end());
-    Stride ret_stride(stride.begin() + 1, stride.end());
-    uint64_t ret_offset = offset + idx * stride[0];
-    return BhArray<T>(base, ret_shape, ret_stride, ret_offset);
+    Shape ret_shape(shape().begin() + 1, shape().end());
+    Stride ret_stride(_stride.begin() + 1, _stride.end());
+    uint64_t ret_offset = offset() + idx * _stride[0];
+    return BhArray<T>(_base, ret_shape, ret_stride, ret_offset);
 }
 
 template<typename T>
 BhArray<T> BhArray<T>::transpose() const {
-    Shape ret_shape(shape.rbegin(), shape.rend());
-    Stride ret_stride(stride.rbegin(), stride.rend());
+    Shape ret_shape(shape().rbegin(), shape().rend());
+    Stride ret_stride(_stride.rbegin(), _stride.rend());
     BhArray<T> ret(std::move(ret_shape), std::move(ret_stride));
     return ret;
 }

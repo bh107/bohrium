@@ -51,7 +51,7 @@ def get_array_inputs(layout, ignore_ops=[]):
 def write_broadcasted_shape(array_inputs):
     ret = "const Shape shape = broadcasted_shape<%d>({" % (len(array_inputs))
     for i, op in enumerate(array_inputs):
-        ret += "%s.shape" % op
+        ret += "%s.shape()" % op
         if i < len(array_inputs) - 1:
             ret += ", "
     ret += "});"
@@ -121,12 +121,12 @@ def main(args):
                     impl += "\tif (is_same_array(out, in1)) { out.reset(in1); return; }\n"
                 impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
                 if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
-                    impl += "\tif(shape != out.shape) { std::runtime_error(\"Output shape miss match\"); }\n"
+                    impl += "\tif(shape != out.shape()) { std::runtime_error(\"Output shape miss match\"); }\n"
                 for op_var in get_array_inputs(layout):
-                    impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
+                    impl += "\tif(!%s.base()) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                 if len(array_inputs) > 1:
                     for op_var in array_inputs:
-                        impl += '\tif(out.base == {0}.base && !is_same_array(out, {0})) '.format(op_var)
+                        impl += '\tif(out.base() == {0}.base() && !is_same_array(out, {0})) '.format(op_var)
                         impl += '{ std::runtime_error("When output and input uses the same base array, ' \
                                 'they must be identical"); }\n'
                 impl += write_broadcast_and_enqueue(op, layout, array_inputs)

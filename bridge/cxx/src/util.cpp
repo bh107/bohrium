@@ -27,7 +27,7 @@ namespace bhxx {
 
 template<typename T>
 T as_scalar(BhArray<T> ary) {
-    if (ary.base == nullptr) {
+    if (ary.base() == nullptr) {
         throw std::runtime_error(
                 "Cannot call bhxx::as_scalar on BhArray objects without base");
     }
@@ -38,7 +38,7 @@ T as_scalar(BhArray<T> ary) {
                 "element");
     }
 
-    Runtime::instance().sync(ary.base);
+    Runtime::instance().sync(ary.base());
     Runtime::instance().flush();
 
     const T *data = ary.data();
@@ -49,22 +49,8 @@ T as_scalar(BhArray<T> ary) {
     return *data;
 }
 
-template<typename T>
-BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size) {
-    if (axis < 0 || static_cast<size_t>(axis) > ary.rank()) {
-        throw std::runtime_error(
-                "Axis to replicate needs to be larger than -1 and less than or equal to "
-                "the rank of the array.");
-    }
-    if (size == 0) throw std::runtime_error("The new size needs to be larger than 0");
-    auto &shape = ary.shape;
-    auto &stride = ary.stride;
 
-    shape.insert(shape.begin() + axis, size);
-    stride.insert(stride.begin() + axis, 0);
-    return ary;
-}
-
+/*
 template<typename T>
 BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     if (lhs.rank() == 0 || rhs.rank() == 0) {
@@ -72,10 +58,10 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     }
 
     // Check that the axis we contract over is common.
-    if (lhs.shape.back() != rhs.shape.front()) {
+    if (lhs.shape().back() != rhs.shape().front()) {
         throw std::runtime_error("Common axis of arrays has incompatible sizes. LHS == " +
-                                 std::to_string(lhs.shape.back()) + ", RHS == " +
-                                 std::to_string(rhs.shape.front()) + ".");
+                                 std::to_string(lhs.shape().back()) + ", RHS == " +
+                                 std::to_string(rhs.shape().front()) + ".");
     }
 
     if (lhs.rank() > 2 || rhs.rank() > 2) {
@@ -89,17 +75,17 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
     // Notice that the case where both and lhs and rhs have rank 1
     // is also covered, since then both branches will be executed
     // leading to a result_shape of {1}.
-    Shape result_shape{lhs.shape.front(), rhs.shape.back()};
+    Shape result_shape{lhs.shape().front(), rhs.shape().back()};
     if (lhs.rank() == 1) {
-        result_shape = {rhs.shape.back()};
+        result_shape = {rhs.shape().back()};
         lhs = lhs.reshape({1, lhs.size()});
     }
     if (rhs.rank() == 1) {
-        result_shape = {lhs.shape.front()};
+        result_shape = {lhs.shape().front()};
         rhs = rhs.reshape({rhs.size(), 1});
     }
 
-    BhArray<T> result({lhs.shape.front(), rhs.shape.back()});
+    BhArray<T> result({lhs.shape().front(), rhs.shape().back()});
     try {
         lhs = as_contiguous(std::move(lhs));
         rhs = as_contiguous(std::move(rhs));
@@ -109,12 +95,12 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
         // TODO Use check function once it is available
 
         // Broadcast lhs and a transposed rhs
-        Shape broad_shape{lhs.shape.front(), rhs.shape.back(), rhs.shape.front()};
+        Shape broad_shape{lhs.shape().front(), rhs.shape().back(), rhs.shape().front()};
         BhArray<T> rhs_trans = rhs.transpose();
         BhArray<T> lhs_broad = broadcast(std::move(lhs), 1, broad_shape[1]);
         BhArray<T> rhs_broad = broadcast(std::move(rhs_trans), 0, broad_shape[0]);
-        assert(lhs_broad.shape == rhs_broad.shape);
-        assert(lhs_broad.shape == broad_shape);
+        assert(lhs_broad.shape() == rhs_broad.shape());
+        assert(lhs_broad.shape() == broad_shape);
 
         // Multiply and reduce
         BhArray<T> tmp(broad_shape);
@@ -124,16 +110,15 @@ BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs) {
 
     return result.reshape(result_shape);
 }
-
+*/
 // Instantiate API that support all data types
 #define INSTANTIATE(T)                         \
-    template T          as_scalar(BhArray<T>); \
-    template BhArray<T> broadcast(BhArray<T>, int64_t, size_t);
+    template T          as_scalar(BhArray<T>);
 
 instantiate_dtype()
 
 #undef INSTANTIATE
-
+/*
 // Instantiate API that doesn't support booleans
 #define INSTANTIATE(T)                         \
     template BhArray<T> matmul(BhArray<T>, BhArray<T>);
@@ -141,6 +126,6 @@ instantiate_dtype()
 instantiate_dtype_excl_bool()
 
 #undef INSTANTIATE
-
+*/
 
 }  // namespace bhxx

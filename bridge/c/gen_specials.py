@@ -64,7 +64,7 @@ def main(args):
     impl += "%s"%decl
     impl += """
 {
-    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<bool>*)condition)->base;
+    std::shared_ptr<bhxx::BhBase> b = ((bhxx::BhArray<bool>*)condition)->base();
     bhxx::Runtime::instance().flushAndRepeat(nrepeats, b);
 }
 """
@@ -147,7 +147,7 @@ def main(args):
     bhxx::Shape _shape(shape, shape+rank);
     bhxx::Stride _stride(stride, stride+rank);
     bhxx::BhArray<%(cpp)s>* ret = new bhxx::BhArray<%(cpp)s>(
-        ((bhxx::BhArray<%(cpp)s>*)src)->base,
+        ((bhxx::BhArray<%(cpp)s>*)src)->base(),
         _shape,
         _stride,
         start
@@ -168,7 +168,7 @@ def main(args):
         impl += "%s" % decl
         impl += """\
 {
-    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+    std::shared_ptr<bhxx::BhBase> b = ((bhxx::BhArray<%(cpp)s>*)ary)->base();
     return bhxx::Runtime::instance().getMemoryPointer(b, copy2host, force_alloc, nullify);
 }
 
@@ -184,7 +184,7 @@ def main(args):
         impl += "%s" % decl
         impl += """\
 {
-   std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+   std::shared_ptr<bhxx::BhBase> b = ((bhxx::BhArray<%(cpp)s>*)ary)->base();
    bhxx::Runtime::instance().setMemoryPointer(b, host_ptr, data);
 }
 
@@ -213,7 +213,7 @@ def main(args):
         impl += "%s" % decl
         impl += """\
 {
-    std::shared_ptr<bhxx::BhBase> &b = ((bhxx::BhArray<%(cpp)s>*)ary)->base;
+    std::shared_ptr<bhxx::BhBase> b = ((bhxx::BhArray<%(cpp)s>*)ary)->base();
     bhxx::Runtime::instance().sync(b);
 }
 

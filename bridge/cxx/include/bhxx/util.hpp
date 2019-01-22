@@ -37,28 +37,21 @@ template<typename T>
 BhArray<T> as_contiguous(BhArray<T> ary) {
     if (ary.isContiguous()) return ary;
 
-    BhArray<T> contiguous{ary.shape};
+    BhArray<T> contiguous{ary.shape()};
     identity(contiguous, ary);
     return contiguous;
 }
 
-/** Insert a broadcast axis of the given size
- *
- * \param axis   Position at which the broadcast axis is to be inserted
- *               (i.e. 4 between 4 and 5, ...)
- * \param size   Size of the new broadcasted axis
- */
-template<typename T>
-BhArray<T> broadcast(BhArray<T> ary, int64_t axis, size_t size);
 
 /** Perform a matrix-matrix multiplication
  *
  * Multiplies the rightmost dimension of lhs with the leftmost
  * dimension of rhs.
  * */
+/*
 template<typename T>
 BhArray<T> matmul(BhArray<T> lhs, BhArray<T> rhs);
-
+*/
 /** Performs a full reduction of the array along all axis using the
  *  add_reduce operation.
  *
@@ -164,34 +157,37 @@ Shape broadcasted_shape(std::array<Shape, N> shapes) {
  */
 template<typename T>
 BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
-    if (ary.shape.size() < shape.size()) {
+    if (ary.shape().size() < shape.size()) {
         throw std::runtime_error("The length of `shape` is smaller than `ary.shape`");
     }
     // Append ones to shape and zeros to stride in order to make them the same lengths as `shape`
-    assert(ary.shape.size() == ary.stride.size());
-    ary.shape.insert(ary.shape.end(), shape.size() - ary.shape.size(), 1);
-    ary.stride.insert(ary.stride.end(), shape.size() - ary.stride.size(), 0);
+    Shape ret_shape = ary.shape();
+    Stride ret_stride = ary.stride();
+    assert(ret_shape.size() == ret_stride.size());
+    ret_shape.insert(ret_shape.end(), ret_shape.size() - ret_shape.size(), 1);
+    ret_stride.insert(ret_stride.end(), ret_shape.size() - ret_stride.size(), 0);
 
-    // Broadcast each dimension by setting ary.stride to zero and ary.shape to `shape`
+    // Broadcast each dimension by setting ret_stride to zero and ret_shape to `shape`
     for (uint64_t i = 0; i < shape.size(); ++i) {
-        if (ary.shape[i] != shape[i]) {
-            if (ary.shape[i] == 1) {
-                ary.shape[i] = shape[i];
-                ary.stride[i] = 0;
+        if (ret_shape[i] != shape[i]) {
+            if (ret_shape[i] == 1) {
+                ret_shape[i] = shape[i];
+                ret_stride[i] = 0;
             } else {
                 std::stringstream ss;
-                ss << "Cannot broadcast `shape[" << i << "]=" << ary.shape << "` to `" << shape[i] << "`.";
+                ss << "Cannot broadcast `shape[" << i << "]=" << ret_shape << "` to `" << shape[i] << "`.";
                 throw std::runtime_error(ss.str());
             }
         }
     }
+    ary.setShapeAndStride(ret_shape, ret_stride);
     return std::move(ary);
 }
 
 /** Return True when `a` and `b` are the same view pointing to the same base */
 template<typename T1, typename T2>
 inline bool is_same_array(const BhArray<T1> &a, const BhArray<T2> &b) {
-    return a.base == b.base && a.offset == b.offset && a.shape == b.shape && a.stride == b.stride;
+    return a.base() == b.base() && a.offset() == b.offset() && a.shape() == b.shape() && a.stride() == b.stride();
 }
 
 }  // namespace bhxx

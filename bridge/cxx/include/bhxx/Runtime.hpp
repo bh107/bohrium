@@ -96,7 +96,7 @@ public:
     template <typename T>
     void slide_view(BhArray<T>* view_ptr, int64_t dim, int64_t slide, int64_t shape_change,
                     int64_t view_shape, int64_t view_stride, int64_t step_delay) {
-        view_ptr->slides.dims.push_back({dim, slide, shape_change, view_stride, view_shape, step_delay});
+        view_ptr->slides().dims.push_back({dim, slide, shape_change, view_stride, view_shape, step_delay});
     }
 
     /** Resets the changes made to the offset/shape of a dimension.
@@ -109,7 +109,7 @@ public:
      */
     template <typename T>
     void add_reset(BhArray<T>* view_ptr, int64_t dim, int64_t reset_it) {
-        view_ptr->slides.resets[dim] = std::make_pair(reset_it, 0);
+        view_ptr->slides().resets[dim] = std::make_pair(reset_it, 0);
     }
 
     /// Send and receive a message through the component stack
@@ -263,7 +263,7 @@ template<typename T>
 void Runtime::freeMemory(BhArray<T> &ary) {
     // Calling BH_FREE on an array with external
     // storage management is undefined behaviour
-    if (!ary.base->ownMemory()) {
+    if (!ary.base()->ownMemory()) {
         throw std::runtime_error(
                 "Cannot call BH_FREE on a BhArray object, which uses external storage "
                 "in its BhBase.");
@@ -274,6 +274,6 @@ void Runtime::freeMemory(BhArray<T> &ary) {
     // array referencing BhBase is deleted.
     // So instead of actually deleting anything we will just
     // remove our reference to the BhBase instead
-    ary.base.reset();
+    ary.base().reset();
 }
 }
