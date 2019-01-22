@@ -5,24 +5,29 @@ from os.path import join
 import argparse
 
 
-def write_decl(op, layout, type_sig, type_map, operator_map, out_as_operand):
+def write_decl(op, layout, type_sig, type_map, operator, out_as_operand, compound_assignment):
     signature = list(enumerate(zip(layout, type_sig)))
     out_cpp_type = type_map[type_sig[0]]['cpp']
 
-    if operator_map is None:
+    if operator is None:
         func_name = "%s" % op['opcode'][3:].lower()
     else:
-        func_name = "operator%s" % operator_map[op['opcode']]
+        func_name = "operator%s" % operator
     if out_as_operand:
         decl = "void %s(BhArray<%s> &out" % (func_name, out_cpp_type)
         if len(signature) > 1:
             decl += ", "
     else:
-        decl = "BhArray<%s> %s(" % (out_cpp_type, func_name)
+        decl = "BhArray<%s> " % out_cpp_type
+        if compound_assignment:
+            decl += "&"  # compound assignment such as "+=" returns a reference
+        decl += "%s(" % func_name
 
     for i, (symbol, t) in signature[1:]:
         if symbol == "A":
-            decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+            if not (i == 1 and compound_assignment):
+                decl += "const "
+            decl += "BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
         else:
             decl += "%s in%d" % (type_map[t]['cpp'], i)
         if i < len(layout) - 1:
@@ -107,7 +112,7 @@ def main(args):
         for type_sig in op['types']:
             for layout in op['layout']:
                 array_inputs = get_array_inputs(layout, ignore_ops)
-                decl = write_decl(op, layout, type_sig, type_map, None, True)
+                decl = write_decl(op, layout, type_sig, type_map, None, True, False)
                 head += "%s;\n" % decl
                 impl += decl
                 impl += " {\n"
@@ -132,15 +137,16 @@ def main(args):
             if len(type_sig) > 1 and op['opcode'] != "BH_IDENTITY":
                 for layout in op['layout']:
                     array_inputs = get_array_inputs(layout, ignore_ops)
-                    decl = write_decl(op, layout, type_sig, type_map, None, False)
+                    decl = write_decl(op, layout, type_sig, type_map, None, False, False)
                     head += "%s;\n" % decl
                     impl += decl
                     impl += " {\n"
                     impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
-                    for op_var in get_array_inputs(layout, ignore_ops):
-                        impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                     impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
-                    impl += write_broadcast_and_enqueue(op, layout, array_inputs)
+                    impl += "\t%s(out" % op['opcode'][3:].lower()
+                    for i in range(1, len(type_sig)):
+                        impl += ", in%s" % i
+                    impl += ");\n"
                     impl += "\treturn out;\n"
                     impl += "}\n"
 
@@ -151,17 +157,33 @@ def main(args):
             for type_sig in op['types']:
                 for layout in op['layout']:
                     array_inputs = get_array_inputs(layout, ignore_ops)
-                    decl = write_decl(op, layout, type_sig, type_map, operator, False)
+                    decl = write_decl(op, layout, type_sig, type_map, operator[op['opcode']], False, False)
                     head += "%s;\n" % decl
                     impl += decl
                     impl += " {\n"
                     impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
-                    for op_var in get_array_inputs(layout, ignore_ops):
-                        impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                     impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
-                    impl += write_broadcast_and_enqueue(op, layout, array_inputs)
+                    impl += "\t%s(out" % op['opcode'][3:].lower()
+                    for i in range(1, len(type_sig)):
+                        impl += ", in%s" % i
+                    impl += ");\n"
                     impl += "\treturn out;\n"
                     impl += "}\n"
+
+        if op['opcode'] in operator:
+            for type_sig in op['types']:
+                for layout in op['layout']:
+                    if layout[1] == "A":
+                        decl = write_decl(op, layout, type_sig, type_map, "%s=" % operator[op['opcode']], False, True)
+                        head += "%s;\n" % decl
+                        impl += decl
+                        impl += " {\n"
+                        impl += "\t%s(in1" % op['opcode'][3:].lower()
+                        for i in range(1, len(type_sig)):
+                            impl += ", in%s" % i
+                        impl += ");\n"
+                        impl += "\treturn in1;\n"
+                        impl += "}\n"
         impl += "\n\n"
         head += "\n\n"
 
