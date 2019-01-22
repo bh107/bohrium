@@ -58,8 +58,6 @@ struct bh_slide_dim {
 
 
 struct bh_slide {
-    bh_slide() = default;
-
     /// The slide in each dimension
     std::vector<bh_slide_dim> dims;
 
