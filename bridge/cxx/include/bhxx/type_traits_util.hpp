@@ -84,9 +84,6 @@ template<class A, class B>
 struct both_numeric : both<A, B, is_numeric> {
 };    // Are both A and B numeric        types?
 template<class A, class B>
-struct both_floating : both<A, B, is_complex_or_floating_point> {
-};    // Are both A and B floating point types?
-template<class A, class B>
 struct both_integral : both<A, B, std::is_integral> {
 };    // Are both A and B integral       types
 template<class A, class B>
@@ -96,17 +93,23 @@ template<class A, class B>
 struct both_unsigned : both<A, B, std::is_unsigned> {
 };    // Are both A and B unsigned       types
 
-
 // Returns true if both number types are signed or both are unsigned
 template<class T, class F>
 struct same_signage : pred_base<(both_signed<T, F>::value) || (both_unsigned<T, F>::value)> {
 };
 
-// And here, finally is the trait I wanted in the first place:  is_safe_numeric_cast
 
+/** Set `::value` to true when:
+ *    - F and T is not the same data type
+ *    - F can be safely converted to T
+ *
+ * @tparam T  The "to" data type
+ * @tparam F  The "from" data type
+ */
 template<class T, class F>
 struct is_safe_numeric_cast
-        : pred_base<both_numeric<T, F>::value && ((is_complex_or_floating_point<T>::value &&
+        : pred_base<(!same_decayed<T, F>::value) &&
+                    both_numeric<T, F>::value && ((is_complex_or_floating_point<T>::value &&
                                                    (std::is_integral<F>::value || sizeof(T) >= sizeof(F))) ||
                                                   ((both_integral<T, F>::value) && (sizeof(T) > sizeof(F) ||
                                                                                     (sizeof(T) == sizeof(F) &&
