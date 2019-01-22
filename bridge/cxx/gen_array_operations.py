@@ -44,7 +44,7 @@ def get_array_inputs(layout, ignore_ops=[]):
 
 
 def write_broadcasted_shape(array_inputs):
-    ret = "const Shape shape = broadcasted_shape<%d>({" % (len(array_inputs) + 1)
+    ret = "const Shape shape = broadcasted_shape<%d>({" % (len(array_inputs))
     for i, op in enumerate(array_inputs):
         ret += "%s.shape" % op
         if i < len(array_inputs) - 1:
@@ -111,6 +111,9 @@ def main(args):
                 head += "%s;\n" % decl
                 impl += decl
                 impl += " {\n"
+                if op['opcode'] == "BH_IDENTITY" and len(array_inputs) == 1 \
+                        and type_map[type_sig[0]]['cpp'] == type_map[type_sig[1]]['cpp']:
+                    impl += "\tif (is_same_array(out, in1)) { out.reset(in1); return; }\n"
                 impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
                 if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
                     impl += "\tif(shape != out.shape) { std::runtime_error(\"Output shape miss match\"); }\n"

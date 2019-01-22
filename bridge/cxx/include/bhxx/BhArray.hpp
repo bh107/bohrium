@@ -97,6 +97,7 @@ public:
         return view;
     }
 
+    /** Swapping `a` and `b` */
     friend void swap(BhArrayUnTypedCore& a, BhArrayUnTypedCore& b) noexcept {
         using std::swap; // enable ADL
         swap(a.offset, b.offset);
@@ -165,6 +166,17 @@ public:
             typename std::enable_if<type_traits::is_safe_numeric_cast<scalar_type, InType>::value, int>::type = 0>
     BhArray(const BhArray<InType> &ary) : BhArray(ary.shape) {
         bhxx::identity(*this, ary);
+    }
+
+    /** Reset the array to `ary` */
+    void reset(BhArray<T> ary) noexcept {
+        using std::swap;
+        swap(*this, ary);
+    }
+
+    /** Reset the array by cleaning all meta data and leave the array uninitialized. */
+    void reset() noexcept {
+        reset(BhArray());
     }
 
     //
