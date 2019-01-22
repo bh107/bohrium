@@ -31,24 +31,37 @@ def write_decl(op, layout, type_sig, type_map, operator_map, out_as_operand):
     return decl
 
 
-def get_array_operands(layout):
+def get_array_inputs(layout, opcode):
     ret = []
     for i, symbol in enumerate(layout):
-        if symbol == "A":
-            if i == 0:
-                ret.append("out")
-            else:
-                ret.append("in%d" % i)
+        if opcode == "BH_GATHER" and i == 1:
+            continue
+        if symbol == "A" and i > 0:
+            ret.append("in%d" % i)
     return ret
 
 
-def write_broadcasted_shape(array_operands):
-    ret = "const Shape shape = broadcasted_shape<%d>({" % len(array_operands)
-    for i, op in enumerate(array_operands):
+def write_broadcasted_shape(array_inputs):
+    ret = "const Shape shape = broadcasted_shape<%d>({" % (len(array_inputs) + 1)
+    for i, op in enumerate(array_inputs):
         ret += "%s.shape" % op
-        if i < len(array_operands) - 1:
+        if i < len(array_inputs) - 1:
             ret += ", "
     ret += "});"
+    return ret
+
+
+def write_broadcast_and_enqueue(op, layout, array_inputs):
+    ret = ""
+    for op_var in array_inputs:
+        ret += "\tauto _{0} = broadcast_to({0}, shape);\n".format(op_var)
+    ret += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
+    for i in range(len(layout) - 1):
+        op_var = "in%d" % (i + 1)
+        if op_var in array_inputs:
+            op_var = "_%s" % op_var
+        ret += ", %s" % op_var
+    ret += ");\n"
     return ret
 
 
@@ -87,38 +100,29 @@ def main(args):
         # Generate a function for each type signature
         for type_sig in op['types']:
             for layout in op['layout']:
-                array_operands = get_array_operands(layout)
+                array_inputs = get_array_inputs(layout, op['opcode'])
                 decl = write_decl(op, layout, type_sig, type_map, None, True)
                 head += "%s;\n" % decl
                 impl += decl
                 impl += " {\n"
-                impl += "\t%s\n" % write_broadcasted_shape(array_operands)
-                for op_var in array_operands:
-                    impl += "\tif(shape != %s.shape) {std::runtime_error(\"Shape miss match!\");}\n" % op_var
-                impl += "\n"
-                impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
-                for i in range(len(layout) - 1):
-                    impl += ", in%d" % (i + 1)
-                impl += ");\n}\n"
+                impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
+                    impl += "\tif(shape != out.shape) { std::runtime_error(\"Output shape miss match\"); }\n"
+                impl += write_broadcast_and_enqueue(op, layout, array_inputs)
+                impl += "}\n"
 
         # Generate a function that returns its output for each type signature
         for type_sig in op['types']:
-            if len(type_sig) > 2:
+            if len(type_sig) > 1 and op['opcode'] != "BH_IDENTITY":
                 for layout in op['layout']:
-                    array_operands = get_array_operands(layout)
+                    array_inputs = get_array_inputs(layout, op['opcode'])
                     decl = write_decl(op, layout, type_sig, type_map, None, False)
                     head += "%s;\n" % decl
                     impl += decl
                     impl += " {\n"
-                    impl += "\t%s\n" % write_broadcasted_shape(array_operands[1:])
-                    for op_var in array_operands[1:]:
-                        impl += "\tif(shape != %s.shape) {std::runtime_error(\"Shape miss match!\");}\n" % op_var
-                    out_cpp_type = type_map[type_sig[0]]['cpp']
-                    impl += "\tBhArray<%s> out{shape};\n" % out_cpp_type
-                    impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
-                    for i in range(len(layout) - 1):
-                        impl += ", in%d" % (i + 1)
-                    impl += ");\n"
+                    impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                    impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
+                    impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                     impl += "\treturn out;\n"
                     impl += "}\n"
         # Generate an operator overload for each type signature
@@ -127,20 +131,14 @@ def main(args):
         if op['opcode'] in operator:
             for type_sig in op['types']:
                 for layout in op['layout']:
-                    array_operands = get_array_operands(layout)
-                    out_cpp_type = type_map[type_sig[0]]['cpp']
+                    array_inputs = get_array_inputs(layout, op['opcode'])
                     decl = write_decl(op, layout, type_sig, type_map, operator, False)
                     head += "%s;\n" % decl
                     impl += decl
                     impl += " {\n"
-                    impl += "\t%s\n" % write_broadcasted_shape(array_operands[1:])
-                    for op_var in array_operands[1:]:
-                        impl += "\tif(shape != %s.shape) {std::runtime_error(\"Shape miss match!\");}\n" % op_var
-                    impl += "\tBhArray<%s> out{shape};\n" % out_cpp_type
-                    impl += "\tRuntime::instance().enqueue(%s, out" % op['opcode']
-                    for i in range(len(layout) - 1):
-                        impl += ", in%d" % (i + 1)
-                    impl += ");\n"
+                    impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                    impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
+                    impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                     impl += "\treturn out;\n"
                     impl += "}\n"
         impl += "\n\n"
