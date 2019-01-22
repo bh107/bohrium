@@ -96,6 +96,15 @@ public:
         view.slides = slides;
         return view;
     }
+
+    friend void swap(BhArrayUnTypedCore& a, BhArrayUnTypedCore& b) noexcept {
+        using std::swap; // enable ADL
+        swap(a.offset, b.offset);
+        swap(a.shape, b.shape);
+        swap(a.stride, b.stride);
+        swap(a.base, b.base);
+        swap(a.slides, b.slides);
+    }
 };
 
 /** Representation of a multidimensional array that point to a `BhBase` array.
@@ -148,13 +157,13 @@ public:
         assert(static_cast<uint64_t>(base->nelem()) == shape.prod());
     }
 
-    /** Create a copy of `ary` using a Bohrium `identity` operation.
+    /** Create a copy of `ary` using a Bohrium `identity` operation, which copies the underlying array data.
      *
      *  \note This function implements implicit type conversion for all widening type casts
      */
     template<typename InType,
             typename std::enable_if<type_traits::is_safe_numeric_cast<scalar_type, InType>::value, int>::type = 0>
-    BhArray(const BhArray<InType> &ary) {
+    BhArray(const BhArray<InType> &ary) : BhArray(ary.shape) {
         bhxx::identity(*this, ary);
     }
 
