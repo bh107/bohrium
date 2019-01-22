@@ -116,6 +116,11 @@ def main(args):
                     impl += "\tif(shape != out.shape) { std::runtime_error(\"Output shape miss match\"); }\n"
                 for op_var in get_array_inputs(layout):
                     impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
+                if len(array_inputs) > 1:
+                    for op_var in array_inputs:
+                        impl += '\tif(out.base == {0}.base && !is_same_array(out, {0})) '.format(op_var)
+                        impl += '{ std::runtime_error("When output and input uses the same base array, ' \
+                                'they must be identical"); }\n'
                 impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                 impl += "}\n"
 
@@ -135,6 +140,7 @@ def main(args):
                     impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                     impl += "\treturn out;\n"
                     impl += "}\n"
+
         # Generate an operator overload for each type signature
         operator = {"BH_ADD": "+", "BH_SUBTRACT": "-", "BH_MULTIPLY": "*", "BH_DIVIDE": "/", "BH_MOD": "%",
                     "BH_BITWISE_AND": "&", "BH_BITWISE_OR": "|", "BH_BITWISE_XOR": "^"}

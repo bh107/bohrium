@@ -188,4 +188,10 @@ BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
     return std::move(ary);
 }
 
+/** Return True when `a` and `b` are the same view pointing to the same base */
+template<typename T1, typename T2>
+inline bool is_same_array(const BhArray<T1> &a, const BhArray<T2> &b) {
+    return a.base == b.base && a.offset == b.offset && a.shape == b.shape && a.stride == b.stride;
+}
+
 }  // namespace bhxx
