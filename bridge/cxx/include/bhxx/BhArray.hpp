@@ -96,7 +96,7 @@ public:
     /** Return a `bh_view` of the array */
     bh_view getBhView() const {
         bh_view view;
-        assert(_base.use_count() > 0);
+        assert(_base);
         view.base = _base.get();
         view.start = static_cast<int64_t>(offset());
         if (shape().empty()) { // Scalar views (i.e. 0-dim views) are represented as 1-dim arrays with size one.
@@ -260,7 +260,6 @@ public:
 
     /** Reset the array to `ary` */
     void reset(BhArray<T> ary) noexcept {
-        using std::swap;
         swap(*this, ary);
     }
 
