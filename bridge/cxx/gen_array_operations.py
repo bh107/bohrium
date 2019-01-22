@@ -31,13 +31,15 @@ def write_decl(op, layout, type_sig, type_map, operator_map, out_as_operand):
     return decl
 
 
-def get_array_inputs(layout, opcode):
+def get_array_inputs(layout, ignore_ops=[]):
     ret = []
     for i, symbol in enumerate(layout):
-        if opcode == "BH_GATHER" and i == 1:
-            continue
-        if symbol == "A" and i > 0:
-            ret.append("in%d" % i)
+        if i not in ignore_ops:
+            if symbol == "A":
+                if i == 0:
+                    ret.append("out")
+                else:
+                    ret.append("in%d" % i)
     return ret
 
 
@@ -97,10 +99,14 @@ def main(args):
         impl += doc
         head += doc
 
+        ignore_ops = [0]
+        if op['opcode'] == "BH_GATHER":
+            ignore_ops.append(1)
+
         # Generate a function for each type signature
         for type_sig in op['types']:
             for layout in op['layout']:
-                array_inputs = get_array_inputs(layout, op['opcode'])
+                array_inputs = get_array_inputs(layout, ignore_ops)
                 decl = write_decl(op, layout, type_sig, type_map, None, True)
                 head += "%s;\n" % decl
                 impl += decl
@@ -108,6 +114,8 @@ def main(args):
                 impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
                 if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
                     impl += "\tif(shape != out.shape) { std::runtime_error(\"Output shape miss match\"); }\n"
+                for op_var in get_array_inputs(layout):
+                    impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                 impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                 impl += "}\n"
 
@@ -115,12 +123,14 @@ def main(args):
         for type_sig in op['types']:
             if len(type_sig) > 1 and op['opcode'] != "BH_IDENTITY":
                 for layout in op['layout']:
-                    array_inputs = get_array_inputs(layout, op['opcode'])
+                    array_inputs = get_array_inputs(layout, ignore_ops)
                     decl = write_decl(op, layout, type_sig, type_map, None, False)
                     head += "%s;\n" % decl
                     impl += decl
                     impl += " {\n"
                     impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                    for op_var in get_array_inputs(layout, ignore_ops):
+                        impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                     impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
                     impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                     impl += "\treturn out;\n"
@@ -131,12 +141,14 @@ def main(args):
         if op['opcode'] in operator:
             for type_sig in op['types']:
                 for layout in op['layout']:
-                    array_inputs = get_array_inputs(layout, op['opcode'])
+                    array_inputs = get_array_inputs(layout, ignore_ops)
                     decl = write_decl(op, layout, type_sig, type_map, operator, False)
                     head += "%s;\n" % decl
                     impl += decl
                     impl += " {\n"
                     impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                    for op_var in get_array_inputs(layout, ignore_ops):
+                        impl += "\tif(!%s.base) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                     impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
                     impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                     impl += "\treturn out;\n"
