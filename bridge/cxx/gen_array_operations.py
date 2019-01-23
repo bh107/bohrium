@@ -123,10 +123,15 @@ def main(args):
                     impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
                 else:
                     impl += "\tconst Shape &shape = out.shape();\n"
-                impl += "\tif (!out.base()) { out.reset(BhArray<%s>{shape}); }\n" % type_map[type_sig[0]]['cpp']
 
+                impl += "\tShape out_shape = shape;\n"
+                if "REDUCE" in op['opcode']:
+                    impl += "\tif (out_shape.size() == 1) { out_shape = {1}; } else " \
+                            "{ out_shape.erase(out_shape.begin() + in2); }\n"
+
+                impl += "\tif (!out.base()) { out.reset(BhArray<%s>{out_shape}); }\n" % type_map[type_sig[0]]['cpp']
                 if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
-                    impl += "\tif(shape != out.shape()) { throw std::runtime_error(\"Output shape miss match\"); }\n"
+                    impl += "\tif(out_shape != out.shape()) { throw std::runtime_error(\"Output shape miss match\"); }\n"
                 for op_var in get_array_inputs(layout):
                     impl += "\tif(!%s.base()) { throw std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                 if len(array_inputs) > 1:
@@ -147,8 +152,7 @@ def main(args):
                         head += "%s;\n" % decl
                         impl += decl
                         impl += " {\n"
-                        impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
-                        impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
+                        impl += "\tBhArray<%s> out;\n" % type_map[type_sig[0]]['cpp']
                         impl += "\t%s(out" % op['opcode'][3:].lower()
                         for i in range(1, len(type_sig)):
                             impl += ", in%s" % i
@@ -168,8 +172,7 @@ def main(args):
                         head += "%s;\n" % decl
                         impl += decl
                         impl += " {\n"
-                        impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
-                        impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
+                        impl += "\tBhArray<%s> out;\n" % type_map[type_sig[0]]['cpp']
                         impl += "\t%s(out" % op['opcode'][3:].lower()
                         for i in range(1, len(type_sig)):
                             impl += ", in%s" % i
@@ -177,6 +180,7 @@ def main(args):
                         impl += "\treturn out;\n"
                         impl += "}\n"
 
+        # Generate += operator overload for each type signature
         if op['opcode'] in operator:
             for type_sig in op['types']:
                 for layout in op['layout']:
