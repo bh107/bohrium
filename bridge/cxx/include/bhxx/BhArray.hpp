@@ -143,7 +143,7 @@ public:
     }
 
     /** Return the base of the array */
-    std::shared_ptr<BhBase> base() {
+    std::shared_ptr<BhBase> &base() {
         return _base;
     }
 
