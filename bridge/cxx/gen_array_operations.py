@@ -119,15 +119,20 @@ def main(args):
                 if op['opcode'] == "BH_IDENTITY" and len(array_inputs) == 1 \
                         and type_map[type_sig[0]]['cpp'] == type_map[type_sig[1]]['cpp']:
                     impl += "\tif (is_same_array(out, in1)) { out.reset(in1); return; }\n"
-                impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                if len(array_inputs) > 0:
+                    impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                else:
+                    impl += "\tconst Shape &shape = out.shape();\n"
+                impl += "\tif (!out.base()) { out.reset(BhArray<%s>{shape}); }\n" % type_map[type_sig[0]]['cpp']
+
                 if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
-                    impl += "\tif(shape != out.shape()) { std::runtime_error(\"Output shape miss match\"); }\n"
+                    impl += "\tif(shape != out.shape()) { throw std::runtime_error(\"Output shape miss match\"); }\n"
                 for op_var in get_array_inputs(layout):
-                    impl += "\tif(!%s.base()) { std::runtime_error(\"Operands not initiated\"); }\n" % op_var
+                    impl += "\tif(!%s.base()) { throw std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                 if len(array_inputs) > 1:
                     for op_var in array_inputs:
                         impl += '\tif(out.base() == {0}.base() && !is_same_array(out, {0})) '.format(op_var)
-                        impl += '{ std::runtime_error("When output and input uses the same base array, ' \
+                        impl += '{ throw std::runtime_error("When output and input uses the same base array, ' \
                                 'they must be identical"); }\n'
                 impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                 impl += "}\n"
@@ -137,18 +142,19 @@ def main(args):
             if len(type_sig) > 1 and op['opcode'] != "BH_IDENTITY":
                 for layout in op['layout']:
                     array_inputs = get_array_inputs(layout, ignore_ops)
-                    decl = write_decl(op, layout, type_sig, type_map, None, False, False)
-                    head += "%s;\n" % decl
-                    impl += decl
-                    impl += " {\n"
-                    impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
-                    impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
-                    impl += "\t%s(out" % op['opcode'][3:].lower()
-                    for i in range(1, len(type_sig)):
-                        impl += ", in%s" % i
-                    impl += ");\n"
-                    impl += "\treturn out;\n"
-                    impl += "}\n"
+                    if len(array_inputs) > 0:
+                        decl = write_decl(op, layout, type_sig, type_map, None, False, False)
+                        head += "%s;\n" % decl
+                        impl += decl
+                        impl += " {\n"
+                        impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                        impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
+                        impl += "\t%s(out" % op['opcode'][3:].lower()
+                        for i in range(1, len(type_sig)):
+                            impl += ", in%s" % i
+                        impl += ");\n"
+                        impl += "\treturn out;\n"
+                        impl += "}\n"
 
         # Generate an operator overload for each type signature
         operator = {"BH_ADD": "+", "BH_SUBTRACT": "-", "BH_MULTIPLY": "*", "BH_DIVIDE": "/", "BH_MOD": "%",
@@ -157,18 +163,19 @@ def main(args):
             for type_sig in op['types']:
                 for layout in op['layout']:
                     array_inputs = get_array_inputs(layout, ignore_ops)
-                    decl = write_decl(op, layout, type_sig, type_map, operator[op['opcode']], False, False)
-                    head += "%s;\n" % decl
-                    impl += decl
-                    impl += " {\n"
-                    impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
-                    impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
-                    impl += "\t%s(out" % op['opcode'][3:].lower()
-                    for i in range(1, len(type_sig)):
-                        impl += ", in%s" % i
-                    impl += ");\n"
-                    impl += "\treturn out;\n"
-                    impl += "}\n"
+                    if len(array_inputs) > 0:
+                        decl = write_decl(op, layout, type_sig, type_map, operator[op['opcode']], False, False)
+                        head += "%s;\n" % decl
+                        impl += decl
+                        impl += " {\n"
+                        impl += "\t%s\n" % write_broadcasted_shape(array_inputs)
+                        impl += "\tBhArray<%s> out{shape};\n" % type_map[type_sig[0]]['cpp']
+                        impl += "\t%s(out" % op['opcode'][3:].lower()
+                        for i in range(1, len(type_sig)):
+                            impl += ", in%s" % i
+                        impl += ");\n"
+                        impl += "\treturn out;\n"
+                        impl += "}\n"
 
         if op['opcode'] in operator:
             for type_sig in op['types']:
