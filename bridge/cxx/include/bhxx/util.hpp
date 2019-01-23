@@ -171,7 +171,19 @@ BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
 /** Return True when `a` and `b` are the same view pointing to the same base */
 template<typename T1, typename T2>
 inline bool is_same_array(const BhArray<T1> &a, const BhArray<T2> &b) {
-    return a.base() == b.base() && a.offset() == b.offset() && a.shape() == b.shape() && a.stride() == b.stride();
+    if (a.base() == b.base() && a.offset() == b.offset() && a.shape() == b.shape()) {
+        assert(a.shape().size() == b.shape().size());
+        assert(a.stride().size() == b.stride().size());
+        // Notice, the stride may vary when shape is one
+        for (size_t i = 0; i < a.shape().size(); ++i) {
+            if (a.shape()[i] > 1 && a.stride()[i] != b.stride()[i]) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
 }
 
 }  // namespace bhxx
