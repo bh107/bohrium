@@ -186,4 +186,37 @@ inline bool is_same_array(const BhArray<T1> &a, const BhArray<T2> &b) {
     }
 }
 
+/** Return True when `a` and `b` can share memory
+ *
+ *    \note A return of True does not necessarily mean that the two arrays share any element.
+ *          It just means that they *might*.
+ * */
+template<typename T1, typename T2>
+bool may_share_memory(const BhArray<T1> &a, const BhArray<T2> &b) {
+    assert(a.shape().size() == b.shape().size());
+    assert(a.stride().size() == b.stride().size());
+
+    if (a.base() != b.base()) {
+        return false;
+    }
+    size_t a_low = a.offset();
+    size_t b_low = b.offset();
+    size_t a_high = a_low + 1;
+    size_t b_high = b_low + 1;
+    for (size_t i=0; i<a.shape().size(); ++i) {
+        if (a.stride()[i] < 0) {
+            a_low += (a.shape()[i]-1)*a.stride()[i];
+        } else {
+            a_high += (a.shape()[i]-1)*a.stride()[i];
+        }
+        if (b.stride()[i] < 0) {
+            b_low += (b.shape()[i]-1)*b.stride()[i];
+        } else {
+            b_high += (b.shape()[i]-1)*b.stride()[i];
+        }
+    }
+    return !(b_low >= a_high || a_low >= b_high);
+}
+
+
 }  // namespace bhxx

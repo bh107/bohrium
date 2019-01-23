@@ -136,7 +136,8 @@ def main(args):
                     impl += "\tif(!%s.base()) { throw std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                 if len(array_inputs) > 1:
                     for op_var in array_inputs:
-                        impl += '\tif(out.base() == {0}.base() && !is_same_array(out, {0})) '.format(op_var)
+                        impl += '\tif(out.base() == {0}.base() && ' \
+                                '!is_same_array(out, {0}) && may_share_memory(out, {0})) '.format(op_var)
                         impl += '{ throw std::runtime_error("When output and input uses the same base array, ' \
                                 'they must be identical"); }\n'
                 impl += write_broadcast_and_enqueue(op, layout, array_inputs)
