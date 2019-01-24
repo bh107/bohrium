@@ -294,11 +294,9 @@ public:
      */
     const T *data(bool flush = true) const;
 
-    /// The const version of `data()`
+    /// The non-const version of `.data()`
     T *data(bool flush = true) {
-        const BhArray<T> *t = this;
-        const T *ret = data(t);
-        return const_cast<T *>(ret);
+        return const_cast<T *>(static_cast<const BhArray<T> &>(*this).data(flush));
     }
 
     /** Return a copy of the array as a standard vector
