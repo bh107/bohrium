@@ -301,6 +301,12 @@ public:
         return const_cast<T *>(ret);
     }
 
+    /** Return a copy of the array as a standard vector
+     *
+     *  \note The array must be contiguous
+     */
+    std::vector<T> vec() const;
+
     /// Pretty printing the content of the array
     void pprint(std::ostream &os) const;
 

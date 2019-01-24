@@ -72,6 +72,18 @@ bool BhArray<T>::isContiguous() const {
     return offset() == 0;
 }
 
+template<typename T>
+std::vector<T> BhArray<T>::vec() const {
+    if (!isContiguous()) {
+        throw runtime_error("Cannot call `vec()` on a non-contiguous array");
+    }
+    auto d = data();
+    std::vector<T> ret(size());
+    for (uint64_t i = 0; i < size(); ++i) {
+        ret[i] = d[i];
+    }
+    return ret;
+}
 
 template<typename T>
 void BhArray<T>::pprint(std::ostream &os) const {
