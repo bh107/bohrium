@@ -21,10 +21,13 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 #include <algorithm>
-#include "BhArray.hpp"
+#include <bhxx/BhArray.hpp>
 #include <bhxx/functor.hpp>
 
 namespace bhxx {
+
+/** Force the execution of all lazy evaluated array operations */
+void flush();
 
 /** Convert an array to a contiguous representation if it is not yet
  *  contiguous. */
@@ -75,8 +78,8 @@ BhArray<T> accumulate(BhArray<T> op, AddReduction &&reduction) {
  *  on BhArray objects.
  */
 template<typename T>
-BhArray<T> inner_product(const BhArray<T> &oplhs, const BhArray<T> &oprhs) {
-    return inner_product(oplhs, oprhs, bhxx::Multiply<T>{}, bhxx::AddReduce<T>{});
+BhArray<T> inner_product(const BhArray<T> &lhs, const BhArray<T> &rhs) {
+    return inner_product(lhs, rhs, bhxx::Multiply<T>{}, bhxx::AddReduce<T>{});
 }
 
 /** Make an inner product between the Bohrium arrays given, i.e.
@@ -212,20 +215,19 @@ bool may_share_memory(const BhArray<T1> &a, const BhArray<T2> &b) {
     size_t b_low = b.offset();
     size_t a_high = a_low + 1;
     size_t b_high = b_low + 1;
-    for (size_t i=0; i<a.shape().size(); ++i) {
+    for (size_t i = 0; i < a.shape().size(); ++i) {
         if (a.stride()[i] < 0) {
-            a_low += (a.shape()[i]-1)*a.stride()[i];
+            a_low += (a.shape()[i] - 1) * a.stride()[i];
         } else {
-            a_high += (a.shape()[i]-1)*a.stride()[i];
+            a_high += (a.shape()[i] - 1) * a.stride()[i];
         }
         if (b.stride()[i] < 0) {
-            b_low += (b.shape()[i]-1)*b.stride()[i];
+            b_low += (b.shape()[i] - 1) * b.stride()[i];
         } else {
-            b_high += (b.shape()[i]-1)*b.stride()[i];
+            b_high += (b.shape()[i] - 1) * b.stride()[i];
         }
     }
     return !(b_low >= a_high || a_low >= b_high);
 }
-
 
 }  // namespace bhxx
