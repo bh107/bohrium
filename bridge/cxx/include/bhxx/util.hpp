@@ -114,9 +114,9 @@ Shape broadcasted_shape(std::array<Shape, N> shapes) {
         }
     }
 
-    // Make sure that all shapes has the same length by appending ones
+    // Make sure that all shapes has the same length by prepending ones
     for (Shape &shape: shapes) {
-        shape.insert(shape.end(), ret_ndim - shape.size(), 1);
+        shape.insert(shape.begin(), ret_ndim - shape.size(), 1);
     }
 
     // The resulting shape is the max of each dimension
@@ -134,6 +134,12 @@ Shape broadcasted_shape(std::array<Shape, N> shapes) {
 }
 
 /** Return a new view of `ary` that is broadcasted to `shape`
+ *  We use the term broadcast as defined by NumPy. Let `ret` be the broadcasted view of `ary`:
+ *    1) One-sized dimensions are prepended to `ret.shape()` until it has the same number of dimension as `ary`.
+ *    2) The stride of each one-sized dimension in `ret` is set to zero.
+ *    3) The shape of `ary` is set to `shape`
+ *
+ *  \note See: <https://docs.scipy.org/doc/numpy-1.15.0/user/basics.broadcasting.html>
  *
  * @param ary    Input array
  * @param shape  The new shape
@@ -141,15 +147,18 @@ Shape broadcasted_shape(std::array<Shape, N> shapes) {
  */
 template<typename T>
 BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
-    if (ary.shape().size() < shape.size()) {
-        throw std::runtime_error("The length of `shape` is smaller than `ary.shape`");
+    if (ary.shape().size() > shape.size()) {
+        std::stringstream ss;
+        ss << "When broadcasting, the number of dimension of array (" << ary.shape().size()
+           << ") cannot be greater than in the new shape (" << shape.size() << ")";
+        throw std::runtime_error(ss.str());
     }
-    // Append ones to shape and zeros to stride in order to make them the same lengths as `shape`
+    // Prepend ones to shape and zeros to stride in order to make them the same lengths as `shape`
     Shape ret_shape = ary.shape();
     Stride ret_stride = ary.stride();
     assert(ret_shape.size() == ret_stride.size());
-    ret_shape.insert(ret_shape.end(), ret_shape.size() - ret_shape.size(), 1);
-    ret_stride.insert(ret_stride.end(), ret_shape.size() - ret_stride.size(), 0);
+    ret_shape.insert(ret_shape.begin(), shape.size() - ret_shape.size(), 1);
+    ret_stride.insert(ret_stride.begin(), shape.size() - ret_stride.size(), 0);
 
     // Broadcast each dimension by setting ret_stride to zero and ret_shape to `shape`
     for (uint64_t i = 0; i < shape.size(); ++i) {
@@ -159,7 +168,7 @@ BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
                 ret_stride[i] = 0;
             } else {
                 std::stringstream ss;
-                ss << "Cannot broadcast `shape[" << i << "]=" << ret_shape << "` to `" << shape[i] << "`.";
+                ss << "Cannot broadcast shape " << ary.shape() << " to " << shape << ".";
                 throw std::runtime_error(ss.str());
             }
         }
