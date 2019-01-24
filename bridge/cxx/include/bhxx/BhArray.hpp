@@ -316,6 +316,14 @@ public:
 
     /// Return a new reshaped view (the array must be contiguous)
     BhArray<T> reshape(Shape shape) const;
+
+    /** Return a new view with a "new axis" inserted.
+     *
+     * @param axis The "new axis" is inserted just before `axis`. If negative, the count is backwards
+     *             (e.g -1 insert a "new axis" at the end of the array)
+     * @return The new array
+     */
+    BhArray<T> newAxis(int axis) const;
 };
 
 template<typename T>

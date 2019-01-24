@@ -145,6 +145,24 @@ BhArray<T> BhArray<T>::reshape(Shape shape) const {
     return BhArray<T>(std::move(shape), contiguous_stride(shape));
 }
 
+template<typename T>
+BhArray<T> BhArray<T>::newAxis(int axis) const {
+    const auto ndim = static_cast<int>(shape().size());
+    // Negative index counts from the back
+    if (axis < 0) {
+        axis = ndim + axis + 1;
+    }
+    if (axis < 0 || axis > ndim) {
+        throw std::overflow_error("Axis out of bound");
+    }
+    Shape ret_shape(shape());
+    Stride ret_stride(stride());
+    ret_shape.insert(ret_shape.begin() + axis, 1, 1);
+    ret_stride.insert(ret_stride.begin() + axis, 1, 0);
+    BhArray<T> ret{*this};
+    ret.setShapeAndStride(std::move(ret_shape), std::move(ret_stride));
+    return ret;
+}
 
 #define INSTANTIATE(TYPE) template class BhArray<TYPE>;
 
