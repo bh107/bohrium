@@ -288,29 +288,17 @@ public:
 
     /** Obtain the data pointer of the array, not taking ownership of any kind.
      *
-     *  \note This pointer might be a nullptr if the data in
-     *        the base data is not initialised.
-     *
-     *  \note No flush is done automatically. The data might be
-     *        out of sync with Bohrium.
+     * @param flush  Should we flush the runtime system before retrieving the data pointer
+     * @return       The data pointer that might be a nullptr if the data in
+     *               the base data is not initialised.
      */
-    T *data() {
-        T *ret = static_cast<T *>(_base->getDataPtr());
-        if (ret == nullptr) {
-            return nullptr;
-        } else {
-            return _offset + ret;
-        }
-    }
+    const T *data(bool flush = true) const;
 
     /// The const version of `data()`
-    const T *data() const {
-        const T *ret = static_cast<T *>(_base->getDataPtr());
-        if (ret == nullptr) {
-            return nullptr;
-        } else {
-            return _offset + ret;
-        }
+    T *data(bool flush = true) {
+        const BhArray<T> *t = this;
+        const T *ret = data(t);
+        return const_cast<T *>(ret);
     }
 
     /// Pretty printing the content of the array

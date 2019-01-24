@@ -38,9 +38,22 @@ void RuntimeDeleter::operator()(BhBase *ptr) const {
     Runtime::instance().enqueueDeletion(std::unique_ptr<BhBase>(ptr));
 }
 
-//
-// Properties and data access
-//
+template<typename T>
+const T *BhArray<T>::data(bool flush) const {
+    if (_base == nullptr) {
+        throw runtime_error("Array is uninitiated");
+    }
+    if (flush) {
+        Runtime::instance().sync(_base);
+        Runtime::instance().flush();
+    }
+    auto ret = static_cast<T *>(_base->getDataPtr());
+    if (ret == nullptr) {
+        return nullptr;
+    } else {
+        return _offset + ret;
+    }
+}
 
 template<typename T>
 bool BhArray<T>::isContiguous() const {
@@ -59,24 +72,16 @@ bool BhArray<T>::isContiguous() const {
     return offset() == 0;
 }
 
-//
-// Routines
-//
 
 template<typename T>
 void BhArray<T>::pprint(std::ostream &os) const {
-    if (_base == nullptr) {
-        throw runtime_error("Cannot call pprint on array without base");
-    }
-    Runtime::instance().sync(_base);
-    Runtime::instance().flush();
-
+    auto d = data();
     if (shape().empty()) {
-        if (data() == nullptr) {
+        if (d == nullptr) {
             os << "null";
         } else {
             os << scientific;
-            os << *data();
+            os << *d;
         }
     } else {
         os << "[";
