@@ -258,6 +258,13 @@ public:
         return *this;
     }
 
+    /** Return a new copy of the array using a Bohrium `identity` operation */
+    BhArray<T> copy() const {
+        BhArray<T> ret{this->shape()};
+        bhxx::identity(ret, *this);
+        return ret;
+    }
+
     /** Reset the array to `ary` */
     void reset(BhArray<T> ary) noexcept {
         swap(*this, ary);
