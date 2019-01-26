@@ -55,13 +55,13 @@ RUN bash /bh/install.sh
 
 # Deploy script
 WORKDIR /bh
-RUN echo "#/usr/bin/env bash" > deploy.sh && \
+RUN echo "#!/usr/bin/env bash" > deploy.sh && \
     echo "cp27-cp27mu -m twine upload /bh/wheelhouse/*.whl /bh/sdisthouse/*" >> deploy.sh && \
     chmod +x deploy.sh
 
 # Execute script
 WORKDIR /bh
-RUN echo "#/usr/bin/env bash" > exec.sh && \
+RUN echo "#!/usr/bin/env bash" > exec.sh && \
     echo "shopt -s extglob" >> exec.sh  && \
     chmod +x exec.sh
 
