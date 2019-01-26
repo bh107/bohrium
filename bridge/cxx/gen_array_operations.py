@@ -131,7 +131,8 @@ def main(args):
 
                 impl += "\tif (!out.base()) { out.reset(BhArray<%s>{out_shape}); }\n" % type_map[type_sig[0]]['cpp']
                 if op['opcode'] not in ['BH_SCATTER', 'BH_COND_SCATTER']:
-                    impl += "\tif(out_shape != out.shape()) { throw std::runtime_error(\"Output shape miss match\"); }\n"
+                    impl += "\tif(out_shape != out.shape()) { " \
+                            "throw std::runtime_error(\"Output shape miss match\"); }\n"
                 for op_var in get_array_inputs(layout):
                     impl += "\tif(!%s.base()) { throw std::runtime_error(\"Operands not initiated\"); }\n" % op_var
                 if len(array_inputs) > 1:
