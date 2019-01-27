@@ -274,6 +274,8 @@ In order to use the OpenCL backend, use the `tag` and `param` of `bh.user_kernel
     import bohrium as bh
 
     kernel = """
+    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
     kernel void execute(global double *a, global double *b) {
         int i0 = get_global_id(0);
         int i1 = get_global_id(1);
@@ -286,7 +288,7 @@ In order to use the OpenCL backend, use the `tag` and `param` of `bh.user_kernel
     # Notice, the OpenCL backend requires global_work_size and local_work_size
     bh.user_kernel.execute(kernel, [a, res],
                            tag="opencl",
-                           param="global_work_size: 10, 5; local_work_size: 1, 1")
+                           param={"global_work_size": [10, 5], "local_work_size": [1, 1])
     print(res)
 
 .. note:: Remember to use the OpenCL backend by setting `BH_STACK=opencl`.

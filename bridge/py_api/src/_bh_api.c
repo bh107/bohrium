@@ -190,7 +190,7 @@ static int BhAPI_mem_signal_exist(const void *addr) {
     return bh_mem_signal_exist(addr);
 }
 
-/** Run an user kernel
+/** Run a user kernel
  *
  * @param kernel The source code of the kernel
  * @param nop Number of operands

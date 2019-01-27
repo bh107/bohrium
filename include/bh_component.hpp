@@ -234,7 +234,7 @@ public:
         child.setDeviceContext(device_context);
     }
 
-    /** Run an user kernel
+    /** Run a user kernel
      *
      * @param kernel The source code of the kernel
      * @param operand_list The operands given to the kernel all of which must be regular arrays and not constants

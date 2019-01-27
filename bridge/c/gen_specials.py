@@ -285,7 +285,7 @@ def main(args):
 
 """ % t
 
-    doc = "\n// Run an user kernel\n"
+    doc = "\n// Run a user kernel\n"
     doc += "// NB: the returned string is invalidated on the next call to bhc_user_kernel()\n"
     impl += doc; head += doc
     decl = "const char* bhc_user_kernel(const char* kernel, int nop, void *operands[], const char *compile_cmd, " \
