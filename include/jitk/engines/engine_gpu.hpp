@@ -81,13 +81,6 @@ public:
 
         const auto texecution = chrono::steady_clock::now();
 
-        map<string, bool> kernel_config = {
-                {"strides_as_var", comp.config.defaultGet<bool>("strides_as_var", true)},
-                {"index_as_var",   comp.config.defaultGet<bool>("index_as_var", true)},
-                {"const_as_var",   comp.config.defaultGet<bool>("const_as_var", true)},
-                {"use_volatile",   comp.config.defaultGet<bool>("volatile", false)}
-        };
-
         // Some statistics
         stat.record(*bhir);
 
@@ -114,13 +107,11 @@ public:
         // NB: 'avoid_rank0_sweep' is set to true since GPUs cannot reduce over the outermost block
         for (const jitk::LoopB &kernel: get_kernel_list(instr_list, comp.config, fcache, stat, true, false)) {
             // Let's create the symbol table for the kernel
-            const jitk::SymbolTable symbols(
-                    kernel,
-                    kernel_config["use_volatile"],
-                    kernel_config["strides_as_var"],
-                    kernel_config["index_as_var"],
-                    kernel_config["const_as_var"]
-            );
+            const SymbolTable symbols(kernel,
+                                      use_volatile,
+                                      strides_as_var,
+                                      index_as_var,
+                                      const_as_var);
             stat.record(symbols);
 
             // We can skip a lot of steps if the kernel does no computation
