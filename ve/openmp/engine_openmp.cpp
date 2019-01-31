@@ -42,9 +42,10 @@ namespace fs = boost::filesystem;
 
 namespace bohrium {
 
-EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat) :
-        EngineCPU(comp, stat), compiler(comp.config.get<string>("compiler_cmd"),
-                                        comp.config.file_dir.string(), verbose) {
+EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat) : EngineCPU(comp, stat), compiler(
+        comp.config.get<string>("compiler_cmd"), comp.config.file_dir.string(), verbose), compiler_openmp(
+        comp.config.defaultGet<bool>("compiler_openmp", false)), compiler_openmp_simd(
+        comp.config.defaultGet<bool>("compiler_openmp_simd", false)) {
 
     compilation_hash = util::hash(compiler.cmd_template);
 
@@ -260,10 +261,9 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
                                jitk::Scope &scope,
                                const jitk::LoopB &block,
                                std::stringstream &out) {
-    if (not comp.config.defaultGet<bool>("compiler_openmp", false)) {
+    if (not compiler_openmp) {
         return;
     }
-    const bool enable_simd = comp.config.defaultGet<bool>("compiler_openmp_simd", false);
 
     // All reductions that can be handle directly be the OpenMP header e.g. reduction(+:var)
     std::vector<jitk::InstrPtr> openmp_reductions;
@@ -291,7 +291,7 @@ void EngineOpenMP::writeHeader(const jitk::SymbolTable &symbols,
     }
 
     // "OpenMP SIMD" goes to the innermost loop (which might also be the outermost loop)
-    if (enable_simd and block.isInnermost() and simd_compatible(block, scope)) {
+    if (compiler_openmp_simd and block.isInnermost() and simd_compatible(block, scope)) {
         ss << " simd";
         if (block.rank > 0) { // NB: avoid multiple reduction declarations
             for (const jitk::InstrPtr &instr: ordered_block_sweeps) {
@@ -482,17 +482,17 @@ string EngineOpenMP::userKernel(const std::string &kernel, std::vector<bh_view> 
         stringstream ss;
         ss << kernel << "\n";
         ss << "void _bh_launcher(void *data_list[]) {\n";
-        for (size_t i=0; i<operand_list.size(); ++i) {
+        for (size_t i = 0; i < operand_list.size(); ++i) {
             ss << "    " << writeType(operand_list[i].base->dtype());
             ss << " *a" << i << " = data_list[" << i << "];\n";
             data_list.push_back(operand_list[i].base->getDataPtr());
         }
         ss << "    execute(";
-        for (size_t i=0; i<operand_list.size()-1; ++i) {
+        for (size_t i = 0; i < operand_list.size() - 1; ++i) {
             ss << "a" << i << ", ";
         }
         if (not operand_list.empty()) {
-            ss << "a" << operand_list.size()-1;
+            ss << "a" << operand_list.size() - 1;
         }
         ss << ");\n";
         ss << "}\n";
