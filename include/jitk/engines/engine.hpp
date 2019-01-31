@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/statistics.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/view.hpp>
+#include <jitk/fuser.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_cache.hpp>
 

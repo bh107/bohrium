@@ -30,25 +30,24 @@ namespace jitk {
 
 namespace {
 // Apply the pre-fuser (i.e. fuse an instruction list to a block list specified by the name 'transformer_name'
-vector<Block> apply_pre_fusion(const ConfigParser &config, const vector<bh_instruction*> &instr_list,
+vector<Block> apply_pre_fusion(const FusionConfig &config, const vector<bh_instruction *> &instr_list,
                                const string &transformer_name) {
     // The include the 'singleton' and 'pre_fuser_lossy' names for legacy support
     if (transformer_name == "none" or transformer_name == "singleton") {
         return fuser_singleton(instr_list);
-    } else if (transformer_name == "lossy" or transformer_name == "pre_fuser_lossy"){
+    } else if (transformer_name == "lossy" or transformer_name == "pre_fuser_lossy") {
         return pre_fuser_lossy(instr_list);
     } else {
-        cout << "Unknown pre-fuser: \"" <<  transformer_name << "\"" << endl;
+        cout << "Unknown pre-fuser: \"" << transformer_name << "\"" << endl;
         throw runtime_error("Unknown pre-fuser!");
     }
 }
 
 // Apply the list of transformer specified by the names in 'transformer_names'
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
-void apply_transformers(const ConfigParser &config, vector<Block> &block_list, const vector<string> &transformer_names,
-                        bool avoid_rank0_sweep) {
+void apply_transformers(const FusionConfig &config, vector<Block> &block_list) {
 
-    for(auto it = transformer_names.begin(); it != transformer_names.end(); ++it) {
+    for (auto it = config.fuser_list.begin(); it != config.fuser_list.end(); ++it) {
         if (*it == "push_reductions_inwards") {
             push_reductions_inwards(block_list);
         } else if (*it == "split_for_threading") {
@@ -56,13 +55,13 @@ void apply_transformers(const ConfigParser &config, vector<Block> &block_list, c
         } else if (*it == "collapse_redundant_axes") {
             collapse_redundant_axes(block_list);
         } else if (*it == "serial") {
-            fuser_serial(block_list, avoid_rank0_sweep);
+            fuser_serial(block_list, config.avoid_rank0_sweep);
         } else if (*it == "breadth_first") {
-            fuser_breadth_first(block_list, avoid_rank0_sweep);
+            fuser_breadth_first(block_list, config.avoid_rank0_sweep);
         } else if (*it == "reshapable_first") {
-            fuser_reshapable_first(block_list, avoid_rank0_sweep);
+            fuser_reshapable_first(block_list, config.avoid_rank0_sweep);
         } else if (*it == "greedy") {
-            fuser_greedy(config, block_list, avoid_rank0_sweep);
+            fuser_greedy(config, block_list);
         } else {
             cout << "Unknown transformer: \"" << *it << "\"" << endl;
             throw runtime_error("Unknown transformer!");
@@ -74,10 +73,9 @@ void apply_transformers(const ConfigParser &config, vector<Block> &block_list, c
 std::vector<InstrPtr> order_sweep_by_origin_id(const std::set<InstrPtr> &sweep_set) {
     vector<InstrPtr> ret;
     ret.reserve(sweep_set.size());
-    std::copy(sweep_set.begin(),  sweep_set.end(), std::back_inserter(ret));
+    std::copy(sweep_set.begin(), sweep_set.end(), std::back_inserter(ret));
     std::sort(ret.begin(), ret.end(),
-              [](const InstrPtr & a, const InstrPtr & b) -> bool
-              {
+              [](const InstrPtr &a, const InstrPtr &b) -> bool {
                   return a->origin_id > b->origin_id;
               });
     return ret;
@@ -116,7 +114,7 @@ void add_identity_block(LoopB &loop, int64_t &origin_count) {
             } else {
                 // Let's create and add the identity loop to `ret`
                 vector<InstrPtr> single_instr = {std::make_shared<const bh_instruction>(identity_instr)};
-                ret.push_back(create_nested_block(single_instr, loop.rank+1));
+                ret.push_back(create_nested_block(single_instr, loop.rank + 1));
             }
 
             bh_instruction sweep_instr_updated{*sweep_instr};
@@ -176,8 +174,8 @@ vector<LoopB> add_identity_block(vector<Block> &block_list, int64_t &origin_coun
 
 // Help functions that create a list of block nest (each nest starting a rank 0) based on `instr_list`
 // 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
-vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
-                             FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep) {
+vector<Block> get_block_list(const vector<bh_instruction *> &instr_list, const FusionConfig &config, FuseCache &fcache,
+                             Statistics &stat) {
     vector<Block> block_list;
     bool hit;
     tie(block_list, hit) = fcache.get(instr_list);
@@ -186,60 +184,61 @@ vector<Block> get_block_list(const vector<bh_instruction*> &instr_list, const Co
         stat.num_instrs_into_fuser += instr_list.size();
         // Let's fuse the 'instr_list' into blocks
         // We start with the pre_fuser
-        block_list = apply_pre_fusion(config, instr_list, config.defaultGet("pre_fuser", string("pre_fuser_lossy")));
+        block_list = apply_pre_fusion(config, instr_list, config.pre_fuser);
         stat.num_blocks_out_of_fuser += block_list.size();
         const auto tfusion = chrono::steady_clock::now();
         stat.time_pre_fusion += tfusion - tpre_fusion;
         // Then we fuse fully
-        apply_transformers(config, block_list, config.defaultGetList("fuser_list", {"greedy"}), avoid_rank0_sweep);
+        apply_transformers(config, block_list);
         stat.time_fusion += chrono::steady_clock::now() - tfusion;
         fcache.insert(instr_list, block_list);
     }
 
     // Pretty printing the block
-    if (config.defaultGet<bool>("graph", false)) {
+    if (config.graph) {
         static int dcount = 0;
         {
             graph::DAG dag = graph::from_block_list(block_list);
-            graph::pprint(dag, "dag", avoid_rank0_sweep, dcount);
+            graph::pprint(dag, "dag", config.avoid_rank0_sweep, dcount);
         }
         {
             graph::DAG dag = graph::from_block_list(apply_pre_fusion(config, instr_list, "singleton"));
-            graph::pprint(dag, "dag_singleton", avoid_rank0_sweep, dcount);
+            graph::pprint(dag, "dag_singleton", config.avoid_rank0_sweep, dcount);
         }
         {
             graph::DAG dag = graph::from_block_list(apply_pre_fusion(config, instr_list, "lossy"));
-            graph::pprint(dag, "dag_lossy", avoid_rank0_sweep, dcount);
+            graph::pprint(dag, "dag_lossy", config.avoid_rank0_sweep, dcount);
         }
         ++dcount;
     }
 
     // Full block validation
     #ifndef NDEBUG
-        for (const Block &b: block_list) {
-            if (b.isInstr()) {
-                assert(b.rank() == 1);
-            }
-            assert(b.validation());
+    for (const Block &b: block_list) {
+        if (b.isInstr()) {
+            assert(b.rank() == 1);
         }
+        assert(b.validation());
+    }
     #endif
     return block_list;
 }
 }
 
 
-vector<LoopB> get_kernel_list(const vector<bh_instruction*> &instr_list, const ConfigParser &config,
-                              FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep, bool monolithic) {
+vector<LoopB>
+get_kernel_list(const std::vector<bh_instruction *> &instr_list, const FusionConfig &config, FuseCache &fcache,
+                Statistics &stat) {
     // Assign origin ids to all instructions starting at zero.
     int64_t origin_count = 0;
     for (bh_instruction *instr: instr_list) {
         instr->origin_id = origin_count++;
     }
 
-    vector<Block> block_list = get_block_list(instr_list, config, fcache, stat, avoid_rank0_sweep);
+    vector<Block> block_list = get_block_list(instr_list, config, fcache, stat);
 
     vector<LoopB> ret;
-    if (avoid_rank0_sweep) {
+    if (config.avoid_rank0_sweep) {
         for (Block &b: block_list) {
             if (b.isInstr() or not b.getLoop()._sweeps.empty()) {
                 ret.emplace_back(LoopB{-1, 1, {std::move(b)}});
@@ -249,7 +248,7 @@ vector<LoopB> get_kernel_list(const vector<bh_instruction*> &instr_list, const C
                 ret.emplace_back(std::move(kernel));
             }
         }
-    } else if (monolithic) {
+    } else if (config.monolithic) {
         LoopB kernel{-1, 1, {std::move(block_list)}};
         add_identity_block(kernel, origin_count);
         ret = {std::move(kernel)};

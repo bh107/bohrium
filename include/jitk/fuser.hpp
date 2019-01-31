@@ -29,6 +29,30 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+/// In order to avoid duplicate calls to `ConfigParser`, we this struct
+struct FusionConfig {
+    /// Will avoid fusion of sweeped and non-sweeped blocks at the root level
+    bool avoid_rank0_sweep;
+    // Flag to place all kernels into one
+    bool monolithic;
+    /// The pre-fuser to use
+    std::string pre_fuser;
+    /// List of fusers to use
+    std::vector<std::string> fuser_list;
+    /// When using the greedy fuser, when exceeding `greedy_threshold` nodes fuser_reshapable_first() is used instead.
+    uint64_t greedy_threshold;
+    /// Dump fusion graph
+    bool graph;
+
+    FusionConfig(const ConfigParser &config, bool avoid_rank0_sweep) :
+            avoid_rank0_sweep(avoid_rank0_sweep),
+            monolithic(config.defaultGet<bool>("monolithic", false)),
+            pre_fuser(config.defaultGet("pre_fuser", std::string("pre_fuser_lossy"))),
+            fuser_list(config.defaultGetList("fuser_list", {"greedy"})),
+            greedy_threshold(config.defaultGet<uint64_t>("greedy_threshold", 10000)),
+            graph(config.defaultGet<bool>("graph", false)) {}
+};
+
 // Creates an instruction of 'InstrPtr' from an instruction list with all noop operations removed
 std::vector<InstrPtr> simplify_instr_list(const std::vector<bh_instruction *> &instr_list);
 
@@ -52,8 +76,7 @@ void fuser_breadth_first(std::vector<Block> &block_list, bool avoid_rank0_sweep)
 void fuser_reshapable_first(std::vector<Block> &block_list, bool avoid_rank0_sweep);
 
 // Fuses 'block_list' greedily
-// 'avoid_rank0_sweep' will avoid fusion of sweeped and non-sweeped blocks at the root level
-void fuser_greedy(const ConfigParser &config, std::vector<Block> &block_list, bool avoid_rank0_sweep);
+void fuser_greedy(const FusionConfig &config, std::vector<Block> &block_list);
 
 } // jit
 } // bohrium

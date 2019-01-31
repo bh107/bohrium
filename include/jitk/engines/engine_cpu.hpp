@@ -35,10 +35,10 @@ namespace jitk {
 
 class EngineCPU : public Engine {
 protected:
-    bool monolithic;
+    // In order to avoid duplicate calls to `ConfigParser`, we store config settings here
+    const FusionConfig fusion_config;
 public:
-    EngineCPU(component::ComponentVE &comp, Statistics &stat) : Engine(comp, stat), monolithic{
-            comp.config.defaultGet<bool>("monolithic", false)} {}
+    EngineCPU(component::ComponentVE &comp, Statistics &stat) : Engine(comp, stat), fusion_config(comp.config, false) {}
 
     ~EngineCPU() override = default;
 

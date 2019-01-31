@@ -37,12 +37,12 @@ namespace bohrium {
 
 EngineCUDA::EngineCUDA(component::ComponentVE &comp, jitk::Statistics &stat) :
         EngineGPU(comp, stat),
-        work_group_size_1dx(comp.config.defaultGet<int>("work_group_size_1dx", 128)),
-        work_group_size_2dx(comp.config.defaultGet<int>("work_group_size_2dx", 32)),
-        work_group_size_2dy(comp.config.defaultGet<int>("work_group_size_2dy", 4)),
-        work_group_size_3dx(comp.config.defaultGet<int>("work_group_size_3dx", 32)),
-        work_group_size_3dy(comp.config.defaultGet<int>("work_group_size_3dy", 2)),
-        work_group_size_3dz(comp.config.defaultGet<int>("work_group_size_3dz", 2)) {
+        work_group_size_1dx(comp.config.defaultGet<uint64_t>("work_group_size_1dx", 128)),
+        work_group_size_2dx(comp.config.defaultGet<uint64_t>("work_group_size_2dx", 32)),
+        work_group_size_2dy(comp.config.defaultGet<uint64_t>("work_group_size_2dy", 4)),
+        work_group_size_3dx(comp.config.defaultGet<uint64_t>("work_group_size_3dx", 32)),
+        work_group_size_3dy(comp.config.defaultGet<uint64_t>("work_group_size_3dy", 2)),
+        work_group_size_3dz(comp.config.defaultGet<uint64_t>("work_group_size_3dz", 2)) {
     int deviceCount = 0;
     CUresult err = cuInit(0);
 
