@@ -94,7 +94,8 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
         work_group_size_2dy(comp.config.defaultGet<cl_ulong>("work_group_size_2dy", 4)),
         work_group_size_3dx(comp.config.defaultGet<cl_ulong>("work_group_size_3dx", 32)),
         work_group_size_3dy(comp.config.defaultGet<cl_ulong>("work_group_size_3dy", 2)),
-        work_group_size_3dz(comp.config.defaultGet<cl_ulong>("work_group_size_3dz", 2)) {
+        work_group_size_3dz(comp.config.defaultGet<cl_ulong>("work_group_size_3dz", 2)),
+        compiler_inc_dir(comp.config.defaultGet<string>("compiler_inc_dir", "")) {
 
     vector<pair<cl::Platform, cl::Device> > device_list = get_device_list();
     try {
@@ -442,14 +443,13 @@ void EngineOpenCL::writeKernel(const jitk::LoopB &kernel,
                                const vector<uint64_t> &thread_stack,
                                uint64_t codegen_hash,
                                stringstream &ss) {
-    const string inc_dir(comp.config.defaultGet<string>("compiler_inc_dir", ""));
 
     // Write the need includes
     ss << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n";
-    ss << "#include \"" << inc_dir << "kernel_dependencies/complex_opencl.h\"\n";
-    ss << "#include \"" << inc_dir << "kernel_dependencies/integer_operations.h\"\n";
+    ss << "#include \"" << compiler_inc_dir << "kernel_dependencies/complex_opencl.h\"\n";
+    ss << "#include \"" << compiler_inc_dir << "kernel_dependencies/integer_operations.h\"\n";
     if (symbols.useRandom()) { // Write the random function
-        ss << "#include \"" << inc_dir << "kernel_dependencies/random123_opencl.h\"\n";
+        ss << "#include \"" << compiler_inc_dir << "kernel_dependencies/random123_opencl.h\"\n";
     }
     ss << "\n";
 

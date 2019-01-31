@@ -56,6 +56,9 @@ private:
     const cl_ulong work_group_size_3dy;
     const cl_ulong work_group_size_3dz;
 
+    // OpenCL include path
+    const std::string compiler_inc_dir;
+
     // Returns the global and local work OpenCL ranges based on the 'thread_stack'
     std::pair<cl::NDRange, cl::NDRange> NDRanges(const std::vector<uint64_t> &thread_stack) const;
 
