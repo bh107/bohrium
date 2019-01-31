@@ -62,8 +62,7 @@ void EngineCPU::handleExecution(BhIR *bhir) {
     }
 
     // Let's get the kernel list
-    vector<LoopB> kernel_list = get_kernel_list(instr_list, comp.config, fcache, stat, false,
-                                                comp.config.defaultGet<bool>("monolithic", true));
+    vector<LoopB> kernel_list = get_kernel_list(instr_list, comp.config, fcache, stat, false, monolithic);
 
     for (const LoopB &kernel: kernel_list) {
         // Let's create the symbol table for the kernel

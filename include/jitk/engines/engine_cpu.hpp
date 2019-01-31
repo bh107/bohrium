@@ -34,8 +34,11 @@ namespace bohrium {
 namespace jitk {
 
 class EngineCPU : public Engine {
+protected:
+    bool monolithic;
 public:
-    EngineCPU(component::ComponentVE &comp, Statistics &stat) : Engine(comp, stat) {}
+    EngineCPU(component::ComponentVE &comp, Statistics &stat) : Engine(comp, stat), monolithic{
+            comp.config.defaultGet<bool>("monolithic", false)} {}
 
     ~EngineCPU() override = default;
 
