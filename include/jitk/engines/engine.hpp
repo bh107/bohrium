@@ -51,6 +51,7 @@ protected:
     const bool index_as_var;
     const bool const_as_var;
     const bool use_volatile;
+    const bool array_contraction;
 
     // Maximum number of cache files
     const int64_t cache_file_max;
@@ -87,6 +88,7 @@ public:
             index_as_var{comp.config.defaultGet<bool>("index_as_var", true)},
             const_as_var{comp.config.defaultGet<bool>("const_as_var", true)},
             use_volatile{comp.config.defaultGet<bool>("volatile", false)},
+            array_contraction{comp.config.defaultGet<bool>("array_contraction", true)},
             cache_file_max(comp.config.defaultGet<int64_t>("cache_file_max", 50000)),
             tmp_dir(get_tmp_path(comp.config)),
             tmp_src_dir(tmp_dir / "src"),

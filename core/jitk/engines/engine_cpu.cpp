@@ -53,7 +53,7 @@ void EngineCPU::handleExecution(BhIR *bhir) {
     }
 
     // Set the constructor flag
-    if (comp.config.defaultGet<bool>("array_contraction", true)) {
+    if (array_contraction) {
         setConstructorFlag(instr_list);
     } else {
         for (bh_instruction *instr: instr_list) {
