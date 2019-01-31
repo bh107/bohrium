@@ -45,14 +45,16 @@ public:
     const uint64_t num_threads;
     // When max threads is set, use round robin?
     const bool num_threads_round_robin;
+    // In order to avoid duplicate calls to `ConfigParser`, we store config settings here
+    const FusionConfig fusion_config;
 
     EngineGPU(component::ComponentVE &comp, Statistics &stat) :
             Engine(comp, stat),
             device_number(comp.config.defaultGet<int>("device_number", 0)),
             prof(comp.config.defaultGet<bool>("prof", false)),
             num_threads(comp.config.defaultGet<uint64_t>("num_threads", 0)),
-            num_threads_round_robin(comp.config.defaultGet<bool>("num_threads_round_robin", false)) {
-    }
+            num_threads_round_robin(comp.config.defaultGet<bool>("num_threads_round_robin", false)),
+            fusion_config(comp.config, true) {}
 
     ~EngineGPU() override = default;
 
@@ -81,13 +83,6 @@ public:
 
         const auto texecution = chrono::steady_clock::now();
 
-        map<string, bool> kernel_config = {
-                {"strides_as_var", comp.config.defaultGet<bool>("strides_as_var", true)},
-                {"index_as_var",   comp.config.defaultGet<bool>("index_as_var", true)},
-                {"const_as_var",   comp.config.defaultGet<bool>("const_as_var", true)},
-                {"use_volatile",   comp.config.defaultGet<bool>("volatile", false)}
-        };
-
         // Some statistics
         stat.record(*bhir);
 
@@ -102,7 +97,7 @@ public:
         }
 
         // Set the constructor flag
-        if (comp.config.defaultGet<bool>("array_contraction", true)) {
+        if (array_contraction) {
             setConstructorFlag(instr_list);
         } else {
             for (bh_instruction *instr: instr_list) {
@@ -112,15 +107,13 @@ public:
 
         // Let's get the kernel list
         // NB: 'avoid_rank0_sweep' is set to true since GPUs cannot reduce over the outermost block
-        for (const jitk::LoopB &kernel: get_kernel_list(instr_list, comp.config, fcache, stat, true, false)) {
+        for (const jitk::LoopB &kernel: get_kernel_list(instr_list, fusion_config, fcache, stat)) {
             // Let's create the symbol table for the kernel
-            const jitk::SymbolTable symbols(
-                    kernel,
-                    kernel_config["use_volatile"],
-                    kernel_config["strides_as_var"],
-                    kernel_config["index_as_var"],
-                    kernel_config["const_as_var"]
-            );
+            const SymbolTable symbols(kernel,
+                                      use_volatile,
+                                      strides_as_var,
+                                      index_as_var,
+                                      const_as_var);
             stat.record(symbols);
 
             // We can skip a lot of steps if the kernel does no computation

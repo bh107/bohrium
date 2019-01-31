@@ -23,6 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <jitk/statistics.hpp>
 #include <jitk/instruction.hpp>
 #include <jitk/view.hpp>
+#include <jitk/fuser.hpp>
 #include <jitk/fuser_cache.hpp>
 #include <jitk/codegen_cache.hpp>
 
@@ -34,6 +35,7 @@ If not, see <http://www.gnu.org/licenses/>.
 namespace bohrium {
 namespace jitk {
 
+
 /** The base class of a Engine, which is the component that transforms bytecode into machine code.
  * All Vector Engines to inherent from this class
  */
@@ -43,7 +45,14 @@ protected:
     Statistics &stat;
     FuseCache fcache;
     CodegenCache codegen_cache;
+
+    // Common config settings
     const bool verbose;
+    const bool strides_as_var;
+    const bool index_as_var;
+    const bool const_as_var;
+    const bool use_volatile;
+    const bool array_contraction;
 
     // Maximum number of cache files
     const int64_t cache_file_max;
@@ -76,6 +85,11 @@ public:
             fcache(stat),
             codegen_cache(stat),
             verbose(comp.config.defaultGet<bool>("verbose", false)),
+            strides_as_var{comp.config.defaultGet<bool>("strides_as_var", true)},
+            index_as_var{comp.config.defaultGet<bool>("index_as_var", true)},
+            const_as_var{comp.config.defaultGet<bool>("const_as_var", true)},
+            use_volatile{comp.config.defaultGet<bool>("volatile", false)},
+            array_contraction{comp.config.defaultGet<bool>("array_contraction", true)},
             cache_file_max(comp.config.defaultGet<int64_t>("cache_file_max", 50000)),
             tmp_dir(get_tmp_path(comp.config)),
             tmp_src_dir(tmp_dir / "src"),

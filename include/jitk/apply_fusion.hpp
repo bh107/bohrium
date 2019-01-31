@@ -37,15 +37,14 @@ namespace jitk {
  * Notice, this function inject identity instructions before sweep instructions
  *
  * @param instr_list The instruction list to base the kernel list on
- * @param config     The config
+ * @param config     The fusion config
  * @param fcache     The fuse cache
  * @param stat       Statistics
- * @param no_rank0_sweep Blocks with outermost reductions will get their own kernel and no identity injection
- * @param monolithic Flag to place all kernels into one
  * @return Return a list of kernels
  */
-std::vector<LoopB> get_kernel_list(const std::vector<bh_instruction*> &instr_list, const ConfigParser &config,
-                                   FuseCache &fcache, Statistics &stat, bool avoid_rank0_sweep, bool monolithic);
+std::vector<LoopB>
+get_kernel_list(const std::vector<bh_instruction *> &instr_list, const FusionConfig &config, FuseCache &fcache,
+                Statistics &stat);
 
 } // jitk
 } // bohrium
