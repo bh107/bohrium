@@ -124,7 +124,10 @@ public:
     string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
                       const std::string &compile_cmd, const std::string &tag, const std::string &param) override {
         if (tag == "openmp") {
-            return engine.userKernel(kernel, operand_list, compile_cmd, tag, param);
+            const auto texecution = chrono::steady_clock::now();
+            string ret = engine.userKernel(kernel, operand_list, compile_cmd, tag, param);
+            stat.time_total_execution += chrono::steady_clock::now() - texecution;
+            return ret;
         } else {
             throw std::runtime_error("No backend with tag \"" + tag + "\" found");
         }
