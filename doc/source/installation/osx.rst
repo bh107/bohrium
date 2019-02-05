@@ -7,6 +7,8 @@ The following explains how to get going on Mac OS.
 
 You need to install the `Xcode Developer Tools <https://developer.apple.com/xcode/>`_ package, which is found in the App Store.
 
+.. note:: You might have to manually install some extra header files by running ```sudo installer -pkg /Library/Developer/CommandLineTools/Package/macOS_SDK_headers_for_macOS_10.14.pkg -target /``` where ```10.14``` is your current version (`more info <https://apple.stackexchange.com/questions/337940/why-is-usr-include-missing-i-have-xcode-and-command-line-tools-installed-moja>`_).
+
 PyPI Package
 ------------
 
