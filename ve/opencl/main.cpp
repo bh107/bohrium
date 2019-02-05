@@ -125,7 +125,10 @@ class Impl : public ComponentVE {
     string userKernel(const std::string &kernel, std::vector<bh_view> &operand_list,
                       const std::string &compile_cmd, const std::string &tag, const std::string &param) override {
         if (tag == "opencl") {
-            return engine.userKernel(kernel, operand_list, compile_cmd, tag, param);
+            const auto texecution = chrono::steady_clock::now();
+            string ret = engine.userKernel(kernel, operand_list, compile_cmd, tag, param);
+            stat.time_total_execution += chrono::steady_clock::now() - texecution;
+            return ret;
         } else {
             for (const bh_view &op: operand_list) {
                 engine.copyToHost({op.base});
