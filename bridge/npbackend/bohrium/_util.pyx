@@ -79,12 +79,18 @@ def type_sig(op_name, inputs):
     func = _info.op[op_name]
     #Note that we first use the dtype before the array as inputs to result_type()
     inputs = [getattr(t, 'dtype', t) for t in inputs]
-    dtype = np.result_type(*inputs).name
+    dtype = np.result_type(*inputs)
     for sig in func['type_sig']:
-        if dtype == sig[1]:
+        if dtype.name == sig[1]:
             return (np.dtype(sig[0]), np.dtype(sig[1]))
 
-    raise TypeError("The ufunc bohrium.%s() does not support input data type: %s." % (op_name, dtype))
+    # Let's try use a float signature for the integer input
+    if np.issubdtype(dtype, np.integer):
+        for sig in func['type_sig']:
+            if 'float' in sig[1]:
+                return (np.dtype(sig[0]), np.dtype(sig[1]))
+
+    raise TypeError("The ufunc bohrium.%s() does not support input data type: %s." % (op_name, dtype.name))
 
 def dtype_support(dtype):
     """Returns True when Bohrium supports 'dtype' """
