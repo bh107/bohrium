@@ -32,25 +32,24 @@ public:
     /** Is the memory managed referenced by bh_base's data pointer
      *  managed by Bohrium or is it owned externally
      *
-     * \note If this flag is false, the class will make sure that
+     * @note  If this flag is false, the class will make sure that
      *       the memory is not deleted when going out of scope.
      *  */
     bool ownMemory() {
         return m_own_memory;
     }
 
-    /** Construct a base array with nelem elements using
-     * externally managed storage.
+    /** Construct a base array with nelem elements using externally managed storage.
      *
-     * The class will make sure, that the storage is not deleted when
-     * going out of scope.
+     * The class will make sure, that the storage is not deleted when going out of scope.
+     * Needless to say that the memory should be large enough to incorporate nelem_ elements.
      *
-     * Needless to say that the memory should be large enough to
-     * incorporate nelem_ elements.
-     * */
+     * @tparam T      The type of each element
+     * @param nelem   Number of elements
+     * @param memory  Pointer to the external memory
+     */
     template<typename T>
     BhBase(size_t nelem, T *memory) : bh_base(nelem, bh_type_from_template<T>(), memory), m_own_memory(false) {}
-
 
     /** Construct a base array and initialise it with the elements
      *  provided by an iterator range.
@@ -68,13 +67,14 @@ public:
         std::copy(begin, end, static_cast<T *>(getDataPtr()));
     }
 
-    /** Construct a base array with nelem elements
+    /** Construct a base array with `nelem` elements
      *
-     * \param dummy   Dummy argument to fix the type of elements used.
+     * @param dummy   Dummy argument to fix the type of elements used.
      *                It may only have ever have the value 0 in the
      *                appropriate type.
+     * @param nelem   Number of elements
      *
-     * \note The use of this particular constructor is discouraged.
+     * @note  The use of this particular constructor is discouraged.
      *       It is only needed from BhArray to construct base objects
      *       which are uninitialised and do not yet hold any deta.
      *       If you wish to construct an uninitialised BhBase object,

@@ -32,11 +32,16 @@ namespace bhxx {
  *  with the Bohrium Runtime, but does not actually delete
  *  it straight away.
  *
- *  \note This is needed to ensure that all BhBase objects
+ *  @note This is needed to ensure that all BhBase objects
  *  are still around until the list of instructions has
  *  been emptied.
  */
 struct RuntimeDeleter {
+    /** Hand the deletion over to Bohrium including the ownership of
+     *  the pointer to be deleted by the means of a unique pointer.
+     *
+     * @param ptr pointer to the base array
+     */
     void operator()(BhBase *ptr) const;
 };
 
