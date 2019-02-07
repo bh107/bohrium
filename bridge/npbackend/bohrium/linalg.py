@@ -16,6 +16,7 @@ from numpy_force.linalg import *
 from . import bhary
 from . import ufuncs
 from . import array_create
+from . import user_kernel
 from ._util import dtype_equal
 from .bhary import fix_biclass_wrapper
 
@@ -474,24 +475,132 @@ def tensordot(a, b, axes=2):
     return res.reshape(olda + oldb)
 
 
+def _solve_tridiagonal_omp(a, b, c, rhs):
+    from string import Template
+    from textwrap import dedent
+
+    KERNEL = Template(dedent('''
+        #include <stddef.h>
+
+        void execute(
+            const ${DTYPE} *a,
+            const ${DTYPE} *b,
+            const ${DTYPE} *c,
+            const ${DTYPE} *d,
+            ${DTYPE} *solution
+        ){
+            const size_t m = ${SYS_DEPTH};
+            const size_t total_size = ${SIZE};
+
+            #pragma omp parallel for
+            for(size_t idx = 0; idx < total_size; idx += m) {
+                ${DTYPE} cp[m];
+                cp[0] = c[idx] / b[idx];
+                solution[idx] = d[idx] / b[idx];
+                for (size_t j = 1; j < m; ++j) {
+                    const ${DTYPE} norm_factor = b[idx+j] - a[idx+j] * cp[j-1];
+                    cp[j] = c[idx+j] / norm_factor;
+                    solution[idx+j] = (d[idx+j] - a[idx+j] * solution[idx+j-1]) / norm_factor;
+                }
+                for (size_t j = m-1; j > 0; --j) {
+                    solution[idx+j-1] -= cp[j-1] * solution[idx+j];
+                }
+            }
+        }
+    '''))
+    
+    kernel = KERNEL.substitute(
+        DTYPE=user_kernel.dtype_to_c99(a.dtype),
+        SYS_DEPTH=a.shape[-1],
+        SIZE=a.size
+    )
+
+    res = array_create.empty_like(a)
+    user_kernel.execute(
+        kernel,
+        [user_kernel.make_behaving(v) for v in (a, b, c, rhs, res)]
+    )
+    return res
+
+
+def _solve_tridiagonal_ocl(a, b, c, rhs, local_work_size=128):
+    from string import Template
+    from textwrap import dedent
+
+    KERNEL = Template(dedent('''
+        #pragma OPENCL EXTENSION cl_khr_fp64 : enable
+
+        kernel void execute(
+            const global ${DTYPE} *a,
+            const global ${DTYPE} *b,
+            const global ${DTYPE} *c,
+            const global ${DTYPE} *d,
+            global ${DTYPE} *solution
+        ){
+            const size_t m = ${SYS_DEPTH};
+            const size_t total_size = ${SIZE};
+            const size_t idx = get_global_id(0) * m;
+
+            if (idx >= total_size) {
+                return;
+            }
+
+            private ${DTYPE} cp[m];
+            cp[0] = c[idx] / b[idx];
+            solution[idx] = d[idx] / b[idx];
+            for (size_t j = 1; j < m; ++j) {
+                const ${DTYPE} norm_factor = b[idx+j] - a[idx+j] * cp[j-1];
+                cp[j] = c[idx+j] / norm_factor;
+                solution[idx+j] = (d[idx+j] - a[idx+j] * solution[idx+j-1]) / norm_factor;
+            }
+            for (size_t j = m-1; j > 0; --j) {
+                solution[idx+j-1] -= cp[j-1] * solution[idx+j];
+            }
+        }
+    '''))
+    
+    kernel = KERNEL.substitute(
+        DTYPE=user_kernel.dtype_to_c99(a.dtype),
+        SYS_DEPTH=a.shape[-1],
+        SIZE=a.size
+    )
+
+    res = array_create.empty_like(a)
+
+    # assemble work group size
+    global_size = res.size // res.shape[-1]
+    global_size = local_work_size * (global_size // local_work_size + 1)
+
+    user_kernel.execute(
+        kernel,
+        [user_kernel.make_behaving(v) for v in (a, b, c, rhs, res)],
+        tag="opencl",
+        param={"global_work_size": global_size, "local_work_size": local_work_size}
+    )
+    return res
+
+
 @fix_biclass_wrapper
-def solve_tridiagonal(a, b, c, rhs):
+def solve_tridiagonal(a, b, c, rhs, backend="openmp", **kwargs):
     """
     Solver for tridiagonal systems,
 
     ..math::
+
         A x = b
 
     based on the Thomas algorithm (not unconditionally stable).
 
     If the input arrays have more than one dimension, solutions are computed along the last axis.
-    Systems are solved in parallel if OpenMP is present. All inputs must have equal shape, and
-    be of dtype `float32` or `float64`.
+    Systems are solved in parallel if OpenMP is present. All inputs must have equal shape.
 
-    :param a: Lower diagonal elements. a[...,0] is not used.
+    :param a: Lower diagonal elements. a[..., 0] is not used.
     :param b: Main diagonal elements.
-    :param c: Upper diagonal elements. c[...,-1] is not used.
-    :param rhs: Solution vector.
+    :param c: Upper diagonal elements. c[..., -1] is not used.
+    :param rhs: Right-hand side vector.
+    :param backend: Computational backend to use (openmp or opencl).
+    :param kwargs: Additional argument to backend-specific solver. The opencl backend accepts
+       an argument "local_work_size" specifying the local work group size.
     :returns: Solution of the tridiagonal system(s). Has the same shape as the input arrays.
     """
     if not (a.shape == b.shape == c.shape == rhs.shape):
@@ -499,22 +608,26 @@ def solve_tridiagonal(a, b, c, rhs):
 
     if a.shape[-1] < 2:
         raise ValueError("Last axis must contain at least 2 elements")
+    
+    # Find appropriate dtype
+    array_types = []
+    scalar_types = []
+    for v in (a, b, c, rhs):
+        if numpy.isscalar(v):
+            scalar_types.append(type(v))
+        else:
+            array_types.append(v.dtype)
+    dtype = numpy.find_common_type(array_types, scalar_types)
 
-    out_shape = a.shape
-    num_systems = 1
-    if a.ndim > 1:
-        for s in out_shape[:-1]:
-            num_systems *= s
-    system_size = out_shape[-1]
+    a, b, c, rhs = (v.astype(dtype) for v in (a, b, c, rhs))
 
-    diagonals = array_create.empty((3, num_systems, system_size), dtype=rhs.dtype, bohrium=True)
-    diagonals[0] = a.reshape(num_systems, system_size)
-    diagonals[1] = b.reshape(num_systems, system_size)
-    diagonals[2] = c.reshape(num_systems, system_size)
-    rhs = rhs.reshape(num_systems, system_size)
-    out = array_create.zeros_like(rhs)
-    ufuncs.extmethod("tdma", out, diagonals, rhs)
-    return out.reshape(out_shape)
+    if backend == "openmp":
+        return _solve_tridiagonal_omp(a, b, c, rhs, **kwargs)
+
+    if backend == "opencl":
+        return _solve_tridiagonal_ocl(a, b, c, rhs, **kwargs)
+
+    raise ValueError("unknown backend '%s' (must be 'openmp' or 'opencl')" % backend)
 
 
 @fix_biclass_wrapper
