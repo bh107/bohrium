@@ -25,9 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 
-#include <bh_view.hpp>
-#include <bh_base.hpp>
-#include <bh_pprint.hpp>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_base.hpp>
+#include <bohrium/bh_pprint.hpp>
 
 using namespace std;
 

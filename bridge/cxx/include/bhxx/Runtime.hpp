@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 
 #include "BhInstruction.hpp"
-#include <bh_component.hpp>
+#include <bohrium/bh_component.hpp>
 
 namespace bhxx {
 

@@ -27,7 +27,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <dlfcn.h>
 #include <limits.h>
-#include <bh_config_parser.hpp>
+#include <bohrium/bh_config_parser.hpp>
 
 #define HOME_INI_PATH "~/.bohrium/config.ini"
 #define SYSTEM_INI_PATH_1 "/usr/local/etc/bohrium/config.ini"

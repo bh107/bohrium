@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <set>
 
-#include <bh_instruction.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 /* The Bohrium Internal Representation (BhIR) represents an instruction
  * batch created by the Bridge component typically. */

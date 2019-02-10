@@ -27,11 +27,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <cassert>
 #include <tuple>
-#include <bh_static_vector.hpp>
-#include <bh_type.hpp>
-#include <bh_base.hpp>
-#include <bh_slide.hpp>
-#include <bh_constant.hpp>
+#include <bohrium/bh_static_vector.hpp>
+#include <bohrium/bh_type.hpp>
+#include <bohrium/bh_base.hpp>
+#include <bohrium/bh_slide.hpp>
+#include <bohrium/bh_constant.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/array.hpp> // boost::serialization::make_array()
 

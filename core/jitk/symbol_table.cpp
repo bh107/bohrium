@@ -18,10 +18,10 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_util.hpp>
-#include <jitk/symbol_table.hpp>
-#include <jitk/view.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
+#include <bohrium/jitk/view.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 using namespace std;
 

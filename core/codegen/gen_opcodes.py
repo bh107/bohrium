@@ -4,7 +4,7 @@ import time
 import argparse
 
 """
-    Generates the include/bh_opcode.h and core/bh_opcode
+    Generates the include/bohrium/bh_opcode.h and core/bh_opcode
     based on the definitnion in /core/codegen/opcodes.json.
 """
 
@@ -31,7 +31,7 @@ def gen_headerfile( opcodes ):
  */
 #pragma once
 
-#include "bh_type.hpp"
+#include <bohrium/bh_type.hpp>
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,8 +111,8 @@ def gen_cfile(opcodes):
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <bh_opcode.h>
-#include <bh_instruction.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/bh_instruction.hpp>
 #include <stdbool.h>
 
 /* Text descriptions for a given operation */

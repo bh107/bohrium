@@ -26,8 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <set>
 
-#include "bh_opcode.h"
-#include <bh_view.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/bh_view.hpp>
 
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}

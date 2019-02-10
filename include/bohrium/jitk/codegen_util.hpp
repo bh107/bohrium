@@ -26,16 +26,16 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <functional>
 #include <boost/filesystem/path.hpp>
 
-#include <bh_util.hpp>
-#include <bh_type.hpp>
-#include <bh_instruction.hpp>
-#include <bh_extmethod.hpp>
-#include <bh_config_parser.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/bh_type.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/bh_extmethod.hpp>
+#include <bohrium/bh_config_parser.hpp>
 
-#include <jitk/block.hpp>
-#include <jitk/symbol_table.hpp>
-#include <jitk/instruction.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
+#include <bohrium/jitk/instruction.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 namespace bohrium {
 namespace jitk {

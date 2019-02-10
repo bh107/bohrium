@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <bh_view.hpp>
+#include <bohrium/bh_view.hpp>
 #include "Vector3.hpp"
 #include "colormaps.hpp"
 #define max(a,b) (a>=b?a:b)

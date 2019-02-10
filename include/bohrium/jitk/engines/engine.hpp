@@ -19,17 +19,17 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include <bh_config_parser.hpp>
-#include <jitk/statistics.hpp>
-#include <jitk/instruction.hpp>
-#include <jitk/view.hpp>
-#include <jitk/fuser.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_cache.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/jitk/statistics.hpp>
+#include <bohrium/jitk/instruction.hpp>
+#include <bohrium/jitk/view.hpp>
+#include <bohrium/jitk/fuser.hpp>
+#include <bohrium/jitk/fuser_cache.hpp>
+#include <bohrium/jitk/codegen_cache.hpp>
 
-#include <bh_view.hpp>
-#include <bh_component.hpp>
-#include <bh_instruction.hpp>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_instruction.hpp>
 #include <boost/filesystem.hpp>
 
 namespace bohrium {

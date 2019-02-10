@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/set.hpp>
-#include <bh_view.hpp>
-#include <bh_ir.hpp>
-#include <bh_instruction.hpp>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_ir.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}

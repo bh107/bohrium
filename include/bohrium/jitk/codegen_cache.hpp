@@ -22,9 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <string>
 
-#include <bh_instruction.hpp>
-#include <jitk/block.hpp>
-#include <jitk/statistics.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/statistics.hpp>
 
 
 namespace bohrium {

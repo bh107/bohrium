@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <jitk/transformer.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/jitk/transformer.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 using namespace std;
 

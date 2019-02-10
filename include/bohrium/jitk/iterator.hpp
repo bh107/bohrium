@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 /** In this file we declare the bohrium::jitk::iterator namespace, which is a collection of use full iterators **/
 
 #include <boost/iterator/iterator_facade.hpp>
-#include <jitk/block.hpp>
+#include <bohrium/jitk/block.hpp>
 
 
 namespace bohrium {

@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
-#include <bh_component.hpp>
+#include <bohrium/bh_component.hpp>
 
 using namespace bohrium;
 using namespace component;

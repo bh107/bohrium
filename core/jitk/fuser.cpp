@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <queue>
 #include <cassert>
 
-#include <jitk/fuser.hpp>
-#include <jitk/graph.hpp>
-#include <bh_util.hpp>
+#include <bohrium/jitk/fuser.hpp>
+#include <bohrium/jitk/graph.hpp>
+#include <bohrium/bh_util.hpp>
 
 using namespace std;
 

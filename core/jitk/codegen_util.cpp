@@ -23,9 +23,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
 #include <boost/filesystem/operations.hpp>
-#include <jitk/codegen_util.hpp>
-#include <jitk/view.hpp>
-#include <jitk/instruction.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
+#include <bohrium/jitk/view.hpp>
+#include <bohrium/jitk/instruction.hpp>
 
 using namespace std;
 

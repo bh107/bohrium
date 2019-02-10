@@ -28,7 +28,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/iostreams/stream_buffer.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
-#include <bh_util.hpp>
+#include <bohrium/bh_util.hpp>
 
 using namespace std;
 using namespace boost;

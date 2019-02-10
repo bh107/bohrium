@@ -29,9 +29,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <queue>
 #include <cassert>
 
-#include <jitk/graph.hpp>
-#include <jitk/block.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/jitk/graph.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 using namespace std;
 

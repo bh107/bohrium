@@ -20,12 +20,12 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 
-#include <bh_instruction.hpp>
-#include <jitk/block.hpp>
-#include <jitk/instruction.hpp>
-#include <jitk/symbol_table.hpp>
-#include <jitk/view.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/instruction.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
+#include <bohrium/jitk/view.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 using namespace std;
 

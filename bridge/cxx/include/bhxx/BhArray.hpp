@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
 #include <ostream>
-#include <bh_static_vector.hpp>
+#include <bohrium/bh_static_vector.hpp>
 #include <bhxx/BhBase.hpp>
 #include <bhxx/type_traits_util.hpp>
 #include <bhxx/array_operations.hpp>

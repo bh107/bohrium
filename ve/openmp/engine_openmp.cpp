@@ -25,14 +25,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <iomanip>
 #include <dlfcn.h>
-#include <jitk/codegen_util.hpp>
-#include <jitk/compiler.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_cache.hpp>
-#include <jitk/block.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
+#include <bohrium/jitk/compiler.hpp>
+#include <bohrium/jitk/fuser_cache.hpp>
+#include <bohrium/jitk/codegen_cache.hpp>
+#include <bohrium/jitk/block.hpp>
 #include <thread>
 
-#include <bh_util.hpp>
+#include <bohrium/bh_util.hpp>
 #include "engine_openmp.hpp"
 #include "openmp_util.hpp"
 

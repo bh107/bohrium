@@ -21,14 +21,14 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include "engine.hpp"
 
-#include <bh_config_parser.hpp>
-#include <jitk/statistics.hpp>
-#include <jitk/apply_fusion.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/jitk/statistics.hpp>
+#include <bohrium/jitk/apply_fusion.hpp>
 
-#include <bh_view.hpp>
-#include <bh_component.hpp>
-#include <bh_instruction.hpp>
-#include <bh_main_memory.hpp>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/bh_main_memory.hpp>
 
 namespace bohrium {
 namespace jitk {

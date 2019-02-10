@@ -23,10 +23,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 #include <sstream>
-#include <bh_view.hpp>
-#include <bh_util.hpp>
-#include <jitk/block.hpp>
-#include <jitk/symbol_table.hpp>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
 
 namespace bohrium {
 namespace jitk {

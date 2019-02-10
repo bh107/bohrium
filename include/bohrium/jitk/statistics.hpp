@@ -27,12 +27,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <vector>
 
-#include <colors.hpp>
-#include <bh_ir.hpp>
-#include <bh_instruction.hpp>
-#include <bh_config_parser.hpp>
-#include <jitk/symbol_table.hpp>
-#include <jitk/codegen_util.hpp>
+#include <bohrium/colors.hpp>
+#include <bohrium/bh_ir.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
 
 namespace bohrium {
 namespace jitk {

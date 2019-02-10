@@ -21,11 +21,11 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 
-#include <bh_config_parser.hpp>
-#include <bh_ir.hpp>
-#include <bh_opcode.h>
-#include <bh_extmethod.hpp>
-#include <jitk/statistics.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/bh_ir.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/bh_extmethod.hpp>
+#include <bohrium/jitk/statistics.hpp>
 
 namespace bohrium {
 namespace component {

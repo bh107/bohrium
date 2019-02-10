@@ -24,12 +24,12 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <chrono>
 
-#include <bh_component.hpp>
-#include <bh_extmethod.hpp>
-#include <bh_util.hpp>
-#include <bh_opcode.h>
-#include <jitk/statistics.hpp>
-#include <jitk/engines/dyn_view.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_extmethod.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/jitk/statistics.hpp>
+#include <bohrium/jitk/engines/dyn_view.hpp>
 
 #include "engine_cuda.hpp"
 

@@ -19,8 +19,8 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "bh_type.hpp"
-#include <bh_constant.hpp>
+#include <bohrium/bh_type.hpp>
+#include <bohrium/bh_constant.hpp>
 
 #include <boost/serialization/split_member.hpp>
 

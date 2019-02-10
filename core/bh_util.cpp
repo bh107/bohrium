@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <type_traits>
 
-#include <bh_util.hpp>
+#include <bohrium/bh_util.hpp>
 
 #include <boost/iterator/filter_iterator.hpp>
 

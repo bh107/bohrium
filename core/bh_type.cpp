@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdint.h>
-#include <bh_type.hpp>
+#include <bohrium/bh_type.hpp>
 #include <limits>
 #include <cassert>
 

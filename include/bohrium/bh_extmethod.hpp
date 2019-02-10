@@ -25,9 +25,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
-#include <bh_config_parser.hpp>
-#include <bh_ir.hpp>
-#include <bh_opcode.h>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/bh_ir.hpp>
+#include <bohrium/bh_opcode.h>
 
 namespace bohrium {
 namespace extmethod {

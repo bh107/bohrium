@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "BhArray.hpp"
-#include <bh_instruction.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 namespace bhxx {
 

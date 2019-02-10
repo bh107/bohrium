@@ -18,9 +18,9 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_component.hpp>
-#include <bh_util.hpp>
-#include <bh_main_memory.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/bh_main_memory.hpp>
 
 #include "comm.hpp"
 #include "compression.hpp"

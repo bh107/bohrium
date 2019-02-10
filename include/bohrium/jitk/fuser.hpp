@@ -22,9 +22,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <vector>
 
-#include <jitk/block.hpp>
-#include <bh_config_parser.hpp>
-#include <bh_instruction.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 namespace bohrium {
 namespace jitk {

@@ -19,7 +19,7 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cassert>
 #include <iostream>
-#include <bh_extmethod.hpp>
+#include <bohrium/bh_extmethod.hpp>
 #include "visualizer.hpp"
 
 using namespace bohrium;

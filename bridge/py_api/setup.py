@@ -338,7 +338,7 @@ class build_py(setup_build_py):
                 with open(p, 'w') as fobj:
                     write_config_ini(fobj)
 
-                _copy_dirs(src_root("include", "jitk", "kernel_dependencies"),
+                _copy_dirs(src_root("include", "bohrium", "jitk", "kernel_dependencies"),
                            os.path.join(target_dir, 'include', "kernel_dependencies"))
                 _copy_files(build_root("*", "*", "libbh_*"), os.path.join(target_dir, ".libs"))
 

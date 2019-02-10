@@ -22,8 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <stdexcept>
 
-#include <bh_type.hpp>
-#include <jitk/codegen_util.hpp>
+#include <bohrium/bh_type.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
 
 namespace bohrium {
 namespace jitk {

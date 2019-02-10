@@ -22,10 +22,10 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <vector>
 
-#include <bh_opcode.h>
-#include <bh_view.hpp>
-#include <bh_ir.hpp>
-#include <bh_type.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_ir.hpp>
+#include <bohrium/bh_type.hpp>
 
 
 // Pretty print a C array

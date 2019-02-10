@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <cstddef>
-#include <bh_base.hpp>
+#include <bohrium/bh_base.hpp>
 
 /** Return the size of the physical memory on this machine */
 uint64_t bh_main_memory_total();

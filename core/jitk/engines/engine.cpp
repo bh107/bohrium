@@ -18,7 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <jitk/engines/engine.hpp>
+#include <bohrium/jitk/engines/engine.hpp>
 
 using namespace std;
 

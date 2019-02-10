@@ -19,9 +19,9 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
-#include <bh_component.hpp>
-#include <bh_main_memory.hpp>
-#include <bh_util.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_main_memory.hpp>
+#include <bohrium/bh_util.hpp>
 
 #include "serialize.hpp"
 #include "comm.hpp"

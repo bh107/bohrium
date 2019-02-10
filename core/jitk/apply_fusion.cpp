@@ -20,8 +20,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 
-#include <jitk/apply_fusion.hpp>
-#include <jitk/graph.hpp>
+#include <bohrium/jitk/apply_fusion.hpp>
+#include <bohrium/jitk/graph.hpp>
 
 using namespace std;
 

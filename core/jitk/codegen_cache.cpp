@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 
-#include <jitk/codegen_cache.hpp>
+#include <bohrium/jitk/codegen_cache.hpp>
 
 using namespace std;
 

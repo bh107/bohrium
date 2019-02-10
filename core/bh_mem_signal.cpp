@@ -26,8 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <iostream>
 #include <sigsegv.h>
-#include <bh_mem_signal.h>
-#include <bh_util.hpp>
+#include <bohrium/bh_mem_signal.h>
+#include <bohrium/bh_util.hpp>
 
 using namespace std;
 

@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <boost/filesystem.hpp>
-#include <bh_config_parser.hpp>
+#include <bohrium/bh_config_parser.hpp>
 
 namespace bohrium {
 namespace jitk {

@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 
-#include <jitk/fuser_cache.hpp>
+#include <bohrium/jitk/fuser_cache.hpp>
 
 
 using namespace std;

@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <iostream>
-#include <bh_type.hpp>
+#include <bohrium/bh_type.hpp>
 
 union bh_constant_value
 {

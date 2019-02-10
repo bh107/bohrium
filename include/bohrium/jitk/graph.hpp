@@ -23,8 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <string>
 
-#include <jitk/block.hpp>
-#include <bh_instruction.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>

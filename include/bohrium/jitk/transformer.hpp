@@ -19,32 +19,24 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include <iostream>
-#include <chrono>
+/* A collection of functions that transforms Blocks of Instructions */
 
-#include <bh_instruction.hpp>
-#include <bh_config_parser.hpp>
-#include <jitk/block.hpp>
-#include <jitk/fuser.hpp>
-#include <jitk/transformer.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/statistics.hpp>
+#include <iostream>
+
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/jitk/block.hpp>
 
 namespace bohrium {
 namespace jitk {
 
-/** Create a kernel list based on 'instr_list' and what is in the 'config' and 'fcache'
- * Notice, this function inject identity instructions before sweep instructions
- *
- * @param instr_list The instruction list to base the kernel list on
- * @param config     The fusion config
- * @param fcache     The fuse cache
- * @param stat       Statistics
- * @return Return a list of kernels
- */
-std::vector<LoopB>
-get_kernel_list(const std::vector<bh_instruction *> &instr_list, const FusionConfig &config, FuseCache &fcache,
-                Statistics &stat);
+// Transpose blocks such that reductions gets as innermost as possible
+void push_reductions_inwards(std::vector<Block> &block_list);
+
+// Splits the 'block_list' in order to achieve a minimum amount of threading (if possible)
+void split_for_threading(std::vector<Block> &block_list, uint64_t min_threading=1000);
+
+// Collapses redundant axes within the 'block_list'
+void collapse_redundant_axes(std::vector<Block> &block_list);
 
 } // jitk
 } // bohrium
