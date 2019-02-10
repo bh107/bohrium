@@ -111,7 +111,7 @@ public:
      *
      * @stack_level  Is the level of the calling component
      */
-    ConfigParser(int stack_level);
+    explicit ConfigParser(int stack_level);
 
     /** Expand `~` in `path` to the home dir of the user
      *

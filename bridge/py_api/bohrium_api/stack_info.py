@@ -21,6 +21,7 @@ def config_file_path():
 
     paths = [join(os.path.dirname(os.path.realpath(__file__)), "config.ini"),
              "/usr/local/etc/bohrium/config.ini",
+             "/usr/etc/bohrium/config.ini",
              "/etc/bohrium/config.ini",
              os.path.expanduser(join("~", ".bohrium", "config.ini"))]
     for p in paths:

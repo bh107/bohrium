@@ -32,6 +32,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #define HOME_INI_PATH "~/.bohrium/config.ini"
 #define SYSTEM_INI_PATH_1 "/usr/local/etc/bohrium/config.ini"
 #define SYSTEM_INI_PATH_2 "/usr/etc/bohrium/config.ini"
+#define SYSTEM_INI_PATH_3 "/etc/bohrium/config.ini"
 
 using namespace std;
 using namespace boost;
@@ -45,6 +46,7 @@ string get_config_path() {
     const char *homepath = HOME_INI_PATH;
     const char *syspath1 = SYSTEM_INI_PATH_1;
     const char *syspath2 = SYSTEM_INI_PATH_2;
+    const char *syspath3 = SYSTEM_INI_PATH_3;
 
     //
     // Find the configuration file
@@ -62,26 +64,12 @@ string get_config_path() {
 
     // Then the home directory.
     if (env == nullptr) {
-#if _WIN32
-        char _expand_buffer[MAX_PATH];
-        DWORD result = ExpandEnvironmentStrings(
-            homepath,
-            _expand_buffer,
-            MAX_PATH-1
-        );
-
-        if (result != 0)
-        {
-            homepath = _expand_buffer;
-        }
-#else
         char *h = getenv("HOME");
         if (h != nullptr) {
             char _expand_buffer[PATH_MAX];
             snprintf(_expand_buffer, PATH_MAX, "%s/%s", h, homepath + 1);
             homepath = _expand_buffer;
         }
-#endif
         FILE *fp = fopen(homepath, "r");
         if (fp) {
             env = homepath;
@@ -89,21 +77,8 @@ string get_config_path() {
         }
     }
 
-    //And then system-wide.
+    //And then system-wide 1.
     if (env == nullptr) {
-#if _WIN32
-        char _expand_buffer[MAX_PATH];
-        DWORD result = ExpandEnvironmentStrings(
-            syspath1,
-            _expand_buffer,
-            MAX_PATH-1
-        );
-
-        if(result != 0)
-        {
-            syspath1 = _expand_buffer;
-        }
-#endif
         FILE *fp = fopen(syspath1, "r");
         if (fp) {
             env = syspath1;
@@ -111,35 +86,34 @@ string get_config_path() {
         }
     }
 
-    //And then system-wide.
+    //And then system-wide 2.
     if (env == nullptr) {
-#if _WIN32
-        char _expand_buffer[MAX_PATH];
-        DWORD result = ExpandEnvironmentStrings(
-            syspath2,
-            _expand_buffer,
-            MAX_PATH-1
-        );
-
-        if(result != 0)
-        {
-            syspath2 = _expand_buffer;
-        }
-#endif
         FILE *fp = fopen(syspath2, "r");
         if (fp) {
             env = syspath2;
             fclose(fp);
         }
     }
+
+    //And then system-wide 3.
+    if (env == nullptr) {
+        FILE *fp = fopen(syspath3, "r");
+        if (fp) {
+            env = syspath3;
+            fclose(fp);
+        }
+    }
+
     // We could not find the configuration file anywhere
     if (env == nullptr) {
         fprintf(stderr, "Error: Bohrium could not find the config file.\n"
                         " The search is:\n"
                         "\t* The environment variable BH_CONFIG.\n"
                         "\t* The home directory \"%s\".\n"
-                        "\t* The local directory \"%s\".\n"
-                        "\t* And system-wide \"%s\".\n", homepath, syspath1, syspath2);
+                        "\t* The system-wide \"%s\".\n"
+                        "\t* The system-wide \"%s\".\n"
+                        "\t* The system-wide \"%s\".\n"
+                        , homepath, syspath1, syspath2, syspath3);
         throw invalid_argument("No config file");
     }
     return string(env);
@@ -153,7 +127,6 @@ string lookup_env(const string &section, const string &option) {
     std::replace(s.begin(), s.end(), '-', '_'); // replace all '-' to '_'
     std::replace(s.begin(), s.end(), ' ', '_'); // replace all ' ' to '_'
     const char *env = getenv(s.c_str());
-
     if (env == nullptr) {
         return string();
     } else {
