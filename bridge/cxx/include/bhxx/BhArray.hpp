@@ -255,7 +255,7 @@ public:
         return *this;
     }
 
-    /**  Copy the scalar of `scalar_value` into the array using a Bohrium `identity` operation */
+    /** Copy the scalar of `scalar_value` into the array using a Bohrium `identity` operation */
     template<typename InType,
             typename std::enable_if<type_traits::is_arithmetic<InType>::value, int>::type = 0>
     BhArray<T> &operator=(const InType &scalar_value) {
@@ -280,13 +280,13 @@ public:
         reset(BhArray());
     }
 
-    /** Return the rank of the BhArray */
-    size_t rank() const {
+    /** Return the rank (number of dimensions) of the array */
+    int rank() const {
         assert(shape().size() == _stride.size());
         return shape().size();
     }
 
-    /** Return the number of elements */
+    /** Return the total number of elements of the array */
     uint64_t size() const {
         return shape().prod();
     }

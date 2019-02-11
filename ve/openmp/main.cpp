@@ -34,7 +34,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <bohrium/jitk/fuser_cache.hpp>
 #include <bohrium/jitk/codegen_util.hpp>
 #include <bohrium/jitk/statistics.hpp>
-#include <bohrium/jitk/dtype.hpp>
 #include <bohrium/jitk/apply_fusion.hpp>
 #include <bohrium/jitk/engines/dyn_view.hpp>
 
