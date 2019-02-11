@@ -123,15 +123,14 @@ BhArray<T> BhArray<T>::operator[](int64_t idx) const {
     Shape ret_shape(shape().begin() + 1, shape().end());
     Stride ret_stride(_stride.begin() + 1, _stride.end());
     uint64_t ret_offset = offset() + idx * _stride[0];
-    return BhArray<T>(_base, ret_shape, ret_stride, ret_offset);
+    return BhArray<T>(base(), ret_shape, ret_stride, ret_offset);
 }
 
 template<typename T>
 BhArray<T> BhArray<T>::transpose() const {
     Shape ret_shape(shape().rbegin(), shape().rend());
     Stride ret_stride(_stride.rbegin(), _stride.rend());
-    BhArray<T> ret(std::move(ret_shape), std::move(ret_stride));
-    return ret;
+    return BhArray<T>{base(), std::move(ret_shape), std::move(ret_stride), offset()};
 }
 
 template<typename T>
@@ -142,7 +141,7 @@ BhArray<T> BhArray<T>::reshape(Shape shape) const {
     if (!isContiguous()) {
         throw std::runtime_error("Reshape not yet implemented for non-contiguous arrays.");
     }
-    return BhArray<T>(std::move(shape), contiguous_stride(shape));
+    return BhArray<T>{base(), shape, contiguous_stride(shape), offset()};
 }
 
 template<typename T>
