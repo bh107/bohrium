@@ -523,7 +523,7 @@ def _solve_tridiagonal_omp(a, b, c, rhs):
     return res
 
 
-def _solve_tridiagonal_ocl(a, b, c, rhs, local_work_size=128):
+def _solve_tridiagonal_ocl(a, b, c, rhs, local_work_size=32):
     from string import Template
     from textwrap import dedent
 
@@ -545,16 +545,18 @@ def _solve_tridiagonal_ocl(a, b, c, rhs, local_work_size=128):
                 return;
             }
 
-            private ${DTYPE} cp[m];
+            private ${DTYPE} cp[${SYS_DEPTH}];
+            private ${DTYPE} dp[${SYS_DEPTH}];
             cp[0] = c[idx] / b[idx];
-            solution[idx] = d[idx] / b[idx];
+            dp[0] = d[idx] / b[idx];
             for (size_t j = 1; j < m; ++j) {
                 const ${DTYPE} norm_factor = b[idx+j] - a[idx+j] * cp[j-1];
                 cp[j] = c[idx+j] / norm_factor;
-                solution[idx+j] = (d[idx+j] - a[idx+j] * solution[idx+j-1]) / norm_factor;
+                dp[j] = (d[idx+j] - a[idx+j] * dp[j-1]) / norm_factor;
             }
-            for (size_t j = m-1; j > 0; --j) {
-                solution[idx+j-1] -= cp[j-1] * solution[idx+j];
+            solution[idx + m-1] = dp[m-1];
+            for (int j=m-2; j >= 0; --j) {
+                solution[idx + j] = dp[j] - cp[j] * solution[idx + j+1];
             }
         }
     '''))
@@ -580,64 +582,8 @@ def _solve_tridiagonal_ocl(a, b, c, rhs, local_work_size=128):
     return res
 
 
-def _solve_tridiagonal_cuda(a, b, c, rhs, local_work_size=128):
-    from string import Template
-    from textwrap import dedent
-
-    KERNEL = Template(dedent('''
-        __global__ void execute(
-            const global ${DTYPE} *a,
-            const global ${DTYPE} *b,
-            const global ${DTYPE} *c,
-            const global ${DTYPE} *d,
-            global ${DTYPE} *solution
-        ){
-            const size_t m = ${SYS_DEPTH};
-            const size_t total_size = ${SIZE};
-            const size_t idx = (blockIdx.x * blockDim.x + threadIdx.x) * m;
-
-            if (idx >= total_size) {
-                return;
-            }
-
-            private ${DTYPE} cp[m];
-            cp[0] = c[idx] / b[idx];
-            solution[idx] = d[idx] / b[idx];
-            for (size_t j = 1; j < m; ++j) {
-                const ${DTYPE} norm_factor = b[idx+j] - a[idx+j] * cp[j-1];
-                cp[j] = c[idx+j] / norm_factor;
-                solution[idx+j] = (d[idx+j] - a[idx+j] * solution[idx+j-1]) / norm_factor;
-            }
-            for (size_t j = m-1; j > 0; --j) {
-                solution[idx+j-1] -= cp[j-1] * solution[idx+j];
-            }
-        }
-    '''))
-
-    kernel = KERNEL.substitute(
-        DTYPE=user_kernel.dtype_to_c99(a.dtype),
-        SYS_DEPTH=a.shape[-1],
-        SIZE=a.size
-    )
-
-    res = array_create.empty_like(a)
-
-    # assemble work group size
-    global_size = res.size // res.shape[-1]
-    global_size = local_work_size * (global_size // local_work_size + 1)
-
-    user_kernel.execute(
-        kernel,
-        [user_kernel.make_behaving(v) for v in (a, b, c, rhs, res)],
-        tag="cuda",
-        param={"global_work_size": global_size,
-               "local_work_size": local_work_size}
-    )
-    return res
-
-
 @fix_biclass_wrapper
-def solve_tridiagonal(a, b, c, rhs, backend="openmp", **kwargs):
+def solve_tridiagonal(a, b, c, rhs, backend=None, **kwargs):
     """
     Solver for tridiagonal systems,
 
@@ -654,7 +600,7 @@ def solve_tridiagonal(a, b, c, rhs, backend="openmp", **kwargs):
     :param b: Main diagonal elements.
     :param c: Upper diagonal elements. c[..., -1] is not used.
     :param rhs: Right-hand side vector.
-    :param backend: Computational backend to use (openmp, opencl, or cuda).
+    :param backend: Computational backend to use (openmp, opencl).
     :param kwargs: Additional argument to backend-specific solver. The opencl backend accepts
        an argument "local_work_size" specifying the local work group size.
     :returns: Solution of the tridiagonal system(s). Has the same shape as the input arrays.
@@ -673,16 +619,20 @@ def solve_tridiagonal(a, b, c, rhs, backend="openmp", **kwargs):
 
     a, b, c, rhs = (v.astype(common_dtype, copy=False) for v in (a, b, c, rhs))
 
+    if backend is None:
+        import bohrium_api
+        if bohrium_api.stack_info.is_opencl_in_stack():
+            backend = "opencl"
+        else:
+            backend = "openmp"
+
     if backend == "openmp":
         return _solve_tridiagonal_omp(a, b, c, rhs, **kwargs)
 
     if backend == "opencl":
         return _solve_tridiagonal_ocl(a, b, c, rhs, **kwargs)
 
-    if backend == "cuda":
-        return _solve_tridiagonal_cuda(a, b, c, rhs, **kwargs)
-
-    raise ValueError("unknown backend '%s' (must be 'openmp', 'opencl', or 'cuda')" % backend)
+    raise ValueError("unknown backend '%s' (must be 'openmp' or 'opencl')" % backend)
 
 
 @fix_biclass_wrapper

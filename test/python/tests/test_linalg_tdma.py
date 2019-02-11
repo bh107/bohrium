@@ -9,10 +9,11 @@ class test_linalg_tdma:
         if bohrium_api.stack_info.is_proxy_in_stack():
             return
 
+        if bohrium_api.stack_info.is_cuda_in_stack():
+            return
+
         if bohrium_api.stack_info.is_opencl_in_stack():
             backend = "opencl"
-        elif bohrium_api.stack_info.is_cuda_in_stack():
-            backend = "cuda"
         else:
             backend = "openmp"
 
