@@ -493,17 +493,19 @@ def _solve_tridiagonal_omp(a, b, c, rhs):
             const size_t total_size = ${SIZE};
 
             #pragma omp parallel for
-            for(size_t idx = 0; idx < total_size; idx += m) {
-                ${DTYPE} cp[m];
+            for(ptrdiff_t idx = 0; idx < total_size; idx += m) {
+                ${DTYPE} cp[${SYS_DEPTH}];
+                ${DTYPE} dp[${SYS_DEPTH}];
                 cp[0] = c[idx] / b[idx];
-                solution[idx] = d[idx] / b[idx];
-                for (size_t j = 1; j < m; ++j) {
+                dp[0] = d[idx] / b[idx];
+                for (ptrdiff_t j = 1; j < m; ++j) {
                     const ${DTYPE} norm_factor = b[idx+j] - a[idx+j] * cp[j-1];
                     cp[j] = c[idx+j] / norm_factor;
-                    solution[idx+j] = (d[idx+j] - a[idx+j] * solution[idx+j-1]) / norm_factor;
+                    dp[j] = (d[idx+j] - a[idx+j] * dp[j-1]) / norm_factor;
                 }
-                for (size_t j = m-1; j > 0; --j) {
-                    solution[idx+j-1] -= cp[j-1] * solution[idx+j];
+                solution[idx + m-1] = dp[m-1];
+                for (ptrdiff_t j=m-2; j >= 0; --j) {
+                    solution[idx + j] = dp[j] - cp[j] * solution[idx + j+1];
                 }
             }
         }
@@ -549,13 +551,13 @@ def _solve_tridiagonal_ocl(a, b, c, rhs, local_work_size=32):
             private ${DTYPE} dp[${SYS_DEPTH}];
             cp[0] = c[idx] / b[idx];
             dp[0] = d[idx] / b[idx];
-            for (size_t j = 1; j < m; ++j) {
+            for (ptrdiff_t j = 1; j < m; ++j) {
                 const ${DTYPE} norm_factor = b[idx+j] - a[idx+j] * cp[j-1];
                 cp[j] = c[idx+j] / norm_factor;
                 dp[j] = (d[idx+j] - a[idx+j] * dp[j-1]) / norm_factor;
             }
             solution[idx + m-1] = dp[m-1];
-            for (int j=m-2; j >= 0; --j) {
+            for (ptrdiff_t j=m-2; j >= 0; --j) {
                 solution[idx + j] = dp[j] - cp[j] * solution[idx + j+1];
             }
         }
