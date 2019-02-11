@@ -86,7 +86,7 @@ std::vector<T> BhArray<T>::vec() const {
 }
 
 template<typename T>
-void BhArray<T>::pprint(std::ostream &os) const {
+void BhArray<T>::pprint(std::ostream &os, int current_nesting_level, int max_nesting_level) const {
     auto d = data();
     if (shape().empty()) {
         if (d == nullptr) {
@@ -99,9 +99,17 @@ void BhArray<T>::pprint(std::ostream &os) const {
         os << "[";
         for (uint64_t i = 0; i < shape()[0]; ++i) {
             BhArray<T> t = (*this)[i];
-            t.pprint(os);
+            t.pprint(os, current_nesting_level+1, max_nesting_level);
             if (i < shape()[0] - 1) {
                 os << ",";
+                if (current_nesting_level < max_nesting_level) {
+                    os << "\n";
+                    for(int j=0; j<current_nesting_level + 1; ++j) {
+                        os << " ";
+                    }
+                } else {
+                    os << " ";
+                }
             }
         }
         os << "]";

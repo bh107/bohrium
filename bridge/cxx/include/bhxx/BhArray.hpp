@@ -317,8 +317,13 @@ public:
      */
     std::vector<T> vec() const;
 
-    /// Pretty printing the content of the array
-    void pprint(std::ostream &os) const;
+    /** Pretty printing the content of the array
+     *
+     * @param os                     The output stream to write to.
+     * @param current_nesting_level  The nesting level to print at (typically `0`).
+     * @param max_nesting_level      The maximum nesting level to print at (typically `rank()-1`).
+     */
+    void pprint(std::ostream &os, int current_nesting_level, int max_nesting_level) const;
 
     /// Returns a new view of the `idx` dimension. Negative index counts from the back
     BhArray<T> operator[](int64_t idx) const;
@@ -340,7 +345,7 @@ public:
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const BhArray<T> &ary) {
-    ary.pprint(os);
+    ary.pprint(os, 0, ary.rank()-1);
     return os;
 }
 
