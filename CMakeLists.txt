@@ -148,7 +148,6 @@ add_subdirectory(filter/noneremover)
 add_subdirectory(extmethods/blas)
 add_subdirectory(extmethods/clblas)
 add_subdirectory(extmethods/visualizer)
-add_subdirectory(extmethods/tdma)
 add_subdirectory(extmethods/lapack)
 add_subdirectory(extmethods/opencv)
 
