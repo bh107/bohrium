@@ -21,8 +21,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <stdexcept>
 #include <boost/algorithm/string/replace.hpp>
-#include <jitk/compiler.hpp>
-#include <jitk/subprocess.hpp>
+#include <bohrium/jitk/compiler.hpp>
+#include <bohrium/jitk/subprocess.hpp>
 
 using namespace std;
 namespace P = subprocess;

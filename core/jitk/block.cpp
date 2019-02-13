@@ -21,11 +21,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <cassert>
 
-#include <bh_util.hpp>
-#include <jitk/block.hpp>
-#include <jitk/instruction.hpp>
-#include <jitk/codegen_util.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/instruction.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 using namespace std;
 

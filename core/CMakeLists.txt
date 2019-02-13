@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8)                     # cmake features
 
 # Rules for how to generate bh_opcode.cpp and bh_opcode.h
 set(INCLUDE_DIR     ${CMAKE_BINARY_DIR}/include)
-file(MAKE_DIRECTORY ${INCLUDE_DIR})
-set(OPCODE_H    ${INCLUDE_DIR}/bh_opcode.h)
+file(MAKE_DIRECTORY ${INCLUDE_DIR}/bohrium)
+set(OPCODE_H    ${INCLUDE_DIR}/bohrium/bh_opcode.h)
 set(OPCODE_CPP  ${CMAKE_CURRENT_BINARY_DIR}/bh_opcode.cpp)
 set(OPCODE_JSON ${CMAKE_CURRENT_SOURCE_DIR}/codegen/opcodes.json)
 set(OPCODE_PY   ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_opcodes.py)
@@ -24,5 +24,5 @@ set(CORE_LINK_FLAGS "" CACHE STRING "Link flags to use when creating _bh.so (e.g
 target_link_libraries(bh ${CORE_LINK_FLAGS})
 
 install(TARGETS bh DESTINATION ${LIBDIR} COMPONENT bohrium)
-install(DIRECTORY ${BOHRIUM_SOURCE_DIR}/include/ DESTINATION include/bohrium COMPONENT bohrium)
-install(DIRECTORY ${INCLUDE_DIR}/ DESTINATION include/bohrium COMPONENT bohrium)
+install(DIRECTORY ${BOHRIUM_SOURCE_DIR}/include/ DESTINATION include COMPONENT bohrium)
+install(DIRECTORY ${INCLUDE_DIR}/ DESTINATION include/ COMPONENT bohrium)

@@ -22,21 +22,20 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <numeric>
 #include <chrono>
 
-#include <bh_component.hpp>
-#include <bh_extmethod.hpp>
-#include <bh_util.hpp>
-#include <bh_opcode.h>
-#include <jitk/fuser.hpp>
-#include <jitk/block.hpp>
-#include <jitk/instruction.hpp>
-#include <jitk/graph.hpp>
-#include <jitk/transformer.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_util.hpp>
-#include <jitk/statistics.hpp>
-#include <jitk/dtype.hpp>
-#include <jitk/apply_fusion.hpp>
-#include <jitk/engines/dyn_view.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_extmethod.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/jitk/fuser.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/instruction.hpp>
+#include <bohrium/jitk/graph.hpp>
+#include <bohrium/jitk/transformer.hpp>
+#include <bohrium/jitk/fuser_cache.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
+#include <bohrium/jitk/statistics.hpp>
+#include <bohrium/jitk/apply_fusion.hpp>
+#include <bohrium/jitk/engines/dyn_view.hpp>
 
 #include "engine_openmp.hpp"
 

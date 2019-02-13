@@ -168,7 +168,7 @@ install(DIRECTORY thirdparty/Random123-1.09/include/Random123
 
 #########################################
 # Install JIT-kernels dependency headers
-install(DIRECTORY include/jitk/kernel_dependencies
+install(DIRECTORY include/bohrium/jitk/kernel_dependencies
         DESTINATION share/bohrium/include COMPONENT bohrium)
 
 ###############

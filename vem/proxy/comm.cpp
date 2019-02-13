@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
 #include <zlib.h>
-#include <bh_main_memory.hpp>
+#include <bohrium/bh_main_memory.hpp>
 
 #include "serialize.hpp"
 #include "comm.hpp"

@@ -23,8 +23,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <complex>
 
-#include <bh_constant.hpp>
-#include <bh_type.hpp>
+#include <bohrium/bh_constant.hpp>
+#include <bohrium/bh_type.hpp>
 #include <cmath>
 
 using namespace std;

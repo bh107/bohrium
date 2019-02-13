@@ -21,7 +21,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <iostream>
 #include <sstream>
-#include <bh_base.hpp>
+#include <bohrium/bh_base.hpp>
 
 using namespace std;
 

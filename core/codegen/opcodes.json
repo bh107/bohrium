@@ -1773,7 +1773,7 @@
             [ "BH_UINT64", "BH_R123" ]
     ],
     "layout": [
-            [ "1D", "K" ]
+            [ "A", "K" ]
     ],
     "elementwise":   false,
     "composite":     false,
@@ -1792,7 +1792,7 @@
             [ "BH_UINT64" ]
     ],
     "layout": [
-            [ "1D" ]
+            [ "A" ]
     ],
     "elementwise":   false,
     "composite":     false,

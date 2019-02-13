@@ -24,9 +24,9 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/algorithm/string/replace.hpp>
 #include <iomanip>
 
-#include <bh_instruction.hpp>
-#include <bh_component.hpp>
-#include <jitk/symbol_table.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
 
 #include "engine_cuda.hpp"
 

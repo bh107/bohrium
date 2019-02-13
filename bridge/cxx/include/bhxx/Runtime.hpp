@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 
 #include "BhInstruction.hpp"
-#include <bh_component.hpp>
+#include <bohrium/bh_component.hpp>
 
 namespace bhxx {
 
@@ -74,42 +74,42 @@ public:
 
     /** Flush and repeat the lazy evaluated operations until `base_ptr` is false or `nrepeats` is reached
      *
-     * @nrepeats  Number of maximum repeats
-     * @base_ptr  Repeat while `base_ptr` is true or is null. NB: must be an array with one element of type BH_BOOL
+     * @param nrepeats  Number of maximum repeats
+     * @param base_ptr  Repeat while `base_ptr` is true or is null. NB: must be an array with one element of type BH_BOOL
      */
     void flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &base_ptr);
 
     /// Flag array to be sync'ed after the next flush
-    void sync(std::shared_ptr<BhBase> &base_ptr);
+    void sync(const std::shared_ptr<BhBase> &base_ptr);
 
     /** Changes the offset and shape of a view between the iterations of a `do_while` loop.
      * This is the underlying functionality behind using iterators.
      *
-     * @view_ptr     A pointer to the view on which the changes are applied
-     * @dim          The dimension of the changes
-     * @slide        The change to the offset (can be both positive and negative)
-     * @shape_change The change to the shape (can be both positive and negative)
-     * @view_shape   The shape of the view (necessary when using negative indexing)
-     * @view_stride  The stride used for changes to the offset
-     * @step_delay   The delay of the changes (used for nested loops)
+     * @param view_ptr     A pointer to the view on which the changes are applied
+     * @param dim          The dimension of the changes
+     * @param slide        The change to the offset (can be both positive and negative)
+     * @param shape_change The change to the shape (can be both positive and negative)
+     * @param view_shape   The shape of the view (necessary when using negative indexing)
+     * @param view_stride  The stride used for changes to the offset
+     * @param step_delay   The delay of the changes (used for nested loops)
      */
     template <typename T>
     void slide_view(BhArray<T>* view_ptr, int64_t dim, int64_t slide, int64_t shape_change,
                     int64_t view_shape, int64_t view_stride, int64_t step_delay) {
-        view_ptr->slides.dims.push_back({dim, slide, shape_change, view_stride, view_shape, step_delay});
+        view_ptr->slides().dims.push_back({dim, slide, shape_change, view_stride, view_shape, step_delay});
     }
 
     /** Resets the changes made to the offset/shape of a dimension.
      * This is the underlying functionality behind iterator grid (nested loops).
      * Used within `do_while` to emulate nested loops.
      *
-     * @view_ptr A pointer to the view which is reset
-     * @dim      The dimension of the reset
-     * @reset_it The amount of iterations before a reset
+     * @param view_ptr A pointer to the view which is reset
+     * @param dim      The dimension of the reset
+     * @param reset_it The amount of iterations before a reset
      */
     template <typename T>
     void add_reset(BhArray<T>* view_ptr, int64_t dim, int64_t reset_it) {
-        view_ptr->slides.resets[dim] = std::make_pair(reset_it, 0);
+        view_ptr->slides().resets[dim] = std::make_pair(reset_it, 0);
     }
 
     /// Send and receive a message through the component stack
@@ -118,10 +118,10 @@ public:
     /** Get data pointer from the first VE in the runtime stack
      * NB: this doesn't include a flush.
      *
-     * @base         The base array that owns the data for retrieval
-     * @copy2host    Always copy the memory to main memory
-     * @force_alloc  Force memory allocation
-     * @nullify      Set the data pointer to NULL after returning
+     * @param base         The base array that owns the data for retrieval
+     * @param copy2host    Always copy the memory to main memory
+     * @param force_alloc  Force memory allocation
+     * @param nullify      Set the data pointer to NULL after returning
      * @return       The data pointer (NB: might point to device memory)
      * Throws exceptions on error
      */
@@ -131,9 +131,9 @@ public:
      * NB: The component will deallocate the memory when encountering a BH_FREE.
      *     Also, this doesn't include a flush
      *
-     * @base      The base array that will own the data
-     * @host_ptr  The pointer points to the host memory (main memory) as opposed to device memory
-     * @mem       The data pointer
+     * @param base      The base array that will own the data
+     * @param host_ptr  The pointer points to the host memory (main memory) as opposed to device memory
+     * @param mem       The data pointer
      * Throws exceptions on error
      */
     void setMemoryPointer(std::shared_ptr<BhBase> &base, bool host_ptr, void *mem);
@@ -163,7 +163,7 @@ public:
     /** Set the device context, such as CUDA's context, of the first VE in the runtime stack.
      * If the first VE isn't a device, nothing happens
      *
-     * @device_context  The new device context
+     * @param device_context  The new device context
      * Throws exceptions on error
      */
     void setDeviceContext(void *device_context);
@@ -176,6 +176,7 @@ public:
      * @param kernel The source code of the kernel
      * @param operand_list The operands given to the kernel all of which must be regular arrays
      * @param compile_cmd The compilation command
+     * @param tag String that define which component that should handle this kernel (e.g. "openmp", "opencl", or "cuda")
      * @param param Backend specific parameters (e.g. OpenCL needs `global_work_size` and `local_work_size`)
      * @return The compiler output (both stdout and stderr) when the compilation fails else it is the empty string
      */
@@ -263,7 +264,7 @@ template<typename T>
 void Runtime::freeMemory(BhArray<T> &ary) {
     // Calling BH_FREE on an array with external
     // storage management is undefined behaviour
-    if (!ary.base->ownMemory()) {
+    if (!ary.base()->ownMemory()) {
         throw std::runtime_error(
                 "Cannot call BH_FREE on a BhArray object, which uses external storage "
                 "in its BhBase.");
@@ -274,6 +275,6 @@ void Runtime::freeMemory(BhArray<T> &ary) {
     // array referencing BhBase is deleted.
     // So instead of actually deleting anything we will just
     // remove our reference to the BhBase instead
-    ary.base.reset();
+    ary.base().reset();
 }
 }

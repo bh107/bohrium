@@ -24,14 +24,14 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <chrono>
 
-#include <bh_config_parser.hpp>
-#include <bh_instruction.hpp>
-#include <bh_component.hpp>
-#include <bh_view.hpp>
-#include <bh_malloc_cache.hpp>
-#include <jitk/statistics.hpp>
-#include <jitk/codegen_util.hpp>
-#include <jitk/engines/engine_gpu.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/bh_component.hpp>
+#include <bohrium/bh_view.hpp>
+#include <bohrium/bh_malloc_cache.hpp>
+#include <bohrium/jitk/statistics.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
+#include <bohrium/jitk/engines/engine_gpu.hpp>
 #include <cuda.h>
 
 namespace {

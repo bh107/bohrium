@@ -22,7 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <sstream>
 
-#include <bh_component.hpp>
+#include <bohrium/bh_component.hpp>
 
 using namespace bohrium;
 using namespace component;
@@ -36,6 +36,9 @@ class Impl : public ComponentImpl {
     Impl(int stack_level) : ComponentImpl(stack_level) {};
     ~Impl() override = default;
     void execute(BhIR *bhir) override {
+        if(bhir->instr_list.empty()) {
+            return;
+        }
         stringstream ss;
         ss << "trace-" << count << ".txt";
         cout << "pprint-filter: writing trace('" << ss.str() << "')." << endl;

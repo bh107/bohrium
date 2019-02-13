@@ -104,7 +104,7 @@ void Runtime::flushAndRepeat(uint64_t nrepeats, const std::shared_ptr<BhBase> &b
     _flush(nrepeats, base_ptr, instr_list, syncs, runtime, bases_for_deletion, _flush_count);
 }
 
-void Runtime::sync(std::shared_ptr<BhBase> &base_ptr) {
+void Runtime::sync(const std::shared_ptr<BhBase> &base_ptr) {
     syncs.insert(&(*base_ptr));
 }
 

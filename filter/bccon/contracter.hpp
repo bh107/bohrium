@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bh_component.hpp>
+#include <bohrium/bh_component.hpp>
 
 namespace bohrium {
 namespace filter {

@@ -27,4 +27,4 @@ message(STATUS "BH_VERSION_PATCH: ${BH_VERSION_PATCH}")
 
 
 # Write the version C header
-configure_file(${CMAKE_SOURCE_DIR}/bh_version.h.in ${CMAKE_BINARY_DIR}/include/bh_version.h)
+configure_file(${CMAKE_SOURCE_DIR}/bh_version.h.in ${CMAKE_BINARY_DIR}/include/bohrium/bh_version.h)

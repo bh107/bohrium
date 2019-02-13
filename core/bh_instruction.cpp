@@ -26,7 +26,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <numeric>
 
-#include <bh_instruction.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 using namespace std;
 

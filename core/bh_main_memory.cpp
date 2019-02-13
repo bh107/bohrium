@@ -18,8 +18,8 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_main_memory.hpp>
-#include <bh_malloc_cache.hpp>
+#include <bohrium/bh_main_memory.hpp>
+#include <bohrium/bh_malloc_cache.hpp>
 #include <sys/mman.h>
 #include <sys/types.h>
 

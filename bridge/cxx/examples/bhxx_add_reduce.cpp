@@ -27,7 +27,7 @@ void compute() {
 
     BhArray<uint64_t> a({50, 3, 2});
     identity(a, 3);
-    bhxx::random(a, 42, 42);
+    bhxx::random123(a, 42, 42);
 
     BhArray<uint64_t> b({3, 2});
     bhxx::add_reduce(b, a, 0);

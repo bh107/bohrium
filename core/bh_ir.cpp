@@ -26,8 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 
-#include <bh_ir.hpp>
-#include <bh_util.hpp>
+#include <bohrium/bh_ir.hpp>
+#include <bohrium/bh_util.hpp>
 
 using namespace std;
 using namespace boost;

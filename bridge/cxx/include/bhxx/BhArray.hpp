@@ -19,9 +19,12 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
+#include <type_traits>
 #include <ostream>
-#include <bh_static_vector.hpp>
-#include "BhBase.hpp"
+#include <bohrium/bh_static_vector.hpp>
+#include <bhxx/BhBase.hpp>
+#include <bhxx/type_traits_util.hpp>
+#include <bhxx/array_operations.hpp>
 
 namespace bhxx {
 
@@ -29,11 +32,16 @@ namespace bhxx {
  *  with the Bohrium Runtime, but does not actually delete
  *  it straight away.
  *
- *  \note This is needed to ensure that all BhBase objects
+ *  @note This is needed to ensure that all BhBase objects
  *  are still around until the list of instructions has
  *  been emptied.
  */
 struct RuntimeDeleter {
+    /** Hand the deletion over to Bohrium including the ownership of
+     *  the pointer to be deleted by the means of a unique pointer.
+     *
+     * @param ptr pointer to the base array
+     */
     void operator()(BhBase *ptr) const;
 };
 
@@ -63,33 +71,104 @@ extern inline Stride contiguous_stride(const Shape &shape) {
 
 /** Core class that represent the core attributes of a view that isn't typed by its dtype */
 class BhArrayUnTypedCore {
-public:
+protected:
     /// The array offset (from the start of the base in number of elements)
-    uint64_t offset;
+    uint64_t _offset = 0;
     /// The array shape (size of each dimension in number of elements)
-    Shape shape;
+    Shape _shape;
     /// The array stride (the absolute stride of each dimension in number of elements)
-    Stride stride;
+    Stride _stride;
     /// Pointer to the base of this array
-    std::shared_ptr<BhBase> base;
+    std::shared_ptr<BhBase> _base;
     /// Metadata to support sliding views
-    bh_slide slides;
+    bh_slide _slides;
+public:
 
-    /// Only Constructor
+    /** Default constructor that leave the instance completely uninitialized */
+    BhArrayUnTypedCore() = default;
+
+    /** Constructor to initiate all but the `_slides` attribute */
     BhArrayUnTypedCore(uint64_t offset, Shape shape, Stride stride, std::shared_ptr<BhBase> base) :
-            offset(offset), shape(std::move(shape)), stride(std::move(stride)), base(std::move(base)) {}
+            _offset(offset), _shape(std::move(shape)), _stride(std::move(stride)), _base(std::move(base)) {
+        if (_shape.size() != _stride.size()) {
+            throw std::runtime_error("The shape and stride must have same length");
+        }
+        if (shape.prod() <= 0) {
+            throw std::runtime_error("The total size must be greater than zero");
+        }
+    }
 
     /** Return a `bh_view` of the array */
     bh_view getBhView() const {
         bh_view view;
-        assert(base.use_count() > 0);
-        view.base = base.get();
-        view.start = static_cast<int64_t>(offset);
-        view.ndim = static_cast<int64_t>(shape.size());
-        view.shape = BhIntVec(shape.begin(), shape.end());
-        view.stride = BhIntVec(stride.begin(), stride.end());;
-        view.slides = slides;
+        assert(_base);
+        view.base = _base.get();
+        view.start = static_cast<int64_t>(offset());
+        if (shape().empty()) { // Scalar views (i.e. 0-dim views) are represented as 1-dim arrays with size one.
+            view.ndim = 1;
+            view.shape = BhIntVec({1});
+            view.stride = BhIntVec({1});
+        } else {
+            view.ndim = static_cast<int64_t>(shape().size());
+            view.shape = BhIntVec(shape().begin(), shape().end());
+            view.stride = BhIntVec(_stride.begin(), _stride.end());;
+        }
+        view.slides = _slides;
         return view;
+    }
+
+    /** Swapping `a` and `b` */
+    friend void swap(BhArrayUnTypedCore &a, BhArrayUnTypedCore &b) noexcept {
+        using std::swap; // enable ADL
+        swap(a._offset, b._offset);
+        swap(a._shape, b._shape);
+        swap(a._stride, b._stride);
+        swap(a._base, b._base);
+        swap(a._slides, b._slides);
+    }
+
+    /** Return the offset of the array */
+    uint64_t offset() const {
+        return _offset;
+    }
+
+    /** Return the shape of the array */
+    const Shape &shape() const {
+        return _shape;
+    }
+
+    /** Return the stride of the array */
+    const Stride &stride() const {
+        return _stride;
+    }
+
+    /** Return the base of the array */
+    const std::shared_ptr<BhBase> &base() const {
+        return _base;
+    }
+
+    /** Return the base of the array */
+    std::shared_ptr<BhBase> &base() {
+        return _base;
+    }
+
+    /** Set the shape and stride of the array (both must have the same lenth) */
+    void setShapeAndStride(Shape shape, Stride stride) {
+        if (shape.size() != stride.size()) {
+            throw std::runtime_error("The shape and stride must have same length");
+        }
+        _shape = std::move(shape);
+        _stride = std::move(stride);
+    }
+
+    /** Return the slides object of the array */
+    const bh_slide &slides() const {
+        return _slides;
+    }
+
+    /** Return the slides object of the array */
+    bh_slide &slides() {
+        return _slides;
     }
 };
 
@@ -100,20 +179,24 @@ public:
 template<typename T>
 class BhArray : public BhArrayUnTypedCore {
 public:
-    // The data type of each array element
+    /// The data type of each array element
     typedef T scalar_type;
 
-    /** Create a new view */
-    explicit BhArray(Shape shape, Stride stride, uint64_t offset = 0) :
-                BhArrayUnTypedCore(offset, std::move(shape), std::move(stride), make_base_ptr(T(0), shape.prod())) {
-        assert(shape.size() == stride.size());
-        assert(shape.prod() > 0);
-    }
+    /** Default constructor that leave the instance completely uninitialized. */
+    BhArray() = default;
 
-    /** Create a new view (contiguous stride, row-major) */
-    explicit BhArray(Shape shape) : BhArray(std::move(shape), contiguous_stride(shape), 0) {}
+    /** Create a new array. `Shape` and `Stride` must have the same length.
+     *
+     * @param shape   Shape of the new array
+     * @param stride  Stride of the new array
+     */
+    explicit BhArray(Shape shape, Stride stride) : BhArrayUnTypedCore{0, std::move(shape), std::move(stride),
+                                                                      make_base_ptr(T(0), shape.prod())} {}
 
-    /** Create a view that points to the given base
+    /** Create a new array (contiguous stride, row-major) */
+    explicit BhArray(Shape shape) : BhArray(std::move(shape), contiguous_stride(shape)) {}
+
+    /** Create a array that points to the given base
      *
      *  \note The caller should make sure that the shared pointer
      *        uses the RuntimeDeleter as its deleter, since this is
@@ -122,7 +205,7 @@ public:
      *        helper function.
      */
     explicit BhArray(std::shared_ptr<BhBase> base, Shape shape, Stride stride, uint64_t offset = 0) :
-                BhArrayUnTypedCore(offset, std::move(shape), std::move(stride), std::move(base)) {
+            BhArrayUnTypedCore{offset, std::move(shape), std::move(stride), std::move(base)} {
         assert(shape.size() == stride.size());
         assert(shape.prod() > 0);
     }
@@ -140,53 +223,129 @@ public:
         assert(static_cast<uint64_t>(base->nelem()) == shape.prod());
     }
 
-    //
-    // Information
-    //
-
-    /** Return the rank of the BhArray */
-    size_t rank() const {
-        assert(shape.size() == stride.size());
-        return shape.size();
+    /** Create a copy of `ary` using a Bohrium `identity` operation, which copies the underlying array data.
+     *
+     *  \note This function implements implicit type conversion for all widening type casts
+     */
+    template<typename InType,
+            typename std::enable_if<type_traits::is_safe_numeric_cast<scalar_type, InType>::value, int>::type = 0>
+    BhArray(const BhArray<InType> &ary) : BhArray(ary.shape()) {
+        bhxx::identity(*this, ary);
     }
 
-    /** Return the number of elements */
-    uint64_t numberOfElements() const {
-        return shape.prod();
+    /** Copy constructor that only copies meta data. The underlying array data is untouched */
+    BhArray(const BhArray &) = default;
+
+    /** Move constructor that only moves meta data. The underlying array data is untouched */
+    BhArray(BhArray &&) noexcept = default;
+
+    /** Copy the data of `other` into the array using a Bohrium `identity` operation */
+    BhArray<T> &operator=(const BhArray<T> &other) {
+        bhxx::identity(*this, other);
+        return *this;
+    }
+
+    /** Copy the data of `other` into the array using a Bohrium `identity` operation
+     *
+     *  \note A move assignment is the same as a copy assignment.
+     */
+    BhArray<T> &operator=(BhArray<T> &&other) {
+        bhxx::identity(*this, other);
+        other.reset();
+        return *this;
+    }
+
+    /** Copy the scalar of `scalar_value` into the array using a Bohrium `identity` operation */
+    template<typename InType,
+            typename std::enable_if<type_traits::is_arithmetic<InType>::value, int>::type = 0>
+    BhArray<T> &operator=(const InType &scalar_value) {
+        bhxx::identity(*this, scalar_value);
+        return *this;
+    }
+
+    /** Return a new copy of the array using a Bohrium `identity` operation */
+    BhArray<T> copy() const {
+        BhArray<T> ret{this->shape()};
+        bhxx::identity(ret, *this);
+        return ret;
+    }
+
+    /** Reset the array to `ary` */
+    void reset(BhArray<T> ary) noexcept {
+        swap(*this, ary);
+    }
+
+    /** Reset the array by cleaning all meta data and leave the array uninitialized. */
+    void reset() noexcept {
+        reset(BhArray());
+    }
+
+    /** Return the rank (number of dimensions) of the array */
+    int rank() const {
+        assert(shape().size() == _stride.size());
+        return shape().size();
+    }
+
+    /** Return the total number of elements of the array */
+    uint64_t size() const {
+        return shape().prod();
     }
 
     /** Return whether the view is contiguous and row-major */
     bool isContiguous() const;
 
-    //
-    // Data access
-    //
     /** Is the data referenced by this view's base array already
      *  allocated, i.e. initialised */
-    bool isDataInitialised() const { return base->getDataPtr() != nullptr; }
+    bool isDataInitialised() const { return _base->getDataPtr() != nullptr; }
 
-    /** Obtain the data pointer of the base array, not taking
-     *  ownership of any kind.
+    /** Obtain the data pointer of the array, not taking ownership of any kind.
      *
-     *  \note This pointer might be a nullptr if the data in
-     *        the base data is not initialised.
-     *
-     *  \note No flush is done automatically. The data might be
-     *        out of sync with Bohrium.
+     * @param flush  Should we flush the runtime system before retrieving the data pointer
+     * @return       The data pointer that might be a nullptr if the data in
+     *               the base data is not initialised.
      */
-    T *data() { return static_cast<T *>(base->getDataPtr()); }
+    const T *data(bool flush = true) const;
 
-    /// The const version of `data()`
-    const T *data() const { return static_cast<T *>(base->getDataPtr()); }
+    /// The non-const version of `.data()`
+    T *data(bool flush = true) {
+        return const_cast<T *>(static_cast<const BhArray<T> &>(*this).data(flush));
+    }
 
-    /// Pretty printing the content of the array
-    /// TODO: for now it always print the flatten array
-    void pprint(std::ostream &os) const;
+    /** Return a copy of the array as a standard vector
+     *
+     *  \note The array must be contiguous
+     */
+    std::vector<T> vec() const;
+
+    /** Pretty printing the content of the array
+     *
+     * @param os                     The output stream to write to.
+     * @param current_nesting_level  The nesting level to print at (typically `0`).
+     * @param max_nesting_level      The maximum nesting level to print at (typically `rank()-1`).
+     */
+    void pprint(std::ostream &os, int current_nesting_level, int max_nesting_level) const;
+
+    /// Returns a new view of the `idx` dimension. Negative index counts from the back
+    BhArray<T> operator[](int64_t idx) const;
+
+    /// Return a new transposed view
+    BhArray<T> transpose() const;
+
+    /// Return a new reshaped view (the array must be contiguous)
+    BhArray<T> reshape(Shape shape) const;
+
+    /** Return a new view with a "new axis" inserted.
+     *
+     * @param axis The "new axis" is inserted just before `axis`. If negative, the count is backwards
+     *             (e.g -1 insert a "new axis" at the end of the array)
+     * @return The new array
+     */
+    BhArray<T> newAxis(int axis) const;
 };
 
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const BhArray<T> &ary) {
-    ary.pprint(os);
+    ary.pprint(os, 0, ary.rank()-1);
     return os;
 }
 

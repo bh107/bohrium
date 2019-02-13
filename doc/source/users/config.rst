@@ -91,6 +91,7 @@ At runtime Bohrium will search through the following prioritized list in order t
 * The config within the Python package ``bohrium/config.ini`` (in the same directory as ``__init__.py``)
 * The home directory config ``~/.bohrium/config.ini``
 * The system-wide config ``/usr/local/etc/bohrium/config.ini``
+* The system-wide config ``/usr/etc/bohrium/config.ini``
 * The system-wide config ``/etc/bohrium/config.ini``
 
 The default configuration file looks similar to the config below::

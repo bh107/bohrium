@@ -19,9 +19,9 @@ If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include <bh_opcode.h>
-#include <jitk/symbol_table.hpp>
-#include <jitk/iterator.hpp>
+#include <bohrium/bh_opcode.h>
+#include <bohrium/jitk/symbol_table.hpp>
+#include <bohrium/jitk/iterator.hpp>
 
 // Return the OpenMP reduction symbol
 const char* openmp_reduce_symbol(bh_opcode opcode) {

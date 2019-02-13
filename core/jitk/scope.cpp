@@ -18,9 +18,9 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_util.hpp>
-#include <jitk/scope.hpp>
-#include <jitk/view.hpp>
+#include <bohrium/bh_util.hpp>
+#include <bohrium/jitk/scope.hpp>
+#include <bohrium/jitk/view.hpp>
 
 using namespace std;
 

@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 
-#include <jitk/scope.hpp>
+#include <bohrium/jitk/scope.hpp>
 
 
 using namespace std;

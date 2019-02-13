@@ -23,7 +23,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <sstream>
 
-#include <bh_extmethod.hpp>
+#include <bohrium/bh_extmethod.hpp>
 
 using namespace std;
 

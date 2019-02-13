@@ -18,11 +18,11 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <bh_base.hpp>
-#include <bh_main_memory.hpp>
+#include <bohrium/bh_base.hpp>
+#include <bohrium/bh_main_memory.hpp>
 #include <boost/algorithm/string.hpp>
 #include <opencv2/opencv.hpp>
-#include <colors.hpp>
+#include <bohrium/colors.hpp>
 #include "compression.hpp"
 #include "zlib.hpp"
 

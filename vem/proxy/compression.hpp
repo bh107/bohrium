@@ -20,7 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <bh_view.hpp>
+#include <bohrium/bh_view.hpp>
 
 namespace bohrium {
 class Compression {

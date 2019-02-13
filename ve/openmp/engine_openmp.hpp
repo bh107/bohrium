@@ -25,15 +25,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <boost/filesystem.hpp>
 
-#include <bh_config_parser.hpp>
-#include <jitk/statistics.hpp>
-#include <jitk/block.hpp>
-#include <jitk/compiler.hpp>
-#include <jitk/fuser_cache.hpp>
-#include <jitk/codegen_util.hpp>
-#include <jitk/codegen_cache.hpp>
+#include <bohrium/bh_config_parser.hpp>
+#include <bohrium/jitk/statistics.hpp>
+#include <bohrium/jitk/block.hpp>
+#include <bohrium/jitk/compiler.hpp>
+#include <bohrium/jitk/fuser_cache.hpp>
+#include <bohrium/jitk/codegen_util.hpp>
+#include <bohrium/jitk/codegen_cache.hpp>
 
-#include <jitk/engines/engine_cpu.hpp>
+#include <bohrium/jitk/engines/engine_cpu.hpp>
 
 namespace bohrium {
 

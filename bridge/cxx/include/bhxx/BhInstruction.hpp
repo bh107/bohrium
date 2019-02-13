@@ -20,14 +20,15 @@ If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include "BhArray.hpp"
-#include <bh_instruction.hpp>
+#include <bohrium/bh_instruction.hpp>
 
 namespace bhxx {
 
 /** Helper class to build instructions */
 class BhInstruction : public bh_instruction {
   public:
-    BhInstruction(bh_opcode code) :
+    /** Construct an instruction based on the `opcode` */
+    explicit BhInstruction(bh_opcode code) :
         bh_instruction() {
         opcode = code;
     }
@@ -56,7 +57,7 @@ class BhInstruction : public bh_instruction {
 
     /** Append a base object for deletion
      *
-     * \note Only valid for BH_FREE */
+     * @note  Only valid for BH_FREE */
     void appendOperand(BhBase& base);
 };
 }

@@ -47,6 +47,6 @@ If not, see <http://www.gnu.org/licenses/>.
 #define CL_TARGET_OPENCL_VERSION 120
 #define CL_ENABLE_EXCEPTIONS
 
-#include <CL/cl.hpp>
+#include "CL/cl.hpp"
 
 #pragma GCC diagnostic pop

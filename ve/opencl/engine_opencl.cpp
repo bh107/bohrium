@@ -23,11 +23,11 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include <bh_instruction.hpp>
-#include <bh_component.hpp>
+#include <bohrium/bh_instruction.hpp>
+#include <bohrium/bh_component.hpp>
 
-#include <jitk/compiler.hpp>
-#include <jitk/symbol_table.hpp>
+#include <bohrium/jitk/compiler.hpp>
+#include <bohrium/jitk/symbol_table.hpp>
 
 #include "engine_opencl.hpp"
 
