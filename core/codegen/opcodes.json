@@ -189,7 +189,7 @@
 },
 {
     "opcode": "BH_GREATER",
-    "doc":  "Return the truth value of (x1 > x2) element-wise.",
+    "doc":  "Return the truth value of (in1 > in2) element-wise.",
     "code": "op1 = op2 > op3",
     "id":   "7",
     "nop":   3,
@@ -219,7 +219,7 @@
 },
 {
     "opcode": "BH_GREATER_EQUAL",
-    "doc":  "Return the truth value of (x1 >= x2) element-wise.",
+    "doc":  "Return the truth value of (in1 >= in2) element-wise.",
     "code": "op1 = op2 >= op3",
     "id":   "8",
     "nop":   3,
@@ -249,7 +249,7 @@
 },
 {
     "opcode": "BH_LESS",
-    "doc":  "Return the truth value of (x1 < x2) element-wise.",
+    "doc":  "Return the truth value of (in1 < in2) element-wise.",
     "code": "op1 = op2 < op3",
     "id":   "9",
     "nop":   3,
@@ -279,7 +279,7 @@
 },
 {
     "opcode": "BH_LESS_EQUAL",
-    "doc":  "Return the truth value of (x1 =< x2) element-wise.",
+    "doc":  "Return the truth value of (in1 =< in2) element-wise.",
     "code": "op1 = op2 <= op3",
     "id":   "10",
     "nop":   3,
@@ -309,7 +309,7 @@
 },
 {
     "opcode": "BH_EQUAL",
-    "doc":  "Return (x1 == x2) element-wise.",
+    "doc":  "Return (in1 == in2) element-wise.",
     "code": "op1 = op2 == op3",
     "id":   "11",
     "nop":   3,
@@ -341,7 +341,7 @@
 },
 {
     "opcode": "BH_NOT_EQUAL",
-    "doc":  "Return (x1 != x2) element-wise.",
+    "doc":  "Return (in1 != in2) element-wise.",
     "code": "op1 = op2 != op3",
     "id":   "12",
     "nop":   3,
@@ -373,7 +373,7 @@
 },
 {
     "opcode": "BH_LOGICAL_AND",
-    "doc":  "Compute the truth value of x1 AND x2 elementwise.",
+    "doc":  "Compute the truth value of in1 AND in2 elementwise.",
     "code": "op1 = op2 && op3",
     "id":   "13",
     "nop":   3,
@@ -393,7 +393,7 @@
 },
 {
     "opcode": "BH_LOGICAL_OR",
-    "doc":  "Compute the truth value of x1 OR x2 elementwise.",
+    "doc":  "Compute the truth value of in1 OR in2 elementwise.",
     "code": "op1 = op2 || op3",
     "id":   "14",
     "nop":   3,
@@ -413,7 +413,7 @@
 },
 {
     "opcode": "BH_LOGICAL_XOR",
-    "doc":  "Compute the truth value of x1 XOR x2, element-wise.",
+    "doc":  "Compute the truth value of in1 XOR in2, element-wise.",
     "code": "op1 = (!op2 != !op3)",
     "id":   "15",
     "nop":   3,
@@ -433,7 +433,7 @@
 },
 {
     "opcode": "BH_LOGICAL_NOT",
-    "doc":  "Compute the truth value of NOT x elementwise.",
+    "doc":  "Compute the truth value of NOT elementwise.",
     "code": "op1 = !op2",
     "id":   "16",
     "nop":   2,
@@ -929,7 +929,7 @@
 },
 {
     "opcode": "BH_ARCTAN2",
-    "doc":  "Element-wise arc tangent of ``x1/x2`` choosing the quadrant correctly.",
+    "doc":  "Element-wise arc tangent of ``in1/in2`` choosing the quadrant correctly.",
     "code": "op1 = atan2( op2, op3 )",
     "id":   "37",
     "nop":   3,
@@ -992,7 +992,7 @@
 },
 {
     "opcode": "BH_EXPM1",
-    "doc":  "Calculate ``exp(x) - 1`` for all elements in the array.",
+    "doc":  "Calculate ``exp(in1) - 1`` for all elements in the array.",
     "code": "op1 = expm1( op2 )",
     "id":   "40",
     "nop":   2,
@@ -1034,7 +1034,7 @@
 },
 {
     "opcode": "BH_LOG2",
-    "doc":  "Base-2 logarithm of `x`.",
+    "doc":  "Base-2 logarithm of `in1`.",
     "code": "op1 = log2( op2 )",
     "id":   "42",
     "nop":   2,
@@ -1198,7 +1198,7 @@
 },
 {
     "opcode": "BH_MOD",
-    "doc":  "Return the element-wise modulo, which is `x1 % x2` in Python and has the same sign as the divisor x2.",
+    "doc":  "Return the element-wise modulo, which is `in1 % in2` in Python and has the same sign as the divisor in2.",
     "code": "op1 = op2 - floor(op2 / op3) * op3",
     "id":   "50",
     "nop":   3,
@@ -1986,7 +1986,7 @@
 },
 {
   "opcode": "BH_REMAINDER",
-  "doc":  "Return the element-wise remainder of division, which is `x1 % x2` in C99 and has the same sign as the divided x1.",
+  "doc":  "Return the element-wise remainder of division, which is `in1 % in2` in C99 and has the same sign as the divided in1.",
   "code": "op1 = op2 % op3",
   "id":   "81",
   "nop":   3,

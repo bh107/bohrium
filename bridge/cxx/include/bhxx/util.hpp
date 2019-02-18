@@ -22,15 +22,19 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <algorithm>
 #include <bhxx/BhArray.hpp>
-#include <bhxx/functor.hpp>
 
 namespace bhxx {
 
 /** Force the execution of all lazy evaluated array operations */
 void flush();
 
-/** Convert an array to a contiguous representation if it is not yet
- *  contiguous. */
+/** Create an contiguous view or a copy of an array.
+ * The array is only copied if it isn't already contiguous.
+ *
+ * @tparam T   The data type of `ary`.
+ * @param ary  The array to make contiguous.
+ * @return     Either a view of `ary` or a new copy of `ary`.
+ */
 template<typename T>
 BhArray<T> as_contiguous(BhArray<T> ary) {
     if (ary.isContiguous()) return std::move(ary);
@@ -38,68 +42,6 @@ BhArray<T> as_contiguous(BhArray<T> ary) {
     BhArray<T> contiguous{ary.shape()};
     identity(contiguous, ary);
     return contiguous;
-}
-
-/** Performs a full reduction of the array along all axis using the
- *  add_reduce operation.
- *
- *  \note Performs exactly the same job as std::accumulate, but on
- *  BhArray objects.
- */
-template<typename T>
-BhArray<T> accumulate(BhArray<T> op) {
-    return accumulate(std::move(op), bhxx::AddReduce<T>{});
-}
-
-/** Performs a full reduction of the array along all axis using
- *  an reduction operation of the callers choice.
- *
- *  \note Performs exactly the same job as std::accumulate, but on
- *  BhArray objects.
- */
-template<typename T, typename AddReduction>
-BhArray<T> accumulate(BhArray<T> op, AddReduction &&reduction) {
-    // Reduce to a single value by repetitively calling the reduction function
-    // until the rank is down to 1:
-    const size_t rank = op.rank();
-    for (size_t r = 0; r < rank; ++r) {
-        op = reduction(op, op.rank() - 1);
-    }
-    assert(op.rank() == 1);
-    assert(op.size() == 1);
-    return op;
-}
-
-/** Make an inner product between the Bohrium arrays given, i.e.
- *  elementwise multiplication followed by an accumulation
- *  (full reduction).
- *
- *  \note Performs exactly the same job as std::inner_product, but
- *  on BhArray objects.
- */
-template<typename T>
-BhArray<T> inner_product(const BhArray<T> &lhs, const BhArray<T> &rhs) {
-    return inner_product(lhs, rhs, bhxx::Multiply<T>{}, bhxx::AddReduce<T>{});
-}
-
-/** Make an inner product between the Bohrium arrays given, i.e.
- *  elementwise multiplication followed by an accumulation
- *  (full reduction).
- *
- *  This version allows to specify the operations used for multiplication
- *  and addition, such that other things as inner products can be achieved
- *  as well (e.g. equality comparision is multiplication == equal and
- *  add_reduction == local_and_reduce)
- *
- *  \note Performs exactly the same job as std::inner_product, but
- *  on BhArray objects.
- */
-template<typename T, typename Multiplication, typename AddReduction>
-auto inner_product(const BhArray<T> &oplhs, const BhArray<T> &oprhs,
-                   Multiplication &&multiplication, AddReduction &&add_reduction)
--> decltype(multiplication(oplhs, oprhs)) {
-    return accumulate(multiplication(oplhs, oprhs),
-                      std::forward<AddReduction>(add_reduction));
 }
 
 /** Return the result of broadcasting `shapes` against each other
@@ -180,7 +122,14 @@ BhArray<T> broadcast_to(BhArray<T> ary, const Shape &shape) {
     return std::move(ary);
 }
 
-/** Return True when `a` and `b` are the same view pointing to the same base */
+/** Check whether `a` and `b` are the same view pointing to the same base
+ *
+ * @tparam T1 The data type of `a`.
+ * @tparam T2 The data type of `b`.
+ * @param a   The first array to compare.
+ * @param b   The second array to compare.
+ * @return    The boolean answer.
+ */
 template<typename T1, typename T2>
 inline bool is_same_array(const BhArray<T1> &a, const BhArray<T2> &b) {
     if (a.base() == b.base() && a.offset() == b.offset() && a.shape() == b.shape()) {
@@ -198,11 +147,17 @@ inline bool is_same_array(const BhArray<T1> &a, const BhArray<T2> &b) {
     }
 }
 
-/** Return True when `a` and `b` can share memory
+/** Check whether `a` and `b` can share memory
  *
- *    \note A return of True does not necessarily mean that the two arrays share any element.
- *          It just means that they *might*.
- * */
+ *  @note A return of True does not necessarily mean that the two arrays share any element.
+ *        It just means that they *might*.
+ *
+ * @tparam T1 The data type of `a`.
+ * @tparam T2 The data type of `b`.
+ * @param a   The first array to compare.
+ * @param b   The second array to compare.
+ * @return    The boolean answer.
+ */
 template<typename T1, typename T2>
 bool may_share_memory(const BhArray<T1> &a, const BhArray<T2> &b) {
     assert(a.shape().size() == b.shape().size());

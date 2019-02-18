@@ -6,3 +6,4 @@ sphinxcontrib-bibtex
 numpy
 numpydoc
 matplotlib
+breathe

@@ -1,10 +1,38 @@
 C++ library
------------
+===========
 
-The following is some basic code examples. For more information, we refer to the header files and code examples in the source tree:
+The C++ interface of Bohrium is similar to NumPy but is still very basic.
 
-    * https://github.com/bh107/bohrium/tree/master/bridge/cxx/include/bhxx
-    * https://github.com/bh107/bohrium/tree/master/bridge/cxx/examples
+
+Indexing / Slicing
+~~~~~~~~~~~~~~~~~~
+
+Bohrium C++ only support single index indexing:
+
+.. code-block:: cpp
+
+    // Create a new empty array (4 by 5)
+    bhxx::BhArray<double> A = bhxx::empty<double>({4, 5});
+    // Create view of the third row of A
+    bhxx::BhArray<double> B = A[2];
+
+If you need more flexible slicing, you can set the shape and stride manually:
+
+.. code-block:: cpp
+
+    // Create a new array (4 by 5) of ones
+    bhxx::BhArray<double> A = bhxx::ones<double>({4, 5});
+    // Create view of the complete A.
+    bhxx::BhArray<double> B = A;
+    // B is now a 2 by 5 view with a step of two in the first dimension.
+    // In NumPy, this corresponds to: `B = A[::2, :]`
+    B.setShapeAndStride({2, 5}, {10, 1});
+
+
+Code Snippets
+~~~~~~~~~~~~~
+
+You can find some examples in the `source tree <https://github.com/bh107/bohrium/tree/master/bridge/cxx/examples>`_ and some code snippets here:
 
 .. code-block:: cpp
 
@@ -119,5 +147,12 @@ The following is some basic code examples. For more information, we refer to the
     bhxx::multiply_reduce(B, 1); // Product of axis 1
     bhxx::maximum_reduce(C, 2); // Maximum of axis 2
 
+
+The API
+~~~~~~~
+
+The following is the complete API as defined in the `header file <https://github.com/bh107/bohrium/tree/master/bridge/cxx/include/bhxx>`_:
+
+.. doxygenindex::
 
 

@@ -18,14 +18,21 @@
 #
 import os
 import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import subprocess
 
+def config_path(*paths):
+    prefix = os.path.abspath(os.path.dirname(__file__))
+    assert len(prefix) > 0
+    return os.path.join(prefix, *paths)
 
-# -- General configuration ------------------------------------------------
+bhxx_gen_headers = config_path("..","build","bhxx_gen_headers")
+bhxx_gen_src = config_path("..","build","bhxx_gen_src")
+subprocess.check_call('python gen_array_operations.py %s %s' %(bhxx_gen_headers, bhxx_gen_src),
+        shell=True,
+        cwd=config_path("..","..","bridge","cxx"))
 
-# If your documentation needs a minimal Sphinx version, state it here.
-#
-# needs_sphinx = '1.0'
+# We start by running doxygen
+subprocess.check_call('cd ../doxygen; doxygen config', shell=True)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -34,10 +41,12 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
-#    'sphinx.ext.imgmath',
-    # 'sphinxcontrib.spelling', # enable and out-comment the last option settings to use
-    'numpydoc'
+    'numpydoc',
+    'breathe',
 ]
+
+breathe_projects = { "Bohrium": config_path("..", "doxygen", "xml") }
+breathe_default_project = "Bohrium"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']

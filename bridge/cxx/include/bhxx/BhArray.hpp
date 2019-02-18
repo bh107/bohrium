@@ -52,11 +52,15 @@ std::shared_ptr<BhBase> make_base_ptr(Args... args) {
     return std::shared_ptr<BhBase>(new BhBase(std::forward<Args>(args)...), RuntimeDeleter{});
 }
 
-/** Static allocated shapes and strides that is interchangeable with standard C++ vector as long
+/** Static allocated shape that is interchangeable with standard C++ vector as long
  *  as the vector is smaller than `BH_MAXDIM`.
  */
 typedef BhStaticVector<uint64_t> Shape;
-using Stride = BhIntVec;
+
+/** Static allocated stride that is interchangeable with standard C++ vector as long
+ *  as the vector is smaller than `BH_MAXDIM`.
+ */
+typedef BhStaticVector<int64_t> Stride;
 
 /** Return a contiguous stride (row-major) based on `shape` */
 extern inline Stride contiguous_stride(const Shape &shape) {
@@ -152,7 +156,7 @@ public:
         return _base;
     }
 
-    /** Set the shape and stride of the array (both must have the same lenth) */
+    /** Set the shape and stride of the array (both must have the same length) */
     void setShapeAndStride(Shape shape, Stride stride) {
         if (shape.size() != stride.size()) {
             throw std::runtime_error("The shape and stride must have same length");
@@ -343,6 +347,18 @@ public:
     BhArray<T> newAxis(int axis) const;
 };
 
+/** Pretty printing the data of an array to a stream
+ *  Example:
+ *  @code{.cpp}
+    auto A = bhxx::arange<double>(3);
+    std::cout << A << std::endl;
+    @endcode
+ *
+ * @tparam T  The data of `ary`
+ * @param os  The output stream to write to
+ * @param ary The array to print
+ * @return    A reference to `os`
+ */
 template<typename T>
 std::ostream &operator<<(std::ostream &os, const BhArray<T> &ary) {
     ary.pprint(os, 0, ary.rank()-1);

@@ -5,9 +5,11 @@ from os.path import join
 import argparse
 
 
-def write_decl(op, layout, type_sig, type_map, operator, out_as_operand, compound_assignment):
+def write_doc_and_decl(op, layout, type_sig, type_map, operator, out_as_operand, compound_assignment):
     signature = list(enumerate(zip(layout, type_sig)))
     out_cpp_type = type_map[type_sig[0]]['cpp']
+
+    doc = "/** %s\n" % (op['doc'])
 
     if operator is None:
         func_name = "%s" % op['opcode'][3:].lower()
@@ -15,6 +17,7 @@ def write_decl(op, layout, type_sig, type_map, operator, out_as_operand, compoun
         func_name = "operator%s" % operator
     if out_as_operand:
         decl = "void %s(BhArray<%s> &out" % (func_name, out_cpp_type)
+        doc += "* @param out Output array.\n"
         if len(signature) > 1:
             decl += ", "
     else:
@@ -28,12 +31,22 @@ def write_decl(op, layout, type_sig, type_map, operator, out_as_operand, compoun
             if not (i == 1 and compound_assignment):
                 decl += "const "
             decl += "BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+            doc += "* @param in%d Array input.\n" % i
         else:
             decl += "%s in%d" % (type_map[t]['cpp'], i)
+            if i == 2 and ("REDUCE" in op['opcode'] or "ACCUMULATE" in op['opcode']):
+                doc += "* @param in%d The axis to run over.\n" % i
+            else:
+                doc += "* @param in%d Scalar input.\n" % i
         if i < len(layout) - 1:
             decl += ", "
     decl += ")"
-    return decl
+
+    if not out_as_operand:
+        doc += "* @return Output array.\n"
+
+    doc += "*/\n"
+    return (doc, decl)
 
 
 def get_array_inputs(layout, ignore_ops=[]):
@@ -99,21 +112,17 @@ def main(args):
         if len(op['types']) == 0:
             continue
 
-        doc = "// %s: %s\n" % (op['opcode'][3:], op['doc'])
-        doc += "// E.g. %s:\n" % (op['code'])
-        impl += doc
-        head += doc
-
         ignore_ops = [0]
         if op['opcode'] == "BH_GATHER":
             ignore_ops.append(1)
 
         # Generate a function for each type signature
+        head += "#ifndef DOXYGEN_SHOULD_SKIP_THIS\n\n"
         for type_sig in op['types']:
             for layout in op['layout']:
                 array_inputs = get_array_inputs(layout, ignore_ops)
-                decl = write_decl(op, layout, type_sig, type_map, None, True, False)
-                head += "%s;\n" % decl
+                (doc, decl) = write_doc_and_decl(op, layout, type_sig, type_map, None, True, False)
+                head += "%s%s;\n\n" % (doc, decl)
                 impl += decl
                 impl += " {\n"
                 if op['opcode'] == "BH_IDENTITY" and len(array_inputs) == 1 \
@@ -143,6 +152,7 @@ def main(args):
                                 'they must be identical"); }\n'
                 impl += write_broadcast_and_enqueue(op, layout, array_inputs)
                 impl += "}\n"
+        head += "#endif /* DOXYGEN_SHOULD_SKIP_THIS */\n"
 
         # Generate a function that returns its output for each type signature
         for type_sig in op['types']:
@@ -150,8 +160,8 @@ def main(args):
                 for layout in op['layout']:
                     array_inputs = get_array_inputs(layout, ignore_ops)
                     if len(array_inputs) > 0:
-                        decl = write_decl(op, layout, type_sig, type_map, None, False, False)
-                        head += "%s;\n" % decl
+                        (doc, decl) = write_doc_and_decl(op, layout, type_sig, type_map, None, False, False)
+                        head += "%s%s;\n\n" % (doc, decl)
                         impl += decl
                         impl += " {\n"
                         impl += "\tBhArray<%s> out;\n" % type_map[type_sig[0]]['cpp']
@@ -166,12 +176,14 @@ def main(args):
         operator = {"BH_ADD": "+", "BH_SUBTRACT": "-", "BH_MULTIPLY": "*", "BH_DIVIDE": "/", "BH_MOD": "%",
                     "BH_BITWISE_AND": "&", "BH_BITWISE_OR": "|", "BH_BITWISE_XOR": "^"}
         if op['opcode'] in operator:
+            head += "#ifndef DOXYGEN_SHOULD_SKIP_THIS\n\n"
             for type_sig in op['types']:
                 for layout in op['layout']:
                     array_inputs = get_array_inputs(layout, ignore_ops)
                     if len(array_inputs) > 0:
-                        decl = write_decl(op, layout, type_sig, type_map, operator[op['opcode']], False, False)
-                        head += "%s;\n" % decl
+                        (doc, decl) = write_doc_and_decl(op, layout, type_sig, type_map, operator[op['opcode']], False,
+                                                         False)
+                        head += "%s%s;\n\n" % (doc, decl)
                         impl += decl
                         impl += " {\n"
                         impl += "\tBhArray<%s> out;\n" % type_map[type_sig[0]]['cpp']
@@ -181,14 +193,17 @@ def main(args):
                         impl += ");\n"
                         impl += "\treturn out;\n"
                         impl += "}\n"
+            head += "#endif /* DOXYGEN_SHOULD_SKIP_THIS */\n"
 
         # Generate += operator overload for each type signature
         if op['opcode'] in operator:
+            head += "#ifndef DOXYGEN_SHOULD_SKIP_THIS\n\n"
             for type_sig in op['types']:
                 for layout in op['layout']:
                     if layout[1] == "A":
-                        decl = write_decl(op, layout, type_sig, type_map, "%s=" % operator[op['opcode']], False, True)
-                        head += "%s;\n" % decl
+                        (doc, decl) = write_doc_and_decl(op, layout, type_sig, type_map, "%s=" % operator[op['opcode']],
+                                                         False, True)
+                        head += "%s%s;\n\n" % (doc, decl)
                         impl += decl
                         impl += " {\n"
                         impl += "\t%s(in1" % op['opcode'][3:].lower()
@@ -197,6 +212,7 @@ def main(args):
                         impl += ");\n"
                         impl += "\treturn in1;\n"
                         impl += "}\n"
+            head += "#endif /* DOXYGEN_SHOULD_SKIP_THIS */\n"
         impl += "\n\n"
         head += "\n\n"
 
