@@ -31,8 +31,11 @@ subprocess.check_call('python gen_array_operations.py %s %s' %(bhxx_gen_headers,
         shell=True,
         cwd=config_path("..","..","bridge","cxx"))
 
+print(os.listdir(config_path("..")))
+print(os.listdir(config_path(".")))
+print(os.listdir(config_path("..", "doxygen")))
 # We start by running doxygen
-subprocess.check_call("doxygen config", shell=True, cwd=config_path("..","doxygen"))
+subprocess.check_call("doxygen config", shell=True, cwd=config_path("..", "doxygen"))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
