@@ -25,7 +25,7 @@ bridge/npbackend/examples/*.py
 *.gen
 *.log
 *.idea
-doc/doxygen
+doc/doxygen/xml
 doc/build
 doc/source/users/pythonnumpygen
 */NumCIL/*/obj/*
