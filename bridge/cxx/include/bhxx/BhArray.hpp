@@ -241,7 +241,7 @@ public:
     BhArray(const BhArray &) = default;
 
     /** Move constructor that only moves meta data. The underlying array data is untouched */
-    BhArray(BhArray &&) noexcept = default;
+    BhArray(BhArray &&) = default;
 
     /** Copy the data of `other` into the array using a Bohrium `identity` operation */
     BhArray<T> &operator=(const BhArray<T> &other) {
