@@ -20,6 +20,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 
 #include <bhxx/bhxx.hpp>
+#include <bhxx/random.hpp>
 
 using namespace bhxx;
 
@@ -40,6 +41,11 @@ void compute()
     BhArray<uint64_t> r({10});
     random123(r, 42, 42);
     std::cout << r << std::endl;
+
+    a[0] *= -1;
+    std::cout << "shape: " << a[1].shape() << ", " << bhxx::random.randn<float>({3, 4}).shape() << std::endl;
+    a[1] *= bhxx::random.randn<float>({3, 4});
+    std::cout << a << std::endl;
 
     Runtime::instance().flush();
 }

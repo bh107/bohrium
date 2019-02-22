@@ -21,16 +21,18 @@ def write_doc_and_decl(op, layout, type_sig, type_map, operator, out_as_operand,
         if len(signature) > 1:
             decl += ", "
     else:
-        decl = "BhArray<%s> " % out_cpp_type
         if compound_assignment:
-            decl += "&"  # compound assignment such as "+=" returns a reference
+            decl = "void "  # compound assignment such as "+=" returns nothing
+        else:
+            decl = "BhArray<%s> " % out_cpp_type
         decl += "%s(" % func_name
 
     for i, (symbol, t) in signature[1:]:
         if symbol == "A":
-            if not (i == 1 and compound_assignment):
-                decl += "const "
-            decl += "BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
+            if i == 1 and compound_assignment:
+                decl += "BhArray<%s> in%d" % (type_map[t]['cpp'], i)
+            else:
+                decl += "const BhArray<%s> &in%d" % (type_map[t]['cpp'], i)
             doc += "* @param in%d Array input.\n" % i
         else:
             decl += "%s in%d" % (type_map[t]['cpp'], i)
@@ -210,7 +212,6 @@ def main(args):
                         for i in range(1, len(type_sig)):
                             impl += ", in%s" % i
                         impl += ");\n"
-                        impl += "\treturn in1;\n"
                         impl += "}\n"
             head += "#endif /* DOXYGEN_SHOULD_SKIP_THIS */\n"
         impl += "\n\n"
