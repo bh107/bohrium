@@ -50,6 +50,20 @@ BhArray <OutType> empty_like(const bhxx::BhArray<InType> &ary) {
     return BhArray<OutType>{ary.shape()};
 }
 
+/** Return a new array filled with `value`
+ *
+ * @tparam T    The data type of the new array
+ * @param shape The shape of the new array
+ * @param value The value to fill the new array with
+ * @return      The new array
+ */
+template<typename T>
+BhArray <T> full(Shape shape, T value) {
+    BhArray<T> ret{std::move(shape)};
+    ret = value;
+    return ret;
+}
+
 /** Return a new array filled with zeros
  *
  * @tparam T    The data type of the new array
@@ -58,9 +72,18 @@ BhArray <OutType> empty_like(const bhxx::BhArray<InType> &ary) {
  */
 template<typename T>
 BhArray <T> zeros(Shape shape) {
-    BhArray<T> ret{std::move(shape)};
-    ret = T{0};
-    return ret;
+    return full(std::move(shape), T{0});
+}
+
+/** Return a new array filled with ones
+ *
+ * @tparam T    The data type of the new array
+ * @param shape The shape of the new array
+ * @return      The new array
+ */
+template<typename T>
+BhArray <T> ones(Shape shape) {
+    return full(std::move(shape), T{1});
 }
 
 /** Return evenly spaced values within a given interval.
