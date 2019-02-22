@@ -32,7 +32,7 @@ template<typename T>
 BhArray<T> Random::randn(Shape shape) {
     BhArray<T> ary(random.random123(shape.prod()));
     T max_value = static_cast<T>(std::numeric_limits<uint64_t>::max());
-    return ary / max_value;
+    return (ary / max_value).reshape(shape);
 }
 
 // Instantiate API that doesn't support booleans
