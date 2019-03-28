@@ -10,9 +10,14 @@ If you use Bohrium through Python, we strongly recommend to install Bohrium thro
 
     pip install --user bohrium
 
-.. note:: On linux, Bohrium requires ``gcc`` in ``$PATH``. E.g. on Ubuntu install the build-essential package: ``sudo apt install build-essential``.
+.. note:: Bohrium requires ``gcc`` in ``$PATH``.
 
-.. note:: On linux, Python development files must be available. E.g. on Ubuntu install ``python-dev`` and/or ``python3-dev``.
+Ubuntu
+~~~~~~
+In order to install Bohrium on Ubuntu, you need to install the ``python-pip`` package **AND** its recommends::
+
+  apt install --install-recommends python-pip
+
 
 Anaconda
 --------
