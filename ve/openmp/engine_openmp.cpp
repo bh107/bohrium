@@ -50,12 +50,20 @@ EngineOpenMP::EngineOpenMP(component::ComponentVE &comp, jitk::Statistics &stat)
     compilation_hash = util::hash(compiler.cmd_template);
 
     // Initiate cache limits
-    const uint64_t sys_mem = bh_main_memory_total();
     malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 80);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
-    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem * (malloc_cache_limit_in_percent / 100.0)));
+
+    int64_t sys_mem_unused = bh_main_memory_unused();
+    if (sys_mem_unused == -1) {
+        // If `bh_main_memory_unused()` isn't available, we use 20% of the total amount of memory
+        malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(bh_main_memory_total() * 0.20));
+    } else {
+        // Else we use the percentage specified in the config under `malloc_cache_limit`
+        malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(sys_mem_unused *
+                                                                      (malloc_cache_limit_in_percent / 100.0)));
+    }
     bh_set_malloc_cache_limit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 
