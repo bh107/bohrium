@@ -423,7 +423,7 @@ std::string EngineOpenMP::info() const {
     ss << "  Main memory: " << bh_main_memory_total() / 1024 / 1024 << " MB\n";
     ss << "  Hardware threads: " << std::thread::hardware_concurrency() << "\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
-       << " MB (" << malloc_cache_limit_in_percent << "%)\n";
+       << " MB (" << malloc_cache_limit_in_percent << "% of unused memory)\n";
     ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "") << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(comp.config) << "\n";
 
