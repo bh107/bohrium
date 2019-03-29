@@ -47,7 +47,7 @@ struct FusionConfig {
     FusionConfig(const ConfigParser &config, bool avoid_rank0_sweep) :
             avoid_rank0_sweep(avoid_rank0_sweep),
             monolithic(config.defaultGet<bool>("monolithic", false)),
-            pre_fuser(config.defaultGet("pre_fuser", std::string("pre_fuser_lossy"))),
+            pre_fuser(config.defaultGet("pre_fuser", std::string("lossy"))),
             fuser_list(config.defaultGetList("fuser_list", {"greedy"})),
             greedy_threshold(config.defaultGet<uint64_t>("greedy_threshold", 10000)),
             graph(config.defaultGet<bool>("graph", false)) {}

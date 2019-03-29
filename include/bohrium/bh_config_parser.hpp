@@ -158,7 +158,13 @@ public:
         }
     }
 
-    // Overload that use the default section
+    /** Get the value of the 'option' within the default section
+     *
+     * @option   The ini option e.g. timing = True
+     * @return   The value, which is lexically converted to type 'T'
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     * Throws ConfigBadCast if the value cannot be converted
+     */
     template<typename T>
     T get(const std::string &option) const {
         return get<T>(_default_section, option);
@@ -184,6 +190,14 @@ public:
         }
     }
 
+    /** Get the value of the 'option' within the default section and if it
+     * does not exist return 'default_value' instead
+     *
+     * @option         The ini option e.g. timing = True
+     * @default_value  The default value of type 'T'
+     * @return         The value, which is lexically converted to
+     *                 type 'T' or the 'default_value'
+     */
     template<typename T>
     T defaultGet(const std::string &option, const T &default_value) const {
         return defaultGet(_default_section, option, default_value);
@@ -201,6 +215,13 @@ public:
     std::vector<std::string> getList(const std::string &section,
                                      const std::string &option) const;
 
+    /** Get the value of the 'option' within the default section and convert the value,
+     * which must be a comma separated list, into a vector of strings.
+     *
+     * @option         The ini option e.g. timing = True
+     * @return         Vector of strings
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     */
     std::vector<std::string> getList(const std::string &option) const {
         return getList(_default_section, option);
     }
@@ -208,15 +229,21 @@ public:
     /** Get the value of the 'option' within the 'section' and convert the value,
      * which must be a comma separated list, into a vector of paths.
      *
-     * @section        The ini section e.g. [gpu]. If omitted, the
-     *                 default section is used.
-     * @option         The ini option e.g. timing = True
-     * @return         Vector of paths
+     * @section   The ini section e.g. [gpu].
+     * @option    The ini option e.g. timing = True
+     * @return    Vector of paths
      * Throws ConfigKeyNotFound if the section/option does not exist
      */
     std::vector<boost::filesystem::path> getListOfPaths(const std::string &section,
                                                         const std::string &option) const;
 
+    /** Get the value of the 'option' within the default section and convert the value,
+     * which must be a comma separated list, into a vector of paths.
+     *
+     * @option    The ini option e.g. timing = True
+     * @return    Vector of paths
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     */
     std::vector<boost::filesystem::path> getListOfPaths(const std::string &option) const {
         return getListOfPaths(_default_section, option);
     }
@@ -241,6 +268,15 @@ public:
         }
     }
 
+    /** Get the value of the 'option' within the default section and convert the value,
+     * which must be a comma separated list, into a vector of strings.
+     * If it does not exist return 'default_value' instead.
+     *
+     * @option         The ini option e.g. timing = True
+     * @default_value  The default value
+     * @return         Vector of strings
+     * Throws ConfigKeyNotFound if the section/option does not exist
+     */
     std::vector<std::string> defaultGetList(const std::string &option,
                                             const std::vector<std::string> &default_value) const {
         return defaultGetList(_default_section, option, default_value);
