@@ -83,9 +83,9 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
-# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
-tmp_dir =
-# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+# Directory for temporary files (e.g. /tmp/). Default: NONE, which is `boost::filesystem::temp_directory_path()`
+tmp_dir = NONE
+# Directory for cache files (persistent between executions). Default: NONE, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
@@ -120,9 +120,9 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
-# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
-tmp_dir =
-# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+# Directory for temporary files (e.g. /tmp/). Default: NONE, which is `boost::filesystem::temp_directory_path()`
+tmp_dir = NONE
+# Directory for cache files (persistent between executions). Default: NONE, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
@@ -136,8 +136,8 @@ device_number = 0
 compiler_inc_dir = "${VE_OPENCL_COMPILER_INC_DIR}"
 # List of extension methods
 libs = ${BH_OPENCL_LIBS}
-# The pre-fuser to use
-pre_fuser = pre_fuser_lossy
+# The pre-fuser to use ('none' or 'lossy')
+pre_fuser = lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
 # Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead
@@ -168,9 +168,9 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
-# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
-tmp_dir =
-# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+# Directory for temporary files (e.g. /tmp/). Default: NONE, which is `boost::filesystem::temp_directory_path()`
+tmp_dir = NONE
+# Directory for cache files (persistent between executions). Default: NONE, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
@@ -181,8 +181,8 @@ malloc_cache_limit = 90
 compiler_cmd = "${CUDA_NVCC_EXECUTABLE} --cubin -m64 -arch=sm_{MAJOR}{MINOR} -O3 --disable-warnings ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
 # List of extension methods
 libs = ${BH_CUDA_LIBS}
-# The pre-fuser to use
-pre_fuser = pre_fuser_lossy
+# The pre-fuser to use ('none' or 'lossy')
+pre_fuser = lossy
 # List of instruction fuser/transformers
 fuser_list = greedy, push_reductions_inwards, split_for_threading, collapse_redundant_axes
 # Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead
