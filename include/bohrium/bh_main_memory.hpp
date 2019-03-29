@@ -25,6 +25,11 @@ If not, see <http://www.gnu.org/licenses/>.
 /** Return the size of the physical memory on this machine */
 uint64_t bh_main_memory_total();
 
+/** Return the size of the unused physical memory on this machine at the time of calling.
+ *  Returns -1 when not available.
+ */
+int64_t bh_main_memory_unused();
+
 /** Allocate data memory for the given base if not already allocated.
  * For convenience, the base is allowed to be NULL.
  *

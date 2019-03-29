@@ -89,7 +89,8 @@ tmp_dir =
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
-# Set the size limit of malloc cache in percentage of total system memory.
+# Set the size limit of malloc cache in percentage of the unused system memory.
+# NB: if the amount of unused memory cannot be determined, 20% of total memory system is used.
 malloc_cache_limit = 80
 # The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file
 compiler_cmd = "${VE_OPENMP_COMPILER_CMD} ${VE_OPENMP_COMPILER_FLG} ${VE_OPENMP_COMPILER_INC} {IN} -o {OUT}"
@@ -126,6 +127,7 @@ cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
 # Set the size limit of malloc cache in percentage of total GPU memory.
+# NB: if the device is a CPU, only 10% of the total memory will be used.
 malloc_cache_limit = 90
 # Bohrium sort all found devices by type ('gpu', 'cpu', or 'accelerator'). Set the device number to the device
 # Bohrium should use (0 means first). PS: use `python -m bohrium_api --info` the get available devices.

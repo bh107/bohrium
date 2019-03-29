@@ -122,12 +122,18 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
     compilation_hash = util::hash(ss.str());
 
     // Initiate cache limits
-    const uint64_t gpu_mem = device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
     malloc_cache_limit_in_percent = comp.config.defaultGet<int64_t>("malloc_cache_limit", 90);
     if (malloc_cache_limit_in_percent < 0 or malloc_cache_limit_in_percent > 100) {
         throw std::runtime_error("config: `malloc_cache_limit` must be between 0 and 100");
     }
-    malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * (malloc_cache_limit_in_percent / 100.0)));
+    const uint64_t gpu_mem = device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+    const string device_name = device.getInfo<CL_DEVICE_NAME>();
+    if (device_name.find("CPU")) {
+        malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem * 0.10));
+    } else {
+        malloc_cache_limit_in_bytes = static_cast<int64_t>(std::floor(gpu_mem *
+                                                                      (malloc_cache_limit_in_percent / 100.0)));
+    }
     malloc_cache.setLimit(static_cast<uint64_t>(malloc_cache_limit_in_bytes));
 }
 

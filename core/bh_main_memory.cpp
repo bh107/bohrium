@@ -20,17 +20,41 @@ If not, see <http://www.gnu.org/licenses/>.
 
 #include <bohrium/bh_main_memory.hpp>
 #include <bohrium/bh_malloc_cache.hpp>
+#include <bohrium/jitk/subprocess.hpp>
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <boost/regex.hpp>
 
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <sys/sysctl.h>
 #else
+
 #include <sys/sysinfo.h>
+
 #endif
 
 using namespace std;
 using namespace bohrium;
+namespace P = subprocess;
+
+namespace {
+int64_t _run_command_and_grab_integer(const string &cmd, const string &regex) {
+    P::Popen p = P::Popen(cmd, P::output{P::PIPE}, P::error{P::PIPE});
+    auto res = p.communicate();
+    std::string std_out(res.first.buf.begin(), res.first.buf.end()); // Stdout
+    std::string std_err(res.second.buf.begin(), res.second.buf.end()); // Stderr
+
+    if (p.retcode() > 0) {
+        return -1;
+    }
+    const boost::regex expr{regex};
+    boost::smatch match;
+    if (!boost::regex_search(std_out, match, expr) || match.size() < 2) {
+        return -1;
+    }
+    return std::stoll(match[1].str());
+}
+}
 
 uint64_t bh_main_memory_total() {
 #if defined(__APPLE__) || defined(__MACOSX)
@@ -47,6 +71,15 @@ uint64_t bh_main_memory_total() {
     return memInfo.totalram * memInfo.mem_unit;
 #endif
 }
+
+int64_t bh_main_memory_unused() {
+    #if defined(__APPLE__) || defined(__MACOSX)
+    return _run_command_and_grab_integer("top -l1", ",\\s*(\\d+)\\s*M unused") * 1024 * 1024;
+    #else
+    return _run_command_and_grab_integer("cat /proc/meminfo", "MemAvailable:\\s+(\\d+)\\s*kB") * 1024;
+    #endif
+}
+
 
 namespace {
 // Allocate page-size aligned main memory.
