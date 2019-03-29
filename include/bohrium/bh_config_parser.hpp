@@ -22,6 +22,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <boost/property_tree/ptree.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <string>
 #include <vector>
@@ -300,11 +301,13 @@ public:
 template<>
 inline boost::filesystem::path ConfigParser::get(const std::string &section, const std::string &option) const {
     boost::filesystem::path ret = expand(boost::filesystem::path(get<std::string>(section, option)));
-    if (ret.is_absolute() or ret.empty()) {
-        return ret;
-    } else {
-        return file_dir / ret;
+    if (boost::iequals(ret.string(), "NONE") or ret.empty()) {
+        return "";
     }
+    if (!ret.is_absolute()) {
+        ret = file_dir / ret;
+    }
+    return ret;
 }
 
 } //namespace bohrium

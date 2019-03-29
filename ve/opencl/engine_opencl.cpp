@@ -534,7 +534,7 @@ std::string EngineOpenCL::info() const {
     ss << "  Memory:         " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() / 1024 / 1024 << " MB\n";
     ss << "  Malloc cache limit: " << malloc_cache_limit_in_bytes / 1024 / 1024
        << " MB (" << malloc_cache_limit_in_percent << "%)\n";
-    ss << "  Cache dir: " << comp.config.defaultGet<string>("cache_dir", "") << "\n";
+    ss << "  Cache dir: " << comp.config.defaultGet<boost::filesystem::path>("cache_dir", "NONE")  << "\n";
     ss << "  Temp dir: " << jitk::get_tmp_path(comp.config) << "\n";
 
     ss << "  Codegen flags:\n";

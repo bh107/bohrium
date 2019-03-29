@@ -83,9 +83,9 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
-# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
-tmp_dir =
-# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+# Directory for temporary files (e.g. /tmp/). Default: NONE, which is `boost::filesystem::temp_directory_path()`
+tmp_dir = NONE
+# Directory for cache files (persistent between executions). Default: NONE, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
@@ -120,9 +120,9 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
-# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
-tmp_dir =
-# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+# Directory for temporary files (e.g. /tmp/). Default: NONE, which is `boost::filesystem::temp_directory_path()`
+tmp_dir = NONE
+# Directory for cache files (persistent between executions). Default: NONE, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
@@ -168,9 +168,9 @@ prof = false
 prof_filename =
 # Write a Graphviz graph for each kernel
 graph = false
-# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
-tmp_dir =
-# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+# Directory for temporary files (e.g. /tmp/). Default: NONE, which is `boost::filesystem::temp_directory_path()`
+tmp_dir = NONE
+# Directory for cache files (persistent between executions). Default: NONE, which disable the cache
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
