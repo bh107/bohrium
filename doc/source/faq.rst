@@ -27,8 +27,12 @@ Frequently Asked Questions (FAQ)
 
 **Is Bohrium using CUDA on Nvidia Cards or generic OpenCL for any GPU?**
 
-    At the moment, Bohrium uses OpenCL for both Nvidia, AMD, and Intel graphic cards.
+    Bohrium can use both CUDA and OpenCL.
 
 **What is the disadvantage of Bohrium? I wonder why it exists as a separate project. From my point of view it looks like Bohrium is "just reimplementing" NumPy. That's probably extremely oversimplified, but is there a plan to feed the results of Bohrium into the NumPy project?**
 
     The only disadvantage of Bohrium is the extra dependencies e.g. Bohrium need a C99 compiler for JIT-complication. Thus, the idea of incorporating Bohrium into NumPy as an alternative "backend" is very appealing and we hope it could be realized some day.
+
+**I get the error: "Failed to open map segment shared object"**
+
+    This is because ``TMPDIR`` is mounted using the ``noexec`` flag. Bohrium uses ``TMPDIR`` to write JIT-compiled kernels, which must be execuable. Please set ``TMPDIR`` to a location not mounted using ``noexec`` (thanks to `Jonas Große Sundrup <https://github.com/cherti>`_).
