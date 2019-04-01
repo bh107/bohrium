@@ -292,9 +292,15 @@ static PyObject* method2function(char *name, PyObject *self, PyObject *args, PyO
         PyTuple_SET_ITEM(func_args, i+1, t);
     }
 
-    PyObject *ret = PyObject_Call(PyObject_GetAttrString(bohrium, name), func_args, kwds);
-    Py_DECREF(func_args);
+    PyObject *py_name = PyObject_GetAttrString(bohrium, name);
+    if (py_name == NULL) {
+        Py_DECREF(func_args);
+        return NULL;
+    }
 
+    PyObject *ret = PyObject_Call(PyObject_GetAttrString(bohrium, name), func_args, kwds);
+    Py_DECREF(py_name);
+    Py_DECREF(func_args);
     return ret;
 }
 
