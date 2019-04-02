@@ -69,6 +69,10 @@ protected:
     // Path to the directory of the cached binary files (e.g. .so files)
     const boost::filesystem::path cache_bin_dir;
 
+    // Set to true, if no files should we written to the cache. When combining Bohrium and MPI,
+    // use this option to avoid write conflicts by only having rank zero write to the cache dir.
+    const bool cache_readonly;
+
     // The hash of the JIT compilation command
     uint64_t compilation_hash{0};
 
@@ -95,6 +99,7 @@ public:
             tmp_src_dir(tmp_dir / "src"),
             tmp_bin_dir(tmp_dir / "obj"),
             cache_bin_dir(comp.config.defaultGet<boost::filesystem::path>("cache_dir", "")),
+            cache_readonly(comp.config.defaultGet<bool>("cache_readonly", false)),
             compilation_hash(0) {
         // Let's make sure that the directories exist
         jitk::create_directories(tmp_src_dir);
