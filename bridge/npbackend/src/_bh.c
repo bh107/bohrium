@@ -292,9 +292,15 @@ static PyObject* method2function(char *name, PyObject *self, PyObject *args, PyO
         PyTuple_SET_ITEM(func_args, i+1, t);
     }
 
-    PyObject *ret = PyObject_Call(PyObject_GetAttrString(bohrium, name), func_args, kwds);
-    Py_DECREF(func_args);
+    PyObject *py_name = PyObject_GetAttrString(bohrium, name);
+    if (py_name == NULL) {
+        Py_DECREF(func_args);
+        return NULL;
+    }
 
+    PyObject *ret = PyObject_Call(PyObject_GetAttrString(bohrium, name), func_args, kwds);
+    Py_DECREF(py_name);
+    Py_DECREF(func_args);
     return ret;
 }
 
@@ -390,6 +396,24 @@ static PyObject* BhArray_dot(PyObject *self, PyObject *args, PyObject *kwds) {
     return method2function("dot", self, args, kwds);
 }
 
+static PyObject* BhArray_format(PyObject *self, PyObject *args, PyObject *kwds) {
+    assert(BhArray_CheckExact(self));
+
+    PyObject *npy_ary = BhArray_copy2numpy(self, NULL);
+    if(npy_ary == NULL) {
+        return NULL;
+    }
+
+    PyObject *__format__ = PyObject_GetAttrString(npy_ary, "__format__");
+    if (__format__ == NULL) {
+        Py_DECREF(npy_ary);
+        return NULL;
+    }
+    PyObject *ret = PyObject_Call(__format__, args, kwds);
+    Py_DECREF(npy_ary);
+    Py_DECREF(__format__);
+    return ret;
+}
 
 static PyMethodDef BhArrayMethods[] = {
     {"__array_finalize__", BhArray_finalize,                    METH_VARARGS,                 NULL},
@@ -421,7 +445,8 @@ static PyMethodDef BhArrayMethods[] = {
     {"take",               (PyCFunction) BhArray_take,          METH_VARARGS | METH_KEYWORDS, "a.take(indices, axis=None, out=None, mode='raise')."},
     {"put",                (PyCFunction) BhArray_put,           METH_VARARGS | METH_KEYWORDS, "a.put(indices, values, mode='raise')\n\nSet a.flat[n] = values[n] for all n in indices."},
     {"mean",               (PyCFunction) BhArray_mean,          METH_VARARGS | METH_KEYWORDS, "a.mean(axis=None, dtype=None, out=None)\n\n Compute the arithmetic mean along the specified axis."},
-    {"dot",               (PyCFunction) BhArray_dot,          METH_VARARGS | METH_KEYWORDS, "a.dot(b, out=None)\n\n Compute the dot product."},    
+    {"dot",                (PyCFunction) BhArray_dot,           METH_VARARGS | METH_KEYWORDS, "a.dot(b, out=None)\n\n Compute the dot product."},
+    {"__format__",         (PyCFunction) BhArray_format,        METH_VARARGS | METH_KEYWORDS, "a.__format_()\n\n Implement the new string formatting in Python 3."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
