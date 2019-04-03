@@ -89,6 +89,9 @@ tmp_dir = NONE
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
+# Set to true, if no files should we written to the cache. When combining Bohrium and MPI, use this option to avoid
+# write conflicts by only having rank zero write to the cache dir.
+cache_readonly = false
 # Set the size limit of malloc cache in percentage of the unused system memory.
 # NB: if the amount of unused memory cannot be determined, 20% of total memory system is used.
 malloc_cache_limit = 80
@@ -126,6 +129,9 @@ tmp_dir = NONE
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
+# Set to true, if no files should we written to the cache. When combining Bohrium and MPI, use this option to avoid
+# write conflicts by only having rank zero write to the cache dir.
+cache_readonly = false
 # Set the size limit of malloc cache in percentage of total GPU memory.
 # NB: if the device is a CPU, only 10% of the total memory will be used.
 malloc_cache_limit = 90
@@ -174,6 +180,9 @@ tmp_dir = NONE
 cache_dir = ${BIN_KERNEL_CACHE_DIR}
 # Maximum number of cache files to keep in the cache dir (use -1 for infinity)
 cache_file_max = 50000
+# Set to true, if no files should we written to the cache. When combining Bohrium and MPI, use this option to avoid
+# write conflicts by only having rank zero write to the cache dir.
+cache_readonly = false
 # Set the size limit of malloc cache in percentage of total GPU memory.
 malloc_cache_limit = 90
 # The command to execute the compiler where {OUT} is replaced with the binary file output and {IN} with the source file

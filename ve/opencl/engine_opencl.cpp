@@ -138,8 +138,10 @@ EngineOpenCL::EngineOpenCL(component::ComponentVE &comp, jitk::Statistics &stat)
 }
 
 EngineOpenCL::~EngineOpenCL() {
+    const bool use_cache = not (cache_readonly or cache_bin_dir.empty());
+
     // Move JIT kernels to the cache dir
-    if (not cache_bin_dir.empty()) {
+    if (use_cache) {
         for (const auto &kernel: _programs) {
             const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".clbin");
             if (not fs::exists(dst)) {
@@ -171,7 +173,7 @@ EngineOpenCL::~EngineOpenCL() {
         fs::remove_all(tmp_src_dir);
     }
 
-    if (cache_file_max != -1 and not cache_bin_dir.empty()) {
+    if (cache_file_max != -1 and use_cache) {
         util::remove_old_files(cache_bin_dir, cache_file_max);
     }
 }
