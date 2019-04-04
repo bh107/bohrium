@@ -22,6 +22,8 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
+#include <unistd.h>
+#include <sstream>
 #include <boost/filesystem/operations.hpp>
 #include <bohrium/jitk/codegen_util.hpp>
 #include <bohrium/jitk/view.hpp>
@@ -62,13 +64,18 @@ boost::filesystem::path get_tmp_path(const ConfigParser &config) {
     } else {
         tmp_path = boost::filesystem::path(tmp_dir);
     }
+
+    // We add the process id to the unique template
+    stringstream unique_template;
+    unique_template << "bh_" << std::hex << getpid() << "_%%%%%";
+
     // On some systems `boost::filesystem::unique_path()` throws a runtime error
     // when `LC_ALL` is undefined (or invalid). In this case, we set `LC_ALL=C` and try again.
     try {
-        unique_path = boost::filesystem::unique_path("bh_%%%%");
+        unique_path = boost::filesystem::unique_path(unique_template.str());
     } catch(std::runtime_error &e) {
         setenv("LC_ALL", "C", 1); // Force C locale
-        unique_path = boost::filesystem::unique_path("bh_%%%%");
+        unique_path = boost::filesystem::unique_path(unique_template.str());
     }
     return tmp_path / unique_path;
 }
