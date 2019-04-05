@@ -73,6 +73,7 @@ extern PyObject *masking;        // The masking Python module
 extern PyObject *loop;           // The loop Python module
 extern int bh_sync_warn;         // Boolean flag: should we warn when copying from Bohrium to NumPy
 extern int bh_mem_warn;          // Boolean flag: should we warn when about memory problems
+extern int bh_unsupported_warn;  // Boolean flag: should we warn when encountering an unsupported operation
 extern PyThreadState *py_thread_state; // The current Python thread state
 
 // Help function that creates a simple new array.

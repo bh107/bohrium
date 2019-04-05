@@ -98,3 +98,11 @@ PyObject *PySameView(PyObject *self, PyObject *args, PyObject *kwds);
  * @return The boolean answer
  */
 PyObject *PyIsBehaving(PyObject *self, PyObject *args, PyObject *kwds);
+
+/** Read an environment variable as a boolean value
+ *
+ * @param name           Name of the environment variable
+ * @param default_value  Default value if environment variable isn't set
+ * @return               Boolean value
+ */
+int get_bool_env(const char *name, int default_value);

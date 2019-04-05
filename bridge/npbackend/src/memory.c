@@ -147,9 +147,10 @@ static void _display_file_line(const char *filename, int lineno) {
 // The function that will be called when encountering an unsupported NumPy operation
 int mem_access_callback(void *addr, void *id) {
     PyObject *ary = (PyObject *) id;
-    printf("Encountering an operation not supported by Bohrium. It will be handled by the original NumPy:\n");
-    _display_backtrace(4);
-
+    if (bh_unsupported_warn) {
+        printf("Encountering an operation not supported by Bohrium. It will be handled by the original NumPy:\n");
+        _display_backtrace(4);
+    }
     // If `addr` is protected, the data of `ary` must be in bhc
     assert(((BhArray*) ary)->data_in_bhc);
     // Let's copy the memory from bhc to the numpy address space

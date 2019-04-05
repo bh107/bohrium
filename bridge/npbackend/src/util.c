@@ -18,6 +18,7 @@ GNU Lesser General Public License along with Bohrium.
 If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <strings.h>
 #include "util.h"
 #include "bharray.h"
 
@@ -200,4 +201,24 @@ PyObject *PyIsBehaving(PyObject *self, PyObject *args, PyObject *kwds) {
         Py_RETURN_FALSE; // `ary` does not represent the whole of its base
     }
     Py_RETURN_TRUE;
+}
+
+int get_bool_env(const char *name, int default_value) {
+    const char *value = getenv(name);
+    if (value != NULL) {
+        const int slen = strlen(value);
+        if (slen == 1) {
+            if (strcasecmp(value, "1") == 0 || strcasecmp(value, "y") == 0 || strcasecmp(value, "t") == 0) {
+                return 1;
+            } else if (strcasecmp(value, "0") == 0 || strcasecmp(value, "n") == 0 || strcasecmp(value, "f") == 0) {
+                return 0;
+            }
+        } else if (slen == 4 && strcasecmp(value, "true") == 0) {
+            return 1;
+        } else if (slen == 5 && strcasecmp(value, "false") == 0) {
+            return 0;
+        }
+        fprintf(stderr, "Warning: \"%s=%s\" must be a boolean value, using default value: `%d`\n", name, value, default_value);
+    }
+    return default_value;
 }
