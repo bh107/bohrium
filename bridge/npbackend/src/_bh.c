@@ -36,6 +36,7 @@ PyObject *masking        = NULL; // The masking Python module
 PyObject *loop           = NULL; // The loop Python module
 int bh_sync_warn         = 0;    // Boolean: should we warn when copying from Bohrium to NumPy
 int bh_mem_warn          = 0;    // Boolean: should we warn when about memory problems
+int bh_unsupported_warn  = 0;    // Boolean flag: should we warn when encountering a unsupported operation
 
 // The current Python thread state
 PyThreadState *py_thread_state = NULL;
@@ -1005,17 +1006,10 @@ PyMODINIT_FUNC init_bh(void)
         return RETVAL;
     }
 
-    // Check the 'BH_SYNC_WARN' flag
-    char *value = getenv("BH_SYNC_WARN");
-    if (value != NULL) {
-        bh_sync_warn = 1;
-    }
-
-    // Check the 'BH_MEM_WARN' flag
-    value = getenv("BH_MEM_WARN");
-    if (value != NULL) {
-        bh_mem_warn = 1;
-    }
+    // Check environment variables
+    bh_sync_warn = get_bool_env("BH_SYNC_WARN", 0);
+    bh_mem_warn = get_bool_env("BH_MEM_WARN", 0);
+    bh_unsupported_warn = get_bool_env("BH_UNSUP_WARN", 1);
 
     // Let's save the current Python thread state
     PyGILState_STATE gil = PyGILState_Ensure();

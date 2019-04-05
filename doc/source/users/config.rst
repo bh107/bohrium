@@ -194,7 +194,8 @@ The configuration of a component can be overwritten with environment variables u
 
 Useful environment variables::
 
-  BH_SYNC_WARN=true       -- Show Python warnings in all instances when copying data to Python.
-  BH_MEM_WARN=true        -- Show warnings when memory accesses are problematic.
-  BH_<backend>_GRAPH=true -- Dump a dependency graph of the instructions send to the back-ends (.dot file).
+  BH_SYNC_WARN=true          -- Show Python warnings in all instances when copying data to Python.
+  BH_MEM_WARN=true           -- Show warnings when memory accesses are problematic.
+  BH_UNSUP_WARN=false        -- Do not warn when when encountering unsupported NumPy operations.
+  BH_<backend>_GRAPH=true    -- Dump a dependency graph of the instructions send to the back-ends (.dot file).
   BH_<backend>_VOLATILE=true -- Declare temporary variables using `volatile`, which avoid precision differences because of Intel's use of 80-bit floats internally.
