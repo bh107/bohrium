@@ -77,9 +77,7 @@ EngineOpenMP::~EngineOpenMP() {
                 const fs::path src = tmp_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
                 if (fs::exists(src)) {
                     const fs::path dst = cache_bin_dir / jitk::hash_filename(compilation_hash, kernel.first, ".so");
-                    if (not fs::exists(dst)) {
-                        fs::copy_file(src, dst);
-                    }
+                    fs::copy_file(src, dst, fs::copy_option::overwrite_if_exists);
                 }
             }
         } catch (const boost::filesystem::filesystem_error &e) {
@@ -130,10 +128,14 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const string &fun
         return _functions.at(hash);
     }
 
+    // The path to the shared library file.
     fs::path binfile = cache_bin_dir / jitk::hash_filename(compilation_hash, hash, ".so");
+    
+    // Let's try to load the shared library. If it fails for any reason, we try again after a compilation.
+    void *lib_handle = dlopen(binfile.string().c_str(), RTLD_NOW);
 
-    // If the binary file of the kernel doesn't exist we create it
-    if (verbose or cache_bin_dir.empty() or not fs::exists(binfile)) {
+    // If the binary file couldn't load, we compile it.
+    if (verbose or cache_bin_dir.empty() or lib_handle == nullptr) {
         ++stat.kernel_cache_misses;
 
         // We create the binary file in the tmp dir
@@ -159,11 +161,13 @@ KernelFunction EngineOpenMP::getFunction(const string &source, const string &fun
         }
     }
 
-    // Load the shared library
-    void *lib_handle = dlopen(binfile.string().c_str(), RTLD_NOW);
+    // If the library wasn't loaded before compilation, we try one more time
     if (lib_handle == nullptr) {
-        cerr << "Cannot load library: " << dlerror() << endl;
-        throw runtime_error("VE-OPENMP: Cannot load library");
+        lib_handle = dlopen(binfile.string().c_str(), RTLD_NOW);
+        if (lib_handle == nullptr) {
+            cerr << "Cannot load library: " << dlerror() << endl;
+            throw runtime_error("VE-OPENMP: Cannot load library");
+        }
     }
     _lib_handles.push_back(lib_handle);
 
