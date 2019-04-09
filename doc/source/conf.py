@@ -25,6 +25,7 @@ def config_path(*paths):
     assert len(prefix) > 0
     return os.path.join(prefix, *paths)
 
+# C++11 doc
 bhxx_gen_headers = config_path("..","build","bhxx_gen_headers")
 bhxx_gen_src = config_path("..","build","bhxx_gen_src")
 subprocess.check_call('python gen_array_operations.py %s %s' %(bhxx_gen_headers, bhxx_gen_src),
@@ -65,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Bohrium'
-copyright = u'2017, eScience Group @ NBI'
+copyright = u'2019, eScience Group @ NBI'
 author = u'eScience Group @ NBI'
 
 # The version info for the project you're documenting, acts as replacement for
