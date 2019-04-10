@@ -47,6 +47,7 @@ extensions = [
     'sphinx.ext.todo',
     'numpydoc',
     'breathe',
+    'sphinx.ext.autosummary',
 ]
 
 breathe_projects = { "Bohrium": config_path("..", "doxygen", "xml") }

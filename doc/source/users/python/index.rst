@@ -8,4 +8,5 @@ Python/NumPy
    acc_loop
    user_kernels
    interop
+   api
 

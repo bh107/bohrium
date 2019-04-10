@@ -1,9 +1,6 @@
 """
 Summations and products
-~~~~~~
-
-Common linear algebra functions
-
+~~~~~~~~~~~~~~~~~~~~~~~
 """
 import warnings
 from . import ufuncs
