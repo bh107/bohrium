@@ -1,7 +1,7 @@
 Accelerate Loops
 ~~~~~~~~~~~~~~~~
 
-As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. in the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function ``do_while()``, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
+As we all know, having for and while loops in Python is bad for performance but is sometimes necessary.  E.g. in the case of the ``heat2d()`` code, we have to evaluate ``delta > epsilon`` in order to know when to stop iterating. To address this issue, Bohrium introduces the function :func:`bohrium.loop.do_while()`, which takes a function and calls it repeatedly until either a maximum number of calls has been reached or until the function return False.
 
 The function signature::
 
@@ -49,9 +49,9 @@ An example where the function returns a ``bharray`` with one element and of type
 Sliding Views Between Iterations
 --------------------------------
 
-It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using ``get_iterator()``, which returns a special bohrium iterator. The iterator can be given an optional start value (0 by default). The iterator is increased by one for each iteration, but can be changed increase or decrease by multiplying any constant (see example 2).
+It can be useful to increase/decrease the beginning of certain array views between iterations of a loop. This can be achieved using :func:`bohrium.loop.get_iterator()`, which returns a special bohrium iterator. The iterator can be given an optional start value (0 by default). The iterator is increased by one for each iteration, but can be changed increase or decrease by multiplying any constant (see example 2).
 
-Iterators only supports addition, subtraction and multiplication. ``get_iterator()`` can only be used within Bohrium loops. Views using iterators cannot change shape between iterations. Therefore, views such as ``a[i:2*i]`` are not supported.
+Iterators only supports addition, subtraction and multiplication. :func:`bohrium.loop.get_iterator()` can only be used within Bohrium loops. Views using iterators cannot change shape between iterations. Therefore, views such as ``a[i:2*i]`` are not supported.
 
 Example 1. Using iterators to create a loop-based function for calculating the triangular numbers (from 1 to 10). The loop in numpy looks the following::
 
@@ -83,7 +83,7 @@ Example 2. Increasing every second element by one, starting at both ends, in the
         >>> a
         array([1 5 2 4 3 3 4 2 5 1])
 
-Nested loops is also available in ``do_while`` by using grids. A grid is a set of iterators that depend on each other, just as with nested loops. A grid can have arbitrary size and is available via. the function ``get_grid()``, which is only usable within a ``do_while`` loop body. The function takes an amount of integers as parameters, corresponding to the range of the loops (from outer to inner). It returns the same amount of iterators, which functions as a grid. An example of this can be seen in Example 3 below.
+Nested loops is also available in :func:`bohrium.loop.do_while` by using grids. A grid is a set of iterators that depend on each other, just as with nested loops. A grid can have arbitrary size and is available via. the function :func:`bohrium.loop.get_grid()`, which is only usable within a :func:`bohrium.loop.do_while` loop body. The function takes an amount of integers as parameters, corresponding to the range of the loops (from outer to inner). It returns the same amount of iterators, which functions as a grid. An example of this can be seen in Example 3 below.
 Example 3. Creating a range in an array with multiple dimensions. In Numpy it can be written as::
 
         >>> a = bh.zeros((3,3))

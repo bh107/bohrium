@@ -6,7 +6,7 @@ Bohrium supports user kernel, which makes it possible to implement a specialized
 OpenMP Example
 --------------
 
-In order to write and run your own kernel use `bh.user_kernel.execute() <https://github.com/bh107/bohrium/blob/master/bridge/npbackend/bohrium/user_kernel.py#L21>`_::
+In order to write and run your own kernel use :func:`bohrium.user_kernel.execute()`::
 
     import bohrium as bh
 
@@ -57,10 +57,13 @@ In order to write and run your own kernel use `bh.user_kernel.execute() <https:/
         bh.user_kernel.execute(kernel, [ary, res], compiler_command=cmd)
         return res
 
+Two useful help functions when writing user kernels is :func:`bohrium.user_kernel.make_behaving()`, which makes that an array is of a specific data type, is contiguous, and uses no offset and :func:`bohrium.user_kernel.dtype_to_c99()`, which converts a Bohrium/NumPy array data type into a C99 data type.
+
+
 OpenCL Example
 --------------
 
-In order to use the OpenCL backend, use the `tag` and `param` of `bh.user_kernel.execute() <https://github.com/bh107/bohrium/blob/master/bridge/npbackend/bohrium/user_kernel.py#L21>`_::
+In order to use the OpenCL backend, use the `tag` and `param` of :func:`bohrium.user_kernel.execute()`::
 
     import bohrium as bh
 
