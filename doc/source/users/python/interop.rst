@@ -8,7 +8,7 @@ Bohrium is interoperable with other popular Python projects such as Cython and P
 NumPy
 -----
 
-One example of such a problem is `bincount()` from NumPy. `bincount()` computes a histogram of an array, which isn't possible to implement efficiently through array programming. One approach is simply to use the implementation of NumPy::
+One example of such a problem is `bincount() <https://docs.scipy.org/doc/numpy/reference/generated/numpy.bincount.html>`_ from NumPy. ``bincount()`` computes a histogram of an array, which isn't possible to implement efficiently through array programming. One approach is simply to use the implementation of NumPy::
 
     import numpy
     import bohrium
@@ -21,12 +21,12 @@ One example of such a problem is `bincount()` from NumPy. `bincount()` computes 
         # Copy the result back into a new Bohrium array
         return bohrium.array(result)
 
-In this case, we use `bohrium.copy2numpy()` and `bohrium.array()` to copy the Bohrium to NumPy and back again.
+In this case, we use :func:`bohrium._bh.ndarray.copy2numpy()` and :func:`bohrium.array()` to copy the Bohrium to NumPy and back again.
 
 Cython
 ------
 
-In order to parallelize `bincount()` for a multi-core CPU, one can use Cython:
+In order to parallelize ``bincount()`` for a multi-core CPU, one can use Cython:
 
 .. code-block:: cython
 
@@ -87,12 +87,14 @@ In order to parallelize `bincount()` for a multi-core CPU, one can use Cython:
         # Since `ret_buf` points to the memory of `ret`, we can simply return `ret`.
         return ret
 
-The function `_count()` is a regular Cython function that performs the histogram calculation. The function `bincount_cython()` uses `bohrium.interop_numpy.get_array()` to retrieve data pointers from the Bohrium arrays without any data copying.
+The function ``_count()`` is a regular Cython function that performs the histogram calculation. The function ``bincount_cython()`` uses :func:`bohrium.interop_numpy.get_array()` to retrieve data pointers from the Bohrium arrays without any data copying.
+
+.. note:: Changing or deallocating the Bohrium array given to :func:`bohrium.interop_numpy.get_array()` invalidates the returned NumPy array!
 
 PyOpenCL
 --------
 
-In order to parallelize `bincount()` for a GPGPU, one can use PyOpenCL::
+In order to parallelize ``bincount()`` for a GPGPU, one can use PyOpenCL::
 
     import bohrium
     import pyopencl as cl
@@ -207,13 +209,13 @@ In order to parallelize `bincount()` for a GPGPU, one can use PyOpenCL::
 
 
 The implementation is regular PyOpenCL and the OpenCL kernel is based on the book "OpenCL Programming Guide" by Aaftab Munshi et al.
-However, notice that we use `bohrium.interop_pyopencl.get_context()` to get the PyOpenCL context rather than `pyopencl.create_some_context() <https://documen.tician.de/pyopencl/runtime_platform.html#pyopencl.create_some_context>`_.
-In order to avoid copying data between host and device memory, we use `bohrium.interop_pyopencl.get_buffer()` to create a OpenCL buffer that points to the device memory of the Bohrium arrays.
+However, notice that we use :func:`bohrium.interop_pyopencl.get_context()` to get the PyOpenCL context rather than `pyopencl.create_some_context() <https://documen.tician.de/pyopencl/runtime_platform.html#pyopencl.create_some_context>`_.
+In order to avoid copying data between host and device memory, we use :func:`bohrium.interop_pyopencl.get_buffer()` to create a OpenCL buffer that points to the device memory of the Bohrium arrays.
 
 PyCUDA
 ------
 
-The PyCUDA implementation is very similar to the PyOpenCL. Besides some minor difference in the kernel source code, we use `interop_pycuda.init()` to initiate PyCUDA and use `interop_pycuda.get_gpuarray()` to get the CUDA buffers from the Bohrium arrays::
+The PyCUDA implementation is very similar to the PyOpenCL. Besides some minor difference in the kernel source code, we use :func:`bohrium.interop_pycuda.init()` to initiate PyCUDA and use :func:`bohrium.interop_pycuda.get_gpuarray()` to get the CUDA buffers from the Bohrium arrays::
 
     def bincount_pycuda(x, minlength=None):
         """PyCUDA implementation of `bincount()`"""
