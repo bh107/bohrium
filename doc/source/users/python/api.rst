@@ -1,7 +1,7 @@
 Python API
 ~~~~~~~~~~
 
-Bohrium inherit must of the NumPy API. It is not the whole of the NumPy API that is accelerate but they are all usable and can be found under the same module and name as in NumPy. The following is the part of the Bohrium API that is accelerated and specialized to Bohrium.
+Bohrium inherit must of the NumPy API -- it is not all functions that are accelerated but they are all usable and can be found under the same name as in NumPy. The following is the part of the Bohrium API that is special to Bohrium.
 
 Bohrium's ndarray
 -----------------
