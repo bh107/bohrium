@@ -3,22 +3,17 @@ Python API
 
 Bohrium inherit must of the NumPy API. It is not the whole of the NumPy API that is accelerate but they are all usable and can be found under the same module and name as in NumPy. The following is the part of the Bohrium API that is accelerated and specialized to Bohrium.
 
+Bohrium's ndarray
+-----------------
+
+.. automodule:: bohrium._bh
+    :members: ndarray
+
 Module contents
 ---------------
 
 .. automodule:: bohrium
-    :members: flush
-
-Bohrium's ndarray
------------------
-
-.. autoclass:: bohrium._bh.ndarray
-
-bohrium.array\_create module
-----------------------------
-
-.. automodule:: bohrium.array_create
-    :members:
+    :members: flush, array
 
 bohrium.backend\_messaging module
 ---------------------------------
