@@ -1,7 +1,7 @@
 Getting Started
 ~~~~~~~~~~~~~~~
 
-Bohrium implements a new python module ``bohrium`` that introduces a new array class ``bohrium.ndarray`` which inherits from ``numpy.ndarray``. The two array classes are fully compatible thus you only has to replace ``numpy.ndarray`` with ``bohrium.ndarray`` in order to utilize the Bohrium runtime system. Alternatively, in order to have Bohrium replacing NumPy automatically, you  can use the ``-m bohrium`` argument when running Python::
+Bohrium implements a new python module ``bohrium`` that introduces a new array class :func:`bohrium._bh.ndarray` which inherits from :func:`numpy.ndarray`. The two array classes are fully compatible thus you only has to replace :func:`numpy.ndarray` with :func:`bohrium._bh.ndarray` in order to utilize the Bohrium runtime system. Alternatively, in order to have Bohrium replacing NumPy automatically, you  can use the ``-m bohrium`` argument when running Python::
 
     $ python -m bohrium my_numpy_app.py
 
