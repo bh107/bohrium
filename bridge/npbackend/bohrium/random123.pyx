@@ -7,7 +7,6 @@ Random functions
 """
 import bohrium as np
 import numpy_force as numpy
-from numpy_force.random import *
 import operator
 import functools
 import datetime
@@ -15,6 +14,9 @@ import os
 import sys
 from bohrium import _bh
 import math
+import warnings
+from . import interop_numpy
+from . import bhary
 
 from libc.stdint cimport uint64_t, uint32_t
 
@@ -908,7 +910,7 @@ cdef class RandomState:
             res.shape = shape
         return np.asarray(res, dtype=dtype, bohrium=bohrium)
 
-#The default random object
+# The default random object
 _inst = RandomState()
 seed = _inst.seed
 get_state = _inst.get_state
@@ -924,3 +926,37 @@ standard_normal = _inst.standard_normal
 normal = _inst.normal
 standard_exponential = _inst.standard_exponential
 exponential = _inst.exponential
+
+
+def np_only_wrapper(func, ary_args):
+    """Returns a closure that convert Bohrium input arrays to regular NumPy arrays"""
+
+    if hasattr(func, "_np_only_wrapped"):
+        return func
+
+    def inner(*args, **kwargs):
+        """ Bohrium cannot accelerate this function, NumPy will handle the calculation"""
+
+        warnings.warn("Bohrium cannot accelerate this function, NumPy will handle the calculation", UserWarning, 0)
+        t = []
+        for i, arg in enumerate(args):
+            if i in ary_args:
+                t.append(interop_numpy.get_array(args[i]))
+            else:
+                t.append(arg)
+        np.flush()
+        return bhary.fix_biclass(func(*t, **kwargs))
+
+    try:
+        #Flag that this function has been handled
+        setattr(inner, "_np_only_wrapped", True)
+    except:  #In older versions of Cython, this is not possible
+        pass
+    return inner
+
+
+# Finally, we expose some of the NumPy API we do not support
+import numpy_force.random as _np_rand
+
+shuffle = np_only_wrapper(_np_rand.shuffle, (0,))
+permutation = np_only_wrapper(_np_rand.permutation, (0,))
