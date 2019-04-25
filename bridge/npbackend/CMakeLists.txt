@@ -4,7 +4,7 @@ if(NOT BRIDGE_NPBACKEND)
     return()
 endif()
 
-# Notice, all dependecy checks on Python, pip, virtualenv etc is done by the `py_api` module.
+# Notice, all dependency checks on Python, pip, virtualenv etc is done by the `py_api` module.
 # The dependency on cython and NumPy is automatically installed in the virtualenv
 
 # For each interpreter in the user specified list `PY_EXE_LIST`, we build a package.
@@ -29,7 +29,7 @@ foreach(PY_EXE ${PY_EXE_LIST})
             DEPENDS ${SRC} ${CMAKE_CURRENT_SOURCE_DIR}/build.bash)
 
     # The `npbackend` target is always called, but it will only call the `add_custom_command()` above when it's
-    # depdendencies (the files in ${SRC}) changes.
+    # dependencies (the files in ${SRC}) changes.
     add_custom_target(npbackend_${PY_EXE_IDENT} ALL
             DEPENDS py_api_${PY_EXE_IDENT} ${VR_PATH}/wheel_npbackend/package_name.txt)
 
