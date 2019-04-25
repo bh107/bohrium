@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-
-# In this module we implement an "as numpy" hack which makes it possible to
-# utilize Bohrium using the command line argument "python -m bohrium.as_numpy"
+# -*- coding: utf-8 -*-
+"""
+In this module we implement "python -m bohrium --info"
+"""
 
 import argparse
 from . import stack_info
