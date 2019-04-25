@@ -47,7 +47,7 @@ def check_result(res_np, res_bh):
     if bohrium.is_scalar(res_np):
         if not bohrium.is_scalar(res_bh):
             return False
-    elif res_bh.size == 0 and res_bh.size == 0:
+    elif res_np.size == 0 and res_bh.size == 0:
         return True  # Empty arrays are considered equal
     elif res_bh.shape != res_np.shape:
         return False
