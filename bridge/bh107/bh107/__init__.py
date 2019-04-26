@@ -8,6 +8,7 @@ bh107: automatic parallelization <bh107.org>
 import sys
 from .ufuncs import ufunc_dict
 from .array_create import *
+from .bharray import BhArray, BhBase
 
 # Expose ufuncs via their names.
 # Notice, we do not expose the `bhop_dict`
