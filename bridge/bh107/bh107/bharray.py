@@ -22,9 +22,9 @@ class BhBase(object):
             _bh_api.destroy(self._bh_dtype_enum, self._bhc_handle)
 
     def __str__(self):
-        return str(self.toNumPy())
+        return str(self.copy2numpy())
 
-    def toNumPy(self):
+    def copy2numpy(self):
         _bh_api.flush()
         data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.nbytes)
         return np.frombuffer(data, dtype=self.dtype)
@@ -59,13 +59,13 @@ class BhArray(object):
             _bh_api.destroy(self.base._bh_dtype_enum, self._bhc_handle)
 
     def __str__(self):
-        return str(self.toNumPy())
+        return str(self.copy2numpy())
 
     def view(self):
         return copy.deepcopy(self)
 
-    def toNumPy(self):
-        data = self.base.toNumPy()
+    def copy2numpy(self):
+        data = self.base.copy2numpy()
         if self.offset > 0:
             data = data[self.offset:]
         return np.lib.stride_tricks.as_strided(data, shape=self.shape,

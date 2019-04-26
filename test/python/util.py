@@ -142,3 +142,15 @@ def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, sampl
 def prod(a):
     """Returns the product of the elements in `a`"""
     return functools.reduce(operator.mul, a)
+
+
+def add_bh107_cmd(func):
+    """Duplicates the test command into three copies, which enables bh107 test.
+       This is tor tests that only generates one command"""
+
+    def inner(self, args):
+        cmd = func(self, args)
+        assert (len(cmd) > 3)
+        return (cmd, cmd, cmd)
+
+    return inner

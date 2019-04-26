@@ -8,6 +8,7 @@ import imp
 
 import numpy
 import bohrium
+import bh107
 
 # basestring is not available in Python 3
 try:
@@ -92,21 +93,28 @@ def run(args):
                 for ret in getattr(cls_inst, "init")():
                     # Let's retrieve the NumPy and Bohrium commands
                     cmd = mth_obj(ret)
-                    if len(cmd) == 2:
+                    cmd_bh107 = None
+                    if len(cmd) == 3:
+                        (cmd_np, cmd_bh, cmd_bh107) = cmd
+                    elif len(cmd) == 2:
                         (cmd_np, cmd_bh) = cmd
                     else:
-                        # If not returning a pair, the NumPy and Bohrium command are identical
+                        # If not returning a tuple, the NumPy and Bohrium command are identical and bh107n is ignored
                         cmd_np = cmd
                         cmd_bh = cmd
 
                     # For convenient, we replace "M" and "BH" in the command to represent NumPy or Bohrium
                     cmd_np = cmd_np.replace("M", "np").replace("BH", "False")
                     cmd_bh = cmd_bh.replace("M", "bh").replace("BH", "True")
+                    if cmd_bh107 is not None:
+                        cmd_bh107 = cmd_bh107.replace("M", "bh107")
                     if args.verbose:
-                        print("%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
+                        print("\n%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
                         print("%s  [BH CMD] %s%s" % (OKBLUE, cmd_bh, ENDC))
+                        if cmd_bh107 is not None:
+                            print("%s  [BH107 CMD] %s%s" % (OKBLUE, cmd_bh107, ENDC))
 
-                    # Let's execute the two commands
+                    # Let's execute the NumPy commands
                     env = {"np": numpy, "bh": bohrium}
                     exec (cmd_np, env)
                     res_np = env['res']
@@ -118,6 +126,7 @@ def run(args):
                         if not args.cont_on_error:
                             sys.exit(1)
 
+                    # Let's execute the Bohrium commands
                     env = {"np": numpy, "bh": bohrium}
                     exec (cmd_bh, env)
 
@@ -136,6 +145,32 @@ def run(args):
 
                         if not args.cont_on_error:
                             sys.exit(1)
+
+                    # Let's execute the bh107 commands
+                    if cmd_bh107 is not None:
+                        env = {"np": numpy, "bh": bohrium, "bh107": bh107}
+                        exec (cmd_bh107, env)
+                        res_bh107 = env['res']
+                        if bohrium.check(res_bh107):
+                            print("\n")
+                            print("%s  [Error]  The bh107 command returns a Bohrium array!%s" % (FAIL, ENDC))
+                            print("%s  [bh107 CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
+                            print("%s  [bh107 RES]\n%s%s" % (OKGREEN, res_bh107, ENDC))
+                            if not args.cont_on_error:
+                                sys.exit(1)
+                        if isinstance(res_bh107, bh107.BhArray):
+                            res_bh107 = res_bh107.copy2numpy()
+
+                        if not check_result(res_np, res_bh107):
+                            print("\n")
+                            print("%s  [Error]  %s%s" % (FAIL, name, ENDC))
+                            print("%s  [NP CMD] %s%s" % (OKBLUE, cmd_np, ENDC))
+                            print("%s  [NP RES]\n%s%s" % (OKGREEN, res_np, ENDC))
+                            print("%s  [BH107 CMD] %s%s" % (OKBLUE, cmd_bh107, ENDC))
+                            print("%s  [BH107 RES]\n%s%s" % (FAIL, res_bh107, ENDC))
+
+                            if not args.cont_on_error:
+                                sys.exit(1)
 
                 print("%s(%.2fs) %s✓%s" % (OKBLUE, time.time() - start_time, OKGREEN, ENDC))
 

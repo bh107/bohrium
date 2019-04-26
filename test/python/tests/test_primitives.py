@@ -1,4 +1,3 @@
-import bohrium
 import numpy
 from bohrium_api import _info
 

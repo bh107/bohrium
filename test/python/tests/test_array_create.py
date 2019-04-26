@@ -1,5 +1,6 @@
 import util
 
+
 class test_array:
     def init(self):
         for t in util.TYPES.ALL:
@@ -17,15 +18,18 @@ class test_array:
         cmd = "res = M.array((42, np.array([43]), M.array([44])), dtype=%s)" % dtype
         return cmd
 
+
 class test_array_create:
     def init(self):
         for t in util.TYPES.ALL:
             yield t
 
+    @util.add_bh107_cmd
     def test_zeros(self, dtype):
         cmd = "res = M.zeros(%d, dtype=%s)" % (100, dtype)
         return cmd
 
+    @util.add_bh107_cmd
     def test_ones(self, dtype):
         cmd = "res = M.ones(%d, dtype=%s)" % (100, dtype)
         return cmd
@@ -37,10 +41,10 @@ class test_array_create:
     def test_copy(self, dtype):
         return self.test_random(dtype) + "; res = res.copy()"
 
-
     def test_identity(self, dtype):
         cmd = "res = M.identity(%d, dtype=%s)" % (100, dtype)
         return cmd
+
 
 class test_arange:
     def init(self):
@@ -57,6 +61,7 @@ class test_arange:
     def test_arange(self, args):
         (start, stop, step) = args
         return "res = M.arange(%d, %d, %d, dtype=np.float64)" % (start, stop, step)
+
 
 class test_seq_of_scalars:
     def init(self):
