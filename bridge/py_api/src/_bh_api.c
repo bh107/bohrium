@@ -401,7 +401,7 @@ static void *BhAPI_data_get(bhc_dtype dtype, const void *ary, bhc_bool copy2host
 static PyObject *PyAPI_data_get(PyObject *self, PyObject *args, PyObject *kwds) {
     bhc_dtype dtype;
     PyObject *ary_capsule;
-    bhc_bool copy2host, force_alloc, nullify;
+    int copy2host, force_alloc, nullify;
     Py_ssize_t nbytes;
     static char *kwlist[] = {"dtype:int", "bhc_ary_ptr:PyCapsule", "copy2host:bool",
                              "force_alloc:bool", "nullify:bool", "nbytes:int", NULL};
