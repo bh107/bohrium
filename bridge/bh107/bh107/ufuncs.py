@@ -6,7 +6,6 @@ from bohrium_api import _bh_api, _info
 from . import bharray, _dtype_util
 
 
-
 class InvalidArgumentError(Exception):
     pass
 
@@ -157,7 +156,7 @@ class Ufunc(object):
             in_operands = list(operand_list[:-1])
             if not isinstance(out_operand, bharray.BhArray):
                 raise InvalidArgumentError("Output must be of type `BhArray` is `%s`" % type(out_operand))
-        elif len(operand_list) != self.info['nop'] - 1:
+        elif len(operand_list) == self.info['nop'] - 1:
             out_operand = None
             in_operands = list(operand_list)
         else:
@@ -174,7 +173,7 @@ class Ufunc(object):
         # Convert dtype of all inputs to match the function type signature
         for i in range(len(in_operands)):
             if np.isscalar(in_operands[i]):
-                if _dtype_util.any2np(in_operands[i]) != in_dtype:
+                if _dtype_util.any2np(type(in_operands[i])) != in_dtype:
                     in_operands[i] = in_dtype(in_operands[i])
             else:
                 in_operands[i] = in_operands[i].astype(in_dtype, copy=False)
