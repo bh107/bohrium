@@ -119,7 +119,11 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list):
     for op in in_operand_list:
         if isinstance(op, numbers.Number):
             dtype_enum_list.append(_dtype_util.np2bh_enum(_dtype_util.any2np(type(op))))
-            if np.issubdtype(op, np.integer):
+            if isinstance(op, (int, float, complex)):
+                handle_list.append(op)
+            elif isinstance(op, bool):
+                handle_list.append(int(op))
+            elif np.issubdtype(op, np.integer):
                 handle_list.append(int(op))
             elif np.issubdtype(op, np.floating):
                 handle_list.append(float(op))
