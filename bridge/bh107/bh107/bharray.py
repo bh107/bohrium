@@ -3,14 +3,13 @@ import operator
 import functools
 import copy
 import numpy as np
-from bohrium_api import _bh_api, _info
+from bohrium_api import _bh_api
 from . import _dtype_util
 
 
 class BhBase(object):
     def __init__(self, dtype, nelem):
         self.dtype = _dtype_util.any2np(dtype)
-        self._bhc_handle = None
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
         self.nelem = nelem
         self.itemsize = _dtype_util.size_of(self.dtype)
@@ -24,18 +23,12 @@ class BhBase(object):
     def __str__(self):
         return str(self.copy2numpy())
 
-    def copy2numpy(self):
-        _bh_api.flush()
-        data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.nbytes)
-        return np.frombuffer(data, dtype=self.dtype)
-
 
 class BhArray(object):
     def __init__(self, shape, dtype, stride=None, offset=0, base=None):
         if np.isscalar(shape):
             shape = (shape,)
         self.dtype = _dtype_util.any2np(dtype)
-        self._bhc_handle = None
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
         self.nelem = functools.reduce(operator.mul, shape)
         if base is None:
@@ -54,22 +47,31 @@ class BhArray(object):
         self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
                                         int(offset), list(shape), list(stride))
 
+    @classmethod
+    def fromNumpy(cls, numpy_array):
+        numpy_array = np.require(numpy_array, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
+        ret = cls(numpy_array.shape, numpy_array.dtype, stride=[s // numpy_array.itemsize for s in numpy_array.strides])
+        _bh_api.copy_from_memory_view(ret._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
+        return ret
+
     def __del__(self):
         if self._bhc_handle is not None:
             _bh_api.destroy(self.base._bh_dtype_enum, self._bhc_handle)
 
     def __str__(self):
-        return str(self.copy2numpy())
+        return str(self.asnumpy())
 
     def view(self):
         return copy.deepcopy(self)
 
-    def copy2numpy(self):
-        data = self.base.copy2numpy()
-        if self.offset > 0:
-            data = data[self.offset:]
-        return np.lib.stride_tricks.as_strided(data, shape=self.shape,
-                                               strides=[s * self.base.itemsize for s in self.stride])
+    def asnumpy(self, copy_data=False, flush=True):
+        if flush:
+            _bh_api.flush()
+        data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
+        ret = np.frombuffer(data, dtype=self.dtype, offset=self.offset * self.base.itemsize)
+        if copy_data:
+            ret = ret.copy()
+        return np.lib.stride_tricks.as_strided(ret, self.shape, [s * self.base.itemsize for s in self.stride])
 
     def fill(self, value):
         """Fill the array with a scalar value.
