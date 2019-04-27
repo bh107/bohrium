@@ -159,7 +159,7 @@ def run(args):
                             if not args.cont_on_error:
                                 sys.exit(1)
                         if isinstance(res_bh107, bh107.BhArray):
-                            res_bh107 = res_bh107.copy2numpy()
+                            res_bh107 = res_bh107.asnumpy()
 
                         if not check_result(res_np, res_bh107):
                             print("\n")
