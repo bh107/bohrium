@@ -427,7 +427,7 @@ static PyObject *PyAPI_data_get(PyObject *self, PyObject *args, PyObject *kwds) 
     } else {
         #ifdef NPY_PY3K
             Py_buffer buf_info;
-            PyBuffer_FillInfo(&buf_info, NULL, data, nbytes, 0, PyBUF_FULL_RO);
+            PyBuffer_FillInfo(&buf_info, NULL, data, nbytes, 0, PyBUF_CONTIG);
             return PyMemoryView_FromBuffer(&buf_info);
         #else
             return PyBuffer_FromReadWriteMemory(data, nbytes);
@@ -448,6 +448,44 @@ static void BhAPI_data_set(bhc_dtype dtype, const void *ary, bhc_bool host_ptr, 
 static void BhAPI_data_copy(bhc_dtype dtype, const void *src, const void *dst, const char *param) {
     bhc_data_copy(dtype, src, dst, param);
 }
+
+
+PyObject* BhAPI_copy_from_memory_view(PyObject *self, PyObject *args, PyObject *kwds) {
+    bhc_dtype dtype;
+    PyObject *ary_capsule;
+    PyObject *memoryview;
+    static char *kwlist[] = {"dtype:int", "bhc_ary_ptr:PyCapsule", "buf:memoryview", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iOO", kwlist, &dtype, &ary_capsule, &memoryview)) {
+        return NULL;
+    }
+    if (dtype < 0 || dtype > BH_COMPLEX128) {
+        PyErr_Format(PyExc_TypeError, "dtype unknown");
+        return NULL;
+    }
+    if (!PyCapsule_IsValid(ary_capsule, "bhc_ary_ptr")) {
+        PyErr_Format(PyExc_RuntimeError, "second argument must be a PyCapsule named 'bhc_ary_ptr'");
+        return NULL;
+    }
+    if (!PyMemoryView_Check(memoryview)) {
+        PyErr_Format(PyExc_TypeError, "third argument must be a memoryview object.");
+        return NULL;
+    }
+    void *array_handle = PyCapsule_GetPointer(ary_capsule, "bhc_ary_ptr");
+    if (array_handle == NULL) {
+        return NULL;
+    }
+
+    Py_buffer *buf = PyMemoryView_GET_BUFFER(memoryview);
+    // When buf->shape is NULL, itemsize is assumed to be 1
+    Py_ssize_t itemsize = buf->shape == NULL?1:buf->itemsize;
+
+    // bhc_data_get(dtype=dtype, ary=array_handle, copy2host=True, force_alloc=True, nullify=False);
+    void *dest = bhc_data_get(dtype, array_handle, 1, 1, 0);
+    
+    memcpy(dest, buf->buf, buf->len);
+    Py_RETURN_NONE;
+}
+
 
 /// Slides the view of an array in the given dimensions, by the given strides for each iteration in a loop.
 static void BhAPI_slide_view(bhc_dtype dtype, const void *ary1, size_t dim, int slide, int view_shape, int array_shape,
@@ -539,6 +577,8 @@ static PyMethodDef _bh_apiMethods[] = {
         {"destroy",      (PyCFunction) PyAPI_destroy,  METH_VARARGS | METH_KEYWORDS, ""},
         {"op",           (PyCFunction) PyAPI_op,       METH_VARARGS | METH_KEYWORDS, ""},
         {"data_get",     (PyCFunction) PyAPI_data_get, METH_VARARGS | METH_KEYWORDS, ""},
+        {"copy_from_memory_view",
+         (PyCFunction) BhAPI_copy_from_memory_view, METH_VARARGS | METH_KEYWORDS, ""},
         {NULL,           NULL,                         0,                            NULL}        /* Sentinel */
 };
 
