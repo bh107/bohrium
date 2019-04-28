@@ -476,8 +476,6 @@ PyObject* BhAPI_copy_from_memory_view(PyObject *self, PyObject *args, PyObject *
     }
 
     Py_buffer *buf = PyMemoryView_GET_BUFFER(memoryview);
-    // When buf->shape is NULL, itemsize is assumed to be 1
-    Py_ssize_t itemsize = buf->shape == NULL?1:buf->itemsize;
 
     // bhc_data_get(dtype=dtype, ary=array_handle, copy2host=True, force_alloc=True, nullify=False);
     void *dest = bhc_data_get(dtype, array_handle, 1, 1, 0);

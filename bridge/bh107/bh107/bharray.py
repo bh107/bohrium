@@ -64,14 +64,15 @@ class BhArray(object):
     def view(self):
         return copy.deepcopy(self)
 
-    def asnumpy(self, copy_data=False, flush=True):
+    def asnumpy(self, flush=True):
         if flush:
             _bh_api.flush()
         data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
         ret = np.frombuffer(data, dtype=self.dtype, offset=self.offset * self.base.itemsize)
-        if copy_data:
-            ret = ret.copy()
         return np.lib.stride_tricks.as_strided(ret, self.shape, [s * self.base.itemsize for s in self.stride])
+
+    def copy2numpy(self, flush=True):
+        return self.asnumpy(flush).copy()
 
     def fill(self, value):
         """Fill the array with a scalar value.
