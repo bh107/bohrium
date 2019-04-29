@@ -5,7 +5,7 @@ Array Creation Routines
 import math
 import numpy as np
 from . import bharray, _dtype_util
-from .ufuncs import bhop_dict
+from .ufuncs import ufunc_dict
 
 
 def arra1y(obj, dtype=None, copy=False):
@@ -317,7 +317,7 @@ def simply_range(size, dtype=np.uint64):
     else:
         ret = empty((size,), dtype=np.uint64)
 
-    bhop_dict['range'](ret)
+    ufunc_dict['range'](ret)
     return ret.astype(dtype, copy=False)
 
 

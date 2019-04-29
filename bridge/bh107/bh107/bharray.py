@@ -9,7 +9,7 @@ from . import _dtype_util
 
 class BhBase(object):
     def __init__(self, dtype, nelem):
-        self.dtype = _dtype_util.any2np(dtype)
+        self.dtype = _dtype_util.type_to_dtype(dtype)
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
         self.nelem = nelem
         self.itemsize = _dtype_util.size_of(self.dtype)
@@ -28,7 +28,7 @@ class BhArray(object):
     def __init__(self, shape, dtype, stride=None, offset=0, base=None):
         if np.isscalar(shape):
             shape = (shape,)
-        self.dtype = _dtype_util.any2np(dtype)
+        self.dtype = _dtype_util.type_to_dtype(dtype)
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
         self.nelem = functools.reduce(operator.mul, shape)
         if base is None:
@@ -93,13 +93,13 @@ class BhArray(object):
             >>> a
             array([ 1.,  1.])
             """
-        from .ufuncs import bhop_dict
-        bhop_dict['identity'](value, self)
+        from .ufuncs import ufunc_dict
+        ufunc_dict['identity'](value, self)
 
-    def astype(self, dtype, copy=True):
-        from .ufuncs import bhop_dict
-        if not copy and self.dtype == dtype:
+    def astype(self, dtype, always_copy=True):
+        from .ufuncs import ufunc_dict
+        if not always_copy and self.dtype == dtype:
             return self
         ret = BhArray(self.shape, dtype, stride=self.stride, offset=self.offset, base=self.base)
-        bhop_dict['identity'](self, ret)
+        ufunc_dict['identity'](self, ret)
 

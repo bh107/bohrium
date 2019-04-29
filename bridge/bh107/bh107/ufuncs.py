@@ -23,13 +23,13 @@ def _result_dtype(op_name, inputs):
     dtype = np.result_type(*inputs)
     for sig in func['type_sig']:
         if dtype.name == sig[1]:
-            return (_dtype_util.any2np(sig[0]), _dtype_util.any2np(dtype))
+            return (_dtype_util.type_to_dtype(sig[0]), _dtype_util.type_to_dtype(dtype))
 
     # Let's try use a float signature for the integer input
     if np.issubdtype(dtype, np.integer):
         for sig in func['type_sig']:
             if 'float' in sig[1]:
-                return (_dtype_util.any2np(sig[0]), _dtype_util.any2np(sig[1]))
+                return (_dtype_util.type_to_dtype(sig[0]), _dtype_util.type_to_dtype(sig[1]))
 
     raise TypeError("The ufunc %s() does not support input data type: %s." % (op_name, dtype.name))
 
@@ -118,7 +118,7 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list):
     handle_list = [out_operand._bhc_handle]
     for op in in_operand_list:
         if isinstance(op, numbers.Number):
-            dtype_enum_list.append(_dtype_util.np2bh_enum(_dtype_util.any2np(type(op))))
+            dtype_enum_list.append(_dtype_util.np2bh_enum(_dtype_util.type_to_dtype(type(op))))
             if isinstance(op, (int, float, complex)):
                 handle_list.append(op)
             elif isinstance(op, bool):
@@ -177,7 +177,7 @@ class Ufunc(object):
         # Convert dtype of all inputs to match the function type signature
         for i in range(len(in_operands)):
             if np.isscalar(in_operands[i]):
-                if _dtype_util.any2np(type(in_operands[i])) != in_dtype:
+                if _dtype_util.type_to_dtype(type(in_operands[i])) != in_dtype:
                     in_operands[i] = in_dtype(in_operands[i])
             else:
                 in_operands[i] = in_operands[i].astype(in_dtype, copy=False)
@@ -198,12 +198,69 @@ class Ufunc(object):
 
 
 def generate_ufuncs():
-    ret = {}
+    ufuncs = {}
     for op in _info.op.values():
-        if op['elementwise'] and op['name'] != "identity":
+        if op['elementwise']:
+            # Bohrium divide is like division in C/C++ where floats are like
+            # `true_divide` and integers are like `floor_divide` in NumPy
+            if op['name'] == 'divide':
+                op = op.copy()
+                op['name'] = 'bh_divide'
+
             f = Ufunc(op)
-            ret[f.info['name']] = f
-    return ret
+            ufuncs[f.info['name']] = f
+
+    # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
+    #       such as "negative" which can be done like below.
+    class Negative(Ufunc):
+        def __call__(self, a, out=None):
+            if out is None:
+                return ufuncs['mul'](a, -1)
+            else:
+                return ufuncs['mul'](a, -1, out)
+
+    ufuncs["negative"] = Negative({'name': 'negative', 'nop': 2})
+
+    class TrueDivide(Ufunc):
+        def __call__(self, a1, a2, out=None):
+            if np.issubdtype(_dtype_util.obj_to_dtype(a1), np.inexact) or \
+                    np.issubdtype(_dtype_util.obj_to_dtype(a2), np.inexact):
+                ret = ufuncs["bh_divide"](a1, a2)
+            else:
+                if _dtype_util.size_of(_dtype_util.obj_to_dtype(a1)) > 4 or \
+                        _dtype_util.size_of(_dtype_util.obj_to_dtype(a2)) > 4:
+                    dtype = np.float64
+                else:
+                    dtype = np.float32
+                if not np.isscalar(a1):
+                    a1 = a1.astype(dtype)
+                if not np.isscalar(a2):
+                    a2 = a2.astype(dtype)
+                ret = ufuncs['bh_divide'](a1, a2)
+            if out is None:
+                return ret
+            else:
+                ufuncs['identity'](ret, out)
+                return out
+
+    ufuncs["true_divide"] = TrueDivide({'name': 'true_divide', 'nop': 3})
+    ufuncs["divide"] = TrueDivide({'name': 'divide'})  # In NumPy, `divide` and `true_divide` is identical
+
+    class FloorDivide(Ufunc):
+        def __call__(self, a1, a2, out=None):
+            if np.issubdtype(_dtype_util.obj_to_dtype(a1), np.inexact) or \
+                    np.issubdtype(_dtype_util.obj_to_dtype(a2), np.inexact):
+                ret = ufuncs['floor'](ufuncs["bh_divide"](a1, a2))
+            else:
+                ret = ufuncs['bh_divide'](a1, a2)
+            if out is None:
+                return ret
+            else:
+                ufuncs['identity'](ret, out)
+                return out
+
+    ufuncs["floor_divide"] = FloorDivide({'name': 'floor_divide', 'nop': 3})
+    return ufuncs
 
 
 def generate_bh_operations():
@@ -216,4 +273,3 @@ def generate_bh_operations():
 
 # Generate all ufuncs
 ufunc_dict = generate_ufuncs()
-bhop_dict = generate_bh_operations()

@@ -34,7 +34,7 @@ _dtype_np2bh_enum = {
     np.complex128: _bh_api.complex128,
 }
 
-_dtype_any2np = {
+_dtype_type_to_dtype = {
     np.bool: np.bool,
     np.int8: np.int8,
     np.int16: np.int16,
@@ -93,9 +93,24 @@ _dtype_any2np = {
     complex: np.complex128,
 }
 
+# In Python 3 `str` is the basestring
+try:
+    basestring
+except NameError:
+    basestring = str
 
-def any2np(obj):
-    return _dtype_any2np[obj]
+
+def type_to_dtype(any_type):
+    return _dtype_type_to_dtype[any_type]
+
+
+def obj_to_dtype(obj):
+    if isinstance(obj, (np.dtype, basestring, type)):
+        return type_to_dtype(obj)
+    elif hasattr(obj, "dtype"):
+        return type_to_dtype(obj)
+    else:
+        return type_to_dtype(type(obj))
 
 
 def size_of(dtype):
