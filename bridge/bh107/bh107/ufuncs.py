@@ -141,6 +141,10 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list):
     _bh_api.op(op_id, dtype_enum_list, handle_list)
 
 
+def assign(src, dst):
+    _call_bh_api_op(_info.op["identity"]["id"], dst, [src])
+
+
 class Ufunc(object):
     def __init__(self, info):
         """A Bohrium Universal Function"""
@@ -180,7 +184,7 @@ class Ufunc(object):
                 if _dtype_util.type_to_dtype(type(in_operands[i])) != in_dtype:
                     in_operands[i] = in_dtype(in_operands[i])
             else:
-                in_operands[i] = in_operands[i].astype(in_dtype, copy=False)
+                in_operands[i] = in_operands[i].astype(in_dtype, always_copy=False)
 
         # If the output is specified, its shape must match `out_shape`
         if out_operand is None:
@@ -188,19 +192,20 @@ class Ufunc(object):
         elif out_operand.shape != out_shape:
             raise InvalidArgumentError("The output argument should have the shape: %s" % out_shape)
 
-        if out_dtype == out_operand.dtype:
-            _call_bh_api_op(self.info["id"], out_operand, in_operands)
-        else:
-            tmp_out = bharray.BhArray(out_shape, out_dtype)
-            _call_bh_api_op(self.info["id"], tmp_out, in_operands)
-            _call_bh_api_op(_info.op["identity"]["id"], out_operand, [tmp_out])
+        if out_operand.nelem > 0:
+            if out_dtype == out_operand.dtype:
+                _call_bh_api_op(self.info["id"], out_operand, in_operands)
+            else:
+                tmp_out = bharray.BhArray(out_shape, out_dtype)
+                _call_bh_api_op(self.info["id"], tmp_out, in_operands)
+                assign(tmp_out, out_operand)
         return out_operand
 
 
 def generate_ufuncs():
     ufuncs = {}
     for op in _info.op.values():
-        if op['elementwise']:
+        if op['elementwise'] and op['name'] != 'identity':
             # Bohrium divide is like division in C/C++ where floats are like
             # `true_divide` and integers are like `floor_divide` in NumPy
             if op['name'] == 'divide':
@@ -240,7 +245,7 @@ def generate_ufuncs():
             if out is None:
                 return ret
             else:
-                ufuncs['identity'](ret, out)
+                assign(ret, out)
                 return out
 
     ufuncs["true_divide"] = TrueDivide({'name': 'true_divide', 'nop': 3})
@@ -256,7 +261,7 @@ def generate_ufuncs():
             if out is None:
                 return ret
             else:
-                ufuncs['identity'](ret, out)
+                assign(ret, out)
                 return out
 
     ufuncs["floor_divide"] = FloorDivide({'name': 'floor_divide', 'nop': 3})

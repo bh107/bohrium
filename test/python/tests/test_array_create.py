@@ -58,6 +58,7 @@ class test_arange:
                 for step in range(-3, 0):
                     yield (start, stop, step)
 
+    @util.add_bh107_cmd
     def test_arange(self, args):
         (start, stop, step) = args
         return "res = M.arange(%d, %d, %d, dtype=np.float64)" % (start, stop, step)

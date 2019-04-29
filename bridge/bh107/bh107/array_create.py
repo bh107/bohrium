@@ -6,6 +6,12 @@ import math
 import numpy as np
 from . import bharray, _dtype_util
 from .ufuncs import ufunc_dict
+from bohrium_api import _bh_api, _info
+
+try:
+    _integers = (int, long)
+except NameError:
+    _integers = (int,)  # `long` is not int Python3
 
 
 def arra1y(obj, dtype=None, copy=False):
@@ -301,24 +307,19 @@ def ones_like(a, dtype=None):
 
 
 def simply_range(size, dtype=np.uint64):
-    try:
-        integers = (int, long)
-    except NameError:
-        integers = (int,)  # `long` is not int Python3
-
-    if not isinstance(size, integers):
+    if not isinstance(size, _integers):
         raise ValueError("size must be an integer")
 
     if size < 1:
         raise ValueError("size must be greater than 0")
 
-    if dtype.itemsize > 4:
+    if _dtype_util.size_of(dtype) > 4:
         ret = empty((size,), dtype=np.uint64)
     else:
-        ret = empty((size,), dtype=np.uint64)
+        ret = empty((size,), dtype=np.uint32)
 
-    ufunc_dict['range'](ret)
-    return ret.astype(dtype, copy=False)
+    _bh_api.op(_info.op["range"]["id"], [_dtype_util.np2bh_enum(ret.dtype)], [ret._bhc_handle])
+    return ret.astype(dtype, always_copy=False)
 
 
 def arange(start, stop=None, step=1, dtype=None):
@@ -385,11 +386,7 @@ def arange(start, stop=None, step=1, dtype=None):
         stop = start
         start = type(stop)(0)
 
-    try:
-        integers = (int, long)
-    except NameError:
-        integers = (int,)  # `long` is not int Python3
-    if not (isinstance(stop, integers) and isinstance(start, integers)):
+    if not (isinstance(stop, _integers) and isinstance(start, _integers)):
         raise ValueError("arange(): start and stop must be integers")
 
     if step == 0:
@@ -408,8 +405,6 @@ def arange(start, stop=None, step=1, dtype=None):
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
     if dtype is None:
         dtype = np.int64
-    else:
-        dtype = _dtype_util.obj2np(dtype)
 
     result = simply_range(size, dtype=dtype)
     if swap_back:

@@ -14,10 +14,13 @@ class BhBase(object):
         self.nelem = nelem
         self.itemsize = _dtype_util.size_of(self.dtype)
         self.nbytes = nelem * self.itemsize
-        self._bhc_handle = _bh_api.new(self._bh_dtype_enum, self.nelem)
+        if self.nelem == 0:
+            self._bhc_handle = None
+        else:
+            self._bhc_handle = _bh_api.new(self._bh_dtype_enum, self.nelem)
 
     def __del__(self):
-        if self._bhc_handle is not None:
+        if hasattr(self, '_bhc_handle') and self._bhc_handle is not None:
             _bh_api.destroy(self._bh_dtype_enum, self._bhc_handle)
 
     def __str__(self):
@@ -30,7 +33,10 @@ class BhArray(object):
             shape = (shape,)
         self.dtype = _dtype_util.type_to_dtype(dtype)
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
-        self.nelem = functools.reduce(operator.mul, shape)
+        if len(shape) == 0:
+            self.nelem = 0
+        else:
+            self.nelem = functools.reduce(operator.mul, shape)
         if base is None:
             base = BhBase(self.dtype, self.nelem)
         assert (self.dtype == base.dtype)
@@ -44,8 +50,11 @@ class BhArray(object):
         self.shape = tuple(shape)
         self.stride = tuple(stride)
         self.offset = offset
-        self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
-                                        int(offset), list(shape), list(stride))
+        if self.nelem == 0:
+            self._bhc_handle = None
+        else:
+            self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
+                                            int(offset), list(shape), list(stride))
 
     @classmethod
     def fromNumpy(cls, numpy_array):
@@ -55,7 +64,7 @@ class BhArray(object):
         return ret
 
     def __del__(self):
-        if self._bhc_handle is not None:
+        if hasattr(self, '_bhc_handle') and self._bhc_handle is not None:
             _bh_api.destroy(self.base._bh_dtype_enum, self._bhc_handle)
 
     def __str__(self):
@@ -65,6 +74,8 @@ class BhArray(object):
         return copy.deepcopy(self)
 
     def asnumpy(self, flush=True):
+        if self.nelem == 0:
+            raise RuntimeError("The size of the zero!")
         if flush:
             _bh_api.flush()
         data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
@@ -72,7 +83,10 @@ class BhArray(object):
         return np.lib.stride_tricks.as_strided(ret, self.shape, [s * self.base.itemsize for s in self.stride])
 
     def copy2numpy(self, flush=True):
-        return self.asnumpy(flush).copy()
+        if self.nelem == 0:
+            return np.array([], self.dtype)
+        else:
+            return self.asnumpy(flush).copy()
 
     def fill(self, value):
         """Fill the array with a scalar value.
@@ -93,13 +107,107 @@ class BhArray(object):
             >>> a
             array([ 1.,  1.])
             """
-        from .ufuncs import ufunc_dict
-        ufunc_dict['identity'](value, self)
+        from .ufuncs import assign
+        assign(value, self)
 
     def astype(self, dtype, always_copy=True):
-        from .ufuncs import ufunc_dict
+        from .ufuncs import assign
         if not always_copy and self.dtype == dtype:
             return self
-        ret = BhArray(self.shape, dtype, stride=self.stride, offset=self.offset, base=self.base)
-        ufunc_dict['identity'](self, ret)
+        ret = BhArray(self.shape, dtype)
+        assign(self, ret)
+        return ret
 
+    # Binary Operators
+    def __add__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['add'](self, other)
+
+    def __iadd__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['add'](self, other, self)
+
+    def __sub__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['subtract'](self, other)
+
+    def __isub__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['subtract'](self, other, self)
+
+    def __mul__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['multiply'](self, other)
+
+    def __imul__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['multiply'](self, other, self)
+
+    def __floordiv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['floor_divide'](self, other)
+
+    def __ifloordiv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['floor_divide'](self, other, self)
+
+    def __div__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['true_divide'](self, other)
+
+    def __idiv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['true_divide'](self, other, self)
+
+    def __mod__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['mod'](self, other)
+
+    def __imod__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['mod'](self, other, self)
+
+    def __pow__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['power'](self, other)
+
+    def __ipow__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['power'](self, other, self)
+
+    def __and__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_and'](self, other)
+
+    def __iand__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_and'](self, other, self)
+
+    def __xor__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_xor'](self, other)
+
+    def __ixor__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_xor'](self, other, self)
+
+    def __or__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_or'](self, other)
+
+    def __ior__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_or'](self, other, self)
+
+    # Unary Operators
+    def __neg__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['negative'](self, other)
+
+    def __abs__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['absolute'](self, other)
+
+    def __invert__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['invert'](self, other)
