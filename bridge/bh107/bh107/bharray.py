@@ -118,6 +118,28 @@ class BhArray(object):
         assign(self, ret)
         return ret
 
+    def iscontiguous(self):
+        acc = 1
+        for shape, stride in zip(self.shape, self.stride):
+            if shape > 1 and stride != acc:
+                return False
+            else:
+                acc *= shape
+        return True
+
+    def reshape(self, shape):
+        from .ufuncs import assign
+        length = self.nelem = functools.reduce(operator.mul, shape)
+        if length != self.nelem:
+            raise RuntimeError("Total size cannot change when reshaping")
+
+        if self.iscontiguous():
+            return BhArray(shape, self.dtype, offset=self.offset, base=self.base)
+        else:
+            ret = BhArray(shape, self.dtype)
+            assign(self, ret)
+            return ret
+
     # Binary Operators
     def __add__(self, other):
         from .ufuncs import ufunc_dict
