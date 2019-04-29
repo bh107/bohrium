@@ -384,6 +384,25 @@ static void BhAPI_random123(void *out, uint64_t seed, uint64_t key) {
     bhc_random123_Auint64_Kuint64_Kuint64(out, seed, key);
 }
 
+static PyObject *PyAPI_random123(PyObject *self, PyObject *args, PyObject *kwds) {
+    PyObject *ary_capsule;
+    Py_ssize_t seed, key;
+    static char *kwlist[] = {"bhc_ary_ptr:PyCapsule", "seed:int", "key:int", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Onn", kwlist, &ary_capsule, &seed, &key)) {
+        return NULL;
+    }
+    if (!PyCapsule_IsValid(ary_capsule, "bhc_ary_ptr")) {
+        PyErr_Format(PyExc_RuntimeError, "second argument must be a PyCapsule named 'bhc_ary_ptr'");
+        return NULL;
+    }
+    void *array_handle = PyCapsule_GetPointer(ary_capsule, "bhc_ary_ptr");
+    if (array_handle == NULL) {
+        return NULL;
+    }
+    BhAPI_random123(array_handle, seed, key);
+    Py_RETURN_NONE;
+}
+
 /// Extension Method, returns 0 when the extension exist
 static int BhAPI_extmethod(bhc_dtype dtype, const char *name, const void *out, const void *in1, const void *in2) {
     return bhc_extmethod(dtype, name, out, in1, in2);
@@ -577,6 +596,7 @@ static PyMethodDef _bh_apiMethods[] = {
         {"data_get",     (PyCFunction) PyAPI_data_get, METH_VARARGS | METH_KEYWORDS, ""},
         {"copy_from_memory_view",
          (PyCFunction) BhAPI_copy_from_memory_view, METH_VARARGS | METH_KEYWORDS, ""},
+        {"random123",     (PyCFunction) PyAPI_random123, METH_VARARGS | METH_KEYWORDS, ""},
         {NULL,           NULL,                         0,                            NULL}        /* Sentinel */
 };
 
