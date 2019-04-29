@@ -108,7 +108,7 @@ def obj_to_dtype(obj):
     if isinstance(obj, (np.dtype, basestring, type)):
         return type_to_dtype(obj)
     elif hasattr(obj, "dtype"):
-        return type_to_dtype(obj)
+        return type_to_dtype(obj.dtype)
     else:
         return type_to_dtype(type(obj))
 
