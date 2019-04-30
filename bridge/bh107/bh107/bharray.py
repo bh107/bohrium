@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import operator
 import functools
-import copy
+import math
 import numpy as np
 from bohrium_api import _bh_api
 from . import _dtype_util
@@ -23,9 +23,6 @@ class BhBase(object):
         if hasattr(self, '_bhc_handle') and self._bhc_handle is not None:
             _bh_api.destroy(self._bh_dtype_enum, self._bhc_handle)
 
-    def __str__(self):
-        return str(self.copy2numpy())
-
 
 class BhArray(object):
     def __init__(self, shape, dtype, stride=None, offset=0, base=None, is_scalar=False):
@@ -46,8 +43,8 @@ class BhArray(object):
         if stride is None:
             stride = [0] * len(shape)
             s = 1
-            for i in range(len(shape)):
-                stride[len(shape) - i - 1] = s
+            for i in reversed(range(len(shape))):
+                stride[i] = s
                 s *= shape[i]
         self.base = base
         self.shape = tuple(shape)
@@ -93,7 +90,8 @@ class BhArray(object):
             return str(self.asnumpy())
 
     def view(self):
-        return copy.deepcopy(self)
+        return BhArray(self.shape, self.dtype, self.stride, self.offset, self.base,
+                       is_scalar=self.nelem == 1 and len(self.shape) == 0)
 
     def asnumpy(self, flush=True):
         if self.nelem == 0:
