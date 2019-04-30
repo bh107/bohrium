@@ -140,6 +140,16 @@ class BhArray(object):
             assign(self, ret)
             return ret
 
+    def copy(self):
+        """Return a copy of the array.
+
+        Returns
+        -------
+        out : BhArray
+            Copy of `self`
+        """
+        return self.astype(self.dtype, always_copy=True)
+
     # Binary Operators
     def __add__(self, other):
         from .ufuncs import ufunc_dict
@@ -172,6 +182,10 @@ class BhArray(object):
     def __ifloordiv__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['floor_divide'](self, other, self)
+
+    def __truediv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['true_divide'](self, other)
 
     def __div__(self, other):
         from .ufuncs import ufunc_dict
