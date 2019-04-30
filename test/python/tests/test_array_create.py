@@ -6,10 +6,12 @@ class test_array:
         for t in util.TYPES.ALL:
             yield t
 
+    @util.add_bh107_cmd
     def test_list(self, dtype):
         cmd = "res = M.array([1,2,3], dtype=%s)" % dtype
         return cmd
 
+    @util.add_bh107_cmd
     def test_scalar(self, dtype):
         cmd = "res = M.array(42, dtype=%s)" % dtype
         return cmd

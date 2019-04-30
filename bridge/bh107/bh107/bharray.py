@@ -28,12 +28,15 @@ class BhBase(object):
 
 
 class BhArray(object):
-    def __init__(self, shape, dtype, stride=None, offset=0, base=None):
+    def __init__(self, shape, dtype, stride=None, offset=0, base=None, is_scalar=False):
         if np.isscalar(shape):
             shape = (shape,)
         self.dtype = _dtype_util.type_to_dtype(dtype)
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
-        if len(shape) == 0:
+        if is_scalar:
+            assert (len(shape) == 0)
+            self.nelem = 1
+        elif len(shape) == 0:
             self.nelem = 0
         else:
             self.nelem = functools.reduce(operator.mul, shape)
@@ -53,22 +56,41 @@ class BhArray(object):
         if self.nelem == 0:
             self._bhc_handle = None
         else:
+            if is_scalar:  # BhArray can be a scalar but the underlying bhc array is always an array
+                shape = (1,)
+                stride = (1,)
+
             self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
                                             int(offset), list(shape), list(stride))
 
     @classmethod
-    def fromNumpy(cls, numpy_array):
+    def from_scalar(cls, scalar):
+        ret = cls(shape=(1.), dtype=_dtype_util.obj_to_dtype(scalar), is_scalar=True)
+        ret.fill(scalar)
+        return ret
+
+    @classmethod
+    def from_numpy(cls, numpy_array):
         numpy_array = np.require(numpy_array, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
-        ret = cls(numpy_array.shape, numpy_array.dtype, stride=[s // numpy_array.itemsize for s in numpy_array.strides])
+        ret = cls(numpy_array.shape, numpy_array.dtype,
+                  stride=[s // numpy_array.itemsize for s in numpy_array.strides],
+                  is_scalar=numpy_array.ndim == 0)
         _bh_api.copy_from_memory_view(ret._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
         return ret
+
+    @classmethod
+    def from_object(cls, obj):
+        return cls.from_numpy(np.array(obj))
 
     def __del__(self):
         if hasattr(self, '_bhc_handle') and self._bhc_handle is not None:
             _bh_api.destroy(self.base._bh_dtype_enum, self._bhc_handle)
 
     def __str__(self):
-        return str(self.asnumpy())
+        if self.nelem == 0:
+            return "[]"
+        else:
+            return str(self.asnumpy())
 
     def view(self):
         return copy.deepcopy(self)

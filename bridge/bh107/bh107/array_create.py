@@ -5,7 +5,6 @@ Array Creation Routines
 import math
 import numpy as np
 from . import bharray, _dtype_util
-from .ufuncs import ufunc_dict
 from bohrium_api import _bh_api, _info
 
 try:
@@ -14,7 +13,7 @@ except NameError:
     _integers = (int,)  # `long` is not int Python3
 
 
-def arra1y(obj, dtype=None, copy=False):
+def array(obj, dtype=None, copy=False):
     """
     Create an BhArray.
 
@@ -66,10 +65,11 @@ def arra1y(obj, dtype=None, copy=False):
     """
 
     if isinstance(obj, bharray.BhArray):
-        dtype = np.dtype(dtype)
-        if obj.dtype == dtype:
-            if copy:
-                return
+        if dtype is None:
+            dtype = obj.dtype
+        return obj.astype(dtype, always_copy=copy)
+    else:
+        return bharray.BhArray.from_object(obj)
 
 
 def empty(shape, dtype=np.float64):
