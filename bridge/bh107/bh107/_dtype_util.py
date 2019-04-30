@@ -93,6 +93,12 @@ _dtype_type_to_dtype = {
     complex: np.complex128,
 }
 
+# In Python 2.7 we should also map the `long` type
+try:
+    _dtype_type_to_dtype[long] = np.int64
+except NameError:
+    pass
+
 # In Python 3 `str` is the basestring
 try:
     basestring
