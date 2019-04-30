@@ -206,14 +206,13 @@ def generate_ufuncs():
     ufuncs = {}
     for op in _info.op.values():
         if op['elementwise'] and op['name'] != 'identity':
-            # Bohrium divide is like division in C/C++ where floats are like
-            # `true_divide` and integers are like `floor_divide` in NumPy
-            if op['name'] == 'divide':
-                op = op.copy()
-                op['name'] = 'bh_divide'
-
             f = Ufunc(op)
             ufuncs[f.info['name']] = f
+
+    # Bohrium divide is like division in C/C++ where floats are like
+    # `true_divide` and integers are like `floor_divide` in NumPy
+    ufuncs['bh_divide'] = ufuncs['divide']
+    del ufuncs['divide']
 
     # NOTE: We have to add ufuncs that doesn't map to Bohrium operations directly
     #       such as "negative" which can be done like below.
