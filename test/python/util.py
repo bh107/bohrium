@@ -151,6 +151,7 @@ def add_bh107_cmd(func):
     def inner(self, args):
         cmd = func(self, args)
         assert (len(cmd) > 3)
-        return (cmd, cmd, cmd)
+        return (cmd, cmd,
+                cmd.replace("bh.random.RandomState", "bh107.random.RandomState").replace(", bohrium=BH", ""))
 
     return inner

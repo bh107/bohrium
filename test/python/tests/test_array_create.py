@@ -34,12 +34,14 @@ class test_array_create:
         cmd = "res = M.ones(%d, dtype=%s)" % (100, dtype)
         return cmd
 
+    @util.add_bh107_cmd
     def test_random(self, dtype):
-        cmd = "R = bh.random.RandomState(42); res = R.random(%d, dtype=%s, bohrium=BH)" % (100, dtype)
+        cmd = "R = bh.random.RandomState(42); res = R.random_sample(%d, bohrium=BH).astype(%s)" % (100, dtype)
         return cmd
 
     def test_copy(self, dtype):
-        return self.test_random(dtype) + "; res = res.copy()"
+        cmd = self.test_random(dtype)
+        return ["%s; res = res.copy()" % s for s in cmd]
 
     def test_identity(self, dtype):
         cmd = "res = M.identity(%d, dtype=%s)" % (100, dtype)
