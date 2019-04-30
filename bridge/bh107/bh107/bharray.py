@@ -151,7 +151,7 @@ class BhArray(object):
 
     def reshape(self, shape):
         from .ufuncs import assign
-        length = self.nelem = functools.reduce(operator.mul, shape)
+        length = functools.reduce(operator.mul, shape)
         if length != self.nelem:
             raise RuntimeError("Total size cannot change when reshaping")
 
