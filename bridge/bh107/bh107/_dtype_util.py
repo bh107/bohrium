@@ -105,6 +105,11 @@ try:
 except NameError:
     basestring = str
 
+try:
+    integers = (int, long)
+except NameError:
+    integers = (int,)  # `long` is not int Python3
+
 
 def type_to_dtype(any_type):
     return _dtype_type_to_dtype[any_type]

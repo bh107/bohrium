@@ -7,11 +7,6 @@ import numpy as np
 from . import bharray, _dtype_util
 from bohrium_api import _bh_api, _info
 
-try:
-    _integers = (int, long)
-except NameError:
-    _integers = (int,)  # `long` is not int Python3
-
 
 def array(obj, dtype=None, copy=False):
     """
@@ -307,7 +302,7 @@ def ones_like(a, dtype=None):
 
 
 def simply_range(size, dtype=np.uint64):
-    if not isinstance(size, _integers):
+    if not isinstance(size, _dtype_util.integers):
         raise ValueError("size must be an integer")
 
     if size < 1:
@@ -386,7 +381,7 @@ def arange(start, stop=None, step=1, dtype=None):
         stop = start
         start = type(stop)(0)
 
-    if not (isinstance(stop, _integers) and isinstance(start, _integers)):
+    if not (isinstance(stop, _dtype_util.integers) and isinstance(start, _dtype_util.integers)):
         raise ValueError("arange(): start and stop must be integers")
 
     if step == 0:

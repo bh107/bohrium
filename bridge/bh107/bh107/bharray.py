@@ -170,6 +170,91 @@ class BhArray(object):
         """
         return self.astype(self.dtype, always_copy=True)
 
+    def __getitem_at_dim(self, dim, key):
+        if np.isscalar(key):
+            if not isinstance(key, _dtype_util.integers):
+                raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
+                                 "integer or boolean arrays are valid indices")
+            if len(self.shape) <= dim or key >= self.shape[dim]:
+                raise IndexError("Index out of bound")
+            shape = list(self.shape)
+            shape.pop(dim)
+            stride = list(self.stride)
+            stride.pop(dim)
+            offset = self.offset + key * self.stride[dim]
+            return BhArray(shape, self.dtype, offset=offset, stride=stride, base=self.base, is_scalar=len(shape) == 0)
+        elif isinstance(key, slice):
+            if len(self.shape) <= dim:
+                raise IndexError("IndexError: too many indices for array")
+            length = self.shape[dim]
+            # complete missing slice information
+            step = 1 if key.step is None else key.step
+            if key.start is None:
+                start = length - 1 if step < 0 else 0
+            else:
+                start = key.start
+                if start < 0:
+                    start += length
+                if start < 0:
+                    start = -1 if step < 0 else 0
+                if start >= length:
+                    start = length - 1 if step < 0 else length
+            if key.stop is None:
+                stop = -1 if step < 0 else length
+            else:
+                stop = key.stop
+                if stop < 0:
+                    stop += length
+                if stop < 0:
+                    stop = -1
+                if stop > length:
+                    stop = length
+            new_length = int(math.ceil(abs(stop - start) / float(abs(step))))
+            shape = list(self.shape[:dim]) + [new_length] + list(self.shape[dim + 1:])
+            stride = list(self.stride[:dim]) + [step * self.stride[dim]] + list(self.stride[dim + 1:])
+            offset = self.offset + start * self.stride[dim]
+            return BhArray(shape, self.dtype, offset=offset, stride=stride, base=self.base)
+        elif key is None:
+            shape = list(self.shape)
+            shape.insert(dim, 1)
+            stride = list(self.stride)
+            stride.insert(dim, 0)
+            return BhArray(shape, self.dtype, offset=self.offset, stride=stride, base=self.base)
+        else:
+            raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
+                             "integer or boolean arrays are valid indices")
+
+    def __getitem__(self, key):
+        if np.isscalar(key) or isinstance(key, slice) or key is None or key is Ellipsis:
+            key = (key,)
+
+        if isinstance(key, tuple):
+            key = list(key)
+            if Ellipsis in key:
+                if key.count(Ellipsis) > 1:
+                    raise IndexError("An index can only have a single ellipsis ('...')")
+
+                # We inserts `slice(None, None, None)` at the position of the ellipsis
+                # until `key` has the size of the number of dimension.
+                idx = key.index(Ellipsis)
+                while len(key) < len(self.shape) + 1:
+                    key.insert(idx + 1, slice(None, None, None))
+                key.pop(idx)
+                assert (len(key) == len(self.shape))
+
+            for i, k in enumerate(key):
+                if k != slice(None, None, None):
+                    ret = self.__getitem_at_dim(i, k)
+                    key.pop(i)
+                    if not np.isscalar(k):
+                        key.insert(i, slice(None, None, None))
+                    return ret.__getitem__(tuple(key))
+            else:
+                return self.view()
+
+        raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
+                         "integer or boolean arrays are valid indices")
+
     # Binary Operators
     def __add__(self, other):
         from .ufuncs import ufunc_dict
