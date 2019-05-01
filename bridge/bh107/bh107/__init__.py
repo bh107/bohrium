@@ -14,4 +14,4 @@ from . import random
 
 # Expose ufuncs via their names.
 for _name, _ufunc in ufunc_dict.items():
-    setattr(sys.modules[__name__], '_name', _ufunc)
+    setattr(sys.modules[__name__], _name, _ufunc)
