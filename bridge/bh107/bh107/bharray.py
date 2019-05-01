@@ -3,6 +3,7 @@ import operator
 import functools
 import math
 import numpy as np
+# noinspection PyProtectedMember,PyUnresolvedReferences
 from bohrium_api import _bh_api
 from . import _dtype_util
 
@@ -62,7 +63,7 @@ class BhArray(object):
 
     @classmethod
     def from_scalar(cls, scalar):
-        ret = cls(shape=(1.), dtype=_dtype_util.obj_to_dtype(scalar), is_scalar=True)
+        ret = cls(shape=(1,), dtype=_dtype_util.obj_to_dtype(scalar), is_scalar=True)
         ret.fill(scalar)
         return ret
 
@@ -210,6 +211,7 @@ class BhArray(object):
                 if stop > length:
                     stop = length
             new_length = int(math.ceil(abs(stop - start) / float(abs(step))))
+            # noinspection PyTypeChecker
             shape = list(self.shape[:dim]) + [new_length] + list(self.shape[dim + 1:])
             stride = list(self.stride[:dim]) + [step * self.stride[dim]] + list(self.stride[dim + 1:])
             offset = self.offset + start * self.stride[dim]
