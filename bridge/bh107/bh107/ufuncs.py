@@ -93,26 +93,6 @@ def broadcast_to(ary, shape):
     return bharray.BhArray(ret_shape, ary.dtype, stride=ret_stride, offset=ary.offset, base=ary.base)
 
 
-def _get_dtyp1e_list(operand_list):
-    dtype_list = []
-    for op in operand_list:
-        if isinstance(op, numbers.Number):
-            dtype_list.append(None)
-        else:
-            dtype_list.append(op.base.dtype)
-
-    input_dtype = None
-    for dtype in reversed(dtype_list):
-        if dtype is not None:
-            input_dtype = dtype
-            break
-
-    for i in range(len(dtype_list)):
-        if dtype_list[i] is None:
-            dtype_list[i] = input_dtype
-    return dtype_list
-
-
 def _call_bh_api_op(op_id, out_operand, in_operand_list):
     dtype_enum_list = [_dtype_util.np2bh_enum(out_operand.dtype)]
     handle_list = [out_operand._bhc_handle]
