@@ -74,13 +74,13 @@ def broadcast_to(ary, shape):
      */
     """
 
-    if ary.ndim > len(shape):
+    if len(ary.shape) > len(shape):
         raise InvalidArgumentError(
             "When broadcasting, the number of dimension of array cannot be greater than in the new shape")
 
     # Prepend ones to shape and zeros to stride in order to make them the same lengths as `shape`
-    ret_shape = [1] * (len(shape) - ary.ndim) + ary.shape
-    ret_stride = [0] * (len(shape) - ary.ndim) + ary.stride
+    ret_shape = [1] * (len(shape) - len(ary.shape)) + ary.shape
+    ret_stride = [0] * (len(shape) - len(ary.shape)) + ary.stride
 
     # Broadcast each dimension by setting ret_stride to zero and ret_shape to `shape`
     for i in range(len(ret_shape)):
@@ -142,7 +142,8 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list):
 
 
 def assign(src, dst):
-    _call_bh_api_op(_info.op["identity"]["id"], dst, [src])
+    if dst.nelem > 0:
+        _call_bh_api_op(_info.op["identity"]["id"], dst, [src])
 
 
 class Ufunc(object):
