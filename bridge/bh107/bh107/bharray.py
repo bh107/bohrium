@@ -255,6 +255,10 @@ class BhArray(object):
         raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
                          "integer or boolean arrays are valid indices")
 
+    def __setitem__(self, key, value):
+        from .ufuncs import assign
+        assign(value, self.__getitem__(key))
+
     # Binary Operators
     def __add__(self, other):
         from .ufuncs import ufunc_dict
