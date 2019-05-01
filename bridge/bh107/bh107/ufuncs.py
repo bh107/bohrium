@@ -121,9 +121,44 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list):
     _bh_api.op(op_id, dtype_enum_list, handle_list)
 
 
+def is_same_view(a, b):
+    """ Return True when a and b is the same view. Their bases and dtypes might differ"""
+    return a.offset == b.offset and a.shape == b.shape and a.stride == b.stride
+
+
+def overlap_conflict(out, inputs):
+    """ Return True when there is a possible memory conflict between the output and the inputs."""
+
+    for i in inputs:
+        # Scalars, different bases, or identical views can never conflict
+        if not np.isscalar(i) and i.base is out.base and not is_same_view(out, i):
+            o_low = out.offset
+            i_low = i.offset
+            o_high = o_low + 1
+            i_high = i_low + 1
+            for o_shape, o_stride, i_shape, i_stride in zip(out.shape, out.stride, i.shape, i.stride):
+                if o_stride < 0:
+                    o_low += (o_shape - 1) * o_stride
+                else:
+                    o_high += (o_shape - 1) * o_stride
+                if i_stride < 0:
+                    i_low += (i_shape - 1) * i_stride
+                else:
+                    i_high += (i_shape - 1) * i_stride
+
+            if not (i_low >= o_high or o_low >= i_high):
+                return True
+    return False
+
+
 def assign(src, dst):
     if dst.nelem > 0:
-        _call_bh_api_op(_info.op["identity"]["id"], dst, [src])
+        if overlap_conflict(dst, [src]):  # We use a tmp array if the in-/out-put has memory conflicts
+            tmp = bharray.BhArray(dst.shape, dst.dtype)
+            _call_bh_api_op(_info.op["identity"]["id"], tmp, [src])
+            _call_bh_api_op(_info.op["identity"]["id"], dst, [tmp])
+        else:
+            _call_bh_api_op(_info.op["identity"]["id"], dst, [src])
 
 
 class Ufunc(object):
@@ -174,9 +209,9 @@ class Ufunc(object):
             raise InvalidArgumentError("The output argument should have the shape: %s" % out_shape)
 
         if out_operand.nelem > 0:
-            if out_dtype == out_operand.dtype:
+            if out_dtype == out_operand.dtype and not overlap_conflict(out_operand, in_operands):
                 _call_bh_api_op(self.info["id"], out_operand, in_operands)
-            else:
+            else:  # We use a tmp array if the in-/out-put has memory conflicts or different dtypes
                 tmp_out = bharray.BhArray(out_shape, out_dtype)
                 _call_bh_api_op(self.info["id"], tmp_out, in_operands)
                 assign(tmp_out, out_operand)
