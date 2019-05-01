@@ -171,6 +171,23 @@ class BhArray(object):
         """
         return self.astype(self.dtype, always_copy=True)
 
+    def transpose(self, axes=None):
+        """Permute the dimensions of an array.
+
+        Parameters
+        ----------
+        axes : list of ints, optional
+            By default, reverse the dimensions, otherwise permute the axes
+            according to the values given.
+        """
+        if axes is None:
+            axes = list(reversed(range(len(self.shape))))
+
+        ret = self.view()
+        ret.shape = tuple([self.shape[i] for i in axes])
+        ret.stride = tuple([self.stride[i] for i in axes])
+        return ret
+
     def __getitem_at_dim(self, dim, key):
         if np.isscalar(key):
             if not isinstance(key, _dtype_util.integers):

@@ -59,8 +59,9 @@ class test_transpose:
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
             yield cmd
 
+    @util.add_bh107_cmd
     def test_transpose(self, cmd):
-        cmd += "res = bh.transpose(a)"
+        cmd += "res = a.transpose()"
         return cmd
 
     def test_doubletranspose(self, cmd):
