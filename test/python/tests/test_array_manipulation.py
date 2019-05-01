@@ -10,6 +10,7 @@ class test_flatten:
         cmd += "res = bh.flatten(a)"
         return cmd
 
+    @util.add_bh107_cmd
     def test_flatten_self(self, cmd):
         cmd += "res = a.flatten()"
         return cmd
@@ -18,6 +19,7 @@ class test_flatten:
         cmd += "res = a.flatten(order='F')"
         return cmd
 
+    @util.add_bh107_cmd
     def test_ravel(self, cmd):
         cmd += "res = a.ravel()"
         return cmd
@@ -93,10 +95,12 @@ class test_fill:
         cmd += "bh.fill(res, 42)"
         return cmd
 
+    @util.add_bh107_cmd
     def test_method(self, cmd):
         cmd += "res.fill(42)"
         return cmd
 
+    @util.add_bh107_cmd
     def test_view(self, cmd):
         cmd += "res[...] = 42"
         return cmd

@@ -148,19 +148,6 @@ class BhArray(object):
                 acc *= shape
         return True
 
-    def reshape(self, shape):
-        from .ufuncs import assign
-        length = functools.reduce(operator.mul, shape)
-        if length != self.nelem:
-            raise RuntimeError("Total size cannot change when reshaping")
-
-        if self.iscontiguous():
-            return BhArray(shape, self.dtype, offset=self.offset, base=self.base)
-        else:
-            ret = BhArray(shape, self.dtype)
-            assign(self, ret)
-            return ret
-
     def copy(self):
         """Return a copy of the array.
 
@@ -187,6 +174,63 @@ class BhArray(object):
         ret.shape = tuple([self.shape[i] for i in axes])
         ret.stride = tuple([self.stride[i] for i in axes])
         return ret
+
+    def flatten(self, always_copy=True):
+        """ Return a copy of the array collapsed into one dimension.
+
+        Parameters
+        ----------
+        always_copy : boolean
+            When False, a copy is only made when necessary
+
+        Returns
+        -------
+        y : ndarray
+            A copy of the array, flattened to one dimension.
+
+        Notes
+        -----
+        The order of the data in memory is always row-major (C-style).
+
+        Examples
+        --------
+        >>> a = np.array([[1,2], [3,4]])
+        >>> a.flatten()
+        array([1, 2, 3, 4])
+        """
+        shape = (self.nelem,)
+        if not self.iscontiguous():
+            assert(self.copy().iscontiguous())
+            ret = self.copy().flatten(always_copy=False)  # copy() makes the array contiguous
+            assert(ret.iscontiguous())
+            return ret
+        else:
+            ret = BhArray(shape, self.dtype, offset=self.offset, base=self.base)
+            if always_copy:
+                return ret.copy()
+            else:
+                return ret
+
+    def ravel(self):
+        """ Return a contiguous flattened array.
+
+        A 1-D array, containing the elements of the input, is returned. A copy is made only if needed.
+
+        Returns
+        -------
+        y : ndarray
+            A copy or view of the array, flattened to one dimension.
+        """
+        return self.flatten(always_copy=False)
+
+    def reshape(self, shape):
+        from .ufuncs import assign
+        length = functools.reduce(operator.mul, shape)
+        if length != self.nelem:
+            raise RuntimeError("Total size cannot change when reshaping")
+
+        flat = self.flatten()
+        return BhArray(shape, flat.dtype, base=flat.base)
 
     def __getitem_at_dim(self, dim, key):
         if np.isscalar(key):
