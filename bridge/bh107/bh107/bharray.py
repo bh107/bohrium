@@ -141,7 +141,7 @@ class BhArray(object):
 
     def iscontiguous(self):
         acc = 1
-        for shape, stride in zip(self.shape, self.stride):
+        for shape, stride in zip(reversed(self.shape), reversed(self.stride)):
             if shape > 1 and stride != acc:
                 return False
             else:
