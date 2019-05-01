@@ -910,6 +910,10 @@ cdef class RandomState:
             res.shape = shape
         return np.asarray(res, dtype=dtype, bohrium=bohrium)
 
+    def random_of_dtype(self, dtype=np.float64, shape=None, bohrium=True):
+        return self.random(shape, dtype=dtype, bohrium=bohrium)
+
+
 # The default random object
 _inst = RandomState()
 seed = _inst.seed

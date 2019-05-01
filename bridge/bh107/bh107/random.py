@@ -4,7 +4,7 @@ import datetime
 import operator
 import functools
 import numpy as np
-from . import bharray
+from . import bharray, _dtype_util
 from .ufuncs import ufunc_dict
 from bohrium_api import _bh_api
 
@@ -525,6 +525,41 @@ class RandomState:
         """
         return self.random_sample(shape)
 
+    def random_of_dtype(self, dtype, shape=None):
+        """Return random array of `dtype`. The values are in the interval of the `dtype`.
+
+        Parameters
+        ----------
+        dtype : data-type
+            The desired data-type for the array.
+
+        shape : int or tuple of ints
+            Defines the shape of the returned array of random floats.
+
+        Returns
+        -------
+        out : BhArray of floats
+            Array of random floats of shape `shape`.
+        """
+
+        dtype = _dtype_util.obj_to_dtype(dtype)
+        if dtype is np.bool:
+            res = self.random_integers(0, 1, shape)
+        elif dtype in [np.int8, np.uint8]:
+            res = self.random_integers(1, 3, shape)
+        elif dtype is np.int16:
+            res = self.random_integers(1, 5, shape)
+        elif dtype is np.uint16:
+            res = self.random_integers(1, 6, shape)
+        elif dtype in [np.float32, np.float64]:
+            res = self.random_sample(shape)
+        else:
+            res = self.random_integers(1, 8, shape)
+        if len(res.shape) == 0:  # Make sure scalars is arrays.
+            res = bharray.BhArray.from_object(res)
+            res.shape = shape
+        return res.astype(dtype)
+
 
 # The default random object
 _inst = RandomState()
@@ -541,3 +576,4 @@ rand = _inst.rand
 random_integers = _inst.random_integers
 standard_exponential = _inst.standard_exponential
 exponential = _inst.exponential
+random_of_dtype = _inst.random_of_dtype
