@@ -868,7 +868,7 @@ cdef class RandomState:
             raise ValueError("scale <= 0")
         return self.standard_exponential(size=size, dtype=dtype, bohrium=bohrium) * scale
 
-    def random(self, shape, dtype, bohrium=True):
+    def random(self, shape, dtype=np.float64, bohrium=True):
         """
         Return random numbers of 'dtype'.
 
