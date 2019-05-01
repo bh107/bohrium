@@ -55,7 +55,7 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
 def gen_arrays(random_state_name, max_ndim, max_dim=10, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32",
                bh_arg="BH"):
     for shape in gen_shapes(max_ndim, max_dim, samples_in_each_ndim, min_ndim):
-        cmd = "%s.random(%s, dtype=%s, bohrium=%s)" % (random_state_name, shape, dtype, bh_arg)
+        cmd = "%s.random(%s, bohrium=%s).astype(%s)" % (random_state_name, shape, bh_arg, dtype)
         yield (cmd, shape)
 
 
