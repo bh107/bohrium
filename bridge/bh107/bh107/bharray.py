@@ -139,6 +139,15 @@ class BhArray(object):
         assign(self, ret)
         return ret
 
+    def isscalar(self):
+        return len(self.shape) == 0 and self.nelem == 1
+
+    def empty(self):
+        if len(self.shape) == 0:
+            return self.nelem == 0
+        else:
+            return functools.reduce(operator.mul, self.shape) == 0
+
     def iscontiguous(self):
         acc = 1
         for shape, stride in zip(reversed(self.shape), reversed(self.stride)):
@@ -200,9 +209,9 @@ class BhArray(object):
         """
         shape = (self.nelem,)
         if not self.iscontiguous():
-            assert(self.copy().iscontiguous())
+            assert (self.copy().iscontiguous())
             ret = self.copy().flatten(always_copy=False)  # copy() makes the array contiguous
-            assert(ret.iscontiguous())
+            assert (ret.iscontiguous())
             return ret
         else:
             ret = BhArray(shape, self.dtype, offset=self.offset, base=self.base)

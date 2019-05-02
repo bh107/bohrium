@@ -93,7 +93,7 @@ def broadcast_to(ary, shape):
     return bharray.BhArray(ret_shape, ary.dtype, stride=ret_stride, offset=ary.offset, base=ary.base)
 
 
-def _call_bh_api_op(op_id, out_operand, in_operand_list):
+def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True):
     dtype_enum_list = [_dtype_util.np2bh_enum(out_operand.dtype)]
     handle_list = [out_operand._bhc_handle]
     for op in in_operand_list:
@@ -114,10 +114,9 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list):
         else:
             dtype_enum_list.append(_dtype_util.np2bh_enum(out_operand.dtype))
             assert (op._bhc_handle is not None)
-            if op.shape == out_operand.shape:
-                handle_list.append(op._bhc_handle)
-            else:
-                handle_list.append(broadcast_to(op, out_operand.shape)._bhc_handle)
+            if op.shape != out_operand.shape and broadcast_to_output_shape:
+                op = broadcast_to(op, out_operand.shape)
+            handle_list.append(op._bhc_handle)
     _bh_api.op(op_id, dtype_enum_list, handle_list)
 
 
@@ -216,6 +215,143 @@ class Ufunc(object):
                 _call_bh_api_op(self.info["id"], tmp_out, in_operands)
                 assign(tmp_out, out_operand)
         return out_operand
+
+    def reduce(self, ary, axis=0, out=None):
+        """Reduces `ary`'s dimension by len('axis'), by applying ufunc along the
+        axes in 'axis'.
+
+        Let :math:`ary.shape = (N_0, ..., N_i, ..., N_{M-1})`.  Then
+        :math:`ufunc.reduce(ary, axis=i)[k_0, ..,k_{i-1}, k_{i+1}, .., k_{M-1}]` =
+        the result of iterating `j` over :math:`range(N_i)`, cumulatively applying
+        ufunc to each :math:`ary[k_0, ..,k_{i-1}, j, k_{i+1}, .., k_{M-1}]`.
+
+        For a one-dimensional array, reduce produces results equivalent to:
+          r = op.identity # op = ufunc
+          for i in range(len(A)):
+              r = op(r, A[i])
+          return r
+
+        For example, add.reduce() is equivalent to sum().
+
+        Parameters
+        ----------
+        ary : BhArray
+            The array to act on.
+        axis : None or int or tuple of ints, optional
+            Axis or axes along which a reduction is performed.
+            The default (`axis` = 0) is perform a reduction over the first
+            dimension of the input array. `axis` may be negative, in
+            which case it counts from the last to the first axis.
+            If this is `None`, a reduction is performed over all the axes.
+            If this is a tuple of ints, a reduction is performed on multiple
+            axes, instead of a single axis or all the axes as before.
+        out : ndarray, optional
+            A location into which the result is stored. If not provided, a
+            freshly-allocated array is returned.
+
+        Returns
+        -------
+        r : BhArray      The reduced array. If `out` was supplied, `r` is a reference to it.
+
+        Examples
+        --------
+        >>> np.multiply.reduce([2,3,5])
+        30
+        A multi-dimensional array example:
+        >>> X = np.arange(8).reshape((2,2,2))
+        >>> X
+        array([[[0, 1],
+                [2, 3]],
+               [[4, 5],
+                [6, 7]]])
+        >>> np.add.reduce(X, 0)
+        array([[ 4,  6],
+               [ 8, 10]])
+        >>> np.add.reduce(X) # confirm: default axis value is 0
+        array([[ 4,  6],
+               [ 8, 10]])
+        >>> np.add.reduce(X, 1)
+        array([[ 2,  4],
+               [10, 12]])
+        >>> np.add.reduce(X, 2)
+        array([[ 1,  5],
+               [ 9, 13]])
+        """
+
+        # Make sure that 'axis' is a list of dimensions to reduce
+        if axis is None:
+            # We reduce all dimensions
+            axis = range(len(ary.shape))
+        elif np.isscalar(axis):
+            # We reduce one dimension
+            axis = [axis]
+        else:
+            # We reduce multiple dimensions
+            axis = list(axis)
+
+        # Check for out of bounds and convert negative axis values
+        if len(axis) > len(ary.shape):
+            raise ValueError("number of 'axes' to reduce is out of bounds")
+        for i in range(len(axis)):
+            if axis[i] < 0:
+                axis[i] = len(ary.shape) + axis[i]
+            if axis[i] >= len(ary.shape):
+                raise ValueError("'axis' is out of bounds")
+
+        # No axis should be reduced multiple times
+        if len(axis) != len(set(axis)):
+            raise ValueError("duplicate value in 'axis'")
+
+        # When reducing booleans numerically, we count the number of True values
+        if (not self.info['name'].startswith("logical")) and ary.dtype == np.bool:
+            ary = ary.astype(np.uint64)
+
+        if len(axis) == 1:  # One axis reduction we can handle directly
+            axis = axis[0]
+
+            # Find the output shape
+            if len(ary.shape) == 1:
+                shape = []
+            else:
+                shape = tuple(s for i, s in enumerate(ary.shape) if i != axis)
+                if out is not None and out.shape != shape:
+                    raise ValueError("output dimension mismatch expect "
+                                     "shape '%s' got '%s'" % (shape, out.shape))
+
+            tmp = bharray.BhArray(shape, ary.dtype, is_scalar=len(shape) == 0)
+
+            # NumPy compatibility: when the axis dimension size is zero NumPy just returns the neutral value
+            if ary.shape[axis] == 0:
+                tmp[...] = getattr(getattr(np, self.info['name']), "identity")
+            elif len(ary.shape) == 1 and ary.shape[0] == 1:  # Single element, no need to reduce
+                tmp[...] = ary[0]
+            elif ary.empty():
+                tmp = ary
+            else:
+                _call_bh_api_op(_info.op["%s_reduce" % self.info['name']]['id'], tmp, [ary, np.int64(axis)],
+                                broadcast_to_output_shape=False)
+            if out is not None:
+                out[...] = tmp
+            else:
+                out = tmp
+            return out
+        else:
+            # If we are reducing to a scalar across several dimensions, reshape to a vector
+            if len(ary.shape) == len(axis) and ary.iscontiguous():
+                ary = ary.flatten(always_copy=False)
+                ary = self.reduce(ary)
+            else:
+                # Let's reduce the last axis
+                # TODO: Flatten as many inner dimensions as possible!
+                ary = self.reduce(ary, axis[-1])
+                ary = self.reduce(ary, axis[:-1])
+
+            # Finally, we may have to copy the result to 'out'
+            if out is not None:
+                out[...] = ary
+            else:
+                out = ary
+        return out
 
 
 def generate_ufuncs():
