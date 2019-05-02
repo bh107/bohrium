@@ -890,7 +890,7 @@ cdef class RandomState:
             total = shape
             shape = (shape,)
         dtype = np.dtype(dtype).type
-        if dtype is np.bool:
+        if dtype in [np.bool, np.bool_]:
             res = self.random_integers(0, 1, shape, bohrium=bohrium)
         elif dtype in [np.int8, np.uint8]:
             res = self.random_integers(1, 3, shape, bohrium=bohrium)
