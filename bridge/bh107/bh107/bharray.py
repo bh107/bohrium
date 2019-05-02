@@ -142,6 +142,9 @@ class BhArray(object):
     def isscalar(self):
         return len(self.shape) == 0 and self.nelem == 1
 
+    def isbehaving(self):
+        return self.offset == 0 and self.iscontiguous()
+
     def empty(self):
         if len(self.shape) == 0:
             return self.nelem == 0

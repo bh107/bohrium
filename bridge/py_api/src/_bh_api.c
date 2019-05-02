@@ -565,6 +565,42 @@ static const char* BhAPI_user_kernel(const char* kernel, int nop, void *operands
     return bhc_user_kernel(kernel, nop, operands, compile_cmd, tag, param);
 }
 
+PyObject* PyAPI_user_kernel(PyObject *self, PyObject *args, PyObject *kwds) {
+    char *kernel, *compile_cmd, *tag, *param;
+    PyObject *operand_fast_seq;
+    {
+        PyObject *operand_list;
+        static char *kwlist[] = {"kernel:str", "operand_list:list", "compiler_cmd:str", "tag:str", "param:str", NULL};
+        if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOsss", kwlist, &kernel, &operand_list, &compile_cmd, &tag,
+                                         &param)) {
+            return NULL;
+        }
+        operand_fast_seq = PySequence_Fast(operand_list, "`operand_list` should be a sequence.");
+        if (operand_fast_seq == NULL) {
+            return NULL;
+        }
+    }
+    const Py_ssize_t nop = PySequence_Fast_GET_SIZE(operand_fast_seq);
+
+    void *array_handle_list[nop];
+    for (int i = 0; i < nop; ++i) {
+        PyObject *ary_capsule = PySequence_Fast_GET_ITEM(operand_fast_seq, i); // Borrowed reference and will not fail
+        if (!PyCapsule_IsValid(ary_capsule, "bhc_ary_ptr")) {
+            PyErr_Format(PyExc_RuntimeError, "items in operand_list must be PyCapsules named 'bhc_ary_ptr'");
+            Py_DECREF(operand_fast_seq);
+            return NULL;
+        }
+        array_handle_list[i] = PyCapsule_GetPointer(ary_capsule, "bhc_ary_ptr");
+    }
+    const char *ret = BhAPI_user_kernel(kernel, nop, array_handle_list, compile_cmd, tag, param);
+    Py_DECREF(operand_fast_seq);
+#if defined(NPY_PY3K)
+    return PyUnicode_FromString(ret);
+#else
+    return PyString_FromString(ret);
+#endif
+}
+
 PyObject *PySanityCheck(PyObject *self, PyObject *args) {
     bhc_ndarray_uint64_p a = bhc_new_Auint64(100);
     bhc_ndarray_uint64_p b = bhc_new_Auint64(1);
@@ -597,6 +633,7 @@ static PyMethodDef _bh_apiMethods[] = {
         {"copy_from_memory_view",
          (PyCFunction) BhAPI_copy_from_memory_view, METH_VARARGS | METH_KEYWORDS, ""},
         {"random123",     (PyCFunction) PyAPI_random123, METH_VARARGS | METH_KEYWORDS, ""},
+        {"user_kernel",     (PyCFunction) PyAPI_user_kernel, METH_VARARGS | METH_KEYWORDS, ""},
         {NULL,           NULL,                         0,                            NULL}        /* Sentinel */
 };
 
