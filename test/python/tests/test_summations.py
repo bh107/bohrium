@@ -15,7 +15,6 @@ class test_sums:
                     for axis in range(len(shape)):
                         yield (cmd, op, axis)
 
-    @util.add_bh107_cmd
     def test_func(self, arg):
         (cmd, op, axis) = arg
         if axis is None:
