@@ -553,6 +553,8 @@ class RandomState:
             res = self.random_integers(1, 6, shape)
         elif dtype in [np.float32, np.float64]:
             res = self.random_sample(shape)
+        elif dtype in [np.complex64, np.complex128]:
+            res = self.random_sample(shape=shape) + self.random_sample(shape=shape) * 1j
         else:
             res = self.random_integers(1, 8, shape)
         if len(res.shape) == 0:  # Make sure scalars is arrays.
