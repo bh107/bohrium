@@ -3,6 +3,7 @@
 
 import os
 import numbers
+import re
 from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist as setup_sdist
 
