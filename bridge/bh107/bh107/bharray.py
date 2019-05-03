@@ -27,20 +27,21 @@ class BhArray(object):
     def __init__(self, shape, dtype, strides=None, offset=0, base=None, is_scalar=False):
         if np.isscalar(shape):
             shape = (shape,)
-        self.dtype = _dtype_util.type_to_dtype(dtype)
-        self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
+        dtype = _dtype_util.type_to_dtype(dtype)
+        self._bh_dtype_enum = _dtype_util.np2bh_enum(dtype)
+        if strides is None:
+            strides = util.get_contiguous_strides(shape)
         if is_scalar:
             assert (len(shape) == 0)
             self.nelem = 1
         else:
             self.nelem = util.total_size(shape)
-        if base is None:
-            base = BhBase(self.dtype, self.nelem)
-        assert (self.dtype == base.dtype)
-        self.base = base
+        self.base = BhBase(dtype, self.nelem) if base is None else base
+        if self.dtype != self.base.dtype:
+            raise ValueError("dtype must be identical to base.dtype (%s)" % self.base.dtype)
         self._shape = tuple(shape)
         # NB: `_strides` is in elements and not in bytes, which is different from NumPy.
-        self._strides = util.get_contiguous_strides(shape) if strides is None else strides
+        self._strides = tuple(strides)
         self.offset = offset
         if self.nelem == 0:
             self._bhc_handle = None
@@ -48,7 +49,7 @@ class BhArray(object):
             if is_scalar:  # BhArray can be a scalar but the underlying bhc array is always an array
                 shape = (1,)
                 strides = (1,)
-            self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
+            self._bhc_handle = _bh_api.view(self._bh_dtype_enum, self.base._bhc_handle, len(shape),
                                             int(offset), list(shape), list(strides))
 
     @classmethod
@@ -79,6 +80,10 @@ class BhArray(object):
             return "[]"
         else:
             return str(self.asnumpy())
+
+    @property
+    def dtype(self):
+        return self.base.dtype
 
     @property
     def ndim(self):
