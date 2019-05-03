@@ -80,7 +80,7 @@ def broadcast_to(ary, shape):
 
     # Prepend ones to shape and zeros to stride in order to make them the same lengths as `shape`
     ret_shape = [1] * (len(shape) - len(ary.shape)) + ary.shape
-    ret_stride = [0] * (len(shape) - len(ary.shape)) + ary.stride
+    ret_strides = [0] * (len(shape) - len(ary.shape)) + ary.strides
 
     # Broadcast each dimension by setting ret_stride to zero and ret_shape to `shape`
     for i in range(len(ret_shape)):
@@ -90,7 +90,7 @@ def broadcast_to(ary, shape):
                 ret_stride[i] = 0
             else:
                 raise InvalidArgumentError("Cannot broadcast shape %s to %s" % (ary.shape, shape))
-    return bharray.BhArray(ret_shape, ary.dtype, stride=ret_stride, offset=ary.offset, base=ary.base)
+    return bharray.BhArray(ret_shape, ary.dtype, strides=ret_strides, offset=ary.offset, base=ary.base)
 
 
 def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True):
@@ -122,7 +122,7 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_sha
 
 def is_same_view(a, b):
     """ Return True when a and b is the same view. Their bases and dtypes might differ"""
-    return a.offset == b.offset and a.shape == b.shape and a.stride == b.stride
+    return a.offset == b.offset and a.shape == b.shape and a.strides == b.strides
 
 
 def overlap_conflict(out, inputs):
@@ -135,7 +135,7 @@ def overlap_conflict(out, inputs):
             i_low = i.offset
             o_high = o_low + 1
             i_high = i_low + 1
-            for o_shape, o_stride, i_shape, i_stride in zip(out.shape, out.stride, i.shape, i.stride):
+            for o_shape, o_stride, i_shape, i_stride in zip(out.shape, out.strides, i.shape, i.strides):
                 if o_stride < 0:
                     o_low += (o_shape - 1) * o_stride
                 else:

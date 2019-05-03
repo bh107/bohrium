@@ -14,8 +14,8 @@ def total_size(shape):
     return 0 if len(shape) == 0 else functools.reduce(operator.mul, shape, 1)
 
 
-def get_contiguous_stride(shape):
-    """Returns a new stride that corresponds to a contiguous traversal of shape"""
+def get_contiguous_strides(shape):
+    """Returns a new strides that corresponds to a contiguous traversal of shape"""
     stride = [0] * len(shape)
     s = 1
     for i in reversed(range(len(shape))):

@@ -107,8 +107,10 @@ except NameError:
 
 # In Python 3 `str` is the basestring
 try:
+    # noinspection PyCompatibility
     basestring
 except NameError:
+    # noinspection PyShadowingBuiltins
     basestring = str
 
 try:

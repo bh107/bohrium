@@ -258,8 +258,6 @@ def ones_like(a, dtype=None):
         the returned array.
     dtype : data-type, optional
         Overrides the data type of the result.
-    bohrium : boolean, optional
-        Determines whether it is a Bohrium-enabled array or a regular NumPy array
 
     Returns
     -------

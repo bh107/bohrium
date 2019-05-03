@@ -24,7 +24,7 @@ class BhBase(object):
 
 
 class BhArray(object):
-    def __init__(self, shape, dtype, stride=None, offset=0, base=None, is_scalar=False):
+    def __init__(self, shape, dtype, strides=None, offset=0, base=None, is_scalar=False):
         if np.isscalar(shape):
             shape = (shape,)
         self.dtype = _dtype_util.type_to_dtype(dtype)
@@ -39,16 +39,17 @@ class BhArray(object):
         assert (self.dtype == base.dtype)
         self.base = base
         self._shape = tuple(shape)
-        self.stride = get_contiguous_stride(shape) if stride is None else stride
+        # NB: `_strides` is in elements and not in bytes, which is different from NumPy.
+        self._strides = util.get_contiguous_strides(shape) if strides is None else strides
         self.offset = offset
         if self.nelem == 0:
             self._bhc_handle = None
         else:
             if is_scalar:  # BhArray can be a scalar but the underlying bhc array is always an array
                 shape = (1,)
-                stride = (1,)
+                strides = (1,)
             self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
-                                            int(offset), list(shape), list(stride))
+                                            int(offset), list(shape), list(strides))
 
     @classmethod
     def from_scalar(cls, scalar):
@@ -60,7 +61,7 @@ class BhArray(object):
     def from_numpy(cls, numpy_array):
         numpy_array = np.require(numpy_array, requirements=['C_CONTIGUOUS', 'ALIGNED', 'OWNDATA'])
         ret = cls(numpy_array.shape, numpy_array.dtype,
-                  stride=[s // numpy_array.itemsize for s in numpy_array.strides],
+                  strides=[s // numpy_array.itemsize for s in numpy_array.strides],
                   is_scalar=numpy_array.ndim == 0)
         _bh_api.copy_from_memory_view(ret._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
         return ret
@@ -96,10 +97,29 @@ class BhArray(object):
         if not self.iscontiguous():
             raise ValueError("Cannot reshape a non-contiguous array")
         self._shape = tuple(shape)
-        self.stride = util.get_contiguous_stride(shape)
+        self._strides = util.get_contiguous_strides(shape)
+
+    @property
+    def strides_in_bytes(self):
+        """Gets the strides in bytes"""
+        return tuple([s * self.base.itemsize for s in self._strides])
+
+    @property
+    def strides(self):
+        """Gets the strides in elements"""
+        return tuple(self._strides)
+
+    @strides.setter
+    def strides(self, strides_in_bytes):
+        """Sets the strides in elements"""
+        if self.isscalar():
+            raise ValueError("Scalars does not have `strides`")
+        if len(strides_in_bytes) != len(self.shape):
+            raise ValueError("Strides must be same length as shape (%d)" % len(self.shape))
+        self._strides = tuple(strides)
 
     def view(self):
-        return BhArray(self._shape, self.dtype, self.stride, self.offset, self.base,
+        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base,
                        is_scalar=self.nelem == 1 and len(self._shape) == 0)
 
     def asnumpy(self, flush=True):
@@ -109,7 +129,7 @@ class BhArray(object):
             _bh_api.flush()
         data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
         ret = np.frombuffer(data, dtype=self.dtype, offset=self.offset * self.base.itemsize)
-        return np.lib.stride_tricks.as_strided(ret, self._shape, [s * self.base.itemsize for s in self.stride])
+        return np.lib.stride_tricks.as_strided(ret, self._shape, [s * self.base.itemsize for s in self._strides])
 
     def copy2numpy(self, flush=True):
         if self.nelem == 0:
@@ -158,7 +178,7 @@ class BhArray(object):
 
     def iscontiguous(self):
         acc = 1
-        for shape, stride in zip(reversed(self._shape), reversed(self.stride)):
+        for shape, stride in zip(reversed(self._shape), reversed(self._strides)):
             if shape > 1 and stride != acc:
                 return False
             else:
@@ -189,7 +209,7 @@ class BhArray(object):
 
         ret = self.view()
         ret.shape = tuple([self._shape[i] for i in axes])
-        ret.stride = tuple([self.stride[i] for i in axes])
+        ret.strides = tuple([self._strides[i] for i in axes])
         return ret
 
     def flatten(self, always_copy=True):
@@ -258,10 +278,10 @@ class BhArray(object):
                 raise IndexError("Index out of bound")
             shape = list(self._shape)
             shape.pop(dim)
-            stride = list(self.stride)
-            stride.pop(dim)
-            offset = self.offset + key * self.stride[dim]
-            return BhArray(shape, self.dtype, offset=offset, stride=stride, base=self.base, is_scalar=len(shape) == 0)
+            strides = list(self._strides)
+            strides.pop(dim)
+            offset = self.offset + key * self._strides[dim]
+            return BhArray(shape, self.dtype, offset=offset, strides=strides, base=self.base, is_scalar=len(shape) == 0)
         elif isinstance(key, slice):
             if len(self._shape) <= dim:
                 raise IndexError("IndexError: too many indices for array")
@@ -291,15 +311,15 @@ class BhArray(object):
             new_length = int(math.ceil(abs(stop - start) / float(abs(step))))
             # noinspection PyTypeChecker
             shape = list(self._shape[:dim]) + [new_length] + list(self._shape[dim + 1:])
-            stride = list(self.stride[:dim]) + [step * self.stride[dim]] + list(self.stride[dim + 1:])
-            offset = self.offset + start * self.stride[dim]
-            return BhArray(shape, self.dtype, offset=offset, stride=stride, base=self.base)
+            strides = list(self._strides[:dim]) + [step * self._strides[dim]] + list(self._strides[dim + 1:])
+            offset = self.offset + start * self._strides[dim]
+            return BhArray(shape, self.dtype, offset=offset, strides=strides, base=self.base)
         elif key is None:
             shape = list(self._shape)
             shape.insert(dim, 1)
-            stride = list(self.stride)
-            stride.insert(dim, 0)
-            return BhArray(shape, self.dtype, offset=self.offset, stride=stride, base=self.base)
+            strides = list(self._strides)
+            strides.insert(dim, 0)
+            return BhArray(shape, self.dtype, offset=self.offset, strides=strides, base=self.base)
         else:
             raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
                              "integer or boolean arrays are valid indices")
