@@ -6,7 +6,7 @@ sphinxcontrib-bibtex
 numpy
 numpydoc
 matplotlib
-breathe
+breathe==4.7.3
 bohrium_api
 bohrium
 bh107
