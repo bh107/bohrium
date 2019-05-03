@@ -8,5 +8,6 @@ numpydoc
 matplotlib
 breathe==4.7.3
 bohrium_api
--U bohrium
--U bh107
+bohrium>=0.11
+bh107>=0.11
+
