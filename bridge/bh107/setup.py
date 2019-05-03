@@ -1,11 +1,81 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import numbers
 from setuptools import setup, find_packages
+from setuptools.command.sdist import sdist as setup_sdist
+
+def script_path(*paths):
+    prefix = os.path.abspath(os.path.dirname(__file__))
+    assert len(prefix) > 0
+    return os.path.join(prefix, *paths)
+
+def version_file_exist():
+    """Return whether the version.py file exist or not"""
+    ver_path = script_path("bh107", "version.py")
+    return os.path.exists(ver_path)
+
+
+def get_version():
+    """Returns the version and version_info.
+        If the version.py file doesn't exist, the version of Bohrium API is returned.
+        NB: If the version.py file doesn't exist, this function must be called after the call to `setup()`.
+    """
+    ver_path = script_path("bh107", "version.py")
+    if os.path.exists(ver_path):
+        print("Getting version from version.py")
+        # Loading `__version__` variable from the version file
+        with open(ver_path, "r") as f:
+            t=f.read()
+            version = re.search("__version__\s*=\s*\"([^\"]*)\"",t).group(1);
+            version_info = eval(re.search("__version_info__\s*=\s*(\([^\)]+\))",t).group(1));
+            return (version, version_info)
+    else:
+        print("Getting version from bohrium_api")
+        import bohrium_api
+        return (bohrium_api.__version__, bohrium_api.__version_info__)
+
+
+def get_bohrium_api_required_string():
+    """Returns the install_requires/setup_requires string for `bohrium_api`"""
+    try:
+        ver_tuple = get_version()[1]
+        return "bohrium_api>=%d.%d.%d" % (ver_tuple[0], ver_tuple[1], ver_tuple[2])
+    except ImportError:
+        return "bohrium_api"  # If `bohrium_api` is not available, we expect PIP to install the newest package
+
+
+def gen_version_file_in_cmd(self, target_dir):
+    """We extend the setup commands to also generate the `version.py` file if it doesn't exist already"""
+    if not self.dry_run:
+        version, version_info = get_version()
+        if not version_file_exist():
+            self.mkpath(target_dir)
+            p = os.path.join(target_dir, 'version.py')
+            print("Generating '%s'" % p)
+            with open(p, 'w') as fobj:
+                fobj.write("__version__ = \"%s\"\n" % version)
+                fobj.write("__version_info__ = %s\n" % str(version_info))
+
+
+class Sdist(setup_sdist):
+    def run(self):
+        gen_version_file_in_cmd(self, "bh107")
+        setup_sdist.run(self)
+
+class DelayedVersion(numbers.Number):
+    """In order to delay the version evaluation that depend on `bohrium_api`, we use this class"""
+
+    def __str__(self):
+        return get_version()[0]
 
 
 setup(
     name='bh107',
+
+    cmdclass={'sdist': Sdist},
+    version=DelayedVersion(),
 
     description='Bohrium for Python <www.bh107.org>',
     long_description='Bohrium for Python <www.bh107.org>',
