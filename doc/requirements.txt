@@ -1,6 +1,6 @@
 pybtex
 Pygments>=2.0
-Sphinx
+Sphinx==1.8.3
 sphinx_rtd_theme
 sphinxcontrib-bibtex
 numpy
