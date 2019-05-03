@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+==========================
+Useful Data Type Functions
+==========================
+"""
+
 import numpy as np
 from bohrium_api import _bh_api
 

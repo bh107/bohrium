@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-import operator
-import functools
 import math
 import numpy as np
 # noinspection PyProtectedMember,PyUnresolvedReferences
 from bohrium_api import _bh_api
-from . import _dtype_util
+from . import _dtype_util, util
 
 
 class BhBase(object):
@@ -34,22 +32,14 @@ class BhArray(object):
         if is_scalar:
             assert (len(shape) == 0)
             self.nelem = 1
-        elif len(shape) == 0:
-            self.nelem = 0
         else:
-            self.nelem = functools.reduce(operator.mul, shape)
+            self.nelem = util.total_size(shape)
         if base is None:
             base = BhBase(self.dtype, self.nelem)
         assert (self.dtype == base.dtype)
-        if stride is None:
-            stride = [0] * len(shape)
-            s = 1
-            for i in reversed(range(len(shape))):
-                stride[i] = s
-                s *= shape[i]
         self.base = base
-        self.shape = tuple(shape)
-        self.stride = tuple(stride)
+        self._shape = tuple(shape)
+        self.stride = get_contiguous_stride(shape) if stride is None else stride
         self.offset = offset
         if self.nelem == 0:
             self._bhc_handle = None
@@ -57,7 +47,6 @@ class BhArray(object):
             if is_scalar:  # BhArray can be a scalar but the underlying bhc array is always an array
                 shape = (1,)
                 stride = (1,)
-
             self._bhc_handle = _bh_api.view(self._bh_dtype_enum, base._bhc_handle, len(shape),
                                             int(offset), list(shape), list(stride))
 
@@ -90,9 +79,28 @@ class BhArray(object):
         else:
             return str(self.asnumpy())
 
+    @property
+    def ndim(self):
+        return len(self._shape)
+
+    @property
+    def shape(self):
+        return tuple(self._shape)
+
+    @shape.setter
+    def shape(self, shape):
+        if self.isscalar():
+            raise ValueError("Cannot reshape a scalar")
+        if util.total_size(shape) != util.total_size(self.shape):
+            raise ValueError("Cannot reshape array of size %d into shape %s" % (util.total_size(self.shape), shape))
+        if not self.iscontiguous():
+            raise ValueError("Cannot reshape a non-contiguous array")
+        self._shape = tuple(shape)
+        self.stride = util.get_contiguous_stride(shape)
+
     def view(self):
-        return BhArray(self.shape, self.dtype, self.stride, self.offset, self.base,
-                       is_scalar=self.nelem == 1 and len(self.shape) == 0)
+        return BhArray(self._shape, self.dtype, self.stride, self.offset, self.base,
+                       is_scalar=self.nelem == 1 and len(self._shape) == 0)
 
     def asnumpy(self, flush=True):
         if self.nelem == 0:
@@ -101,7 +109,7 @@ class BhArray(object):
             _bh_api.flush()
         data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
         ret = np.frombuffer(data, dtype=self.dtype, offset=self.offset * self.base.itemsize)
-        return np.lib.stride_tricks.as_strided(ret, self.shape, [s * self.base.itemsize for s in self.stride])
+        return np.lib.stride_tricks.as_strided(ret, self._shape, [s * self.base.itemsize for s in self.stride])
 
     def copy2numpy(self, flush=True):
         if self.nelem == 0:
@@ -135,25 +143,22 @@ class BhArray(object):
         from .ufuncs import assign
         if not always_copy and self.dtype == dtype:
             return self
-        ret = BhArray(self.shape, dtype)
+        ret = BhArray(self._shape, dtype)
         assign(self, ret)
         return ret
 
     def isscalar(self):
-        return len(self.shape) == 0 and self.nelem == 1
+        return len(self._shape) == 0 and self.nelem == 1
 
     def isbehaving(self):
         return self.offset == 0 and self.iscontiguous()
 
     def empty(self):
-        if len(self.shape) == 0:
-            return self.nelem == 0
-        else:
-            return functools.reduce(operator.mul, self.shape) == 0
+        return self.nelem == 0 and not self.isscalar()
 
     def iscontiguous(self):
         acc = 1
-        for shape, stride in zip(reversed(self.shape), reversed(self.stride)):
+        for shape, stride in zip(reversed(self._shape), reversed(self.stride)):
             if shape > 1 and stride != acc:
                 return False
             else:
@@ -180,10 +185,10 @@ class BhArray(object):
             according to the values given.
         """
         if axes is None:
-            axes = list(reversed(range(len(self.shape))))
+            axes = list(reversed(range(len(self._shape))))
 
         ret = self.view()
-        ret.shape = tuple([self.shape[i] for i in axes])
+        ret.shape = tuple([self._shape[i] for i in axes])
         ret.stride = tuple([self.stride[i] for i in axes])
         return ret
 
@@ -237,7 +242,7 @@ class BhArray(object):
 
     def reshape(self, shape):
         from .ufuncs import assign
-        length = functools.reduce(operator.mul, shape)
+        length = util.total_size(shape)
         if length != self.nelem:
             raise RuntimeError("Total size cannot change when reshaping")
 
@@ -249,18 +254,18 @@ class BhArray(object):
             if not isinstance(key, _dtype_util.integers):
                 raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
                                  "integer or boolean arrays are valid indices")
-            if len(self.shape) <= dim or key >= self.shape[dim]:
+            if len(self._shape) <= dim or key >= self._shape[dim]:
                 raise IndexError("Index out of bound")
-            shape = list(self.shape)
+            shape = list(self._shape)
             shape.pop(dim)
             stride = list(self.stride)
             stride.pop(dim)
             offset = self.offset + key * self.stride[dim]
             return BhArray(shape, self.dtype, offset=offset, stride=stride, base=self.base, is_scalar=len(shape) == 0)
         elif isinstance(key, slice):
-            if len(self.shape) <= dim:
+            if len(self._shape) <= dim:
                 raise IndexError("IndexError: too many indices for array")
-            length = self.shape[dim]
+            length = self._shape[dim]
             # complete missing slice information
             step = 1 if key.step is None else key.step
             if key.start is None:
@@ -285,12 +290,12 @@ class BhArray(object):
                     stop = length
             new_length = int(math.ceil(abs(stop - start) / float(abs(step))))
             # noinspection PyTypeChecker
-            shape = list(self.shape[:dim]) + [new_length] + list(self.shape[dim + 1:])
+            shape = list(self._shape[:dim]) + [new_length] + list(self._shape[dim + 1:])
             stride = list(self.stride[:dim]) + [step * self.stride[dim]] + list(self.stride[dim + 1:])
             offset = self.offset + start * self.stride[dim]
             return BhArray(shape, self.dtype, offset=offset, stride=stride, base=self.base)
         elif key is None:
-            shape = list(self.shape)
+            shape = list(self._shape)
             shape.insert(dim, 1)
             stride = list(self.stride)
             stride.insert(dim, 0)
@@ -312,10 +317,10 @@ class BhArray(object):
                 # We inserts `slice(None, None, None)` at the position of the ellipsis
                 # until `key` has the size of the number of dimension.
                 idx = key.index(Ellipsis)
-                while len(key) < len(self.shape) + 1:
+                while len(key) < len(self._shape) + 1:
                     key.insert(idx + 1, slice(None, None, None))
                 key.pop(idx)
-                assert (len(key) == len(self.shape))
+                assert (len(key) == len(self._shape))
 
             for i, k in enumerate(key):
                 if k != slice(None, None, None):

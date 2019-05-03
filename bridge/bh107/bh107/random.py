@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import datetime
-import operator
-import functools
 import numpy as np
-from . import bharray, _dtype_util
+from . import bharray, _dtype_util, util
 from .ufuncs import ufunc_dict
 from bohrium_api import _bh_api
 
@@ -147,7 +145,7 @@ class RandomState:
         if np.isscalar(shape):
             shape = (shape,)
 
-        length = functools.reduce(operator.mul, shape)
+        length = util.total_size(shape)
         flat = bharray.BhArray(length, np.uint64)
         _bh_api.random123(flat._bhc_handle, self.index, self.key)
         self.index += flat.nelem
