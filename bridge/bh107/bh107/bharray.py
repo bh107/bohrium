@@ -115,11 +115,11 @@ class BhArray(object):
         return tuple(self._strides)
 
     @strides.setter
-    def strides(self, strides_in_bytes):
+    def strides(self, strides):
         """Sets the strides in elements"""
         if self.isscalar():
             raise ValueError("Scalars does not have `strides`")
-        if len(strides_in_bytes) != len(self.shape):
+        if len(strides) != len(self.shape):
             raise ValueError("Strides must be same length as shape (%d)" % len(self.shape))
         self._strides = tuple(strides)
 
@@ -213,8 +213,8 @@ class BhArray(object):
             axes = list(reversed(range(len(self._shape))))
 
         ret = self.view()
-        ret.shape = tuple([self._shape[i] for i in axes])
-        ret.strides = tuple([self._strides[i] for i in axes])
+        ret._shape = tuple([self._shape[i] for i in axes])
+        ret._strides = tuple([self._strides[i] for i in axes])
         return ret
 
     def flatten(self, always_copy=True):
