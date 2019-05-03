@@ -71,6 +71,23 @@ typedef struct { bhc_float32 real, imag; } bhc_complex64;
 typedef struct { bhc_float64 real, imag; } bhc_complex128;
 typedef struct { bhc_uint64 start, key; } bhc_r123;
 
+typedef union {
+    bhc_bool bool8;
+    bhc_int8 int8;
+    bhc_int16 int16;
+    bhc_int32 int32;
+    bhc_int64 int64;
+    bhc_uint8 uint8;
+    bhc_uint16 uint16;
+    bhc_uint32 uint32;
+    bhc_uint64 uint64;
+    bhc_float32 float32;
+    bhc_float64 float64;
+    bhc_complex64 complex64;
+    bhc_complex128 complex128;
+    bhc_r123 r123;
+} bhc_scalar_union; 
+
 #ifdef __cplusplus
 extern "C" {
 #endif

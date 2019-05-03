@@ -10,6 +10,7 @@ class test_flatten:
         cmd += "res = bh.flatten(a)"
         return cmd
 
+    @util.add_bh107_cmd
     def test_flatten_self(self, cmd):
         cmd += "res = a.flatten()"
         return cmd
@@ -18,6 +19,7 @@ class test_flatten:
         cmd += "res = a.flatten(order='F')"
         return cmd
 
+    @util.add_bh107_cmd
     def test_ravel(self, cmd):
         cmd += "res = a.ravel()"
         return cmd
@@ -59,8 +61,9 @@ class test_transpose:
             cmd = "R = bh.random.RandomState(42); a = %s; " % cmd
             yield cmd
 
+    @util.add_bh107_cmd
     def test_transpose(self, cmd):
-        cmd += "res = bh.transpose(a)"
+        cmd += "res = a.transpose()"
         return cmd
 
     def test_doubletranspose(self, cmd):
@@ -70,9 +73,10 @@ class test_transpose:
 
 class test_overlapping:
     def init(self):
-        cmd = "R = bh.random.RandomState(42); res = R.random(100, np.float32, bohrium=BH); "
+        cmd = "res = M.arange(100, dtype=np.float32); "
         yield cmd
 
+    @util.add_bh107_cmd
     def test_identity(self, cmd):
         cmd += "res[1:] = res[:-1]"
         return cmd
@@ -80,7 +84,8 @@ class test_overlapping:
     def test_add(self, cmd):
         cmd_np = cmd + "t = np.add(res[:-1], 42); res[1:] = t"
         cmd_bh = cmd + "bh.add(res[:-1], 42, res[1:])"
-        return cmd_np, cmd_bh
+        cmd_bh107 = cmd + "bh107.add(res[:-1], 42, res[1:])"
+        return cmd_np, cmd_bh, cmd_bh107
 
 
 class test_fill:
@@ -92,10 +97,12 @@ class test_fill:
         cmd += "bh.fill(res, 42)"
         return cmd
 
+    @util.add_bh107_cmd
     def test_method(self, cmd):
         cmd += "res.fill(42)"
         return cmd
 
+    @util.add_bh107_cmd
     def test_view(self, cmd):
         cmd += "res[...] = 42"
         return cmd

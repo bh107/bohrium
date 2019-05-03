@@ -15,19 +15,19 @@ void execute(double *a, double *b, double *c) {
     }
 }
 """
-a = bh.ones(100, bh.double)
-b = bh.ones(110, bh.double)
+a = bh.ones(100, np.double)
+b = bh.ones(110, np.double)
 b = bh.user_kernel.make_behaving(b[10:])
 res = bh.empty_like(a)
 bh.user_kernel.execute(kernel, [a, b, res])
 '''
         np_cmd = '''
-a = np.ones(100, bh.double)
-b = np.ones(110, bh.double)
+a = np.ones(100, np.double)
+b = np.ones(110, np.double)
 b = b[10:]
 res = a + b + np.arange(100)
 '''
-        return (np_cmd, bh_cmd)
+        return (np_cmd, bh_cmd, bh_cmd.replace("bh.", "bh107."))
 
 
 class _test_opencl:

@@ -868,7 +868,7 @@ cdef class RandomState:
             raise ValueError("scale <= 0")
         return self.standard_exponential(size=size, dtype=dtype, bohrium=bohrium) * scale
 
-    def random(self, shape, dtype, bohrium=True):
+    def random(self, shape, dtype=np.float64, bohrium=True):
         """
         Return random numbers of 'dtype'.
 
@@ -890,7 +890,7 @@ cdef class RandomState:
             total = shape
             shape = (shape,)
         dtype = np.dtype(dtype).type
-        if dtype is np.bool:
+        if dtype in [np.bool, np.bool_]:
             res = self.random_integers(0, 1, shape, bohrium=bohrium)
         elif dtype in [np.int8, np.uint8]:
             res = self.random_integers(1, 3, shape, bohrium=bohrium)
@@ -909,6 +909,10 @@ cdef class RandomState:
             res = np.asarray(res, bohrium=bohrium)
             res.shape = shape
         return np.asarray(res, dtype=dtype, bohrium=bohrium)
+
+    def random_of_dtype(self, dtype=np.float64, shape=None, bohrium=True):
+        return self.random(shape, dtype=dtype, bohrium=bohrium)
+
 
 # The default random object
 _inst = RandomState()

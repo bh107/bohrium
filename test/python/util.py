@@ -55,7 +55,7 @@ def gen_shapes(max_ndim, max_dim, iters=0, min_ndim=1):
 def gen_arrays(random_state_name, max_ndim, max_dim=10, min_ndim=1, samples_in_each_ndim=3, dtype="np.float32",
                bh_arg="BH"):
     for shape in gen_shapes(max_ndim, max_dim, samples_in_each_ndim, min_ndim):
-        cmd = "%s.random(%s, dtype=%s, bohrium=%s)" % (random_state_name, shape, dtype, bh_arg)
+        cmd = "%s.random_of_dtype(shape=%s, dtype=%s, bohrium=%s)" % (random_state_name, shape, dtype, bh_arg)
         yield (cmd, shape)
 
 
@@ -142,3 +142,16 @@ def gen_random_arrays(random_state_name, max_ndim, max_dim=30, min_ndim=1, sampl
 def prod(a):
     """Returns the product of the elements in `a`"""
     return functools.reduce(operator.mul, a)
+
+
+def add_bh107_cmd(func):
+    """Duplicates the test command into three copies, which enables bh107 test.
+       This is tor tests that only generates one command"""
+
+    def inner(self, args):
+        cmd = func(self, args)
+        assert (len(cmd) > 3)
+        return (cmd, cmd,
+                cmd.replace("bh.random.RandomState", "bh107.random.RandomState").replace(", bohrium=BH", ""))
+
+    return inner

@@ -41,12 +41,15 @@ for name in $PY_VER_LIST; do\n\
   ${name} -m pip install /bh/wheelhouse/bohrium_api-*-${name}-*.whl\n\
   ${name} -m pip install cython numpy\n\
   ${name} -m pip install /bh/bridge/npbackend\n\
+  ${name} -m pip install /bh/bridge/bh107\n\
   BH_STACK=opencl ${name} -m bohrium --info\n\
 done\n\
 cd /bh/bridge/npbackend/\n\
 cp27-cp27mu setup.py build_ext\n\
 unset USE_CYTHON\n\
 cp /bh/README.rst .\n\
+cp27-cp27mu setup.py sdist -d /bh/sdisthouse/\n\
+cd /bh/bridge/bh107/\n\
 cp27-cp27mu setup.py sdist -d /bh/sdisthouse/\n\
 ' > /bh/install.sh
 

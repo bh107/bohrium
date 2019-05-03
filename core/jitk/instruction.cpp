@@ -297,9 +297,7 @@ void write_operation(const bh_instruction &instr, const vector <string> &ops, st
         case BH_ABSOLUTE: {
             const bh_type t0 = instr.operand_type(1);
 
-            if (t0 == bh_type::BOOL) {
-                out << ops[0] << " = true;";
-            } else if (bh_type_is_unsigned_integer(t0)) {
+            if (t0 == bh_type::BOOL or bh_type_is_unsigned_integer(t0)) {
                 out << ops[0] << " = " << ops[1] << ";"; // no-op
             } else if (opencl and bh_type_is_complex(t0)) {
                 out << "CABS(" << ops[0] << ", " << ops[1] << ");";

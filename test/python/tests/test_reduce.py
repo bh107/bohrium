@@ -10,6 +10,7 @@ class test_reduce_views:
             for i in range(len(shape)):
                 yield (cmd, -i)
 
+    @util.add_bh107_cmd
     def test_reduce(self, arg):
         (cmd, axis) = arg
         cmd += "res = M.add.reduce(a, axis=%d)" % axis
@@ -32,15 +33,18 @@ class test_reduce_primitives:
         for op in ["add", "logical_or", "logical_and", "logical_xor"]:
             yield (op, "np.bool")
 
+    @util.add_bh107_cmd
     def test_vector(self, arg):
         (op, dtype) = arg
-        cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH); " % dtype
+        cmd = "R = bh.random.RandomState(42); a = R.random_of_dtype(shape=(10,), dtype=%s, bohrium=BH); " % dtype
         cmd += "res = M.%s.reduce(a)" % op
         return cmd
 
+    @util.add_bh107_cmd
     def test_vector_large(self, arg):
         (op, dtype) = arg
         mul_factor = "" if dtype == "np.bool" else "*10**6"  # bool shouldn't have any multiplication factor
-        cmd = "R = bh.random.RandomState(42); a = R.random(10, dtype=%s, bohrium=BH)%s; " % (dtype, mul_factor)
+        cmd = "R = bh.random.RandomState(42); a = R.random_of_dtype(shape=(10,), " \
+              "dtype=%s, bohrium=BH)%s; " % (dtype, mul_factor)
         cmd += "res = M.%s.reduce(a)" % op
         return cmd

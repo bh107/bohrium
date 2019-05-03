@@ -3,7 +3,6 @@
 ===============================
 Bohrium API: a Python and C API
 ===============================
-
 """
 import os
 from ._bh_api import _C_API  # Exposing the C_API of `_bh_api.c`
@@ -57,5 +56,3 @@ def get_include():
         ...
     """
     return stack_info.header_dir()
-
-# print(stack_info.pprint())
