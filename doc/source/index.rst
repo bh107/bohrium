@@ -25,12 +25,11 @@ Features
 - **Lazy CPU/GPU Communication**, Bohrium only moves data between the host and the GPU when the data is accessed directly by Python or a Python C-extension.
 - **python -m bohrium**, automatically makes ``import numpy`` use Bohrium.
 - `Jupyter Support <http://jupyter.org/>`_, you can use the magic command ``%%bohrium`` to automatically use Bohrium as NumPy.
-- **Zero-copy** :ref:`interop` **with:**
+- **Zero-copy interoperability with:**
     - `NumPy <http://www.numpy.org/>`_
     - `Cython <http://cython.org/>`_
     - `PyOpenCL <https://mathema.tician.de/software/pyopencl/>`_
     - `PyCUDA <https://mathema.tician.de/software/pycuda/>`_
-
 
 Please note:
     * Bohrium is a 64-bit project exclusively.

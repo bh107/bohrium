@@ -4,7 +4,7 @@ User Guide
 .. toctree::
    :maxdepth: 2
 
-   python/index
+   python/index.rst
    cpp
    c
    config

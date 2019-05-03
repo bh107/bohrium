@@ -7,11 +7,20 @@ from . import _dtype_util, util
 
 
 class BhBase(object):
+    """A base array that represent a block of memory.
+    A base array is always the sole owner of a complete memory allocation.
+    """
+
     def __init__(self, dtype, nelem):
+        #: The data type of the base array
         self.dtype = _dtype_util.type_to_dtype(dtype)
+        #: The backend enum that corresponds to `self.dtype`
         self._bh_dtype_enum = _dtype_util.np2bh_enum(self.dtype)
+        #: Number of elements
         self.nelem = nelem
+        #: Size of an element in bytes
         self.itemsize = _dtype_util.size_of(self.dtype)
+        #: Total size of the base array in bytes
         self.nbytes = nelem * self.itemsize
         if self.nelem == 0:
             self._bhc_handle = None
@@ -24,11 +33,12 @@ class BhBase(object):
 
 
 class BhArray(object):
+    """A array that represent a *view* of a base array. Multiple array views can point to the same base array."""
+
     def __init__(self, shape, dtype, strides=None, offset=0, base=None, is_scalar=False):
         if np.isscalar(shape):
             shape = (shape,)
         dtype = _dtype_util.type_to_dtype(dtype)
-        self._bh_dtype_enum = _dtype_util.np2bh_enum(dtype)
         if strides is None:
             strides = util.get_contiguous_strides(shape)
         if is_scalar:
@@ -36,6 +46,7 @@ class BhArray(object):
             self.nelem = 1
         else:
             self.nelem = util.total_size(shape)
+        #: The base array
         self.base = BhBase(dtype, self.nelem) if base is None else base
         if self.dtype != self.base.dtype:
             raise ValueError("dtype must be identical to base.dtype (%s)" % self.base.dtype)
@@ -49,7 +60,7 @@ class BhArray(object):
             if is_scalar:  # BhArray can be a scalar but the underlying bhc array is always an array
                 shape = (1,)
                 strides = (1,)
-            self._bhc_handle = _bh_api.view(self._bh_dtype_enum, self.base._bhc_handle, len(shape),
+            self._bhc_handle = _bh_api.view(self.base._bh_dtype_enum, self.base._bhc_handle, len(shape),
                                             int(offset), list(shape), list(strides))
 
     @classmethod
@@ -64,7 +75,7 @@ class BhArray(object):
         ret = cls(numpy_array.shape, numpy_array.dtype,
                   strides=[s // numpy_array.itemsize for s in numpy_array.strides],
                   is_scalar=numpy_array.ndim == 0)
-        _bh_api.copy_from_memory_view(ret._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
+        _bh_api.copy_from_memory_view(ret.base._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
         return ret
 
     @classmethod
@@ -132,7 +143,7 @@ class BhArray(object):
             raise RuntimeError("The size of the zero!")
         if flush:
             _bh_api.flush()
-        data = _bh_api.data_get(self._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
+        data = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
         ret = np.frombuffer(data, dtype=self.dtype, offset=self.offset * self.base.itemsize)
         return np.lib.stride_tricks.as_strided(ret, self._shape, [s * self.base.itemsize for s in self._strides])
 

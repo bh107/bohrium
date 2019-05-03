@@ -7,4 +7,6 @@ numpy
 numpydoc
 matplotlib
 breathe
+bohrium_api
 bohrium
+bh107
