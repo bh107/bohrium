@@ -302,6 +302,12 @@ class Ufunc(object):
         if len(axis) != len(set(axis)):
             raise ValueError("duplicate value in 'axis'")
 
+        if not isinstance(ary, bharray.BhArray):
+            raise InvalidArgumentError("Input must be of type `BhArray` is `%s`" % type(ary))
+
+        if out is not None and not isinstance(out, bharray.BhArray):
+            raise InvalidArgumentError("Output must be of type `BhArray` is `%s`" % type(out))
+
         # When reducing booleans numerically, we count the number of True values
         if (not self.info['name'].startswith("logical")) and ary.dtype == np.bool:
             ary = ary.astype(np.uint64)
@@ -351,6 +357,94 @@ class Ufunc(object):
                 out[...] = ary
             else:
                 out = ary
+        return out
+
+    def accumulate(self, ary, axis=0, out=None):
+        """Accumulate the result of applying the operator to all elements.
+
+        For a one-dimensional array, accumulate produces results equivalent to::
+
+          r = np.empty(len(A))
+          t = op.identity        # op = the ufunc being applied to A's  elements
+          for i in range(len(A)):
+              t = op(t, A[i])
+              r[i] = t
+          return r
+
+        For example, add.accumulate() is equivalent to np.cumsum().
+
+        For a multi-dimensional array, accumulate is applied along only one
+        axis (axis zero by default; see Examples below) so repeated use is
+        necessary if one wants to accumulate over multiple axes.
+
+        Parameters
+        ----------
+        ary : array_like
+            The array to act on.
+        axis : int, optional
+            The axis along which to apply the accumulation; default is zero.
+        out : ndarray, optional
+            A location into which the result is stored. If not provided a
+            freshly-allocated array is returned.
+
+        Returns
+        -------
+        r : ndarray
+            The accumulated values. If `out` was supplied, `r` is a reference to
+            `out`.
+
+        Examples
+        --------
+        1-D array examples:
+
+        >>> np.add.accumulate([2, 3, 5])
+        array([ 2,  5, 10])
+        >>> np.multiply.accumulate([2, 3, 5])
+        array([ 2,  6, 30])
+
+        2-D array examples:
+
+        >>> I = np.eye(2)
+        >>> I
+        array([[ 1.,  0.],
+               [ 0.,  1.]])
+
+        Accumulate along axis 0 (rows), down columns:
+
+        >>> np.add.accumulate(I, 0)
+        array([[ 1.,  0.],
+               [ 1.,  1.]])
+        >>> np.add.accumulate(I) # no axis specified = axis zero
+        array([[ 1.,  0.],
+               [ 1.,  1.]])
+
+        Accumulate along axis 1 (columns), through rows:
+
+        >>> np.add.accumulate(I, 1)
+        array([[ 1.,  1.],
+               [ 0.,  1.]])
+        """
+        # Check for out of bounds and convert negative axis values
+        if axis < 0:
+            axis = ary.ndim + axis
+        if axis >= ary.ndim:
+            raise ValueError("'axis' is out of bounds")
+
+        if not isinstance(ary, bharray.BhArray):
+            raise InvalidArgumentError("Input must be of type `BhArray` is `%s`" % type(ary))
+
+        # When accumulate booleans numerically, we count the number of True values
+        if (not self.info['name'].startswith("logical")) and ary.dtype == np.bool:
+            ary = ary.astype(np.uint64)
+
+        if out is None:
+            out = bharray.BhArray(shape=ary.shape, dtype=ary.dtype)
+        else:
+            if not isinstance(out, bharray.BhArray):
+                raise InvalidArgumentError("Output must be of type `BhArray` is `%s`" % type(out))
+        if ary.nelem > 0:
+            _call_bh_api_op(_info.op["%s_accumulate" % self.info['name']]['id'], out, [ary, np.int64(axis)],
+                            broadcast_to_output_shape=False)
         return out
 
 
