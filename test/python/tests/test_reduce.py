@@ -1,6 +1,6 @@
 import util
 
-class test_reduce_views:
+class test_views:
     """ Test reduction of all kind of views"""
     def init(self):
         for cmd, shape in util.gen_random_arrays("R", 4, dtype="np.float32"):
@@ -17,7 +17,7 @@ class test_reduce_views:
         return cmd
 
 
-class test_reduce_primitives:
+class test_primitives:
     def init(self):
         for op in ["add", "multiply"]:
             yield (op, "np.float64")
