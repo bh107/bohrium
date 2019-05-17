@@ -444,13 +444,7 @@ static PyObject *PyAPI_data_get(PyObject *self, PyObject *args, PyObject *kwds) 
     if (data == NULL) {
         Py_RETURN_NONE;
     } else {
-        #ifdef NPY_PY3K
-            Py_buffer buf_info;
-            PyBuffer_FillInfo(&buf_info, NULL, data, nbytes, 0, PyBUF_CONTIG);
-            return PyMemoryView_FromBuffer(&buf_info);
-        #else
-            return PyBuffer_FromReadWriteMemory(data, nbytes);
-        #endif
+        return PyLong_FromVoidPtr(data);
     }
 }
 

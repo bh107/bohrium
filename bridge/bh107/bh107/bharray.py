@@ -134,24 +134,34 @@ class BhArray(object):
             raise ValueError("Strides must be same length as shape (%d)" % len(self.shape))
         self._strides = tuple(strides)
 
-    def view(self):
-        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base,
-                       is_scalar=self.nelem == 1 and len(self._shape) == 0)
-
-    def asnumpy(self, flush=True):
+    @property
+    def __array_interface__(self):
+        """Exposing the The Array Interface <https://docs.scipy.org/doc/numpy/reference/arrays.interface.html>"""
         if self.nelem == 0:
             raise RuntimeError("The size of the zero!")
-        if flush:
-            _bh_api.flush()
-        data = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
-        ret = np.frombuffer(data, dtype=self.dtype, offset=self.offset * self.base.itemsize)
-        return np.lib.stride_tricks.as_strided(ret, self._shape, [s * self.base.itemsize for s in self._strides])
+        _bh_api.flush()
+        typestr = np.dtype(self.base.dtype).str
+        shape = self.shape
+        strides = tuple(s * self.base.itemsize for s in self.strides)
+        data_ptr = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
+        data = (data_ptr+self.offset * self.base.itemsize, False)  # read-only is false
+        return dict(typestr=typestr, shape=shape, strides=strides, data=data, version=0)
 
-    def copy2numpy(self, flush=True):
+    def asnumpy(self):
+        """Returns a NumPy array that points to the same memory as this BhArray"""
+        return np.array(self, copy=False)
+
+    def copy2numpy(self):
+        """Returns a NumPy array that is a copy of this BhArray"""
         if self.nelem == 0:
             return np.array([], self.dtype)
         else:
-            return self.asnumpy(flush).copy()
+            return self.asnumpy().copy()
+
+    def view(self):
+        """Returns a new view that points to the same base as this BhArray"""
+        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base,
+                       is_scalar=self.nelem == 1 and len(self._shape) == 0)
 
     def fill(self, value):
         """Fill the array with a scalar value.
@@ -277,7 +287,6 @@ class BhArray(object):
         return self.flatten(always_copy=False)
 
     def reshape(self, shape):
-        from .ufuncs import assign
         length = util.total_size(shape)
         if length != self.nelem:
             raise RuntimeError("Total size cannot change when reshaping")
