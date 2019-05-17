@@ -423,11 +423,11 @@ class BhArray(object):
 
     def __div__(self, other):
         from .ufuncs import ufunc_dict
-        return ufunc_dict['true_divide'](self, other)
+        return ufunc_dict['divide'](self, other)
 
     def __idiv__(self, other):
         from .ufuncs import ufunc_dict
-        return ufunc_dict['true_divide'](self, other, self)
+        return ufunc_dict['divide'](self, other, self)
 
     def __mod__(self, other):
         from .ufuncs import ufunc_dict
