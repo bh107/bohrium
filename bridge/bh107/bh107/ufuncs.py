@@ -63,7 +63,7 @@ def broadcast_to(ary, shape):
     /** Return a new view of `ary` that is broadcasted to `shape`
      *  We use the term broadcast as defined by NumPy. Let `ret` be the broadcasted view of `ary`:
      *    1) One-sized dimensions are prepended to `ret.shape()` until it has the same number of dimension as `ary`.
-     *    2) The stride of each one-sized dimension in `ret` is set to zero.
+     *    2) The strides of each one-sized dimension in `ret` is set to zero.
      *    3) The shape of `ary` is set to `shape`
      *
      *  \note See: <https://docs.scipy.org/doc/numpy-1.15.0/user/basics.broadcasting.html>
@@ -78,16 +78,16 @@ def broadcast_to(ary, shape):
         raise InvalidArgumentError(
             "When broadcasting, the number of dimension of array cannot be greater than in the new shape")
 
-    # Prepend ones to shape and zeros to stride in order to make them the same lengths as `shape`
-    ret_shape = [1] * (len(shape) - len(ary.shape)) + ary.shape
-    ret_strides = [0] * (len(shape) - len(ary.shape)) + ary.strides
+    # Prepend ones to shape and zeros to strides in order to make them the same lengths as `shape`
+    ret_shape = [1] * (len(shape) - len(ary.shape)) + list(ary.shape)
+    ret_strides = [0] * (len(shape) - len(ary.shape)) + list(ary.strides)
 
     # Broadcast each dimension by setting ret_stride to zero and ret_shape to `shape`
     for i in range(len(ret_shape)):
         if ret_shape[i] != shape[i]:
             if ret_shape[i] == 1:
                 ret_shape[i] = shape[i]
-                ret_stride[i] = 0
+                ret_strides[i] = 0
             else:
                 raise InvalidArgumentError("Cannot broadcast shape %s to %s" % (ary.shape, shape))
     return bharray.BhArray(ret_shape, ary.dtype, strides=ret_strides, offset=ary.offset, base=ary.base)
