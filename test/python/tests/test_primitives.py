@@ -5,7 +5,7 @@ from bohrium_api import _info
 class test_bh_opcodes:
     def init(self):
         for op in _info.op.values():
-            if op["name"] not in ["identity", "sign"] and op['elementwise']:
+            if op["name"] not in ["identity"] and op['elementwise']:
                 for type_sig in op["type_sig"]:
                     yield (op, type_sig)
 
@@ -15,7 +15,7 @@ class test_bh_opcodes:
         cmd = "R = bh.random.RandomState(42); "
 
         for i, dtype in enumerate(type_sig[1:]):
-            cmd += "a%d = R.random(10, dtype=np.%s, bohrium=BH); " % (i, dtype)
+            cmd += "a%d = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % (i, dtype)
 
         if op["name"] == "arccosh":
             cmd += "a%d += 1;" % i
@@ -31,22 +31,22 @@ class test_bh_opcodes:
 
 class test_bh_operators:
     def init(self):
-        for op in ['+', '-', '*', '/', '//', '%', '==']:
+        for op in ['+', '-', '*', '/', '//', '%', '==', '<=', '>=', '!=', '<', '>']:
             for dtype in ['float64', 'int64']:
                 yield (op, dtype)
 
     def test_arrays(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
-        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "a1 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a2 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH) + 1; " % dtype
         cmd += "res = a1 %s a2" % op
         return cmd
 
     def test_scalar_rhs(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a1 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
         cmd += "a2 = np.%s(42); " % dtype
         cmd += "res = a1 %s a2" % op
         return cmd
@@ -65,7 +65,7 @@ class test_bh_operators_lhs:
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
         cmd += "a1 = np.%s(42); " % dtype
-        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "a2 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH) + 1; " % dtype
         cmd += "res = a1 %s a2" % op
         return cmd
 
@@ -80,8 +80,8 @@ class test_extra_binary_ops:
         (op, dtype) = arg
 
         cmd =  "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a0 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a1 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
         cmd += "res = M.%s(a0, a1)" % op
         return cmd
 
@@ -96,6 +96,6 @@ class test_power:
         (op, dtype) = arg
 
         cmd =  "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a0 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
         cmd += "res = M.%s(a0, 1.42)" % op
         return cmd
