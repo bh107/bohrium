@@ -37,6 +37,7 @@ class test_bh_operators:
             for dtype in ['float64', 'int64']:
                 yield (op, dtype)
 
+    @util.add_bh107_cmd
     def test_arrays(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
@@ -45,6 +46,7 @@ class test_bh_operators:
         cmd += "res = a1 %s a2" % op
         return cmd
 
+    @util.add_bh107_cmd
     def test_scalar_rhs(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
@@ -57,12 +59,13 @@ class test_bh_operators:
 class test_bh_operators_lhs:
     def init(self):
         if numpy.__version__ >= "1.13":
-            for op in ['+', '-', '*', '/', '//', '%', '==']:
+            for op in ['+', '-', '*', '/', '//', '%', '==', '<=', '>=', '!=', '<', '>']:
                 for dtype in ['float64', 'int64']:
                     yield (op, dtype)
         else:
             print("The version of NumPy is too old (<= 1.13), ignoring test")
 
+    @util.add_bh107_cmd
     def test_scalar_lhs(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
@@ -78,6 +81,7 @@ class test_extra_binary_ops:
             for dtype in ["float64", "int64", "uint64"]:
                 yield (op, dtype)
 
+    @util.add_bh107_cmd
     def test_ufunc(self, arg):
         (op, dtype) = arg
 
@@ -94,6 +98,7 @@ class test_power:
             for dtype in ["float32", "float64"]:
                 yield (op, dtype)
 
+    @util.add_bh107_cmd
     def test_ufunc(self, arg):
         (op, dtype) = arg
 
