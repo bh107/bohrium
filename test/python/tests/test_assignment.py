@@ -2,11 +2,13 @@ import util
 
 class test_assign_vector:
     def init(self):
-        yield "res = M.arange(100).reshape(10,10); "
+        yield "res = M.arange(100).reshape((10,10)); "
 
+    @util.add_bh107_cmd
     def test_row(self, cmd):
         return cmd + "res[2, :] = M.ones(10)"
 
+    @util.add_bh107_cmd
     def test_column(self, cmd):
         return cmd + "res[:, 2] = M.ones(10)"
 

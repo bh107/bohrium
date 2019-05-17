@@ -423,11 +423,11 @@ class BhArray(object):
 
     def __div__(self, other):
         from .ufuncs import ufunc_dict
-        return ufunc_dict['true_divide'](self, other)
+        return ufunc_dict['divide'](self, other)
 
     def __idiv__(self, other):
         from .ufuncs import ufunc_dict
-        return ufunc_dict['true_divide'](self, other, self)
+        return ufunc_dict['divide'](self, other, self)
 
     def __mod__(self, other):
         from .ufuncs import ufunc_dict
@@ -481,3 +481,29 @@ class BhArray(object):
     def __invert__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['invert'](self, other)
+
+    # Comparison
+    def __lt__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['less'](self, other)
+
+    def __le__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['less_equal'](self, other)
+
+    def __eq__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['equal'](self, other)
+
+    def __ne__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['not_equal'](self, other)
+
+    def __gt__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['greater'](self, other)
+
+    def __ge__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['greater_equal'](self, other)
+

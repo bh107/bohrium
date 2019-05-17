@@ -1,21 +1,23 @@
 import numpy
 from bohrium_api import _info
+import util
 
 
 class test_bh_opcodes:
     def init(self):
         for op in _info.op.values():
-            if op["name"] not in ["identity", "sign"] and op['elementwise']:
+            if op["name"] not in ["identity"] and op['elementwise']:
                 for type_sig in op["type_sig"]:
                     yield (op, type_sig)
 
+    @util.add_bh107_cmd
     def test_ufunc(self, arg):
         (op, type_sig) = arg
 
         cmd = "R = bh.random.RandomState(42); "
 
         for i, dtype in enumerate(type_sig[1:]):
-            cmd += "a%d = R.random(10, dtype=np.%s, bohrium=BH); " % (i, dtype)
+            cmd += "a%d = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % (i, dtype)
 
         if op["name"] == "arccosh":
             cmd += "a%d += 1;" % i
@@ -31,22 +33,24 @@ class test_bh_opcodes:
 
 class test_bh_operators:
     def init(self):
-        for op in ['+', '-', '*', '/', '//', '%', '==']:
+        for op in ['+', '-', '*', '/', '//', '%', '==', '<=', '>=', '!=', '<', '>']:
             for dtype in ['float64', 'int64']:
                 yield (op, dtype)
 
+    @util.add_bh107_cmd
     def test_arrays(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
-        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "a1 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a2 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH) + 1; " % dtype
         cmd += "res = a1 %s a2" % op
         return cmd
 
+    @util.add_bh107_cmd
     def test_scalar_rhs(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a1 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
         cmd += "a2 = np.%s(42); " % dtype
         cmd += "res = a1 %s a2" % op
         return cmd
@@ -55,17 +59,18 @@ class test_bh_operators:
 class test_bh_operators_lhs:
     def init(self):
         if numpy.__version__ >= "1.13":
-            for op in ['+', '-', '*', '/', '//', '%', '==']:
+            for op in ['+', '-', '*', '/', '//', '%', '==', '<=', '>=', '!=', '<', '>']:
                 for dtype in ['float64', 'int64']:
                     yield (op, dtype)
         else:
             print("The version of NumPy is too old (<= 1.13), ignoring test")
 
+    @util.add_bh107_cmd
     def test_scalar_lhs(self, arg):
         (op, dtype) = arg
         cmd = "R = bh.random.RandomState(42); "
         cmd += "a1 = np.%s(42); " % dtype
-        cmd += "a2 = R.random(10, dtype=np.%s, bohrium=BH) + 1; " % dtype
+        cmd += "a2 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH) + 1; " % dtype
         cmd += "res = a1 %s a2" % op
         return cmd
 
@@ -76,12 +81,13 @@ class test_extra_binary_ops:
             for dtype in ["float64", "int64", "uint64"]:
                 yield (op, dtype)
 
+    @util.add_bh107_cmd
     def test_ufunc(self, arg):
         (op, dtype) = arg
 
         cmd =  "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
-        cmd += "a1 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a0 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a1 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
         cmd += "res = M.%s(a0, a1)" % op
         return cmd
 
@@ -92,10 +98,11 @@ class test_power:
             for dtype in ["float32", "float64"]:
                 yield (op, dtype)
 
+    @util.add_bh107_cmd
     def test_ufunc(self, arg):
         (op, dtype) = arg
 
         cmd =  "R = bh.random.RandomState(42); "
-        cmd += "a0 = R.random(10, dtype=np.%s, bohrium=BH); " % dtype
+        cmd += "a0 = R.random_of_dtype(shape=10, dtype=np.%s, bohrium=BH); " % dtype
         cmd += "res = M.%s(a0, 1.42)" % op
         return cmd
