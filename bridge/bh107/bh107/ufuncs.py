@@ -112,7 +112,7 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_sha
             else:
                 raise InvalidArgumentError("NumPy scalar type must be an integer, float, or complex")
         else:
-            dtype_enum_list.append(_dtype_util.np2bh_enum(out_operand.dtype))
+            dtype_enum_list.append(_dtype_util.np2bh_enum(op.dtype))
             assert (op._bhc_handle is not None)
             if op.shape != out_operand.shape and broadcast_to_output_shape:
                 op = broadcast_to(op, out_operand.shape)
@@ -195,11 +195,11 @@ class Ufunc(object):
 
         # Convert dtype of all inputs to match the function type signature
         for i in range(len(in_operands)):
-            if np.isscalar(in_operands[i]):
-                if _dtype_util.type_to_dtype(type(in_operands[i])) != in_dtype:
+            if _dtype_util.obj_to_dtype(in_operands[i]) != in_dtype:
+                if np.isscalar(in_operands[i]):
                     in_operands[i] = in_dtype(in_operands[i])
-            else:
-                in_operands[i] = in_operands[i].astype(in_dtype, always_copy=False)
+                else:
+                    in_operands[i] = in_operands[i].astype(in_dtype, always_copy=False)
 
         # If the output is specified, its shape must match `out_shape`
         if out_operand is None:

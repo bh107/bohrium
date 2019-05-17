@@ -1,5 +1,6 @@
 import numpy
 from bohrium_api import _info
+import util
 
 
 class test_bh_opcodes:
@@ -9,6 +10,7 @@ class test_bh_opcodes:
                 for type_sig in op["type_sig"]:
                     yield (op, type_sig)
 
+    @util.add_bh107_cmd
     def test_ufunc(self, arg):
         (op, type_sig) = arg
 
