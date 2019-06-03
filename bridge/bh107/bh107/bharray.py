@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
+import os
 import math
 import numpy as np
 # noinspection PyProtectedMember,PyUnresolvedReferences
 from bohrium_api import _bh_api
 from . import _dtype_util, util
+
+
+def implements(numpy_function):
+    """Register an __array_function__ implementation for BhArray objects."""
+    def decorator(func):
+        BhArray._NP_FUNCTIONS[numpy_function] = func
+        return func
+    return decorator
 
 
 class BhBase(object):
@@ -34,6 +43,7 @@ class BhBase(object):
 
 class BhArray(object):
     """A array that represent a *view* of a base array. Multiple array views can point to the same base array."""
+    _NP_FUNCTIONS = {}
 
     def __init__(self, shape, dtype, strides=None, offset=0, base=None, is_scalar=False):
         if np.isscalar(shape):
@@ -63,6 +73,7 @@ class BhArray(object):
             self._bhc_handle = _bh_api.view(self.base._bh_dtype_enum, self.base._bhc_handle, len(shape),
                                             int(offset), list(shape), list(strides))
 
+    # creation methods
     @classmethod
     def from_scalar(cls, scalar):
         ret = cls(shape=(1,), dtype=_dtype_util.obj_to_dtype(scalar), is_scalar=True)
@@ -82,16 +93,12 @@ class BhArray(object):
     def from_object(cls, obj):
         return cls.from_numpy(np.array(obj))
 
+    # destructor
     def __del__(self):
         if hasattr(self, '_bhc_handle') and self._bhc_handle is not None:
             _bh_api.destroy(self.base._bh_dtype_enum, self._bhc_handle)
 
-    def __str__(self):
-        if self.nelem == 0:
-            return "[]"
-        else:
-            return str(self.asnumpy())
-
+    # properties
     @property
     def dtype(self):
         return self.base.dtype
@@ -133,6 +140,24 @@ class BhArray(object):
         if len(strides) != len(self.shape):
             raise ValueError("Strides must be same length as shape (%d)" % len(self.shape))
         self._strides = tuple(strides)
+
+    # NumPy interfaces
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        from .ufuncs import ufunc_dict
+        cls = self.__class__
+        ufunc_name = ufunc.__name__
+        if ufunc_name in ufunc_dict:
+            inputs = (cls.from_object(i) if not isinstance(i, cls) else i for i in inputs)
+            return getattr(ufunc_dict[ufunc_name], method)(*inputs, **kwargs)
+        return NotImplemented
+
+    def __array_function__(self, func, types, args, kwargs):
+        cls = self.__class__
+        if func not in cls._NP_FUNCTIONS:
+            args = (arg.asnumpy() if isinstance(arg, cls) else arg for arg in args)
+            return cls.from_numpy(func(*args, **kwargs))
+        args = (cls.from_object(arg) if not isinstance(arg, cls) else arg for arg in args)
+        return cls._NP_FUNCTIONS[func](*args, **kwargs)
 
     @property
     def __array_interface__(self):
@@ -211,33 +236,6 @@ class BhArray(object):
                 acc *= shape
         return True
 
-    def copy(self):
-        """Return a copy of the array.
-
-        Returns
-        -------
-        out : BhArray
-            Copy of `self`
-        """
-        return self.astype(self.dtype, always_copy=True)
-
-    def transpose(self, axes=None):
-        """Permute the dimensions of an array.
-
-        Parameters
-        ----------
-        axes : list of ints, optional
-            By default, reverse the dimensions, otherwise permute the axes
-            according to the values given.
-        """
-        if axes is None:
-            axes = list(reversed(range(len(self._shape))))
-
-        ret = self.view()
-        ret._shape = tuple([self._shape[i] for i in axes])
-        ret._strides = tuple([self._strides[i] for i in axes])
-        return ret
-
     def flatten(self, always_copy=True):
         """ Return a copy of the array collapsed into one dimension.
 
@@ -263,7 +261,6 @@ class BhArray(object):
         """
         shape = (self.nelem,)
         if not self.iscontiguous():
-            assert (self.copy().iscontiguous())
             ret = self.copy().flatten(always_copy=False)  # copy() makes the array contiguous
             assert (ret.iscontiguous())
             return ret
@@ -274,18 +271,6 @@ class BhArray(object):
             else:
                 return ret
 
-    def ravel(self):
-        """ Return a contiguous flattened array.
-
-        A 1-D array, containing the elements of the input, is returned. A copy is made only if needed.
-
-        Returns
-        -------
-        y : ndarray
-            A copy or view of the array, flattened to one dimension.
-        """
-        return self.flatten(always_copy=False)
-
     def reshape(self, shape):
         length = util.total_size(shape)
         if length != self.nelem:
@@ -293,6 +278,9 @@ class BhArray(object):
 
         flat = self.flatten()
         return BhArray(shape, flat.dtype, base=flat.base)
+
+    def copy(self):
+        return self.astype(self.dtype, always_copy=True)
 
     def __getitem_at_dim(self, dim, key):
         if np.isscalar(key):
@@ -385,9 +373,15 @@ class BhArray(object):
         assign(value, self.__getitem__(key))
 
     # Binary Operators
+
+    # maths
     def __add__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['add'](self, other)
+
+    def __radd__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['add'](other, self)
 
     def __iadd__(self, other):
         from .ufuncs import ufunc_dict
@@ -397,6 +391,10 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['subtract'](self, other)
 
+    def __rsub__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['subtract'](other, self)
+
     def __isub__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['subtract'](self, other, self)
@@ -404,6 +402,10 @@ class BhArray(object):
     def __mul__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['multiply'](self, other)
+
+    def __rmul__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['multiply'](other, self)
 
     def __imul__(self, other):
         from .ufuncs import ufunc_dict
@@ -413,6 +415,10 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['floor_divide'](self, other)
 
+    def __rfloordiv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['floor_divide'](other, self)
+
     def __ifloordiv__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['floor_divide'](self, other, self)
@@ -421,9 +427,21 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['true_divide'](self, other)
 
+    def __rtruediv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['true_divide'](other, self)
+
+    def __itruediv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['true_divide'](self, other, self)
+
     def __div__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['divide'](self, other)
+
+    def __rdiv__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['divide'](other, self)
 
     def __idiv__(self, other):
         from .ufuncs import ufunc_dict
@@ -433,6 +451,10 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['mod'](self, other)
 
+    def __rmod__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['mod'](other, self)
+
     def __imod__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['mod'](self, other, self)
@@ -441,13 +463,22 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['power'](self, other)
 
+    def __rpow__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['power'](other, self)
+
     def __ipow__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['power'](self, other, self)
 
+    # logic
     def __and__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['bitwise_and'](self, other)
+
+    def __rand__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_and'](other, self)
 
     def __iand__(self, other):
         from .ufuncs import ufunc_dict
@@ -457,6 +488,10 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['bitwise_xor'](self, other)
 
+    def __rxor__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_xor'](other, self)
+
     def __ixor__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['bitwise_xor'](self, other, self)
@@ -464,6 +499,10 @@ class BhArray(object):
     def __or__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['bitwise_or'](self, other)
+
+    def __ror__(self, other):
+        from .ufuncs import ufunc_dict
+        return ufunc_dict['bitwise_or'](other, self)
 
     def __ior__(self, other):
         from .ufuncs import ufunc_dict
@@ -507,3 +546,107 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['greater_equal'](self, other)
 
+    # string representations
+    def __str__(self):
+        if self.nelem == 0:
+            return "[]"
+        else:
+            return str(self.asnumpy())
+
+    def __repr__(self):
+        np_repr = self.asnumpy().__repr__()
+        return self.__class__.__name__ + np_repr[5:].replace('\n', '\n  ')
+
+
+# NumPy functions
+@implements(np.mean)
+def mean(a, axis=None, dtype=None, out=None):
+    import warnings
+    from .ufuncs import ufunc_dict
+
+    add = ufunc_dict['add']
+
+    def _count_reduce_items(arr, axis):
+        if axis is None:
+            axis = tuple(range(arr.ndim))
+        if not isinstance(axis, tuple):
+            axis = (axis,)
+        items = 1
+        for ax in axis:
+            items *= arr.shape[ax]
+        return items
+
+    def _mean(arr, axis=None, dtype=None, out=None):
+        is_float16_result = False
+        rcount = _count_reduce_items(arr, axis)
+        # Make this warning show up first
+        if rcount == 0:
+            warnings.warn("Mean of empty slice.", RuntimeWarning, stacklevel=2)
+
+        # Cast bool, unsigned int, and int to float64 by default
+        if dtype is None:
+            if issubclass(arr.dtype, (np.integer, np.bool_)):
+                dtype = np.dtype('f8')
+            elif issubclass(arr.dtype, np.float16):
+                dtype = np.dtype('f4')
+                is_float16_result = True
+
+        ret = add.reduce(arr, axis=axis, dtype=dtype, out=out)
+        if ret.isscalar():
+            ret = ret.dtype(ret)
+        ret /= rcount
+        if is_float16_result and out is None:
+            ret = a.dtype(ret)
+        return ret
+
+    return _mean(a, axis=axis, dtype=dtype, out=out)
+
+
+@implements(np.copy)
+def copy(arr):
+    """Return a copy of the array.
+
+    Returns
+    -------
+    out : BhArray
+        Copy of `arr`
+    """
+    return arr.copy()
+
+
+@implements(np.transpose)
+def transpose(arr, axes=None):
+    """Permute the dimensions of an array.
+
+    Parameters
+    ----------
+    axes : list of ints, optional
+        By default, reverse the dimensions, otherwise permute the axes
+        according to the values given.
+    """
+    if axes is None:
+        axes = list(reversed(range(len(arr._shape))))
+
+    ret = arr.view()
+    ret._shape = tuple([arr._shape[i] for i in axes])
+    ret._strides = tuple([arr._strides[i] for i in axes])
+    return ret
+
+
+@implements(np.ravel)
+def ravel(arr):
+    """ Return a contiguous flattened array.
+
+    A 1-D array, containing the elements of the input, is returned. A copy is made only if needed.
+
+    Returns
+    -------
+    y : ndarray
+        A copy or view of the array, flattened to one dimension.
+    """
+    return arr.flatten(always_copy=False)
+
+
+@implements(np.reshape)
+def reshape(arr, shape):
+    return arr.reshape(shape)

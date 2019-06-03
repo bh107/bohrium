@@ -173,7 +173,7 @@ class Ufunc(object):
     def __str__(self):
         return "<bohrium Ufunc '%s'>" % self.info['name']
 
-    def __call__(self, *operand_list):
+    def __call__(self, *operand_list, **kwargs):
         if len(operand_list) == self.info['nop']:
             out_operand = operand_list[-1]
             in_operands = list(operand_list[:-1])
@@ -216,7 +216,7 @@ class Ufunc(object):
                 assign(tmp_out, out_operand)
         return out_operand
 
-    def reduce(self, ary, axis=0, out=None):
+    def reduce(self, ary, axis=0, out=None, **kwargs):
         """Reduces `ary`'s dimension by len('axis'), by applying ufunc along the
         axes in 'axis'.
 

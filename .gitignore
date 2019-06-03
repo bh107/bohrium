@@ -100,3 +100,6 @@ GSYMS
 
 # VS Code
 .vscode/
+
+# Python Eggs
+*.egg-info/
