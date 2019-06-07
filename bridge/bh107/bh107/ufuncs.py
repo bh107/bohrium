@@ -31,7 +31,7 @@ def _result_dtype(op_name, inputs):
             if 'float' in sig[1]:
                 return (_dtype_util.type_to_dtype(sig[0]), _dtype_util.type_to_dtype(sig[1]))
 
-    raise TypeError("The ufunc %s() does not support input data type: %s." % (op_name, dtype.name))
+    raise TypeError("%s() does not support input data type: %s." % (op_name, dtype.name))
 
 
 def _result_shape(shape_list):
@@ -93,8 +93,17 @@ def broadcast_to(ary, shape):
     return bharray.BhArray(ret_shape, ary.dtype, strides=ret_strides, offset=ary.offset, base=ary.base)
 
 
-def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True):
+def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True, cast_input_to_dtype=None):
     dtype_enum_list = [_dtype_util.np2bh_enum(out_operand.dtype)]
+
+    if cast_input_to_dtype is not None:
+        for i in range(len(in_operand_list)):
+            if _dtype_util.obj_to_dtype(in_operand_list[i]) != cast_input_to_dtype:
+                if np.isscalar(in_operand_list[i]):
+                    in_operand_list[i] = cast_input_to_dtype(in_operand_list[i])
+                else:
+                    in_operand_list[i] = in_operand_list[i].astype(cast_input_to_dtype, always_copy=False)
+
     handle_list = [out_operand._bhc_handle]
     for op in in_operand_list:
         if isinstance(op, numbers.Number):
@@ -193,14 +202,6 @@ class Ufunc(object):
 
         out_dtype, in_dtype = _result_dtype(self.info['name'], in_operands)
 
-        # Convert dtype of all inputs to match the function type signature
-        for i in range(len(in_operands)):
-            if _dtype_util.obj_to_dtype(in_operands[i]) != in_dtype:
-                if np.isscalar(in_operands[i]):
-                    in_operands[i] = in_dtype(in_operands[i])
-                else:
-                    in_operands[i] = in_operands[i].astype(in_dtype, always_copy=False)
-
         # If the output is specified, its shape must match `out_shape`
         if out_operand is None:
             out_operand = bharray.BhArray(out_shape, out_dtype)
@@ -209,10 +210,10 @@ class Ufunc(object):
 
         if out_operand.nelem > 0:
             if out_dtype == out_operand.dtype and not overlap_conflict(out_operand, in_operands):
-                _call_bh_api_op(self.info["id"], out_operand, in_operands)
+                _call_bh_api_op(self.info["id"], out_operand, in_operands, cast_input_to_dtype=in_dtype)
             else:  # We use a tmp array if the in-/out-put has memory conflicts or different dtypes
                 tmp_out = bharray.BhArray(out_shape, out_dtype)
-                _call_bh_api_op(self.info["id"], tmp_out, in_operands)
+                _call_bh_api_op(self.info["id"], tmp_out, in_operands, cast_input_to_dtype=in_dtype)
                 assign(tmp_out, out_operand)
         return out_operand
 
