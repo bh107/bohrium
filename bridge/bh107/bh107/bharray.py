@@ -104,6 +104,10 @@ class BhArray(object):
     def shape(self):
         return tuple(self._shape)
 
+    @property
+    def size(self):
+        return self.nelem
+
     @shape.setter
     def shape(self, shape):
         if self.isscalar():
