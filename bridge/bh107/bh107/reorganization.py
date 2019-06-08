@@ -37,8 +37,11 @@ def gather(ary, indexes):
         return bharray.BhArray(shape=0, dtype=ary.dtype)
 
     ret = bharray.BhArray(indexes.shape, dtype=ary.dtype)
-    in_operands = (ary, indexes)
-    ufuncs._call_bh_api_op(_info.op['gather']['id'], ret, in_operands, broadcast_to_output_shape=False)
+
+    # BH_GATHER: Gather elements from IN selected by INDEX into OUT. NB: OUT.shape == INDEX.shape
+    #            and IN can have any shape but must be contiguous.
+    #            gather(OUT, IN, INDEX)
+    ufuncs._call_bh_api_op(_info.op['gather']['id'], ret, (ary, indexes), broadcast_to_output_shape=False)
     return ret
 
 
@@ -76,6 +79,8 @@ def take(a, indices, axis=None, mode='raise'):
         The returned array has the same type as `a`.
     """
 
+    a = array_create.array(a, copy=False)
+
     if mode != "raise":
         raise NotImplementedError("Bohrium only supports the 'raise' mode not '%s'")
 
@@ -83,3 +88,52 @@ def take(a, indices, axis=None, mode='raise'):
         raise NotImplementedError("Bohrium does not support the 'axis' argument")
 
     return gather(a, indices)
+
+
+def take_using_index_tuple(a, index_tuple):
+    """Take elements from the array 'a' specified by 'index_tuple'
+    This function is very similar to take(), but takes a tuple of index arrays rather than a single index array
+
+    Parameters
+    ----------
+    a : array_like
+        The source array.
+    index_tuple : tuple of array_like, interpreted as integers
+        Each array in the tuple specified the indices of the values to extract for that axis.
+        The number of arrays in 'index_tuple' must equal the number of dimension in 'a'
+
+    Returns
+    -------
+    r : BhArray
+        The returned array has the same type as `a`.
+    """
+    a = array_create.array(a, copy=False)
+
+    if len(index_tuple) != a.ndim:
+        raise ValueError("length of `index_tuple` must equal the number of dimension in `a`")
+
+    if a.size == 0:
+        return array_create.empty(tuple(), dtype=a.dtype)
+
+    if a.ndim == 1:
+        return take(a, index_tuple[0])
+
+    # Make sure that all index arrays are uint64 bohrium arrays
+    index_list = []
+    for index in index_tuple:
+        index_list.append(array_create.array(index, dtype=np.uint64))
+        if index_list[-1].size == 0:
+            return array_create.empty(tuple(), dtype=a.dtype)
+
+    # And then broadcast them into the same shape
+    index_list = ufuncs.broadcast_arrays(index_list)
+
+    # Let's find the absolute index
+    abs_index = index_list[-1].copy()
+    stride = a.shape[-1]
+    for i in range(len(index_list) - 2, -1, -1):  # Iterate backwards from index_list[-2]
+        abs_index += index_list[i] * stride
+        stride *= a.shape[i]
+
+    # take() support absolute indices
+    return take(a, abs_index).reshape(index_list[0].shape)

@@ -92,12 +92,17 @@ class test_fancy_indexing_get:
             cmd = "R = bh.random.RandomState(42); a = %s; " % ary
             ind = "ind = ("
             for dim in shape:
-                ind += "R.random(10, np.uint64, bohrium=BH) %% %d, " % dim
+                ind += "R.random(shape=(10,), bohrium=BH).astype(np.uint64) %% %d, " % dim
             ind += "); "
             yield cmd + ind
 
     def test_take_using_index_tuple(self, cmd):
-        return cmd + "res = bh.take_using_index_tuple(a, ind)"
+        cmd += "res = bh.take_using_index_tuple(a, ind)"
+        bh107_cmd = cmd.replace("bh.random.RandomState",
+                                "bh107.random.RandomState") \
+                       .replace(", bohrium=BH", "") \
+                       .replace("bh.take", "bh107.take")
+        return (cmd, cmd, bh107_cmd)
 
     def test_indexing(self, cmd):
         return cmd + "res = a[ind]"
@@ -112,7 +117,7 @@ class test_fancy_indexing_set:
             cmd = "R = bh.random.RandomState(42); res = %s; " % ary
             ind = "ind = ("
             for dim in shape:
-                ind += "R.random(10, np.uint64, bohrium=BH) %% %d, " % dim
+                ind += "R.random(shape=(10,), bohrium=BH).astype(np.uint64) %% %d, " % dim
             ind += "); "
             yield cmd + ind
 
