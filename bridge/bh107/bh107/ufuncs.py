@@ -11,8 +11,7 @@ class InvalidArgumentError(Exception):
 
 
 def _result_dtype(op_name, inputs):
-    """
-    Returns the type signature (output, input) to use with the given operation.
+    """Returns the type signature (output, input) to use with the given operation.
     NB: we only returns the type of the first input thus all input types must
         be identical
     """
@@ -59,19 +58,26 @@ def _result_shape(shape_list):
 
 
 def broadcast_to(ary, shape):
-    """
-    /** Return a new view of `ary` that is broadcasted to `shape`
-     *  We use the term broadcast as defined by NumPy. Let `ret` be the broadcasted view of `ary`:
-     *    1) One-sized dimensions are prepended to `ret.shape()` until it has the same number of dimension as `ary`.
-     *    2) The strides of each one-sized dimension in `ret` is set to zero.
-     *    3) The shape of `ary` is set to `shape`
-     *
-     *  \note See: <https://docs.scipy.org/doc/numpy-1.15.0/user/basics.broadcasting.html>
-     *
-     * @param ary    Input array
-     * @param shape  The new shape
-     * @return       The broadcasted array
-     */
+    """Return a new view of `ary` that is broadcasted to `shape`
+
+    We use the term broadcast as defined by NumPy. Let `ret` be the broadcasted view of `ary`:
+     1) One-sized dimensions are prepended to `ret.shape()` until it has the same number of dimension as `ary`.
+     2) The strides of each one-sized dimension in `ret` is set to zero.
+     3) The shape of `ary` is set to `shape`
+
+    \note See: <https://docs.scipy.org/doc/numpy-1.15.0/user/basics.broadcasting.html>
+
+    Parameters
+    ----------
+    ary : BhArray
+        The array to broadcast
+    shape : tuple
+        New shape
+
+    Returns
+    -------
+    r : BhArray
+         The broadcasted array
     """
 
     if len(ary.shape) > len(shape):
@@ -91,6 +97,30 @@ def broadcast_to(ary, shape):
             else:
                 raise InvalidArgumentError("Cannot broadcast shape %s to %s" % (ary.shape, shape))
     return bharray.BhArray(ret_shape, ary.dtype, strides=ret_strides, offset=ary.offset, base=ary.base)
+
+
+def broadcast_arrays(array_list):
+    """Broadcast any number of arrays against each other.
+
+    Parameters
+    ----------
+    `array_list` : BhArray
+        The arrays to broadcast.
+
+    Returns
+    -------
+    broadcasted : list of bhArrays
+        These arrays are views on the original arrays or the untouched originals.
+        They are typically not contiguous.  Furthermore, more than one element of a
+        broadcasted array may refer to a single memory location.  If you
+        need to write to the arrays, make copies first.
+    """
+
+    result_shape = _result_shape([getattr(x, 'shape', (1,)) for x in array_list])
+    ret = []
+    for ary in array_list:
+        ret.append(broadcast_to(ary, result_shape))
+    return ret
 
 
 def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True, cast_input_to_dtype=None):
@@ -131,12 +161,12 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_sha
 
 
 def is_same_view(a, b):
-    """ Return True when a and b is the same view. Their bases and dtypes might differ"""
+    """Return True when a and b is the same view. Their bases and dtypes might differ"""
     return a.offset == b.offset and a.shape == b.shape and a.strides == b.strides
 
 
 def overlap_conflict(out, inputs):
-    """ Return True when there is a possible memory conflict between the output and the inputs."""
+    """Return True when there is a possible memory conflict between the output and the inputs."""
 
     for i in inputs:
         # Scalars, different bases, or identical views can never conflict
