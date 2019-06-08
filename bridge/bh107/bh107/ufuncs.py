@@ -97,6 +97,7 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_sha
     dtype_enum_list = [_dtype_util.np2bh_enum(out_operand.dtype)]
 
     if cast_input_to_dtype is not None:
+        in_operand_list = list(in_operand_list)
         for i in range(len(in_operand_list)):
             if _dtype_util.obj_to_dtype(in_operand_list[i]) != cast_input_to_dtype:
                 if np.isscalar(in_operand_list[i]):

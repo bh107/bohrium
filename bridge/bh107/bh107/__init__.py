@@ -3,6 +3,7 @@ import sys
 from bohrium_api._bh_api import flush
 from .ufuncs import ufunc_dict
 from .array_create import *
+from .reorganization import *
 from .bharray import BhArray, BhBase
 from . import random, user_kernel
 

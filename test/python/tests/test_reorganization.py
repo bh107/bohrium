@@ -18,6 +18,7 @@ class test_gather:
             if len(shape) > 1 and shape[1] > 5:
                 yield cmd + "ind = ind[3:]; "
 
+    @util.add_bh107_cmd
     def test_take(self, cmd):
         return cmd + "res = M.take(a, ind)"
 
