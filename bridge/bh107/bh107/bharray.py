@@ -148,7 +148,7 @@ class BhArray(object):
         shape = self.shape
         strides = tuple(s * self.base.itemsize for s in self.strides)
         data_ptr = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
-        data = (data_ptr+self.offset * self.base.itemsize, False)  # read-only is false
+        data = (data_ptr + self.offset * self.base.itemsize, False)  # read-only is false
         return dict(typestr=typestr, shape=shape, strides=strides, data=data, version=0)
 
     def asnumpy(self):
@@ -357,6 +357,29 @@ class BhArray(object):
         if np.isscalar(key) or isinstance(key, slice) or key is None or key is Ellipsis:
             key = (key,)
 
+        def obj_contains_a_list_or_ary(obj):
+            if isinstance(obj, (BhArray, list)):
+                return True
+            if isinstance(obj, tuple):
+                for o in obj:
+                    if isinstance(o, (BhArray, list)):
+                        return True
+            return False
+
+        if obj_contains_a_list_or_ary(key):
+            # Generally, we do not support indexing with arrays
+            # But when indexing array with an index array for each dimension in the array,
+            # it corresponds to take_using_index_tuple()
+            if isinstance(key, tuple) and len(key) == self.ndim:
+                from .reorganization import take_using_index_tuple
+                return take_using_index_tuple(self, key)
+            # And when indexing a vector, it corresponds to np.take()
+            if isinstance(key, (BhArray, list)) and self.ndim == 1:
+                from .reorganization import take
+                return take(self, key)
+            raise NotImplementedError(
+                "For now, fancy indexing requires an Bohrium array per dimension got key: %s" % key)
+
         if isinstance(key, tuple):
             key = list(key)
             if Ellipsis in key:
@@ -510,4 +533,3 @@ class BhArray(object):
     def __ge__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['greater_equal'](self, other)
-

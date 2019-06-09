@@ -25,6 +25,7 @@ class test_gather:
     def test_take_ary_mth(self, cmd):
         return cmd + "res = a.take(ind)"
 
+    @util.add_bh107_cmd
     def test_indexing(self, cmd):
         return cmd + "res = a.flatten()[ind.flatten()]"
 
@@ -104,6 +105,7 @@ class test_fancy_indexing_get:
                        .replace("bh.take", "bh107.take")
         return (cmd, cmd, bh107_cmd)
 
+    @util.add_bh107_cmd
     def test_indexing(self, cmd):
         return cmd + "res = a[ind]"
 
