@@ -38,7 +38,7 @@ class test_scatter:
                 continue
             cmd = "R = bh.random.RandomState(42); res = %s; " % ary
             cmd += "ind = M.arange(%d, dtype=np.int64).reshape(%s); " % (nelem, shape)
-            VAL = "val = R.random(ind.shape, np.float64, bohrium=BH); "
+            VAL = "val = R.random(shape=ind.shape, bohrium=BH).astype(np.float64); "
             yield cmd + VAL
             yield cmd + "ind = ind[::2]; " + VAL
             if shape[0] > 2:
@@ -46,12 +46,15 @@ class test_scatter:
             if len(shape) > 1 and shape[1] > 5:
                 yield cmd + "ind = ind[3:];" + VAL
 
+    @util.add_bh107_cmd
     def test_put(self, cmd):
         return cmd + "M.put(res, ind, val)"
 
+    @util.add_bh107_cmd
     def test_put_scalar(self, cmd):
         return cmd + "M.put(res, ind, 42)"
 
+    @util.add_bh107_cmd
     def test_put_fixed_length_val(self, cmd):
         return cmd + "M.put(res, ind, M.arange(10))"
 

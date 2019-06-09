@@ -137,3 +137,93 @@ def take_using_index_tuple(a, index_tuple):
 
     # take() support absolute indices
     return take(a, abs_index).reshape(index_list[0].shape)
+
+
+def scatter(ary, indexes, values):
+    """Scatter 'values' into 'ary' selected by 'indexes'.
+    The values of 'indexes' are absolute indexed into a flatten 'ary'
+    The shape of 'indexes' and 'value' must be equal.
+
+    Parameters
+    ----------
+    ary  : BhArray
+        The target array to write the values to.
+    indexes : array_like, interpreted as integers
+        Array or list of indexes that will be written to in 'ary'
+    values : array_like
+        Values to write into 'ary"
+    """
+
+    # Make sure that indexes is BhArray of type `uint64` and flatten
+    indexes = array_create.array(indexes, dtype=np.uint64).flatten(always_copy=False)
+    values = array_create.array(values, dtype=ary.dtype).flatten(always_copy=False)
+
+    assert indexes.shape == values.shape
+    if ary.size == 0 or indexes.size == 0:
+        return
+
+    # In order to ensure a contiguous array, we do the scatter on a flatten copy
+    flat = ary.flatten(always_copy=True)
+
+    # BH_SCATTER: Scatter all elements of IN into OUT selected by INDEX. NB: IN.shape == INDEX.shape
+    #             and OUT can have any shape but must be contiguous.
+    #             scatter(OUT, IN, INDEX)
+    ufuncs._call_bh_api_op(_info.op['scatter']['id'], flat, (values, indexes), broadcast_to_output_shape=False)
+    ary[...] = flat.reshape(ary.shape)
+
+
+def put(a, ind, v, mode='raise'):
+    """Replaces specified elements of an array with given values.
+
+    The indexing works on the flattened target array. `put` is roughly
+    equivalent to:
+
+        a.flat[ind] = v
+
+    Parameters
+    ----------
+    a : BhArray
+        Target array.
+    ind : array_like
+        Target indices, interpreted as integers.
+    v : array_like
+        Values to place in `a` at target indices. If `v` is shorter than
+        `ind` it will be repeated as necessary.
+    mode : {'raise', 'wrap', 'clip'}, optional
+        Specifies how out-of-bounds indices will behave.
+
+        * 'raise' -- raise an error (default)
+        * 'wrap' -- wrap around
+        * 'clip' -- clip to the range
+
+        'clip' mode means that all indices that are too large are replaced
+        by the index that addresses the last element along that axis. Note
+        that this disables indexing with negative numbers.
+    """
+
+    if ind.size == 0:
+        return  # Nothing to insert!
+
+    if mode != "raise":
+        raise NotImplementedError("Bohrium only supports the 'raise' mode not '%s'" % mode)
+
+    # Make sure that indexes is BhArray of type `uint64` and flatten
+    indexes = array_create.array(ind, dtype=np.uint64).flatten(always_copy=False)
+    values = array_create.array(v, dtype=a.dtype).flatten(always_copy=False)
+
+    # Now let's make the shape of 'indexes' and 'values' match
+    if indexes.size > values.size:
+        if values.size == 1:
+            # When 'values' is a scalar, we can broadcast it to match 'indexes'
+            values = bharray.BhArray(indexes.shape, values.dtype, strides=(0,), base=values.base, offset=values.offset)
+        else:  # else we repeat 'values' enough times to be larger than 'indexes'
+            values = bharray.BhArray((indexes.size // values.size + 2, values.size), values.dtype, strides=(0, 1),
+                                     base=values.base, offset=values.offset)
+            values = values.flatten(always_copy=False)
+
+    # When 'values' is too large, we simple cut the end off
+    if values.size > indexes.size:
+        values = values[0:indexes.size]
+
+    # Now that 'indexes' and 'values' have the same shape, we can call 'scatter'
+    scatter(a, indexes, values)
