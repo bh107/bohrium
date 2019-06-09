@@ -392,7 +392,7 @@ static PyObject *PyAPI_random123(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
     if (!PyCapsule_IsValid(ary_capsule, "bhc_ary_ptr")) {
-        PyErr_Format(PyExc_RuntimeError, "second argument must be a PyCapsule named 'bhc_ary_ptr'");
+        PyErr_Format(PyExc_RuntimeError, "first argument must be a PyCapsule named 'bhc_ary_ptr'");
         return NULL;
     }
     void *array_handle = PyCapsule_GetPointer(ary_capsule, "bhc_ary_ptr");
