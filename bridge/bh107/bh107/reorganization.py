@@ -79,10 +79,10 @@ def take(a, indices, axis=None, mode='raise'):
         The returned array has the same type as `a`.
     """
 
-    a = array_create.array(a, copy=False)
+    a = array_create.array(a)
 
     if mode != "raise":
-        raise NotImplementedError("Bohrium only supports the 'raise' mode not '%s'")
+        raise NotImplementedError("Bohrium only supports the 'raise' mode not '%s'" % mode)
 
     if axis is not None and a.ndim > 1:
         raise NotImplementedError("Bohrium does not support the 'axis' argument")
