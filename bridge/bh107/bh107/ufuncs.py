@@ -42,6 +42,12 @@ def _result_shape(shape_list):
         if len(shape) > ret_ndim:
             ret_ndim = len(shape)
 
+    # A zero dimension makes the result shape all zeros
+    for shape in shape_list:
+        for dim in shape:
+            if dim == 0:
+                return tuple([0] * ret_ndim)
+
     # Make sure that all shapes has the same length by pre-pending ones
     for i in range(len(shape_list)):
         shape_list[i] = [1] * (ret_ndim - len(shape_list[i])) + list(shape_list[i])
