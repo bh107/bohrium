@@ -281,7 +281,7 @@ def put_using_index_tuple(a, index_tuple, v):
 
     Returns
     -------
-    subarray : ndarray
+    r : BhArray
         The returned array has the same type as `a`.
     """
 
@@ -326,6 +326,11 @@ def pack(ary, mask):
         The array to read from.
     mask : array_like, interpreted as a flatten boolean array
         A mask that specifies which indexes of 'ary' to read
+
+    Returns
+    -------
+    res : BhArray
+        The packed array.
     """
 
     ary = array_create.array(ary).flatten(always_copy=True)
@@ -352,6 +357,7 @@ def flatnonzero(a):
     ----------
     a : BhArray
         Input array.
+
     Returns
     -------
     res : BhArray
@@ -360,9 +366,9 @@ def flatnonzero(a):
     """
 
     if a.dtype is not np.bool:
-        mask = a != 0
+        a = a != 0
     new_indexes = array_create.arange(a.size, dtype=np.uint64)
-    return pack(new_indexes, mask)
+    return pack(new_indexes, a)
 
 
 def nonzero(a):
@@ -389,18 +395,18 @@ def nonzero(a):
         Indices of elements that are non-zero.
     """
 
+    a = array_create.array(a)
+
     if a.ndim == 1:
         return (flatnonzero(a),)
 
-    if not a.flags['C_CONTIGUOUS']:
-        a = a.copy(order='C')
+    if not a.iscontiguous():
+        a = a.copy()
 
     nz = flatnonzero(a)
     ret = []
-    for stride_in_bytes in a.strides:
-        stride = stride_in_bytes // a.itemsize
-        assert stride_in_bytes % a.itemsize == 0
+    for stride in a.strides:
         tmp = nz // stride
         ret.append(tmp)
         nz -= tmp * stride
-    return ret
+    return tuple(ret)

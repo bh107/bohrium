@@ -4,6 +4,7 @@ import functools
 import operator
 from bohrium_api import _info
 
+
 class test_set_bool_mask_scalar:
     def init(self):
         for dtype in _info.numpy_types():
@@ -50,9 +51,10 @@ class test_get_bool_mask:
             if nelem == 0:
                 continue
             cmd = "R = bh.random.RandomState(42); a=%s; " % ary
-            cmd += "m = R.random_integers(0, 1, size=a.shape, dtype=np.bool, bohrium=BH); "
+            cmd += "m = R.random_integers(0, 1, a.shape, bohrium=BH).astype(np.bool); "
             yield (cmd)
 
+    @util.add_bh107_cmd
     def test_get(self, cmd):
         cmd += "res = a[m]"
         return cmd

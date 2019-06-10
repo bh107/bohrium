@@ -369,6 +369,10 @@ class BhArray(object):
         if np.isscalar(key) or isinstance(key, slice) or key is None or key is Ellipsis:
             key = (key,)
 
+        if getattr(key, "dtype", None) == np.bool and key.shape == self.shape:
+            from .reorganization import nonzero
+            return self[nonzero(key)]
+
         if _obj_contains_a_list_or_ary(key):
             # Generally, we do not support indexing with arrays
             # But when indexing array with an index array for each dimension in the array,
@@ -381,7 +385,7 @@ class BhArray(object):
                 from .reorganization import take
                 return take(self, key)
             raise NotImplementedError(
-                "For now, fancy indexing requires an Bohrium array per dimension got key: %s" % key)
+                "For now, fancy indexing requires an Bohrium array per dimension (%d) got key: %s" % (self.ndim, key))
 
         if isinstance(key, tuple):
             key = list(key)
