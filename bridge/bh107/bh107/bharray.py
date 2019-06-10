@@ -175,8 +175,7 @@ class BhArray(object):
 
     def view(self):
         """Returns a new view that points to the same base as this BhArray"""
-        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base,
-                       is_scalar=self.nelem == 1 and len(self._shape) == 0)
+        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base, is_scalar=self.isscalar())
 
     def fill(self, value):
         """Fill the array with a scalar value.
@@ -188,11 +187,11 @@ class BhArray(object):
 
             Examples
             --------
-            >>> a = bh.array([1, 2])
+            >>> a = bh107.array([1, 2])
             >>> a.fill(0)
             >>> a
             array([0, 0])
-            >>> a = bh.empty(2)
+            >>> a = bh107.empty(2)
             >>> a.fill(1)
             >>> a
             array([ 1.,  1.])
@@ -314,6 +313,8 @@ class BhArray(object):
             if not isinstance(key, _dtype_util.integers):
                 raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
                                  "integer or boolean arrays are valid indices")
+            if key < 0:
+                key += self._shape[dim]
             if len(self._shape) <= dim or key >= self._shape[dim]:
                 raise IndexError("Index out of bound")
             shape = list(self._shape)
