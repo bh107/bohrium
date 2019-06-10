@@ -156,12 +156,8 @@ class BhArray(object):
             raise RuntimeError("The size of the zero!")
         _bh_api.flush()
         typestr = np.dtype(self.base.dtype).str
-        if self.isscalar():
-            shape = (1,)
-            strides = (0,)
-        else:
-            shape = self.shape
-            strides = tuple(s * self.base.itemsize for s in self.strides)
+        shape = self.shape
+        strides = tuple(s * self.base.itemsize for s in self.strides)
         data_ptr = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
         data = (data_ptr + self.offset * self.base.itemsize, False)  # read-only is false
         return dict(typestr=typestr, shape=shape, strides=strides, data=data, version=0)
