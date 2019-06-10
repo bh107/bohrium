@@ -416,6 +416,11 @@ class BhArray(object):
 
     def __setitem__(self, key, value):
 
+        if getattr(key, "dtype", None) == np.bool and key.shape == self.shape:
+            from .reorganization import nonzero
+            self[nonzero(key)] = value
+            return
+
         if _obj_contains_a_list_or_ary(key):
             # Generally, we do not support indexing with arrays
             # But when indexing array with an index array for each dimension in the array,
