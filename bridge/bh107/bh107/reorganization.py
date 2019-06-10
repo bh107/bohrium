@@ -22,9 +22,7 @@ def gather(ary, indexes):
         The gathered array freshly-allocated.
     """
 
-    # NB: The code cache in Bohrium doesn't support views in GATHER.
-    #     This could be fixed but it is more efficient to do a copy.
-    ary = ary.flatten(always_copy=not ary.isbehaving())
+    ary = ary.flatten(always_copy=False)
 
     # Convert a scalar index to a 1-element array
     if np.isscalar(indexes):
