@@ -313,3 +313,94 @@ def put_using_index_tuple(a, index_tuple, v):
 
     # put() support absolute indices
     put(a, abs_index, v)
+
+
+def pack(ary, mask):
+    """Packing the elements of 'ary' specified by 'mask' into new array that are contiguous
+    The values of 'indexes' are absolute indexed into a flatten 'ary'
+    The shape of 'mask' and 'ary' must be equal.
+
+    Parameters
+    ----------
+    ary  : array_like, read flatten
+        The array to read from.
+    mask : array_like, interpreted as a flatten boolean array
+        A mask that specifies which indexes of 'ary' to read
+    """
+
+    ary = array_create.array(ary).flatten(always_copy=True)
+    mask = array_create.array(mask, dtype=np.bool).flatten(always_copy=True)
+    assert (ary.shape == mask.shape)
+    if ary.size == 0 or mask.size == 0:
+        return
+
+    true_indexes = ufuncs.ufunc_dict['add'].accumulate(mask)
+    true_count = int(true_indexes[-1])
+    if true_count == 0:
+        return array_create.empty((0,), dtype=ary.dtype)
+    else:
+        ret = array_create.empty((true_count,), dtype=ary.dtype)
+        cond_scatter(ret, true_indexes - 1, ary, mask)
+        return ret
+
+
+def flatnonzero(a):
+    """Return indices that are non-zero in the flattened version of a.
+    This is equivalent to a.ravel().nonzero()[0].
+
+    Parameters
+    ----------
+    a : BhArray
+        Input array.
+    Returns
+    -------
+    res : BhArray
+        Output array, containing the indices of the elements of `a.ravel()`
+        that are non-zero.
+    """
+
+    if a.dtype is not np.bool:
+        mask = a != 0
+    new_indexes = array_create.arange(a.size, dtype=np.uint64)
+    return pack(new_indexes, mask)
+
+
+def nonzero(a):
+    """Return the indices of the elements that are non-zero.
+    Returns a tuple of arrays, one for each dimension of `a`,
+    containing the indices of the non-zero elements in that
+    dimension. The values in `a` are always tested and returned in
+    row-major, C-style order. The corresponding non-zero
+    values can be obtained with::
+        a[nonzero(a)]
+    To group the indices by element, rather than dimension, use::
+        transpose(nonzero(a))
+    The result of this is always a 2-D array, with a row for
+    each non-zero element.
+
+    Parameters
+    ----------
+    a : array_like
+        Input array.
+
+    Returns
+    -------
+    tuple_of_arrays : tuple
+        Indices of elements that are non-zero.
+    """
+
+    if a.ndim == 1:
+        return (flatnonzero(a),)
+
+    if not a.flags['C_CONTIGUOUS']:
+        a = a.copy(order='C')
+
+    nz = flatnonzero(a)
+    ret = []
+    for stride_in_bytes in a.strides:
+        stride = stride_in_bytes // a.itemsize
+        assert stride_in_bytes % a.itemsize == 0
+        tmp = nz // stride
+        ret.append(tmp)
+        nz -= tmp * stride
+    return ret

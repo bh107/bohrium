@@ -83,6 +83,7 @@ class test_nonzero:
             cmd = "R = bh.random.RandomState(42); a = %s; " % ary
             yield cmd
 
+    @util.add_bh107_cmd
     def test_flatnonzero(self, cmd):
         return cmd + "res = M.flatnonzero(a)"
 
