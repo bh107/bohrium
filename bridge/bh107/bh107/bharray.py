@@ -555,3 +555,9 @@ class BhArray(object):
     def __ge__(self, other):
         from .ufuncs import ufunc_dict
         return ufunc_dict['greater_equal'](self, other)
+
+    def __int__(self):
+        return int(self.asnumpy())
+
+    def __float__(self):
+        return float(self.asnumpy())
