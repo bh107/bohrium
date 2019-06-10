@@ -193,7 +193,7 @@ class BhArray(object):
         from .ufuncs import assign
         if not always_copy and self.dtype == dtype:
             return self
-        ret = BhArray(self._shape, dtype)
+        ret = BhArray(self._shape, dtype, is_scalar=self.isscalar())
         assign(self, ret)
         return ret
 

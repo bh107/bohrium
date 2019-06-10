@@ -107,7 +107,7 @@ def take_using_index_tuple(a, index_tuple):
     r : BhArray
         The returned array has the same type as `a`.
     """
-    a = array_create.array(a, copy=False)
+    a = array_create.array(a)
 
     if len(index_tuple) != a.ndim:
         raise ValueError("length of `index_tuple` must equal the number of dimension in `a`")
