@@ -248,8 +248,7 @@ def zeros_like(a, dtype=None):
 
 
 def ones_like(a, dtype=None):
-    """
-    Return an array of ones with the same shape and type as a given array.
+    """Return an array of ones with the same shape and type as a given array.
 
     With default parameters, is equivalent to ``a.copy().fill(1)``.
 
@@ -318,10 +317,7 @@ def simply_range(size, dtype=np.uint64):
 
 
 def arange(start, stop=None, step=1, dtype=None):
-    """
-    arange([start,] stop[, step,], dtype=None)
-
-    Return evenly spaced values within a given interval.
+    """Return evenly spaced values within a given interval.
 
     Values are generated within the half-open interval ``[start, stop)``
     (in other words, the interval including `start` but excluding `stop`).
