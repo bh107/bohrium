@@ -61,6 +61,7 @@ class test_scatter:
     def test_put_ary_mth(self, cmd):
         return cmd + "res.put(ind, val)"
 
+    @util.add_bh107_cmd
     def test_indexing(self, cmd):
         return cmd + "res = res.flatten(); res[ind] = val"
 
@@ -134,5 +135,6 @@ class test_fancy_indexing_set:
             .replace("bh.put", "bh107.put")
         return (cmd, cmd, bh107_cmd)
 
+    @util.add_bh107_cmd
     def test_indexing(self, cmd):
         return cmd + "res[ind] = 42"

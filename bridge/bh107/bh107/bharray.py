@@ -6,6 +6,17 @@ from bohrium_api import _bh_api
 from . import _dtype_util, util
 
 
+def _obj_contains_a_list_or_ary(obj):
+    """Help function that checks if `obj` contains a list or an array"""
+    if isinstance(obj, (BhArray, list)):
+        return True
+    if isinstance(obj, tuple):
+        for o in obj:
+            if isinstance(o, (BhArray, list)):
+                return True
+    return False
+
+
 class BhBase(object):
     """A base array that represent a block of memory.
     A base array is always the sole owner of a complete memory allocation.
@@ -357,16 +368,7 @@ class BhArray(object):
         if np.isscalar(key) or isinstance(key, slice) or key is None or key is Ellipsis:
             key = (key,)
 
-        def obj_contains_a_list_or_ary(obj):
-            if isinstance(obj, (BhArray, list)):
-                return True
-            if isinstance(obj, tuple):
-                for o in obj:
-                    if isinstance(o, (BhArray, list)):
-                        return True
-            return False
-
-        if obj_contains_a_list_or_ary(key):
+        if _obj_contains_a_list_or_ary(key):
             # Generally, we do not support indexing with arrays
             # But when indexing array with an index array for each dimension in the array,
             # it corresponds to take_using_index_tuple()
@@ -408,6 +410,21 @@ class BhArray(object):
                          "integer or boolean arrays are valid indices")
 
     def __setitem__(self, key, value):
+
+        if _obj_contains_a_list_or_ary(key):
+            # Generally, we do not support indexing with arrays
+            # But when indexing array with an index array for each dimension in the array,
+            # it corresponds to take_using_index_tuple()
+            if isinstance(key, tuple) and len(key) == self.ndim:
+                from .reorganization import put_using_index_tuple
+                return put_using_index_tuple(self, key, value)
+            # And when indexing a vector, it corresponds to np.put()
+            if isinstance(key, (BhArray, list)) and self.ndim == 1:
+                from .reorganization import put
+                return put(self, key, value)
+            raise NotImplementedError(
+                "For now, fancy indexing requires an Bohrium array per dimension got key: %s" % key)
+
         from .ufuncs import assign
         assign(value, self.__getitem__(key))
 
