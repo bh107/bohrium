@@ -66,10 +66,12 @@ class test_scatter:
         return cmd + "res = res.flatten(); res[ind] = val"
 
     def test_cond(self, cmd):
-        cmd += cmd + "mask = R.random(ind.size, np.bool, bohrium=BH).reshape(ind.shape); "
+        cmd += cmd + "mask = R.random(shape=ind.size, bohrium=BH).astype(np.bool).reshape(ind.shape); "
         np_cmd = cmd + "np.put(res, ind[mask], val[mask])"
         bh_cmd = cmd + "M.cond_scatter(res, ind, val, mask)"
-        return (np_cmd, bh_cmd)
+        bh107_cmd = bh_cmd.replace("bh.random.RandomState", "bh107.random.RandomState").replace(", bohrium=BH", "") \
+            .replace("bh.take", "bh107.take")
+        return (np_cmd, bh_cmd, bh107_cmd)
 
 
 class test_nonzero:

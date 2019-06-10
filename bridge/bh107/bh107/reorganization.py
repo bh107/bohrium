@@ -172,6 +172,41 @@ def scatter(ary, indexes, values):
     ary[...] = flat.reshape(ary.shape)
 
 
+def cond_scatter(ary, indexes, values, mask):
+    """ Scatter 'values' into 'ary' selected by 'indexes' where 'mask' is true.
+    The values of 'indexes' are absolute indexed into a flatten 'ary'
+    The shape of 'indexes', 'value', and 'mask' must be equal.
+
+
+    Parameters
+    ----------
+    ary  : BhArray
+        The target array to write the values to.
+    indexes : array_like, interpreted as integers
+        Array or list of indexes that will be written to in 'ary'
+    values : array_like
+        Values to write into 'ary'
+    mask : array_like, interpreted as booleans
+        A mask that specifies which indexes and values to include and exclude
+    """
+    indexes = array_create.array(indexes, dtype=np.uint64).flatten(always_copy=False)
+    values = array_create.array(values, dtype=ary.dtype).flatten(always_copy=False)
+    mask = array_create.array(mask, dtype=np.bool).flatten(always_copy=False)
+    assert (indexes.shape == values.shape and values.shape == mask.shape)
+    if ary.size == 0 or indexes.size == 0:
+        return
+
+    # In order to ensure a contiguous array, we do the scatter on a flatten copy
+    flat = ary.flatten(always_copy=True)
+
+    # BH_COND_SCATTER: Conditional scatter elements of IN where COND is true into OUT selected by INDEX.
+    #                  NB: IN.shape == INDEX.shape and OUT can have any shape but must be contiguous.
+    #                  cond_scatter(OUT, IN, INDEX, COND)
+    ufuncs._call_bh_api_op(_info.op['cond_scatter']['id'], flat, (values, indexes, mask),
+                           broadcast_to_output_shape=False)
+    ary[...] = flat.reshape(ary.shape)
+
+
 def put(a, ind, v, mode='raise'):
     """Replaces specified elements of an array with given values.
 
