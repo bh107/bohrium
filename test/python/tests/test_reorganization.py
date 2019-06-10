@@ -104,8 +104,8 @@ class test_fancy_indexing_get:
         cmd += "res = bh.take_using_index_tuple(a, ind)"
         bh107_cmd = cmd.replace("bh.random.RandomState",
                                 "bh107.random.RandomState") \
-                       .replace(", bohrium=BH", "") \
-                       .replace("bh.take", "bh107.take")
+            .replace(", bohrium=BH", "") \
+            .replace("bh.take", "bh107.take")
         return (cmd, cmd, bh107_cmd)
 
     @util.add_bh107_cmd
@@ -127,7 +127,12 @@ class test_fancy_indexing_set:
             yield cmd + ind
 
     def test_put_using_index_tuple(self, cmd):
-        return cmd + "bh.put_using_index_tuple(res, ind, 42)"
+        cmd += "bh.put_using_index_tuple(res, ind, 42)"
+        bh107_cmd = cmd.replace("bh.random.RandomState",
+                                "bh107.random.RandomState") \
+            .replace(", bohrium=BH", "") \
+            .replace("bh.put", "bh107.put")
+        return (cmd, cmd, bh107_cmd)
 
     def test_indexing(self, cmd):
         return cmd + "res[ind] = 42"

@@ -227,3 +227,56 @@ def put(a, ind, v, mode='raise'):
 
     # Now that 'indexes' and 'values' have the same shape, we can call 'scatter'
     scatter(a, indexes, values)
+
+
+def put_using_index_tuple(a, index_tuple, v):
+    """Replaces specified elements of an array with given values.
+    This function is very similar to put(), but takes a tuple of index arrays rather than a single index array.
+    The indexing works like fancy indexing:
+
+        a[index_tuple] = v
+
+    Parameters
+    ----------
+    a : BhArray
+        The source array.
+    index_tuple : tuple of array_like, interpreted as integers
+        Each array in the tuple specified the indices of the values to extract for that axis.
+        The number of arrays in 'index_tuple' must equal the number of dimension in 'a'
+    v : array_like
+        Values to place in `a`.
+
+    Returns
+    -------
+    subarray : ndarray
+        The returned array has the same type as `a`.
+    """
+
+    v = array_create.array(v)
+    assert len(index_tuple) == a.ndim
+
+    if a.size == 0:
+        return
+
+    if a.ndim == 1:
+        return put(a, index_tuple[0], v)
+
+    # Make sure that all index arrays are uint64 bohrium arrays
+    index_list = []
+    for index in index_tuple:
+        index_list.append(array_create.array(index, dtype=np.uint64))
+        if index_list[-1].size == 0:
+            return array_create.empty(tuple(), dtype=a.dtype)
+
+    # And then broadcast them into the same shape
+    index_list = ufuncs.broadcast_arrays(index_list)
+
+    # Let's find the absolute index
+    abs_index = index_list[-1].copy()
+    stride = a.shape[-1]
+    for i in range(len(index_list) - 2, -1, -1):  # Iterate backwards from index_list[-2]
+        abs_index += index_list[i] * stride
+        stride *= a.shape[i]
+
+    # put() support absolute indices
+    put(a, abs_index, v)
