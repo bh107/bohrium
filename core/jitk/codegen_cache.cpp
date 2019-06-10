@@ -36,6 +36,7 @@ namespace {
 void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstream &ss) {
     ss << "dtype: " << static_cast<uint32_t>(view.base->dtype());
     ss << "baseid: " << symbols.baseID(view.base);
+    ss << "always array: " << (symbols.isAlwaysArray(view.base)?"true":"false");
 
     if (symbols.strides_as_var) {
         ss << "strideid: " << symbols.offsetStridesID(view);
