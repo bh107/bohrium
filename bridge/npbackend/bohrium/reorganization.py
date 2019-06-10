@@ -242,7 +242,6 @@ def scatter(ary, indexes, values):
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
     flat = array_manipulation.flatten(ary, always_copy=True)
     _bh.ufunc(_info.op['scatter']['id'], (flat, values, indexes))
-    _bh.flush()
     ary[...] = flat.reshape(ary.shape)
 
 
@@ -424,7 +423,6 @@ def cond_scatter(ary, indexes, values, mask):
     # In order to ensure a contiguous array, we do the scatter on a flatten copy
     flat = array_manipulation.flatten(ary, always_copy=True)
     _bh.ufunc(_info.op['cond_scatter']['id'], (flat, values, indexes, mask))
-    _bh.flush()
     ary[...] = flat.reshape(ary.shape)
 
 

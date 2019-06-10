@@ -61,6 +61,7 @@ void hash_stream(const bh_view &view, const SymbolTable &symbols, bool strides_a
  */
 void hash_stream(const bh_instruction &instr, const SymbolTable &symbols, std::stringstream &ss) {
     ss << "opcode: " << instr.opcode;
+    ss << "constructor: " << (instr.constructor?"true":"false");
     for (const bh_view &op: instr.operand) {
         if (op.isConstant()) {
             int64_t id = symbols.constID(instr);
