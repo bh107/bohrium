@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
 import math
+import warnings
+
 import numpy as np
+
 # noinspection PyProtectedMember,PyUnresolvedReferences
 from bohrium_api import _bh_api
-from . import _dtype_util, util
+from . import _dtype_util, util, exceptions
 
-
-def implements(numpy_function):
-    """Register an __array_function__ implementation for BhArray objects."""
-    def decorator(func):
-        BhArray._NP_FUNCTIONS[numpy_function] = func
-        return func
-    return decorator
+FALLBACK_ENVVAR = "BH107_ON_NUMPY_FALLBACK"
 
 
 class BhBase(object):
@@ -86,7 +83,8 @@ class BhArray(object):
         ret = cls(numpy_array.shape, numpy_array.dtype,
                   strides=[s // numpy_array.itemsize for s in numpy_array.strides],
                   is_scalar=numpy_array.ndim == 0)
-        _bh_api.copy_from_memory_view(ret.base._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
+        if numpy_array.size > 0:
+            _bh_api.copy_from_memory_view(ret.base._bh_dtype_enum, ret._bhc_handle, memoryview(numpy_array))
         return ret
 
     @classmethod
@@ -136,45 +134,129 @@ class BhArray(object):
     def strides(self, strides):
         """Sets the strides in elements"""
         if self.isscalar():
-            raise ValueError("Scalars does not have `strides`")
+            raise ValueError("Scalars do not have `strides`")
         if len(strides) != len(self.shape):
             raise ValueError("Strides must be same length as shape (%d)" % len(self.shape))
         self._strides = tuple(strides)
 
     # NumPy interfaces
-    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
-        from .ufuncs import ufunc_dict
-        cls = self.__class__
-        ufunc_name = ufunc.__name__
-        if ufunc_name in ufunc_dict:
-            inputs = (cls.from_object(i) if not isinstance(i, cls) else i for i in inputs)
-            return getattr(ufunc_dict[ufunc_name], method)(*inputs, **kwargs)
-        return NotImplemented
+    @property
+    def _fallback_behavior(self):
+        allowed_values = ("ignore", "warn", "raise")
+        behavior = os.environ.get(FALLBACK_ENVVAR, "warn")
 
-    def __array_function__(self, func, types, args, kwargs):
-        cls = self.__class__
-        if func not in cls._NP_FUNCTIONS:
-            args = (arg.asnumpy() if isinstance(arg, cls) else arg for arg in args)
-            return cls.from_numpy(func(*args, **kwargs))
-        args = (cls.from_object(arg) if not isinstance(arg, cls) else arg for arg in args)
-        return cls._NP_FUNCTIONS[func](*args, **kwargs)
+        if behavior not in allowed_values:
+            warnings.warn(
+                "Encountered invalid value for environment variable {}, falling back to "
+                "default (\"warn\")".format(FALLBACK_ENVVAR)
+            )
+            behavior = "warn"
+
+        return behavior
+
+    def _handle_numpy_fallback(self, base_message=None, no_raise=False):
+        action = self._fallback_behavior
+
+        if action == "ignore":
+            return
+
+        if base_message is None:
+            base_message = "bh107 encountered an implicit fallback to NumPy"
+
+        if action == "warn" or no_raise:
+            message = (
+                "{} (explicitly cast to NumPy using BhArray.asnumpy or set the environment variable "
+                "{} to \"ignore\" to silence this warning)".format(base_message, FALLBACK_ENVVAR)
+            )
+            warnings.warn(message, exceptions.ImplicitConversionWarning, stacklevel=3)
+
+        elif action == "raise":
+            message = (
+                "{} (explicitly cast to NumPy using BhArray.asnumpy or set the environment variable "
+                "{} to \"warn\" or \"ignore\" to silence this error)".format(base_message, FALLBACK_ENVVAR)
+            )
+            raise exceptions.ImplicitConversionError(message)
 
     @property
     def __array_interface__(self):
         """Exposing the The Array Interface <https://docs.scipy.org/doc/numpy/reference/arrays.interface.html>"""
+        if not self.isscalar():
+            self._handle_numpy_fallback(
+                no_raise=True  # we cannot raise errors in __array_interface__, warn instead
+            )
+
+        return self._get_array_interface()
+
+    def _get_array_interface(self, readonly=False):
         if self.nelem == 0:
-            raise RuntimeError("The size of the zero!")
+            raise RuntimeError("The size of the array is zero")
+
         _bh_api.flush()
+
         typestr = np.dtype(self.base.dtype).str
         shape = self.shape
         strides = tuple(s * self.base.itemsize for s in self.strides)
         data_ptr = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
-        data = (data_ptr+self.offset * self.base.itemsize, False)  # read-only is false
+        data = (data_ptr+self.offset * self.base.itemsize, readonly)
         return dict(typestr=typestr, shape=shape, strides=strides, data=data, version=0)
 
-    def asnumpy(self):
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        from .ufuncs import ufunc_dict
+        cls = self.__class__
+        ufunc_name = ufunc.__name__
+
+        is_supported = True
+
+        if ufunc_name not in ufunc_dict:
+            is_supported = False
+            reason = "Ufunc \"{}\" is not supported by bh107, falling back to NumPy".format(ufunc_name)
+        elif any(kwarg not in {"axis"} for kwarg in kwargs.keys()):
+            is_supported = False
+            reason = "Ufunc \"{}\" was called with unsupported keyword arguments, falling back to NumPy".format(ufunc_name)
+        elif method not in {"__call__", "reduce", "accumulate"}:
+            is_supported = False
+            reason = "Bh107 does not support ufunc method \"{}\", falling back to NumPy".format(method)
+
+        if is_supported:
+            # convert all NumPy inputs to BhArray, dispatch bh107 function
+            inputs = (cls.from_numpy(arg) if isinstance(arg, np.ndarray) else arg for arg in inputs)
+            return getattr(ufunc_dict[ufunc_name], method)(*inputs, **kwargs)
+        else:
+            # convert all BhArray inputs to NumPy, dispatch NumPy function, cast output to BhArray
+            self._handle_numpy_fallback(base_message=reason)
+            inputs = (cls.asnumpy(arg) if isinstance(arg, cls) else arg for arg in inputs)
+            return cls.from_numpy(getattr(ufunc, method)(*inputs, **kwargs))
+
+    def __array_function__(self, func, types, args, kwargs):
+        cls = self.__class__
+        if func not in cls._NP_FUNCTIONS:
+            func_name = func.__name__
+            message = "bh107 does not support the function \"{}\", falling back to NumPy".format(func_name)
+            self._handle_numpy_fallback(message)
+            args = (arg.asnumpy() if isinstance(arg, cls) else arg for arg in args)
+            res = func(*args, **kwargs)
+
+            if isinstance(res, tuple):
+                # multiple return values, cast all NumPy arrays to BhArrays
+                return tuple(cls.from_numpy(out) if isinstance(out, np.ndarray) else out for out in res)
+            elif isinstance(res, np.ndarray):
+                # one NumPy array, cast to BhArray
+                return cls.from_numpy(res)
+            else:
+                # anything else
+                return res
+
+        # cast all NumPy args to BhArray
+        args = (cls.from_numpy(arg) if isinstance(arg, np.ndarray) else arg for arg in args)
+        return cls._NP_FUNCTIONS[func](*args, **kwargs)
+
+    def asnumpy(self, readonly=False):
         """Returns a NumPy array that points to the same memory as this BhArray"""
-        return np.array(self, copy=False)
+        class Dummy:
+            pass
+        container = Dummy()
+        container.__array_interface__ = self._get_array_interface(readonly=readonly)
+        return np.array(container, copy=False)
 
     def copy2numpy(self):
         """Returns a NumPy array that is a copy of this BhArray"""
@@ -191,22 +273,22 @@ class BhArray(object):
     def fill(self, value):
         """Fill the array with a scalar value.
 
-            Parameters
-            ----------
-            value : scalar
-                All elements of `a` will be assigned this value.
+        Parameters
+        ----------
+        value : scalar
+            All elements of `a` will be assigned this value.
 
-            Examples
-            --------
-            >>> a = bh.array([1, 2])
-            >>> a.fill(0)
-            >>> a
-            array([0, 0])
-            >>> a = bh.empty(2)
-            >>> a.fill(1)
-            >>> a
-            array([ 1.,  1.])
-            """
+        Examples
+        --------
+        >>> a = bh.array([1, 2])
+        >>> a.fill(0)
+        >>> a
+        array([0, 0])
+        >>> a = bh.empty(2)
+        >>> a.fill(1)
+        >>> a
+        array([ 1.,  1.])
+        """
         from .ufuncs import assign
         assign(value, self)
 
@@ -262,7 +344,7 @@ class BhArray(object):
         shape = (self.nelem,)
         if not self.iscontiguous():
             ret = self.copy().flatten(always_copy=False)  # copy() makes the array contiguous
-            assert (ret.iscontiguous())
+            assert ret.iscontiguous()
             return ret
         else:
             ret = BhArray(shape, self.dtype, offset=self.offset, base=self.base)
@@ -271,17 +353,7 @@ class BhArray(object):
             else:
                 return ret
 
-    def reshape(self, shape):
-        length = util.total_size(shape)
-        if length != self.nelem:
-            raise RuntimeError("Total size cannot change when reshaping")
-
-        flat = self.flatten()
-        return BhArray(shape, flat.dtype, base=flat.base)
-
-    def copy(self):
-        return self.astype(self.dtype, always_copy=True)
-
+    # getitem / setitem
     def __getitem_at_dim(self, dim, key):
         if np.isscalar(key):
             if not isinstance(key, _dtype_util.integers):
@@ -295,6 +367,7 @@ class BhArray(object):
             strides.pop(dim)
             offset = self.offset + key * self._strides[dim]
             return BhArray(shape, self.dtype, offset=offset, strides=strides, base=self.base, is_scalar=len(shape) == 0)
+
         elif isinstance(key, slice):
             if len(self._shape) <= dim:
                 raise IndexError("IndexError: too many indices for array")
@@ -557,96 +630,26 @@ class BhArray(object):
         np_repr = self.asnumpy().__repr__()
         return self.__class__.__name__ + np_repr[5:].replace('\n', '\n  ')
 
+    # functions as methods
+    def mean(self, axis=None, dtype=None, out=None):
+        from .bharray_functions import mean
+        return mean(self, axis=axis, dtype=dtype, out=out)
 
-# NumPy functions
-@implements(np.mean)
-def mean(a, axis=None, dtype=None, out=None):
-    import warnings
-    from .ufuncs import ufunc_dict
+    def reshape(self, shape):
+        length = util.total_size(shape)
+        if length != self.nelem:
+            raise RuntimeError("Total size cannot change when reshaping")
 
-    add = ufunc_dict['add']
+        flat = self.flatten()
+        return BhArray(shape, flat.dtype, base=flat.base)
 
-    def _count_reduce_items(arr, axis):
-        if axis is None:
-            axis = tuple(range(arr.ndim))
-        if not isinstance(axis, tuple):
-            axis = (axis,)
-        items = 1
-        for ax in axis:
-            items *= arr.shape[ax]
-        return items
-
-    def _mean(arr, axis=None, dtype=None, out=None):
-        is_float16_result = False
-        rcount = _count_reduce_items(arr, axis)
-        # Make this warning show up first
-        if rcount == 0:
-            warnings.warn("Mean of empty slice.", RuntimeWarning, stacklevel=2)
-
-        # Cast bool, unsigned int, and int to float64 by default
-        if dtype is None:
-            if issubclass(arr.dtype, (np.integer, np.bool_)):
-                dtype = np.dtype('f8')
-            elif issubclass(arr.dtype, np.float16):
-                dtype = np.dtype('f4')
-                is_float16_result = True
-
-        ret = add.reduce(arr, axis=axis, dtype=dtype, out=out)
-        if ret.isscalar():
-            ret = ret.dtype(ret)
-        ret /= rcount
-        if is_float16_result and out is None:
-            ret = a.dtype(ret)
-        return ret
-
-    return _mean(a, axis=axis, dtype=dtype, out=out)
+    def copy(self):
+        return self.astype(self.dtype, always_copy=True)
 
 
-@implements(np.copy)
-def copy(arr):
-    """Return a copy of the array.
-
-    Returns
-    -------
-    out : BhArray
-        Copy of `arr`
-    """
-    return arr.copy()
-
-
-@implements(np.transpose)
-def transpose(arr, axes=None):
-    """Permute the dimensions of an array.
-
-    Parameters
-    ----------
-    axes : list of ints, optional
-        By default, reverse the dimensions, otherwise permute the axes
-        according to the values given.
-    """
-    if axes is None:
-        axes = list(reversed(range(len(arr._shape))))
-
-    ret = arr.view()
-    ret._shape = tuple([arr._shape[i] for i in axes])
-    ret._strides = tuple([arr._strides[i] for i in axes])
-    return ret
-
-
-@implements(np.ravel)
-def ravel(arr):
-    """ Return a contiguous flattened array.
-
-    A 1-D array, containing the elements of the input, is returned. A copy is made only if needed.
-
-    Returns
-    -------
-    y : ndarray
-        A copy or view of the array, flattened to one dimension.
-    """
-    return arr.flatten(always_copy=False)
-
-
-@implements(np.reshape)
-def reshape(arr, shape):
-    return arr.reshape(shape)
+def implements(numpy_function):
+    """Register an __array_function__ implementation for BhArray objects."""
+    def decorator(func):
+        BhArray._NP_FUNCTIONS[numpy_function] = func
+        return func
+    return decorator

@@ -38,12 +38,11 @@ SHAPES = (
     (1,),
     (10,),
     (10, 10),
-    # (1,) * 100,
+    (1,) * 16,
 )
 
 DTYPES = (
     'bool',
-    #'float16',
     'float32',
     'float64',
     'int8',
@@ -66,14 +65,14 @@ def test_unary_array_ufunc(ufunc, shape, dtype):
 
     func_handle = getattr(getattr(np, ufunc), method)
 
-    res_bh107 = func_handle(arr).astype(dtype)
+    res_bh107 = func_handle(arr)
     if isinstance(res_bh107, bh107.BhArray):
         res_bh107 = res_bh107.copy2numpy()
 
-    res_np = func_handle(arr.asnumpy()).astype(dtype)
+    res_np = func_handle(arr.asnumpy()).astype(res_bh107.dtype)
 
     try:
-        rtol = 10 * np.finfo(arr.dtype).eps
+        rtol = 10 * np.finfo(res_bh107.dtype).eps
     except ValueError:
         rtol = 0
 
@@ -102,14 +101,14 @@ def test_binary_array_ufunc(ufunc, shape, dtype):
 
     func_handle = getattr(getattr(np, ufunc), method)
 
-    res_bh107 = func_handle(arr1, arr2).astype(dtype)
+    res_bh107 = func_handle(arr1, arr2)
     if isinstance(res_bh107, bh107.BhArray):
         res_bh107 = res_bh107.copy2numpy()
 
-    res_np = func_handle(arr1.asnumpy(), arr2.asnumpy()).astype(dtype)
+    res_np = func_handle(arr1.asnumpy(), arr2.asnumpy()).astype(res_bh107.dtype)
 
     try:
-        rtol = 10 * np.finfo(arr1.dtype).eps
+        rtol = 10 * np.finfo(res_bh107.dtype).eps
     except ValueError:
         rtol = 0
 
