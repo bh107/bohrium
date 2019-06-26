@@ -36,6 +36,7 @@ namespace {
 void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstream &ss) {
     ss << "dtype: " << static_cast<uint32_t>(view.base->dtype());
     ss << "baseid: " << symbols.baseID(view.base);
+    ss << "always array: " << (symbols.isAlwaysArray(view.base)?"true":"false");
 
     if (symbols.strides_as_var) {
         ss << "strideid: " << symbols.offsetStridesID(view);
@@ -60,6 +61,7 @@ void hash_stream(const bh_view &view, const SymbolTable &symbols, std::stringstr
  */
 void hash_stream(const bh_instruction &instr, const SymbolTable &symbols, std::stringstream &ss) {
     ss << "opcode: " << instr.opcode;
+    ss << "constructor: " << (instr.constructor?"true":"false");
     for (const bh_view &op: instr.operand) {
         if (op.isConstant()) {
             int64_t id = symbols.constID(instr);

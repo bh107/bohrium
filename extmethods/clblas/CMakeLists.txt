@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(EXT_CLBLAS true CACHE BOOL "EXT-CLBLAS: Build CLBLAS extension method.")
-if(NOT EXT_CLBLAS)
+if(NOT EXT_CLBLAS OR NOT VE_OPENCL)
     return()
 endif()
 

@@ -11,8 +11,7 @@ class InvalidArgumentError(Exception):
 
 
 def _result_dtype(op_name, inputs):
-    """
-    Returns the type signature (output, input) to use with the given operation.
+    """Returns the type signature (output, input) to use with the given operation.
     NB: we only returns the type of the first input thus all input types must
         be identical
     """
@@ -31,7 +30,7 @@ def _result_dtype(op_name, inputs):
             if 'float' in sig[1]:
                 return (_dtype_util.type_to_dtype(sig[0]), _dtype_util.type_to_dtype(sig[1]))
 
-    raise TypeError("The ufunc %s() does not support input data type: %s." % (op_name, dtype.name))
+    raise TypeError("%s() does not support input data type: %s." % (op_name, dtype.name))
 
 
 def _result_shape(shape_list):
@@ -42,6 +41,12 @@ def _result_shape(shape_list):
     for shape in shape_list:
         if len(shape) > ret_ndim:
             ret_ndim = len(shape)
+
+    # A zero dimension makes the result shape all zeros
+    for shape in shape_list:
+        for dim in shape:
+            if dim == 0:
+                return tuple([0] * ret_ndim)
 
     # Make sure that all shapes has the same length by pre-pending ones
     for i in range(len(shape_list)):
@@ -59,19 +64,26 @@ def _result_shape(shape_list):
 
 
 def broadcast_to(ary, shape):
-    """
-    /** Return a new view of `ary` that is broadcasted to `shape`
-     *  We use the term broadcast as defined by NumPy. Let `ret` be the broadcasted view of `ary`:
-     *    1) One-sized dimensions are prepended to `ret.shape()` until it has the same number of dimension as `ary`.
-     *    2) The strides of each one-sized dimension in `ret` is set to zero.
-     *    3) The shape of `ary` is set to `shape`
-     *
-     *  \note See: <https://docs.scipy.org/doc/numpy-1.15.0/user/basics.broadcasting.html>
-     *
-     * @param ary    Input array
-     * @param shape  The new shape
-     * @return       The broadcasted array
-     */
+    """Return a new view of `ary` that is broadcasted to `shape`
+
+    We use the term broadcast as defined by NumPy. Let `ret` be the broadcasted view of `ary`:
+     1) One-sized dimensions are prepended to `ret.shape()` until it has the same number of dimension as `ary`.
+     2) The strides of each one-sized dimension in `ret` is set to zero.
+     3) The shape of `ary` is set to `shape`
+
+    \note See: <https://docs.scipy.org/doc/numpy-1.15.0/user/basics.broadcasting.html>
+
+    Parameters
+    ----------
+    ary : BhArray
+        The array to broadcast
+    shape : tuple
+        New shape
+
+    Returns
+    -------
+    r : BhArray
+         The broadcasted array
     """
 
     if len(ary.shape) > len(shape):
@@ -93,8 +105,42 @@ def broadcast_to(ary, shape):
     return bharray.BhArray(ret_shape, ary.dtype, strides=ret_strides, offset=ary.offset, base=ary.base)
 
 
-def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True):
+def broadcast_arrays(array_list):
+    """Broadcast any number of arrays against each other.
+
+    Parameters
+    ----------
+    `array_list` : BhArray
+        The arrays to broadcast.
+
+    Returns
+    -------
+    broadcasted : list of bhArrays
+        These arrays are views on the original arrays or the untouched originals.
+        They are typically not contiguous.  Furthermore, more than one element of a
+        broadcasted array may refer to a single memory location.  If you
+        need to write to the arrays, make copies first.
+    """
+
+    result_shape = _result_shape([getattr(x, 'shape', (1,)) for x in array_list])
+    ret = []
+    for ary in array_list:
+        ret.append(broadcast_to(ary, result_shape))
+    return ret
+
+
+def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_shape=True, cast_input_to_dtype=None):
     dtype_enum_list = [_dtype_util.np2bh_enum(out_operand.dtype)]
+
+    if cast_input_to_dtype is not None:
+        in_operand_list = list(in_operand_list)
+        for i in range(len(in_operand_list)):
+            if _dtype_util.obj_to_dtype(in_operand_list[i]) != cast_input_to_dtype:
+                if np.isscalar(in_operand_list[i]):
+                    in_operand_list[i] = cast_input_to_dtype(in_operand_list[i])
+                else:
+                    in_operand_list[i] = in_operand_list[i].astype(cast_input_to_dtype, always_copy=False)
+
     handle_list = [out_operand._bhc_handle]
     for op in in_operand_list:
         if isinstance(op, numbers.Number):
@@ -121,12 +167,12 @@ def _call_bh_api_op(op_id, out_operand, in_operand_list, broadcast_to_output_sha
 
 
 def is_same_view(a, b):
-    """ Return True when a and b is the same view. Their bases and dtypes might differ"""
+    """Return True when a and b is the same view. Their bases and dtypes might differ"""
     return a.offset == b.offset and a.shape == b.shape and a.strides == b.strides
 
 
 def overlap_conflict(out, inputs):
-    """ Return True when there is a possible memory conflict between the output and the inputs."""
+    """Return True when there is a possible memory conflict between the output and the inputs."""
 
     for i in inputs:
         # Scalars, different bases, or identical views can never conflict
@@ -193,14 +239,6 @@ class Ufunc(object):
 
         out_dtype, in_dtype = _result_dtype(self.info['name'], in_operands)
 
-        # Convert dtype of all inputs to match the function type signature
-        for i in range(len(in_operands)):
-            if _dtype_util.obj_to_dtype(in_operands[i]) != in_dtype:
-                if np.isscalar(in_operands[i]):
-                    in_operands[i] = in_dtype(in_operands[i])
-                else:
-                    in_operands[i] = in_operands[i].astype(in_dtype, always_copy=False)
-
         # If the output is specified, its shape must match `out_shape`
         if out_operand is None:
             out_operand = bharray.BhArray(out_shape, out_dtype)
@@ -209,10 +247,10 @@ class Ufunc(object):
 
         if out_operand.nelem > 0:
             if out_dtype == out_operand.dtype and not overlap_conflict(out_operand, in_operands):
-                _call_bh_api_op(self.info["id"], out_operand, in_operands)
+                _call_bh_api_op(self.info["id"], out_operand, in_operands, cast_input_to_dtype=in_dtype)
             else:  # We use a tmp array if the in-/out-put has memory conflicts or different dtypes
                 tmp_out = bharray.BhArray(out_shape, out_dtype)
-                _call_bh_api_op(self.info["id"], tmp_out, in_operands)
+                _call_bh_api_op(self.info["id"], tmp_out, in_operands, cast_input_to_dtype=in_dtype)
                 assign(tmp_out, out_operand)
         return out_operand
 

@@ -492,9 +492,9 @@ def flatnonzero(a):
     """
 
     if a.dtype is not numpy.bool:
-        mask = a != 0
+        a = a != 0
     new_indexes = array_create.arange(a.size, dtype=numpy.uint64)
-    return pack(new_indexes, mask)
+    return pack(new_indexes, a)
 
 
 @fix_biclass_wrapper
@@ -573,4 +573,4 @@ def nonzero(a):
         tmp = nz // stride
         ret.append(tmp)
         nz -= tmp * stride
-    return ret
+    return tuple(ret)

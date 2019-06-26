@@ -147,8 +147,10 @@ class RandomState:
 
         length = util.total_size(shape)
         flat = bharray.BhArray(length, np.uint64)
-        _bh_api.random123(flat._bhc_handle, self.index, self.key)
-        self.index += flat.nelem
+
+        if length > 0:
+            _bh_api.random123(flat._bhc_handle, self.index, self.key)
+            self.index += flat.nelem
         return flat.reshape(shape)
 
     def random_sample(self, shape):

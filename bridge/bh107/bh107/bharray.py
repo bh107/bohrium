@@ -6,6 +6,17 @@ from bohrium_api import _bh_api
 from . import _dtype_util, util
 
 
+def _obj_contains_a_list_or_ary(obj):
+    """Help function that checks if `obj` contains a list or an array"""
+    if isinstance(obj, (BhArray, list)):
+        return True
+    if isinstance(obj, tuple):
+        for o in obj:
+            if isinstance(o, (BhArray, list)):
+                return True
+    return False
+
+
 class BhBase(object):
     """A base array that represent a block of memory.
     A base array is always the sole owner of a complete memory allocation.
@@ -104,6 +115,10 @@ class BhArray(object):
     def shape(self):
         return tuple(self._shape)
 
+    @property
+    def size(self):
+        return self.nelem
+
     @shape.setter
     def shape(self, shape):
         if self.isscalar():
@@ -144,7 +159,7 @@ class BhArray(object):
         shape = self.shape
         strides = tuple(s * self.base.itemsize for s in self.strides)
         data_ptr = _bh_api.data_get(self.base._bh_dtype_enum, self._bhc_handle, True, True, False, self.base.nbytes)
-        data = (data_ptr+self.offset * self.base.itemsize, False)  # read-only is false
+        data = (data_ptr + self.offset * self.base.itemsize, False)  # read-only is false
         return dict(typestr=typestr, shape=shape, strides=strides, data=data, version=0)
 
     def asnumpy(self):
@@ -160,8 +175,7 @@ class BhArray(object):
 
     def view(self):
         """Returns a new view that points to the same base as this BhArray"""
-        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base,
-                       is_scalar=self.nelem == 1 and len(self._shape) == 0)
+        return BhArray(self._shape, self.dtype, self._strides, self.offset, self.base, is_scalar=self.isscalar())
 
     def fill(self, value):
         """Fill the array with a scalar value.
@@ -173,11 +187,11 @@ class BhArray(object):
 
             Examples
             --------
-            >>> a = bh.array([1, 2])
+            >>> a = bh107.array([1, 2])
             >>> a.fill(0)
             >>> a
             array([0, 0])
-            >>> a = bh.empty(2)
+            >>> a = bh107.empty(2)
             >>> a.fill(1)
             >>> a
             array([ 1.,  1.])
@@ -189,7 +203,7 @@ class BhArray(object):
         from .ufuncs import assign
         if not always_copy and self.dtype == dtype:
             return self
-        ret = BhArray(self._shape, dtype)
+        ret = BhArray(self._shape, dtype, is_scalar=self.isscalar())
         assign(self, ret)
         return ret
 
@@ -299,6 +313,8 @@ class BhArray(object):
             if not isinstance(key, _dtype_util.integers):
                 raise IndexError("Only integers, slices (`:`), ellipsis (`...`), np.newaxis (`None`) and "
                                  "integer or boolean arrays are valid indices")
+            if key < 0:
+                key += self._shape[dim]
             if len(self._shape) <= dim or key >= self._shape[dim]:
                 raise IndexError("Index out of bound")
             shape = list(self._shape)
@@ -353,6 +369,24 @@ class BhArray(object):
         if np.isscalar(key) or isinstance(key, slice) or key is None or key is Ellipsis:
             key = (key,)
 
+        if getattr(key, "dtype", None) == np.bool and key.shape == self.shape:
+            from .reorganization import nonzero
+            return self[nonzero(key)]
+
+        if _obj_contains_a_list_or_ary(key):
+            # Generally, we do not support indexing with arrays
+            # But when indexing array with an index array for each dimension in the array,
+            # it corresponds to take_using_index_tuple()
+            if isinstance(key, tuple) and len(key) == self.ndim:
+                from .reorganization import take_using_index_tuple
+                return take_using_index_tuple(self, key)
+            # And when indexing a vector, it corresponds to np.take()
+            if isinstance(key, (BhArray, list)) and self.ndim == 1:
+                from .reorganization import take
+                return take(self, key)
+            raise NotImplementedError(
+                "For now, fancy indexing requires an Bohrium array per dimension (%d) got key: %s" % (self.ndim, key))
+
         if isinstance(key, tuple):
             key = list(key)
             if Ellipsis in key:
@@ -381,6 +415,26 @@ class BhArray(object):
                          "integer or boolean arrays are valid indices")
 
     def __setitem__(self, key, value):
+
+        if getattr(key, "dtype", None) == np.bool and key.shape == self.shape:
+            from .reorganization import nonzero
+            self[nonzero(key)] = value
+            return
+
+        if _obj_contains_a_list_or_ary(key):
+            # Generally, we do not support indexing with arrays
+            # But when indexing array with an index array for each dimension in the array,
+            # it corresponds to take_using_index_tuple()
+            if isinstance(key, tuple) and len(key) == self.ndim:
+                from .reorganization import put_using_index_tuple
+                return put_using_index_tuple(self, key, value)
+            # And when indexing a vector, it corresponds to np.put()
+            if isinstance(key, (BhArray, list)) and self.ndim == 1:
+                from .reorganization import put
+                return put(self, key, value)
+            raise NotImplementedError(
+                "For now, fancy indexing requires an Bohrium array per dimension got key: %s" % key)
+
         from .ufuncs import assign
         assign(value, self.__getitem__(key))
 
@@ -507,3 +561,8 @@ class BhArray(object):
         from .ufuncs import ufunc_dict
         return ufunc_dict['greater_equal'](self, other)
 
+    def __int__(self):
+        return int(self.asnumpy())
+
+    def __float__(self):
+        return float(self.asnumpy())
