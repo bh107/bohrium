@@ -112,18 +112,18 @@ def take_using_index_tuple(a, index_tuple):
     if len(index_tuple) != a.ndim:
         raise ValueError("length of `index_tuple` must equal the number of dimension in `a`")
 
-    if a.size == 0:
-        return array_create.empty(tuple(), dtype=a.dtype)
-
-    if a.ndim == 1:
-        return take(a, index_tuple[0])
-
     # Make sure that all index arrays are uint64 bohrium arrays
     index_list = []
     for index in index_tuple:
         index_list.append(array_create.array(index, dtype=np.uint64))
         if index_list[-1].size == 0:
-            return array_create.empty(tuple(), dtype=a.dtype)
+            return array_create.empty(index_list[0].shape, dtype=a.dtype)
+
+    if a.size == 0:
+        return array_create.empty(index_list[0].shape, dtype=a.dtype)
+
+    if a.ndim == 1:
+        return take(a, index_tuple[0])
 
     # And then broadcast them into the same shape
     index_list = ufuncs.broadcast_arrays(index_list)
@@ -280,11 +280,6 @@ def put_using_index_tuple(a, index_tuple, v):
         The number of arrays in 'index_tuple' must equal the number of dimension in 'a'
     v : array_like
         Values to place in `a`.
-
-    Returns
-    -------
-    r : BhArray
-        The returned array has the same type as `a`.
     """
 
     v = array_create.array(v)
@@ -301,7 +296,7 @@ def put_using_index_tuple(a, index_tuple, v):
     for index in index_tuple:
         index_list.append(array_create.array(index, dtype=np.uint64))
         if index_list[-1].size == 0:
-            return array_create.empty(tuple(), dtype=a.dtype)
+            return
 
     # And then broadcast them into the same shape
     index_list = ufuncs.broadcast_arrays(index_list)

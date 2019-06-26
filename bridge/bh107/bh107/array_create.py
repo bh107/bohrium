@@ -391,7 +391,7 @@ def arange(start, stop=None, step=1, dtype=None):
         swap_back = True
 
     if start >= stop:
-        return empty(tuple(), dtype=dtype)
+        return empty((0,), dtype=dtype)
 
     size = int(math.ceil((float(stop) - float(start)) / float(step)))
     if dtype is None:
