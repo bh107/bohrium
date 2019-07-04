@@ -308,6 +308,10 @@ class BhArray(object):
         flat = self.flatten()
         return BhArray(shape, flat.dtype, base=flat.base)
 
+    @property
+    def T(self):
+        return self.transpose()
+
     def __getitem_at_dim(self, dim, key):
         if np.isscalar(key):
             if not isinstance(key, _dtype_util.integers):
