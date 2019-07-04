@@ -5,6 +5,7 @@ from .ufuncs import ufunc_dict
 from .array_create import *
 from .reorganization import *
 from .bharray import BhArray, BhBase
+from .summations import *
 from . import random, user_kernel
 
 # Expose ufuncs via their names.
