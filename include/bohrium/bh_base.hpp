@@ -27,7 +27,81 @@ If not, see <http://www.gnu.org/licenses/>.
 // Forward declaration of class boost::serialization::access
 namespace boost { namespace serialization { class access; }}
 
-struct bh_base {
+/** This class represent a data distribution layout.
+ *  For now, we simply distribute over the flatten base where each process gets one data block.
+ */
+class BhPGAS {
+    // Is pgas enabled?
+    bool _enabled = false;
+    // The number of elements in the array globally
+    int64_t _global_size = 0;
+    // The total number of processes
+    int _comm_size = 0;
+    // The rank of the current process
+    int _comm_rank = 0;
+
+public:
+
+    BhPGAS() = default;
+
+    /** Construct a disabled PGAS object for regular non-distributed arrays
+     *
+     * @param nelem Number of elements in the regular non-distributed array
+     */
+    explicit BhPGAS(int64_t nelem) : _global_size{nelem} {}
+
+    explicit BhPGAS(int64_t global_size, int comm_size, int comm_rank) : _enabled{true},
+                                                                         _global_size{global_size},
+                                                                         _comm_size{comm_size},
+                                                                         _comm_rank{comm_rank} {}
+
+    /// Return true when pgas is enabled
+    bool enabled() const {
+        return _enabled;
+    }
+
+    /// Return the total number of communicating processes
+    int commSize() const {
+        return _comm_size;
+    }
+
+    /// Return the rank of this current communicating process
+    int commRank() const {
+        return _comm_rank;
+    }
+
+    /// Return the global size of the array
+    int64_t globalSize() const {
+        return _global_size;
+    }
+
+    /// Return the local size of the array (if disabled, `localSize() == globalSize()`)
+    int64_t localSize() const {
+        int64_t local_size = globalSize();
+        if (enabled()) {
+            local_size = globalSize() / commSize();
+            if (commRank() == commSize() - 1) {
+                local_size += globalSize() % commSize();
+            }
+        }
+        return local_size;
+    }
+
+    /// Serialization using Boost
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
+        ar & _enabled;
+        ar & _global_size;
+        ar & _comm_size;
+        ar & _comm_rank;
+    }
+};
+
+
+/** The base underlying (multiple) arrays */
+class bh_base {
 private:
     // The number of elements in the array
     int64_t _nelem = 0;
@@ -39,6 +113,10 @@ private:
     void *_data = nullptr;
 
 public:
+
+    // The pgas object
+    BhPGAS pgas;
+
     bh_base() = default;
 
     /** Construct a new base array
@@ -47,7 +125,9 @@ public:
      * @param type   The data type
      * @param data   Pointer to the actual data (or nullptr)
      */
-    bh_base(int64_t nelem, bh_type type, void* data = nullptr) : _nelem(nelem), _type(type), _data(data) {}
+    bh_base(int64_t nelem, bh_type type, void *data = nullptr) : _nelem(nelem), _type(type), _data(data), pgas{nelem} {}
+
+    bh_base(int64_t nelem, bh_type type, BhPGAS pgas) : _nelem(nelem), _type(type), pgas{std::move(pgas)} {}
 
     /// Returns the number of elements in this array
     int64_t nelem() const noexcept {
@@ -91,6 +171,7 @@ public:
         ar << tmp;
         ar & _type;
         ar & _nelem;
+        ar & pgas;
     }
 
     template<class Archive>
@@ -100,6 +181,7 @@ public:
         _data = (void *) tmp;
         ar & _type;
         ar & _nelem;
+        ar & pgas;
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()

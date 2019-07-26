@@ -14,6 +14,7 @@ cuda         = bcexp_gpu, bccon, node, cuda, openmp
 proxy_openmp = bcexp_cpu, bccon, proxy, node, openmp
 proxy_opencl = bcexp_cpu, bccon, proxy, node, opencl, openmp
 proxy_cuda   = bcexp_cpu, bccon, proxy, node, cuda, openmp
+pgas         = bcexp_cpu, bccon, node, pgas, openmp
 
 ############
 # Managers #
@@ -209,3 +210,38 @@ work_group_size_3dy = 2
 work_group_size_3dz = 2
 # Optimize instructions for GPU access (column-major)
 to_col_major = false
+
+###########
+# Engines #
+###########
+[pgas]
+impl = ${CMAKE_INSTALL_PREFIX}/${LIBDIR}/libbh_ve_pgas${CMAKE_SHARED_LIBRARY_SUFFIX}
+verbose = false
+# Profiling statistics
+prof = false
+prof_filename =
+# Write a Graphviz graph for each kernel
+graph = false
+# Directory for temporary files (e.g. /tmp/). Default: `boost::filesystem::temp_directory_path()`
+tmp_dir =
+# Directory for cache files (persistent between executions). Default: the empty string, which disable the cache
+cache_dir = ${BIN_KERNEL_CACHE_DIR}
+# Maximum number of cache files to keep in the cache dir (use -1 for infinity)
+cache_file_max = 50000
+# The command to execute the compiler where {OUT} is replaced with the binary file output, {IN} with the source file,
+# and {CONF_PATH} with the path to this config file
+compiler_cmd = "${VE_PGAS_COMPILER_CMD} ${VE_PGAS_COMPILER_FLG} ${VE_PGAS_COMPILER_INC} ${VE_PGAS_COMPILER_LIB} {IN} -o {OUT}"
+# List of extension methods
+libs = ${BH_PGAS_LIBS}
+# The pre-fuser to use ('none' or 'lossy')
+pre_fuser = lossy
+# List of instruction fuser/transformers
+fuser_list = greedy, collapse_redundant_axes
+# Number of edges in the fusion graph that makes the greedy fuser use the `reshapable_first` fuser instead
+greedy_threshold = 10000
+# *_as_var specifies whether to hard-code variables or have them as variables
+index_as_var = true
+strides_as_var = true
+const_as_var = true
+# Monolithic combines all blocks into one shared library rather than a block-nest per shared library
+monolithic = false

@@ -26,6 +26,8 @@ If not, see <http://www.gnu.org/licenses/>.
 
 namespace bhxx {
 
+using BhPGAS = BhPGAS;
+
 /** The base underlying (multiple) arrays */
 class BhBase : public bh_base {
 public:
@@ -82,6 +84,13 @@ public:
      */
     template<typename T>
     BhBase(T dummy, size_t nelem) : bh_base(nelem, bh_type_from_template<T>()), m_own_memory(true) {
+        // The dummy is a dummy argument and should always be identical zero.
+        assert(dummy == T(0));
+    }
+
+    template<typename T>
+    BhBase(T dummy, size_t nelem, BhPGAS pgas) : bh_base(nelem, bh_type_from_template<T>(), std::move(pgas)),
+                                                 m_own_memory(true) {
         // The dummy is a dummy argument and should always be identical zero.
         assert(dummy == T(0));
     }

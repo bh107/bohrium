@@ -102,11 +102,11 @@ size_t Expander::gc(void)
     return collected;
 }
 
-bh_base* Expander::createBase(bh_type type, int64_t nelem)
+bh_base * Expander::createBase(bh_type type, int64_t nelem, const BhPGAS &pgas)
 {
     bh_base* base = nullptr;
     try {
-        base = new bh_base(nelem, type);
+        base = new bh_base(nelem, type, pgas);
     } catch (std::bad_alloc& ba) {
         fprintf(stderr, "Expander::createBase(...) bh_base allocation failed.\n");
         throw std::runtime_error("Expander::createBase(...) bh_base allocation failed.\n");
@@ -118,14 +118,14 @@ bh_base* Expander::createBase(bh_type type, int64_t nelem)
 bh_view Expander::createTemp(bh_view& meta, bh_type type, int64_t nelem)
 {
     bh_view view = meta;
-    view.base = createBase(type, nelem);
+    view.base = createBase(type, nelem, meta.base->pgas);
     return view;
 }
 
-bh_view Expander::createTemp(bh_type type, int64_t nelem)
+bh_view Expander::createTemp(bh_type type, int64_t nelem, const BhPGAS &pgas)
 {
     bh_view view;
-    view.base = createBase(type, nelem);
+    view.base = createBase(type, nelem, pgas);
     view.start = 0;
     view.ndim = 1;
     view.shape.push_back(nelem);

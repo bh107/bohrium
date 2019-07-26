@@ -107,16 +107,22 @@ void main_mem_free(void *mem, uint64_t nbytes) {
 MallocCache malloc_cache(main_mem_malloc, main_mem_free, 0);
 }
 
-void bh_data_malloc(bh_base *base) {
+void bh_data_malloc(bh_base *base, bool pgas_malloc) {
     if (base == nullptr) return;
     if (base->getDataPtr() != nullptr) return;
-    base->resetDataPtr(malloc_cache.alloc(base->nbytes()));
+    if (base->pgas.enabled() and not pgas_malloc) {
+        throw std::runtime_error("bh_data_malloc(): will not allocate PGAS-enabled arrays when `pgas_malloc=false`");
+    }
+
+    // Notice, when PGAS isn't enabled: `base->pgas.localSize() == base->nelem()`
+    base->resetDataPtr(malloc_cache.alloc(base->pgas.localSize() * bh_type_size(base->dtype())));
 }
 
 void bh_data_free(bh_base *base) {
     if (base == nullptr) return;
     if (base->getDataPtr() == nullptr) return;
-    malloc_cache.free(base->nbytes(), base->getDataPtr());
+    // Notice, when PGAS isn't enabled: `base->pgas.localSize() == base->nelem()`
+    malloc_cache.free(base->pgas.localSize() * bh_type_size(base->dtype()), base->getDataPtr());
     base->resetDataPtr();
 }
 

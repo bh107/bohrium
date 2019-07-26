@@ -31,16 +31,19 @@ uint64_t bh_main_memory_total();
 int64_t bh_main_memory_unused();
 
 /** Allocate data memory for the given base if not already allocated.
- * For convenience, the base is allowed to be NULL.
+ * For convenience, the base is allowed to be nullptr.
  *
- * @base    The base in question
+ * @param base         The base array
+ * @param pgas_malloc  Allow pgas allocation
+ *
+ * \note The `pgas_malloc` argument is only here to make sure that the caller can handle pgas-enabled arrays
  */
-void bh_data_malloc(bh_base* base);
+void bh_data_malloc(bh_base* base, bool pgas_malloc = false);
 
 /** Frees data memory for the given view.
  * For convenience, the view is allowed to be NULL.
  *
- * @base    The base in question
+ * @param base The base array
  */
 void bh_data_free(bh_base* base);
 
