@@ -157,6 +157,8 @@ add_subdirectory(bridge/py_api)
 add_subdirectory(bridge/npbackend)
 add_subdirectory(bridge/bh107)
 
+add_subdirectory(bridge/bohr)
+
 add_subdirectory(test)
 
 string(REPLACE ";" ", " BH_OPENMP_LIBS "${BH_OPENMP_LIBS}")

@@ -25,6 +25,7 @@ If not, see <http://www.gnu.org/licenses/>.
 #include <functional>
 #include <numeric>
 #include <ostream>
+#include <vector>
 #include <boost/container/static_vector.hpp>
 #include <sstream>
 
@@ -42,6 +43,18 @@ public:
 
     // This is C++11 syntax for exposing the constructor from the parent class
     using boost::container::static_vector<T, BH_MAXDIM>::static_vector;
+
+    BhStaticVector(const std::vector<uint64_t> &vec) : boost::container::static_vector<T, BH_MAXDIM>() {
+        for(const auto& v: vec) {
+            this->push_back(v);
+        }
+    }
+
+    BhStaticVector(const std::vector<int64_t> &vec) : boost::container::static_vector<T, BH_MAXDIM>() {
+        for(const auto& v: vec) {
+            this->push_back(v);
+        }
+    }
 
     /// The sum of the elements in this vector
     virtual T sum() const {
@@ -61,7 +74,7 @@ public:
             auto it = this->begin();
             ss << *it;
             ++it;
-            for (; it != this->end(); ++it) ss << ',' << *it;
+            for (; it != this->end(); ++it) ss << ", " << *it;
         }
         ss << ')';
         return ss.str();
