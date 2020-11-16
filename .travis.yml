@@ -28,7 +28,7 @@ jobs:
         - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
             docker build -t bohrium/wheel --build-arg BUILD_TYPE=Release -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
           else
-            docker build -t bohrium/wheel --build-arg BUILD_TYPE=Debug -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
+            docker build -t bohrium/wheel --build-arg BUILD_TYPE=Release -f package/docker/create_wheel.dockerfile . || travis_terminate 1;
           fi
         - docker push bohrium/wheel
 
@@ -38,13 +38,13 @@ jobs:
       env: BH_STACK=opencl EXEC="cp27-cp27mu -m pip install $TEST_DEPS; cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 EXEC="cp27-cp27mu $TEST_ALL"
     - env: BH_STACK=opencl BH_OPENCL_NUM_THREADS=2 BH_OPENCL_NUM_THREADS_ROUND_ROBIN=1 EXEC="cp27-cp27mu $TEST_ALL"
-    - env: BH_STACK=openmp EXEC="cp37-cp37m -m pip install $TEST_DEPS; cp37-cp37m $TEST_ALL"
-    - env: BH_STACK=opencl EXEC="cp37-cp37m -m pip install $TEST_DEPS; cp37-cp37m $TEST_ALL"
+    - env: BH_STACK=openmp EXEC="cp38-cp38 -m pip install $TEST_DEPS; cp38-cp38 $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp38-cp38 -m pip install $TEST_DEPS; cp38-cp38 $TEST_ALL"
       env: BH_STACK=openmp BH_OPENMP_MONOLITHIC=1 EXEC="cp27-cp27mu $TEST_SMALL"
 
     # Test of older Python versions
-    - env: BH_STACK=opencl EXEC="cp35-cp35m -m pip install $TEST_DEPS; cp35-cp35m $TEST_ALL"
     - env: BH_STACK=opencl EXEC="cp36-cp36m -m pip install $TEST_DEPS; cp36-cp36m $TEST_ALL"
+    - env: BH_STACK=opencl EXEC="cp37-cp37m -m pip install $TEST_DEPS; cp37-cp37m $TEST_ALL"
 
 deploy:
   provider: script
