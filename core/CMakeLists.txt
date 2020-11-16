@@ -23,6 +23,14 @@ target_link_libraries(bh ${LIBSIGSEGV_LIBRARY}) # bh_mem_signal depends on LibSi
 set(CORE_LINK_FLAGS "" CACHE STRING "Link flags to use when creating _bh.so (e.g. -static-libgcc -static-libstdc++)")
 target_link_libraries(bh ${CORE_LINK_FLAGS})
 
+find_package(Threads REQUIRED)
+if(THREADS_HAVE_PTHREAD_ARG)
+  target_compile_options(bh PUBLIC "-pthread")
+endif()
+if(CMAKE_THREAD_LIBS_INIT)
+  target_link_libraries(bh "${CMAKE_THREAD_LIBS_INIT}")
+endif()
+
 install(TARGETS bh DESTINATION ${LIBDIR} COMPONENT bohrium)
 install(DIRECTORY ${BOHRIUM_SOURCE_DIR}/include/ DESTINATION include COMPONENT bohrium)
 install(DIRECTORY ${INCLUDE_DIR}/ DESTINATION include/ COMPONENT bohrium)
