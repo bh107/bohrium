@@ -9,7 +9,7 @@ COPY . .
 ARG BUILD_TYPE=Release
 
 # List of Python version we want to build
-ARG PY_VER_LIST="cp27-cp27mu;cp34-cp34m;cp35-cp35m;cp36-cp36m;cp37-cp37m"
+ARG PY_VER_LIST="cp27-cp27mu;cp34-cp34m;cp35-cp35m;cp36-cp36m;cp37-cp37m;cp38-cp38m"
 
 # Script that creates links to the different python binaries
 RUN echo $'#!/bin/bash\n\
