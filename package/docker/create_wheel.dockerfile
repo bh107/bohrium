@@ -9,7 +9,7 @@ COPY . .
 ARG BUILD_TYPE=Release
 
 # List of Python version we want to build
-ARG PY_VER_LIST="cp27-cp27mu;cp34-cp34m;cp35-cp35m;cp36-cp36m;cp37-cp37m;cp38-cp38m"
+ARG PY_VER_LIST="cp27-cp27mu;cp36-cp36m;cp37-cp37m;cp38-cp38;cp39-cp39"
 
 # Script that creates links to the different python binaries
 RUN echo $'#!/bin/bash\n\
@@ -21,21 +21,23 @@ RUN bash /bh/py_exe_links ${PY_VER_LIST}
 RUN ls -l /usr/bin/cp*
 
 # Build bohrium
-RUN mkdir build
-WORKDIR build
-RUN AMDAPPSDKROOT=/opt/AMDAPPSDK-2.9-1/ cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DBRIDGE_NPBACKEND=OFF -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/install -DFORCE_CONFIG_PATH=/bh/install -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas -DPY_WHEEL=/bh/wheel -DPY_EXE_LIST=$PY_VER_LIST
+RUN mkdir /bh/build
+WORKDIR /bh/build
+RUN AMDAPPSDKROOT=/opt/AMDAPP/ cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCORE_LINK_FLAGS='-static-libgcc -static-libstdc++' -DBoost_USE_STATIC_LIBS=ON -DBRIDGE_NPBACKEND=OFF -DVE_OPENMP_COMPILER_OPENMP_SIMD=OFF -DEXT_VISUALIZER=OFF -DVEM_PROXY=OFF -DCMAKE_INSTALL_PREFIX=/bh/install -DFORCE_CONFIG_PATH=/bh/install -DCBLAS_LIBRARIES=/usr/lib64/atlas/libcblas.so.3 -DCBLAS_INCLUDES=/usr/include -DLAPACKE_LIBRARIES=/usr/lib64/atlas/liblapack.so.3 -DLAPACKE_INCLUDE_DIR=/usr/include/openblas -DPY_WHEEL=/bh/wheel -DPY_EXE_LIST=$PY_VER_LIST
 RUN make -j2
 RUN make install
 
 # Patch auditwheel to ignore libraries not found e.g. libcuda
-RUN sed -i -e 's/if src_path is None:/if src_path is None:\n                    continue/g' /opt/_internal/cpython-3.6.6/lib/python3.6/site-packages/auditwheel/repair.py
+RUN sed -i -e 's/if src_path is None:/if src_path is None:\n                    continue/g' /opt/_internal/tools/lib/python3.7/site-packages/auditwheel/repair.py
 
-# Let's write a script that for each python version builds a manylinux1 package of
+# Export the Bohrium C bridge and OpenCl.so
+ENV LD_LIBRARY_PATH /bh/build/bridge/c/:/opt/AMDAPP/lib/x86_64/:$LD_LIBRARY_PATH
+
+# Let's write a script that for each python version builds a manylinux2010 package of
 # bohrium_api, install it along with bohrium, and runs a sanity check.
 RUN echo $'#!/bin/bash\n\
 IFS=";"\n\
 for name in $PY_VER_LIST; do\n\
-  export LD_LIBRARY_PATH=/opt/gcc7/lib64/:/bh/build/bridge/c/:\$LD_LIBRARY_PATH\n\
   export USE_CYTHON=1\n\
   auditwheel repair /bh/wheel/bohrium_api-*-${name}-*.whl -w /bh/wheelhouse\n\
   ${name} -m pip install /bh/wheelhouse/bohrium_api-*-${name}-*.whl\n\
