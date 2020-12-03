@@ -29,6 +29,10 @@ namespace bhxx {
 /** The base underlying (multiple) arrays */
 class BhBase : public bh_base {
 public:
+
+    // This is C++11 syntax for exposing the constructor from the parent class
+    using bh_base::bh_base;
+
     /** Is the memory managed referenced by bh_base's data pointer
      *  managed by Bohrium or is it owned externally
      *
